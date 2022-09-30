@@ -29,4 +29,3 @@ jobs:
       - uses: ./
         with:
           agda-version: nightly
-

@@ -1,12 +1,12 @@
-name: "Setup Agda"
+name: 'Setup Agda'
 author: 'Wen Kokke'
-description: "Set up a specific version of Agda."
+description: 'Set up a specific version of Agda.'
 inputs:
   agda-version:
     description: "The Agda version. Can be 'nightly', 'latest', a specific version number (e.g., 2.6.2.2), a partial version number (e.g., 2.6), or a git commit hash."
     required: true
-    default: "latest"
+    default: 'latest'
 outputs: {}
 runs:
-  using: "node16"
-  main: "dist/index.js"
+  using: 'node16'
+  main: 'dist/index.js'
