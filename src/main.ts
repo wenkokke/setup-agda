@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 
-async function run(): Promise<void> {
+async function main(): Promise<void> {
   try {
     const agda_version: string = core.getInput('agda-version')
     core.info(agda_version)
@@ -9,4 +9,4 @@ async function run(): Promise<void> {
   }
 }
 
-run()
+main()
