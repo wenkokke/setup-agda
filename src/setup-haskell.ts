@@ -1,4 +1,4 @@
-import * as setup_haskell from 'setup-haskell'
+import setup_haskell from 'setup-haskell'
 
 /**
  * Interface for actions/haskell/setup
@@ -26,6 +26,32 @@ export interface HaskellOptions {
   disable_matcher?: boolean
 }
 
-export async function setupHaskell(inputs?: HaskellOptions): Promise<void> {
-  setup_haskell.run(inputs ?? {})
+function haskellOptions(options?: HaskellOptions): Record<string, string> {
+  const inputs: Record<string, string> = {}
+  if (options?.ghc_version !== undefined) {
+    inputs['ghc_version'] = options?.ghc_version
+  }
+  if (options?.cabal_version !== undefined) {
+    inputs['cabal_version'] = options?.cabal_version
+  }
+  if (options?.stack_version !== undefined) {
+    inputs['stack_version'] = options?.stack_version
+  }
+  if (options?.enable_stack === true) {
+    inputs['enable_stack'] = '1'
+  }
+  if (options?.stack_no_global === true) {
+    inputs['stack_no_global'] = '1'
+  }
+  if (options?.stack_setup_ghc === true) {
+    inputs['stack_setup_ghc'] = '1'
+  }
+  if (options?.disable_matcher === true) {
+    inputs['disable_matcher'] = '1'
+  }
+  return inputs
+}
+
+export async function setupHaskell(options?: HaskellOptions): Promise<void> {
+  setup_haskell(haskellOptions(options))
 }
