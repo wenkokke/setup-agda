@@ -1,14 +1,13 @@
 import * as core from '@actions/core'
-import {setupHaskell} from './setup-haskell'
+import setupAgda from './setup-agda'
 
-async function main(): Promise<void> {
+async function run(): Promise<void> {
   try {
-    const agda_version: string = core.getInput('agda-version')
-    core.info(agda_version)
-    setupHaskell({})
+    const agdaVersion: string = core.getInput('agda-version')
+    setupAgda(agdaVersion)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
 }
 
-main()
+run()

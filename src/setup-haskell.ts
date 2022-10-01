@@ -1,4 +1,8 @@
-import setup_haskell from 'setup-haskell'
+import * as core from '@actions/core'
+import {exec, ExecOptions} from '@actions/exec'
+import SemVer from 'semver/classes/semver'
+import semverParse from 'semver/functions/parse'
+import haskellActionsSetup from 'setup-haskell'
 
 /**
  * Interface for actions/haskell/setup
@@ -24,6 +28,40 @@ export interface HaskellOptions {
 
   /** If specified, disables match messages from GHC as GitHub CI annotations */
   disable_matcher?: boolean
+}
+
+export async function ghcVersion(): Promise<SemVer | null> {
+  try {
+    // run `ghc --numeric-version`
+    let execOutput = ''
+    const execOptions: ExecOptions = {}
+    execOptions.failOnStdErr = true
+    execOptions.silent = true
+    execOptions.listeners = {
+      stdout: (data: Buffer) => {
+        execOutput += data.toString()
+      }
+    }
+    await exec('ghc', ['--numeric-version'], execOptions)
+    // parse the output as a semantic version
+    const semver = semverParse(execOutput)
+    if (semver !== null) {
+      return semver
+    } else {
+      core.warning(`Could not parse GHC version: ${execOutput}`)
+      return null
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      core.debug(`Could not find GHC version: ${error.message}`)
+    } else {
+      // This case should not happen, as the error should always be an instance of Error:
+      core.warning(
+        `Could not find GHC versio, but caught error is not instance of Error: ${error}`
+      )
+    }
+    return null
+  }
 }
 
 function haskellOptions(options?: HaskellOptions): Record<string, string> {
@@ -53,5 +91,5 @@ function haskellOptions(options?: HaskellOptions): Record<string, string> {
 }
 
 export async function setupHaskell(options?: HaskellOptions): Promise<void> {
-  setup_haskell(haskellOptions(options))
+  await haskellActionsSetup(haskellOptions(options))
 }
