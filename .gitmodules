@@ -1,3 +1,0 @@
-[submodule "vendor/haskell/actions"]
-	path = vendor/haskell/actions
-	url = https://github.com/wenkokke/haskell-actions.git
