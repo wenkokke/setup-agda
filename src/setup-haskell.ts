@@ -44,7 +44,7 @@ export async function ghcVersion(): Promise<SemVer | null> {
     }
     await exec('ghc', ['--numeric-version'], execOptions)
     // parse the output as a semantic version
-    const semver = semverParse(execOutput)
+    const semver = semverParse(execOutput.trim())
     if (semver !== null) {
       return semver
     } else {
