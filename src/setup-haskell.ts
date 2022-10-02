@@ -1,7 +1,6 @@
 import * as core from '@actions/core'
 import {exec, ExecOptions} from '@actions/exec'
-import SemVer from 'semver/classes/semver'
-import semverParse from 'semver/functions/parse'
+import * as semver from 'semver'
 import haskellActionsSetup from 'setup-haskell'
 
 /**
@@ -30,7 +29,7 @@ export interface HaskellOptions {
   disable_matcher?: boolean
 }
 
-export async function ghcVersion(): Promise<SemVer | null> {
+export async function ghcVersion(): Promise<semver.SemVer | null> {
   try {
     // run `ghc --numeric-version`
     let execOutput = ''
@@ -44,9 +43,9 @@ export async function ghcVersion(): Promise<SemVer | null> {
     }
     await exec('ghc', ['--numeric-version'], execOptions)
     // parse the output as a semantic version
-    const semver = semverParse(execOutput.trim())
-    if (semver !== null) {
-      return semver
+    const ghcSemVer = semver.parse(execOutput.trim())
+    if (ghcSemVer !== null) {
+      return ghcSemVer
     } else {
       core.warning(`Could not parse GHC version: ${execOutput}`)
       return null
