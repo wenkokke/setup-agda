@@ -180,7 +180,7 @@ function ghcVersion() {
             };
             yield (0, exec_1.exec)('ghc', ['--numeric-version'], execOptions);
             // parse the output as a semantic version
-            const semver = (0, parse_1.default)(execOutput);
+            const semver = (0, parse_1.default)(execOutput.trim());
             if (semver !== null) {
                 return semver;
             }
