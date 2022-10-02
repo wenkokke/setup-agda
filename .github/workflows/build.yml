@@ -17,24 +17,18 @@ jobs:
       - run: npm install
       - run: npm run all
 
-  test-latest:
-    runs-on: ubuntu-latest
-    name: Test (latest)
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-      - uses: ./
-        with:
-          agda-version: latest
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        agda-version: ['nightly']
 
-  test-nightly:
-    runs-on: ubuntu-latest
-    name: Test (nightly)
+    name: Test
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: true
       - uses: ./
         with:
-          agda-version: nightly
+          agda-version: ${{ matrix.agda-version }}
