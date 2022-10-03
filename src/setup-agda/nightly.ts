@@ -1,8 +1,6 @@
 import * as core from '@actions/core'
 import * as exec from '@actions/exec'
-import * as io from '@actions/io'
 import * as toolCache from '@actions/tool-cache'
-import * as os from 'os'
 import * as process from 'process'
 import * as opts from '../opts'
 
@@ -15,6 +13,18 @@ const nightlyUrlWin32 =
 
 // core.toPlatformPath
 
+function lsR(dir: string): void {
+  let output = ''
+  const options: exec.ExecOptions = {}
+  options.listeners = {
+    stdout: (data: Buffer) => {
+      output += data.toString()
+    }
+  }
+  exec.exec('ls', ['-R', dir], options)
+  core.info(output)
+}
+
 export default async function setupAgdaNightly(): Promise<void> {
   const platform = process.platform as opts.Platform
   core.info(`Setup 'nightly' on ${platform}`)
@@ -25,12 +35,13 @@ export default async function setupAgdaNightly(): Promise<void> {
         nightlyUrlLinux,
         opts.downloadDir
       )
-      exec.exec('ls', ['-R', downloadDir])
+      lsR(downloadDir)
       core.info(`Finished download: ${downloadDir}`)
       const installDir = await toolCache.extractTar(
         core.toPlatformPath(`${downloadDir}/Agda-nightly-linux.tar.xz`),
         opts.installDir
       )
+      lsR(downloadDir)
       core.info(`Extracted to ${installDir}`)
       exec.exec('ls', ['-R', installDir])
       break

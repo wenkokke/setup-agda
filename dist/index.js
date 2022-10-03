@@ -247,30 +247,38 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
-const io = __importStar(__nccwpck_require__(7436));
 const toolCache = __importStar(__nccwpck_require__(7784));
-const os = __importStar(__nccwpck_require__(2037));
+const process = __importStar(__nccwpck_require__(7282));
 const opts = __importStar(__nccwpck_require__(1352));
 const nightlyUrlLinux = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz';
 const nightlyUrlDarwin = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz';
 const nightlyUrlWin32 = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip';
 // core.toPlatformPath
+function lsR(dir) {
+    let output = '';
+    const options = {};
+    options.listeners = {
+        stdout: (data) => {
+            output += data.toString();
+        }
+    };
+    exec.exec('ls', ['-R', dir], options);
+    core.info(output);
+}
 function setupAgdaNightly() {
     return __awaiter(this, void 0, void 0, function* () {
-        const platform = os.platform();
+        const platform = process.platform;
         core.info(`Setup 'nightly' on ${platform}`);
         switch (platform) {
             case 'linux': {
-                core.info(`Create download directory ${opts.downloadDir}`);
-                io.mkdirP(opts.downloadDir);
                 core.info(`Download nightly build to ${opts.downloadDir}`);
-                const nightlyPath = yield toolCache.downloadTool(nightlyUrlLinux, opts.downloadDir);
-                core.info(`Create installation directory ${opts.installDir}`);
-                io.mkdirP(opts.installDir);
-                core.info(`Finished download: ${nightlyPath}`);
-                const installDir = yield toolCache.extractTar(nightlyPath, opts.installDir);
+                const downloadDir = yield toolCache.downloadTool(nightlyUrlLinux, opts.downloadDir);
+                lsR(downloadDir);
+                core.info(`Finished download: ${downloadDir}`);
+                const installDir = yield toolCache.extractTar(core.toPlatformPath(`${downloadDir}/Agda-nightly-linux.tar.xz`), opts.installDir);
+                lsR(downloadDir);
                 core.info(`Extracted to ${installDir}`);
-                exec.exec(`ls -R ${installDir}`);
+                exec.exec('ls', ['-R', installDir]);
                 break;
             }
             case 'darwin': {
