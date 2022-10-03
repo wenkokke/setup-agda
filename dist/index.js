@@ -332,7 +332,7 @@ function setupAgdaNightly() {
                     for (var _b = __asyncValues(globber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
                         const file = _c.value;
                         core.info(`Install ${file} to ${opts.installDir}`);
-                        io.cp(file, opts.installDir);
+                        io.cp(file, opts.installDir, { recursive: true });
                     }
                 }
                 catch (e_1_1) { e_1 = { error: e_1_1 }; }

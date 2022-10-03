@@ -99,7 +99,7 @@ export default async function setupAgdaNightly(): Promise<void> {
       )
       for await (const file of globber.globGenerator()) {
         core.info(`Install ${file} to ${opts.installDir}`)
-        io.cp(file, opts.installDir)
+        io.cp(file, opts.installDir, {recursive: true})
       }
       break
     }
