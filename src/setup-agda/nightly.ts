@@ -1,4 +1,5 @@
 import * as core from '@actions/core'
+import * as io from '@actions/io'
 import * as exec from '@actions/exec'
 import * as toolCache from '@actions/tool-cache'
 import * as process from 'process'
@@ -31,12 +32,14 @@ export default async function setupAgdaNightly(): Promise<void> {
   switch (platform) {
     case 'linux': {
       core.info(`Download nightly build to ${opts.downloadDir}`)
+      io.mkdirP(opts.downloadDir)
       const downloadDir = await toolCache.downloadTool(
         nightlyUrlLinux,
         opts.downloadDir
       )
       lsR(downloadDir)
-      core.info(`Finished download: ${downloadDir}`)
+      core.info(`Extract nightly build to ${opts.installDir}`)
+      io.mkdirP(opts.installDir)
       const installDir = await toolCache.extractTar(
         core.toPlatformPath(`${downloadDir}/Agda-nightly-linux.tar.xz`),
         opts.installDir
