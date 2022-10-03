@@ -6,7 +6,7 @@
 # it wants to stop the commit.
 
 # Propagate failures:
-set -euo pipefail
+set -euxo pipefail
 
 # To enable this hook, rename this file to "pre-commit".
 
