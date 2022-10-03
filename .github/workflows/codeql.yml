@@ -22,6 +22,8 @@ jobs:
     # CodeQL runs on ubuntu-latest, windows-latest, and macos-latest
     runs-on: ubuntu-latest
 
+    if: contains(github.event.head_commit.message, '[codeql]')
+
     permissions:
       # required for all workflows
       security-events: write
