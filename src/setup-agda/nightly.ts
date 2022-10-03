@@ -3,6 +3,7 @@ import * as exec from '@actions/exec'
 import * as io from '@actions/io'
 import * as toolCache from '@actions/tool-cache'
 import * as os from 'os'
+import * as process from 'process'
 import * as opts from '../opts'
 
 const nightlyUrlLinux =
@@ -15,7 +16,7 @@ const nightlyUrlWin32 =
 // core.toPlatformPath
 
 export default async function setupAgdaNightly(): Promise<void> {
-  const platform = os.platform() as opts.Platform
+  const platform = process.platform as opts.Platform
   core.info(`Setup 'nightly' on ${platform}`)
   switch (platform) {
     case 'linux': {
