@@ -262,8 +262,9 @@ function setupAgdaNightly() {
             case 'linux': {
                 core.debug(`Download nightly build to ${opts.downloadDir}`);
                 const downloadDir = yield toolCache.downloadTool(nightlyLinux, opts.downloadDir);
+                const agdaNightlyTar = core.toPlatformPath(`${downloadDir}/Agda-nightly-linux.tar.xz`);
                 core.debug(`Finished download: ${downloadDir}`);
-                const installDir = yield toolCache.extractTar(downloadDir, opts.installDir);
+                const installDir = yield toolCache.extractTar(agdaNightlyTar, opts.installDir);
                 core.info(`Extracted to ${installDir}`);
                 exec.exec(`ls -R ${installDir}`);
                 break;

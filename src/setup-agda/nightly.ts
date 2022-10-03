@@ -23,9 +23,12 @@ export default async function setupAgdaNightly(): Promise<void> {
         nightlyLinux,
         opts.downloadDir
       )
+      const agdaNightlyTar = core.toPlatformPath(
+        `${downloadDir}/Agda-nightly-linux.tar.xz`
+      )
       core.debug(`Finished download: ${downloadDir}`)
       const installDir = await toolCache.extractTar(
-        downloadDir,
+        agdaNightlyTar,
         opts.installDir
       )
       core.info(`Extracted to ${installDir}`)
