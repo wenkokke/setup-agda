@@ -1,9 +1,10 @@
 import * as core from '@actions/core'
 import * as io from '@actions/io'
-import * as exec from '@actions/exec'
+import * as glob from '@actions/glob'
 import * as toolCache from '@actions/tool-cache'
 import * as process from 'process'
 import * as opts from '../opts'
+import {agdaCompile, agdaDataDir, agdaVersion} from './utils'
 
 const nightlyUrlLinux =
   'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz'
@@ -26,16 +27,20 @@ const nightlyUrlLinux =
 //   core.info(output)
 // }
 
-function agdaVersion(): void {
-  let output = ''
-  const options: exec.ExecOptions = {}
-  options.listeners = {
-    stdout: (data: Buffer) => {
-      output += data.toString()
-    }
+async function testAgda(): Promise<void> {
+  const pathToAgda = io.which('agda')
+  core.info(`Found Agda on PATH at ${pathToAgda}`)
+  const versionString = await agdaVersion()
+  core.info(`Found Agda version ${versionString}`)
+  const dataDir = await agdaDataDir()
+  core.info(`Found Agda data directory at ${dataDir}`)
+  const globber = await glob.create(
+    core.toPlatformPath(`${dataDir}/lib/prim/**/*.agda`)
+  )
+  for await (const agdaFile of globber.globGenerator()) {
+    core.info(`Compile ${agdaFile}`)
+    await agdaCompile(['-v2', agdaFile])
   }
-  exec.exec('agda', ['--version'], options)
-  core.info(output)
 }
 
 export default async function setupAgdaNightly(): Promise<void> {
@@ -43,9 +48,11 @@ export default async function setupAgdaNightly(): Promise<void> {
   core.info(`Setup 'nightly' on ${platform}`)
   switch (platform) {
     case 'linux': {
+      // Download archive:
       core.info(`Download nightly build from ${nightlyUrlLinux}`)
       const nightlyPathLinux = await toolCache.downloadTool(nightlyUrlLinux)
 
+      // Extract archive:
       core.info(`Extract nightly build to ${opts.installDir}`)
       io.mkdirP(opts.installDir)
       const installDir = await toolCache.extractTar(
@@ -54,14 +61,12 @@ export default async function setupAgdaNightly(): Promise<void> {
         ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']
       )
 
-      core.info('Add Agda to the PATH')
+      // Configure Agda:
       core.exportVariable('Agda_datadir', `${installDir}/data`)
       core.addPath(`${installDir}/bin`)
 
-      core.info('Test Agda')
-      agdaVersion()
-
-      core.info(await io.which('agda', true))
+      // Test Agda:
+      await testAgda()
       break
     }
     case 'darwin': {
