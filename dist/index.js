@@ -70,9 +70,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installDir = void 0;
+exports.installDir = exports.cacheDir = void 0;
 const appdirsjs_1 = __importDefault(__nccwpck_require__(360));
 const agdaDirs = (0, appdirsjs_1.default)({ appName: 'agda' });
+exports.cacheDir = agdaDirs.cache;
 exports.installDir = agdaDirs.data;
 
 
@@ -277,7 +278,7 @@ function setupAgdaNightly() {
                 const nightlyPathLinux = yield toolCache.downloadTool(nightlyUrlLinux);
                 core.info(`Extract nightly build to ${opts.installDir}`);
                 io.mkdirP(opts.installDir);
-                const installDir = yield toolCache.extractTar(nightlyPathLinux, opts.installDir, ['--extract', '--xz', '--preserve-permissions']);
+                const installDir = yield toolCache.extractTar(nightlyPathLinux, opts.installDir, ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']);
                 lsR(installDir);
                 break;
             }

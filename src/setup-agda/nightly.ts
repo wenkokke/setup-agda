@@ -39,7 +39,7 @@ export default async function setupAgdaNightly(): Promise<void> {
       const installDir = await toolCache.extractTar(
         nightlyPathLinux,
         opts.installDir,
-        ['--extract', '--xz', '--preserve-permissions']
+        ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']
       )
       lsR(installDir)
       break
