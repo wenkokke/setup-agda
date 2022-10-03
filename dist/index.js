@@ -384,7 +384,7 @@ function agda(args, options) {
                 agdaErrors += data.toString();
             }
         };
-        const exitCode = yield exec.exec('agda', args);
+        const exitCode = yield exec.exec('agda', args, options);
         if (exitCode === 0) {
             return agdaOutput;
         }

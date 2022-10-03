@@ -32,7 +32,7 @@ export async function agda(
       agdaErrors += data.toString()
     }
   }
-  const exitCode = await exec.exec('agda', args)
+  const exitCode = await exec.exec('agda', args, options)
   if (exitCode === 0) {
     return agdaOutput
   } else {
