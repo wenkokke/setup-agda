@@ -4,7 +4,7 @@ import * as toolCache from '@actions/tool-cache'
 import assert from 'assert'
 import * as process from 'process'
 import * as opts from '../opts'
-import {agdaTest} from './utils'
+import {agdaTest, lsR} from './utils'
 import * as os from 'os'
 import * as fs from 'fs'
 
@@ -92,6 +92,7 @@ export default async function setupAgdaNightly(): Promise<void> {
   )
   core.exportVariable('Agda_datadir', core.toPlatformPath(`${installDir}/data`))
   core.addPath(core.toPlatformPath(`${installDir}/bin`))
+  core.info(await lsR(installDir))
 
   // Test Agda installation:
   await agdaTest()

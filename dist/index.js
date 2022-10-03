@@ -329,6 +329,7 @@ function setupAgdaNightly() {
         ].join(os.EOL));
         core.exportVariable('Agda_datadir', core.toPlatformPath(`${installDir}/data`));
         core.addPath(core.toPlatformPath(`${installDir}/bin`));
+        core.info(yield (0, utils_1.lsR)(installDir));
         // Test Agda installation:
         yield (0, utils_1.agdaTest)();
     });
