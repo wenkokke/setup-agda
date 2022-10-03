@@ -266,17 +266,6 @@ function lsR(dir) {
     exec.exec('ls', ['-R', dir], options);
     core.info(output);
 }
-function file(path) {
-    let output = '';
-    const options = {};
-    options.listeners = {
-        stdout: (data) => {
-            output += data.toString();
-        }
-    };
-    exec.exec('file', [path], options);
-    core.info(output);
-}
 function setupAgdaNightly() {
     return __awaiter(this, void 0, void 0, function* () {
         const platform = process.platform;

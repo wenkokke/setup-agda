@@ -26,18 +26,6 @@ function lsR(dir: string): void {
   core.info(output)
 }
 
-function file(path: string): void {
-  let output = ''
-  const options: exec.ExecOptions = {}
-  options.listeners = {
-    stdout: (data: Buffer) => {
-      output += data.toString()
-    }
-  }
-  exec.exec('file', [path], options)
-  core.info(output)
-}
-
 export default async function setupAgdaNightly(): Promise<void> {
   const platform = process.platform as opts.Platform
   core.info(`Setup 'nightly' on ${platform}`)
