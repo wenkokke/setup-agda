@@ -19,10 +19,6 @@ const nightlyUrlWin32 =
 export default async function setupAgdaNightly(): Promise<void> {
   const platform = process.platform as opts.Platform
   core.info(`Setup 'nightly' on ${platform}`)
-
-  // Each platform will set their own installDir
-  // (which should be equivalent to opts.installDir)
-  let installDir = ''
   switch (platform) {
     case 'linux': {
       // Download archive:
@@ -34,14 +30,21 @@ export default async function setupAgdaNightly(): Promise<void> {
       // Extract archive:
       core.info(`Extract nightly build to ${opts.installDir}`)
       io.mkdirP(opts.installDir)
-      installDir = await toolCache.extractTar(agdaNightlyTar, opts.installDir, [
-        '--extract',
-        '--xz',
-        '--preserve-permissions',
-        '--strip-components=1'
-      ])
+      const installDir = await toolCache.extractTar(
+        agdaNightlyTar,
+        opts.installDir,
+        ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']
+      )
 
       // Configure Agda:
+      assert(
+        installDir === opts.installDir,
+        [
+          'Wrong installation directory:',
+          `Expected ${opts.installDir}`,
+          `Actual ${installDir}`
+        ].join(os.EOL)
+      )
       core.exportVariable('Agda_datadir', `${installDir}/data`)
       core.addPath(`${installDir}/bin`)
       break
@@ -56,14 +59,21 @@ export default async function setupAgdaNightly(): Promise<void> {
       // Extract archive:
       core.info(`Extract nightly build to ${opts.installDir}`)
       io.mkdirP(opts.installDir)
-      installDir = await toolCache.extractTar(agdaNightlyTar, opts.installDir, [
-        '--extract',
-        '--xz',
-        '--preserve-permissions',
-        '--strip-components=1'
-      ])
+      const installDir = await toolCache.extractTar(
+        agdaNightlyTar,
+        opts.installDir,
+        ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']
+      )
 
       // Configure Agda:
+      assert(
+        installDir === opts.installDir,
+        [
+          'Wrong installation directory:',
+          `Expected ${opts.installDir}`,
+          `Actual ${installDir}`
+        ].join(os.EOL)
+      )
       core.exportVariable('Agda_datadir', `${installDir}/data`)
       core.addPath(`${installDir}/bin`)
       break
@@ -81,32 +91,26 @@ export default async function setupAgdaNightly(): Promise<void> {
       const cacheDir = await toolCache.extractZip(agdaNightlyZip, opts.cacheDir)
 
       // Copy extracted files to installDir:
-      installDir = opts.installDir
-      core.info(`Copy nightly build to ${installDir}`)
-      io.mkdirP(installDir)
+      core.info(`Copy nightly build to ${opts.installDir}`)
+      io.mkdirP(opts.installDir)
       const globber = await glob.create(
         core.toPlatformPath(`${cacheDir}/Agda-nightly/*`),
         {matchDirectories: true}
       )
       for await (const file of globber.globGenerator()) {
-        core.info(`Install ${file} to ${installDir}`)
-        io.cp(file, installDir)
+        core.info(`Install ${file} to ${opts.installDir}`)
+        io.cp(file, opts.installDir)
       }
       break
     }
   }
   // Configure Agda:
-  assert(
-    installDir === opts.installDir,
-    [
-      'Wrong installation directory:',
-      `Expected ${opts.installDir}`,
-      `Actual ${installDir}`
-    ].join(os.EOL)
+  core.exportVariable(
+    'Agda_datadir',
+    core.toPlatformPath(`${opts.installDir}/data`)
   )
-  core.exportVariable('Agda_datadir', core.toPlatformPath(`${installDir}/data`))
-  core.addPath(core.toPlatformPath(`${installDir}/bin`))
-  core.info(await lsR(installDir))
+  core.addPath(core.toPlatformPath(`${opts.installDir}/bin`))
+  core.info(await lsR(opts.installDir))
 
   // Test Agda installation:
   await agdaTest()

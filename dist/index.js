@@ -273,9 +273,6 @@ function setupAgdaNightly() {
     return __awaiter(this, void 0, void 0, function* () {
         const platform = process.platform;
         core.info(`Setup 'nightly' on ${platform}`);
-        // Each platform will set their own installDir
-        // (which should be equivalent to opts.installDir)
-        let installDir = '';
         switch (platform) {
             case 'linux': {
                 // Download archive:
@@ -286,13 +283,13 @@ function setupAgdaNightly() {
                 // Extract archive:
                 core.info(`Extract nightly build to ${opts.installDir}`);
                 io.mkdirP(opts.installDir);
-                installDir = yield toolCache.extractTar(agdaNightlyTar, opts.installDir, [
-                    '--extract',
-                    '--xz',
-                    '--preserve-permissions',
-                    '--strip-components=1'
-                ]);
+                const installDir = yield toolCache.extractTar(agdaNightlyTar, opts.installDir, ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']);
                 // Configure Agda:
+                (0, assert_1.default)(installDir === opts.installDir, [
+                    'Wrong installation directory:',
+                    `Expected ${opts.installDir}`,
+                    `Actual ${installDir}`
+                ].join(os.EOL));
                 core.exportVariable('Agda_datadir', `${installDir}/data`);
                 core.addPath(`${installDir}/bin`);
                 break;
@@ -306,13 +303,13 @@ function setupAgdaNightly() {
                 // Extract archive:
                 core.info(`Extract nightly build to ${opts.installDir}`);
                 io.mkdirP(opts.installDir);
-                installDir = yield toolCache.extractTar(agdaNightlyTar, opts.installDir, [
-                    '--extract',
-                    '--xz',
-                    '--preserve-permissions',
-                    '--strip-components=1'
-                ]);
+                const installDir = yield toolCache.extractTar(agdaNightlyTar, opts.installDir, ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']);
                 // Configure Agda:
+                (0, assert_1.default)(installDir === opts.installDir, [
+                    'Wrong installation directory:',
+                    `Expected ${opts.installDir}`,
+                    `Actual ${installDir}`
+                ].join(os.EOL));
                 core.exportVariable('Agda_datadir', `${installDir}/data`);
                 core.addPath(`${installDir}/bin`);
                 break;
@@ -328,15 +325,14 @@ function setupAgdaNightly() {
                 io.mkdirP(opts.cacheDir);
                 const cacheDir = yield toolCache.extractZip(agdaNightlyZip, opts.cacheDir);
                 // Copy extracted files to installDir:
-                installDir = opts.installDir;
-                core.info(`Copy nightly build to ${installDir}`);
-                io.mkdirP(installDir);
+                core.info(`Copy nightly build to ${opts.installDir}`);
+                io.mkdirP(opts.installDir);
                 const globber = yield glob.create(core.toPlatformPath(`${cacheDir}/Agda-nightly/*`), { matchDirectories: true });
                 try {
                     for (var _b = __asyncValues(globber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
                         const file = _c.value;
-                        core.info(`Install ${file} to ${installDir}`);
-                        io.cp(file, installDir);
+                        core.info(`Install ${file} to ${opts.installDir}`);
+                        io.cp(file, opts.installDir);
                     }
                 }
                 catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -350,14 +346,9 @@ function setupAgdaNightly() {
             }
         }
         // Configure Agda:
-        (0, assert_1.default)(installDir === opts.installDir, [
-            'Wrong installation directory:',
-            `Expected ${opts.installDir}`,
-            `Actual ${installDir}`
-        ].join(os.EOL));
-        core.exportVariable('Agda_datadir', core.toPlatformPath(`${installDir}/data`));
-        core.addPath(core.toPlatformPath(`${installDir}/bin`));
-        core.info(yield (0, utils_1.lsR)(installDir));
+        core.exportVariable('Agda_datadir', core.toPlatformPath(`${opts.installDir}/data`));
+        core.addPath(core.toPlatformPath(`${opts.installDir}/bin`));
+        core.info(yield (0, utils_1.lsR)(opts.installDir));
         // Test Agda installation:
         yield (0, utils_1.agdaTest)();
     });
