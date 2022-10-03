@@ -1,18 +1,29 @@
 import * as exec from '@actions/exec'
+import * as os from 'os'
 
 export async function agdaVersion(): Promise<string> {
-  let output = ''
+  let agdaVersionOutput = ''
+  let agdaVersionErrors = ''
   const options: exec.ExecOptions = {}
   options.listeners = {
     stdout: (data: Buffer) => {
-      output += data.toString()
+      agdaVersionOutput += data.toString()
+    },
+    stderr: (data: Buffer) => {
+      agdaVersionErrors += data.toString()
     }
   }
-  exec.exec('agda', ['--version'], options)
-  if (output.startsWith('Agda version ')) {
-    return output.substring('Agda version '.length)
+  const exitCode = await exec.exec('agda', ['--version'], options)
+  if (exitCode === 0) {
+    if (agdaVersionOutput.startsWith('Agda version ')) {
+      return agdaVersionOutput.substring('Agda version '.length)
+    } else {
+      throw Error(`Could not parse Agda version: '${agdaVersionOutput}'`)
+    }
   } else {
-    throw Error(`Could not parse Agda version: '${output}'`)
+    throw Error(
+      `Call to 'agda --version' failed with:${os.EOL}${agdaVersionErrors}'`
+    )
   }
 }
 
@@ -44,6 +55,8 @@ export async function agdaCompile(args: string[]): Promise<string> {
   if (exitCode === 0) {
     return agdaOutput
   } else {
-    throw Error(`Call to 'agda ${args.join(' ')}' failed with:\n${agdaErrors}`)
+    throw Error(
+      `Call to 'agda ${args.join(' ')}' failed with:${os.EOL}${agdaErrors}`
+    )
   }
 }

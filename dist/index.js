@@ -279,7 +279,7 @@ const nightlyUrlLinux = 'https://github.com/agda/agda/releases/download/nightly/
 function testAgda() {
     var e_1, _a;
     return __awaiter(this, void 0, void 0, function* () {
-        const pathToAgda = io.which('agda');
+        const pathToAgda = yield io.which('agda');
         core.info(`Found Agda on PATH at ${pathToAgda}`);
         const versionString = yield (0, utils_1.agdaVersion)();
         core.info(`Found Agda version ${versionString}`);
@@ -376,21 +376,31 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.agdaCompile = exports.agdaDataDir = exports.agdaVersion = void 0;
 const exec = __importStar(__nccwpck_require__(1514));
+const os = __importStar(__nccwpck_require__(2037));
 function agdaVersion() {
     return __awaiter(this, void 0, void 0, function* () {
-        let output = '';
+        let agdaVersionOutput = '';
+        let agdaVersionErrors = '';
         const options = {};
         options.listeners = {
             stdout: (data) => {
-                output += data.toString();
+                agdaVersionOutput += data.toString();
+            },
+            stderr: (data) => {
+                agdaVersionErrors += data.toString();
             }
         };
-        exec.exec('agda', ['--version'], options);
-        if (output.startsWith('Agda version ')) {
-            return output.substring('Agda version '.length);
+        const exitCode = yield exec.exec('agda', ['--version'], options);
+        if (exitCode === 0) {
+            if (agdaVersionOutput.startsWith('Agda version ')) {
+                return agdaVersionOutput.substring('Agda version '.length);
+            }
+            else {
+                throw Error(`Could not parse Agda version: '${agdaVersionOutput}'`);
+            }
         }
         else {
-            throw Error(`Could not parse Agda version: '${output}'`);
+            throw Error(`Call to 'agda --version' failed with:${os.EOL}${agdaVersionErrors}'`);
         }
     });
 }
@@ -427,7 +437,7 @@ function agdaCompile(args) {
             return agdaOutput;
         }
         else {
-            throw Error(`Call to 'agda ${args.join(' ')}' failed with:\n${agdaErrors}`);
+            throw Error(`Call to 'agda ${args.join(' ')}' failed with:${os.EOL}${agdaErrors}`);
         }
     });
 }

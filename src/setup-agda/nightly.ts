@@ -28,7 +28,7 @@ const nightlyUrlLinux =
 // }
 
 async function testAgda(): Promise<void> {
-  const pathToAgda = io.which('agda')
+  const pathToAgda = await io.which('agda')
   core.info(`Found Agda on PATH at ${pathToAgda}`)
   const versionString = await agdaVersion()
   core.info(`Found Agda version ${versionString}`)
