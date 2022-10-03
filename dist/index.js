@@ -274,12 +274,12 @@ function setupAgdaNightly() {
             case 'linux': {
                 core.info(`Download nightly build to ${opts.downloadDir}`);
                 io.mkdirP(opts.downloadDir);
-                const downloadDir = yield toolCache.downloadTool(nightlyUrlLinux, opts.downloadDir);
-                lsR(downloadDir);
+                const nightlyPathLinux = yield toolCache.downloadTool(nightlyUrlLinux);
+                lsR(opts.downloadDir);
                 core.info(`Extract nightly build to ${opts.installDir}`);
                 io.mkdirP(opts.installDir);
-                const installDir = yield toolCache.extractTar(core.toPlatformPath(`${downloadDir}/Agda-nightly-linux.tar.xz`), opts.installDir);
-                lsR(downloadDir);
+                const installDir = yield toolCache.extractTar(nightlyPathLinux, opts.installDir);
+                lsR(installDir);
                 core.info(`Extracted to ${installDir}`);
                 exec.exec('ls', ['-R', installDir]);
                 break;
