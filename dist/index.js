@@ -244,57 +244,93 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const io = __importStar(__nccwpck_require__(7436));
 const toolCache = __importStar(__nccwpck_require__(7784));
+const assert_1 = __importDefault(__nccwpck_require__(9491));
 const process = __importStar(__nccwpck_require__(7282));
 const opts = __importStar(__nccwpck_require__(1352));
 const utils_1 = __nccwpck_require__(7880);
+const os = __importStar(__nccwpck_require__(2037));
+const fs = __importStar(__nccwpck_require__(7147));
 const nightlyUrlLinux = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz';
-// const nightlyUrlDarwin =
-//   'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz'
-// const nightlyUrlWin32 =
-//   'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip'
-// core.toPlatformPath
-// function lsR(dir: string): void {
-//   let output = ''
-//   const options: exec.ExecOptions = {}
-//   options.listeners = {
-//     stdout: (data: Buffer) => {
-//       output += data.toString()
-//     }
-//   }
-//   exec.exec('ls', ['-R', dir], options)
-//   core.info(output)
-// }
+const nightlyUrlDarwin = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz';
+const nightlyUrlWin32 = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip';
 function setupAgdaNightly() {
     return __awaiter(this, void 0, void 0, function* () {
         const platform = process.platform;
         core.info(`Setup 'nightly' on ${platform}`);
+        // Each platform will set their own installDir
+        // (which should be equivalent to opts.installDir)
+        let installDir = '';
         switch (platform) {
             case 'linux': {
                 // Download archive:
                 core.info(`Download nightly build from ${nightlyUrlLinux}`);
-                const nightlyPathLinux = yield toolCache.downloadTool(nightlyUrlLinux);
+                const agdaNightlyTar = yield toolCache.downloadTool(nightlyUrlLinux);
+                const { mtime } = fs.statSync(agdaNightlyTar);
+                core.info(`Nighly build last modified at ${mtime.toUTCString()}`);
                 // Extract archive:
                 core.info(`Extract nightly build to ${opts.installDir}`);
                 io.mkdirP(opts.installDir);
-                const installDir = yield toolCache.extractTar(nightlyPathLinux, opts.installDir, ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']);
+                installDir = yield toolCache.extractTar(agdaNightlyTar, opts.installDir, [
+                    '--extract',
+                    '--xz',
+                    '--preserve-permissions',
+                    '--strip-components=1'
+                ]);
                 // Configure Agda:
                 core.exportVariable('Agda_datadir', `${installDir}/data`);
                 core.addPath(`${installDir}/bin`);
-                // Test Agda:
-                yield (0, utils_1.agdaTest)();
                 break;
             }
             case 'darwin': {
+                // Download archive:
+                core.info(`Download nightly build from ${nightlyUrlDarwin}`);
+                const agdaNightlyTar = yield toolCache.downloadTool(nightlyUrlDarwin);
+                const { mtime } = fs.statSync(agdaNightlyTar);
+                core.info(`Nighly build last modified at ${mtime.toUTCString()}`);
+                // Extract archive:
+                core.info(`Extract nightly build to ${opts.installDir}`);
+                io.mkdirP(opts.installDir);
+                installDir = yield toolCache.extractTar(agdaNightlyTar, opts.installDir, [
+                    '--extract',
+                    '--xz',
+                    '--preserve-permissions',
+                    '--strip-components=1'
+                ]);
+                // Configure Agda:
+                core.exportVariable('Agda_datadir', `${installDir}/data`);
+                core.addPath(`${installDir}/bin`);
                 break;
             }
             case 'win32': {
+                // Download archive:
+                core.info(`Download nightly build from ${nightlyUrlWin32}`);
+                const agdaNightlyZip = yield toolCache.downloadTool(nightlyUrlWin32);
+                const { mtime } = fs.statSync(agdaNightlyZip);
+                core.info(`Nighly build last modified at ${mtime.toUTCString()}`);
+                // Extract archive:
+                core.info(`Extract nightly build to ${opts.installDir}`);
+                io.mkdirP(opts.installDir);
+                installDir = yield toolCache.extractZip(agdaNightlyZip, opts.installDir);
                 break;
             }
         }
+        // Configure Agda:
+        (0, assert_1.default)(installDir === opts.installDir, [
+            'Wrong installation directory:',
+            `Expected ${opts.installDir}`,
+            `Actual ${installDir}`
+        ].join(os.EOL));
+        core.exportVariable('Agda_datadir', core.toPlatformPath(`${installDir}/data`));
+        core.addPath(core.toPlatformPath(`${installDir}/bin`));
+        // Test Agda installation:
+        yield (0, utils_1.agdaTest)();
     });
 }
 exports["default"] = setupAgdaNightly;
@@ -347,7 +383,7 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
     function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.agdaTest = exports.agda = exports.agdaDataDir = exports.agdaVersion = void 0;
+exports.lsR = exports.agdaTest = exports.agda = exports.agdaDataDir = exports.agdaVersion = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
 const glob = __importStar(__nccwpck_require__(8090));
@@ -422,6 +458,20 @@ function agdaTest() {
     });
 }
 exports.agdaTest = agdaTest;
+function lsR(dir) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let output = '';
+        const options = {};
+        options.listeners = {
+            stdout: (data) => {
+                output += data.toString();
+            }
+        };
+        yield exec.exec('ls', ['-R', dir], options);
+        core.info(output);
+    });
+}
+exports.lsR = lsR;
 
 
 /***/ }),

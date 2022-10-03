@@ -57,3 +57,15 @@ export async function agdaTest(): Promise<void> {
     await agda(['-v2', agdaFile])
   }
 }
+
+export async function lsR(dir: string): Promise<void> {
+  let output = ''
+  const options: exec.ExecOptions = {}
+  options.listeners = {
+    stdout: (data: Buffer) => {
+      output += data.toString()
+    }
+  }
+  await exec.exec('ls', ['-R', dir], options)
+  core.info(output)
+}
