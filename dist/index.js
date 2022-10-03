@@ -389,6 +389,7 @@ const exec = __importStar(__nccwpck_require__(1514));
 const glob = __importStar(__nccwpck_require__(8090));
 const io = __importStar(__nccwpck_require__(7436));
 const os = __importStar(__nccwpck_require__(2037));
+const process = __importStar(__nccwpck_require__(7282));
 function agdaVersion() {
     return __awaiter(this, void 0, void 0, function* () {
         const agdaVersionOutput = yield agda(['--version']);
@@ -407,6 +408,15 @@ function agdaDataDir() {
     });
 }
 exports.agdaDataDir = agdaDataDir;
+function agdaName() {
+    const platform = process.platform;
+    switch (platform) {
+        case 'win32':
+            return 'agda.exe';
+        default:
+            return 'agda';
+    }
+}
 function agda(args, options) {
     return __awaiter(this, void 0, void 0, function* () {
         let agdaOutput = '';
@@ -420,7 +430,7 @@ function agda(args, options) {
                 agdaErrors += data.toString();
             }
         };
-        const exitCode = yield exec.exec('agda', args, options);
+        const exitCode = yield exec.exec(agdaName(), args, options);
         if (exitCode === 0) {
             return agdaOutput;
         }
@@ -433,8 +443,7 @@ exports.agda = agda;
 function agdaTest() {
     var e_1, _a;
     return __awaiter(this, void 0, void 0, function* () {
-        core.info('Test Agda installation:');
-        const pathToAgda = yield io.which('agda');
+        const pathToAgda = yield io.which(agdaName(), true);
         core.info(`Found Agda on PATH at ${pathToAgda}`);
         const versionString = yield agdaVersion();
         core.info(`Found Agda version ${versionString}`);

@@ -3,6 +3,8 @@ import * as exec from '@actions/exec'
 import * as glob from '@actions/glob'
 import * as io from '@actions/io'
 import * as os from 'os'
+import * as process from 'process'
+import {Platform} from '../opts'
 
 export async function agdaVersion(): Promise<string> {
   const agdaVersionOutput = await agda(['--version'])
@@ -15,6 +17,16 @@ export async function agdaVersion(): Promise<string> {
 
 export async function agdaDataDir(): Promise<string> {
   return (await agda(['--print-agda-dir'])).trim()
+}
+
+function agdaName(): string {
+  const platform = process.platform as Platform
+  switch (platform) {
+    case 'win32':
+      return 'agda.exe'
+    default:
+      return 'agda'
+  }
 }
 
 export async function agda(
@@ -32,7 +44,7 @@ export async function agda(
       agdaErrors += data.toString()
     }
   }
-  const exitCode = await exec.exec('agda', args, options)
+  const exitCode = await exec.exec(agdaName(), args, options)
   if (exitCode === 0) {
     return agdaOutput
   } else {
@@ -42,8 +54,7 @@ export async function agda(
   }
 }
 export async function agdaTest(): Promise<void> {
-  core.info('Test Agda installation:')
-  const pathToAgda = await io.which('agda')
+  const pathToAgda = await io.which(agdaName(), true)
   core.info(`Found Agda on PATH at ${pathToAgda}`)
   const versionString = await agdaVersion()
   core.info(`Found Agda version ${versionString}`)
