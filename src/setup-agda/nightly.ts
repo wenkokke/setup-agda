@@ -5,35 +5,32 @@ import * as toolCache from '@actions/tool-cache'
 import * as os from 'os'
 import * as opts from '../opts'
 
-const nightlyLinux =
+const nightlyUrlLinux =
   'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz'
-const nightlyDarwin =
+const nightlyUrlDarwin =
   'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz'
-const nightlyWin32 =
+const nightlyUrlWin32 =
   'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip'
 
 // core.toPlatformPath
 
 export default async function setupAgdaNightly(): Promise<void> {
   const platform = os.platform() as opts.Platform
-  core.debug(`Setup 'nightly' on ${platform}`)
+  core.info(`Setup 'nightly' on ${platform}`)
   switch (platform) {
     case 'linux': {
-      core.debug(`Create download directory ${opts.downloadDir}`)
+      core.info(`Create download directory ${opts.downloadDir}`)
       io.mkdirP(opts.downloadDir)
-      core.debug(`Download nightly build to ${opts.downloadDir}`)
-      const downloadDir = await toolCache.downloadTool(
-        nightlyLinux,
+      core.info(`Download nightly build to ${opts.downloadDir}`)
+      const nightlyPath = await toolCache.downloadTool(
+        nightlyUrlLinux,
         opts.downloadDir
       )
-      core.debug(`Create installation directory ${opts.installDir}`)
+      core.info(`Create installation directory ${opts.installDir}`)
       io.mkdirP(opts.installDir)
-      const agdaNightlyTar = core.toPlatformPath(
-        `${downloadDir}/Agda-nightly-linux.tar.xz`
-      )
-      core.debug(`Finished download: ${downloadDir}`)
+      core.info(`Finished download: ${nightlyPath}`)
       const installDir = await toolCache.extractTar(
-        agdaNightlyTar,
+        nightlyPath,
         opts.installDir
       )
       core.info(`Extracted to ${installDir}`)
@@ -41,12 +38,12 @@ export default async function setupAgdaNightly(): Promise<void> {
       break
     }
     case 'darwin': {
-      core.debug(`Download nightly build to ${opts.downloadDir}`)
+      core.info(`Download nightly build to ${opts.downloadDir}`)
       const downloadDir = await toolCache.downloadTool(
-        nightlyDarwin,
+        nightlyUrlDarwin,
         opts.downloadDir
       )
-      core.debug(`Finished download: ${downloadDir}`)
+      core.info(`Finished download: ${downloadDir}`)
       const installDir = await toolCache.extractTar(
         downloadDir,
         opts.installDir
@@ -56,12 +53,12 @@ export default async function setupAgdaNightly(): Promise<void> {
       break
     }
     case 'win32': {
-      core.debug(`Download nightly build to ${opts.downloadDir}`)
+      core.info(`Download nightly build to ${opts.downloadDir}`)
       const downloadDir = await toolCache.downloadTool(
-        nightlyWin32,
+        nightlyUrlWin32,
         opts.downloadDir
       )
-      core.debug(`Finished download: ${downloadDir}`)
+      core.info(`Finished download: ${downloadDir}`)
       const installDir = await toolCache.extractZip(
         downloadDir,
         opts.installDir

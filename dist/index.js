@@ -251,42 +251,41 @@ const io = __importStar(__nccwpck_require__(7436));
 const toolCache = __importStar(__nccwpck_require__(7784));
 const os = __importStar(__nccwpck_require__(2037));
 const opts = __importStar(__nccwpck_require__(1352));
-const nightlyLinux = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz';
-const nightlyDarwin = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz';
-const nightlyWin32 = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip';
+const nightlyUrlLinux = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz';
+const nightlyUrlDarwin = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz';
+const nightlyUrlWin32 = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip';
 // core.toPlatformPath
 function setupAgdaNightly() {
     return __awaiter(this, void 0, void 0, function* () {
         const platform = os.platform();
-        core.debug(`Setup 'nightly' on ${platform}`);
+        core.info(`Setup 'nightly' on ${platform}`);
         switch (platform) {
             case 'linux': {
-                core.debug(`Create download directory ${opts.downloadDir}`);
+                core.info(`Create download directory ${opts.downloadDir}`);
                 io.mkdirP(opts.downloadDir);
-                core.debug(`Download nightly build to ${opts.downloadDir}`);
-                const downloadDir = yield toolCache.downloadTool(nightlyLinux, opts.downloadDir);
-                core.debug(`Create installation directory ${opts.installDir}`);
+                core.info(`Download nightly build to ${opts.downloadDir}`);
+                const nightlyPath = yield toolCache.downloadTool(nightlyUrlLinux, opts.downloadDir);
+                core.info(`Create installation directory ${opts.installDir}`);
                 io.mkdirP(opts.installDir);
-                const agdaNightlyTar = core.toPlatformPath(`${downloadDir}/Agda-nightly-linux.tar.xz`);
-                core.debug(`Finished download: ${downloadDir}`);
-                const installDir = yield toolCache.extractTar(agdaNightlyTar, opts.installDir);
+                core.info(`Finished download: ${nightlyPath}`);
+                const installDir = yield toolCache.extractTar(nightlyPath, opts.installDir);
                 core.info(`Extracted to ${installDir}`);
                 exec.exec(`ls -R ${installDir}`);
                 break;
             }
             case 'darwin': {
-                core.debug(`Download nightly build to ${opts.downloadDir}`);
-                const downloadDir = yield toolCache.downloadTool(nightlyDarwin, opts.downloadDir);
-                core.debug(`Finished download: ${downloadDir}`);
+                core.info(`Download nightly build to ${opts.downloadDir}`);
+                const downloadDir = yield toolCache.downloadTool(nightlyUrlDarwin, opts.downloadDir);
+                core.info(`Finished download: ${downloadDir}`);
                 const installDir = yield toolCache.extractTar(downloadDir, opts.installDir);
                 core.info(`Extracted to ${installDir}`);
                 exec.exec(`ls -R ${installDir}`);
                 break;
             }
             case 'win32': {
-                core.debug(`Download nightly build to ${opts.downloadDir}`);
-                const downloadDir = yield toolCache.downloadTool(nightlyWin32, opts.downloadDir);
-                core.debug(`Finished download: ${downloadDir}`);
+                core.info(`Download nightly build to ${opts.downloadDir}`);
+                const downloadDir = yield toolCache.downloadTool(nightlyUrlWin32, opts.downloadDir);
+                core.info(`Finished download: ${downloadDir}`);
                 const installDir = yield toolCache.extractZip(downloadDir, opts.installDir);
                 core.info(`Extracted to ${installDir}`);
                 exec.exec(`dir ${installDir}`);
