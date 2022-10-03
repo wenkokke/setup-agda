@@ -20,23 +20,19 @@ export default async function setupAgdaNightly(): Promise<void> {
   core.info(`Setup 'nightly' on ${platform}`)
   switch (platform) {
     case 'linux': {
-      core.info(`Create download directory ${opts.downloadDir}`)
-      io.mkdirP(opts.downloadDir)
       core.info(`Download nightly build to ${opts.downloadDir}`)
       const downloadDir = await toolCache.downloadTool(
         nightlyUrlLinux,
         opts.downloadDir
       )
-      exec.exec(`ls -R ${downloadDir}`)
-      core.info(`Create installation directory ${opts.installDir}`)
-      io.mkdirP(opts.installDir)
+      exec.exec('ls', ['-R', downloadDir])
       core.info(`Finished download: ${downloadDir}`)
       const installDir = await toolCache.extractTar(
-        downloadDir,
+        core.toPlatformPath(`${downloadDir}/Agda-nightly-linux.tar.xz`),
         opts.installDir
       )
       core.info(`Extracted to ${installDir}`)
-      exec.exec(`ls -R ${installDir}`)
+      exec.exec('ls', ['-R', installDir])
       break
     }
     case 'darwin': {
