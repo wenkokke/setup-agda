@@ -1,4 +1,5 @@
 import * as core from '@actions/core'
+import * as glob from '@actions/glob'
 import * as io from '@actions/io'
 import * as toolCache from '@actions/tool-cache'
 import assert from 'assert'
@@ -75,9 +76,21 @@ export default async function setupAgdaNightly(): Promise<void> {
       core.info(`Nighly build last modified at ${mtime.toUTCString()}`)
 
       // Extract archive:
-      core.info(`Extract nightly build to ${opts.installDir}`)
+      core.info(`Extract nightly build to ${opts.cacheDir}`)
+      io.mkdirP(opts.cacheDir)
+      const cacheDir = await toolCache.extractZip(agdaNightlyZip, opts.cacheDir)
+
+      // Copy extracted files to installDir:
+      core.info(`Copy nightly build to ${opts.installDir}`)
       io.mkdirP(opts.installDir)
-      installDir = await toolCache.extractZip(agdaNightlyZip, opts.installDir)
+      const globber = await glob.create(
+        core.toPlatformPath(`${cacheDir}/Agda-nightly/*`),
+        {matchDirectories: true}
+      )
+      for await (const file of globber.globGenerator()) {
+        core.info(`Install ${file} to ${installDir}`)
+        io.cp(file, installDir)
+      }
       break
     }
   }
