@@ -70,10 +70,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installDir = exports.downloadDir = void 0;
+exports.installDir = void 0;
 const appdirsjs_1 = __importDefault(__nccwpck_require__(360));
 const agdaDirs = (0, appdirsjs_1.default)({ appName: 'agda' });
-exports.downloadDir = agdaDirs.cache;
 exports.installDir = agdaDirs.data;
 
 
@@ -252,8 +251,10 @@ const toolCache = __importStar(__nccwpck_require__(7784));
 const process = __importStar(__nccwpck_require__(7282));
 const opts = __importStar(__nccwpck_require__(1352));
 const nightlyUrlLinux = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz';
-const nightlyUrlDarwin = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz';
-const nightlyUrlWin32 = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip';
+// const nightlyUrlDarwin =
+//   'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz'
+// const nightlyUrlWin32 =
+//   'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip'
 // core.toPlatformPath
 function lsR(dir) {
     let output = '';
@@ -274,31 +275,16 @@ function setupAgdaNightly() {
             case 'linux': {
                 core.info(`Download nightly build from ${nightlyUrlLinux}`);
                 const nightlyPathLinux = yield toolCache.downloadTool(nightlyUrlLinux);
-                core.info(`Copy nightly build to ${opts.downloadDir}`);
-                io.mkdirP(opts.downloadDir);
-                io.cp(nightlyPathLinux, core.toPlatformPath(`${opts.downloadDir}/Agda-nightly-linux.tar.xz`));
                 core.info(`Extract nightly build to ${opts.installDir}`);
                 io.mkdirP(opts.installDir);
-                const installDir = yield toolCache.extractTar(core.toPlatformPath(`${opts.downloadDir}/Agda-nightly-linux.tar.xz`), opts.installDir, ['--extract', '--xz', '--preserve-permissions']);
+                const installDir = yield toolCache.extractTar(nightlyPathLinux, opts.installDir, ['--extract', '--xz', '--preserve-permissions']);
                 lsR(installDir);
                 break;
             }
             case 'darwin': {
-                core.info(`Download nightly build to ${opts.downloadDir}`);
-                const downloadDir = yield toolCache.downloadTool(nightlyUrlDarwin, opts.downloadDir);
-                core.info(`Finished download: ${downloadDir}`);
-                const installDir = yield toolCache.extractTar(downloadDir, opts.installDir);
-                core.info(`Extracted to ${installDir}`);
-                exec.exec(`ls -R ${installDir}`);
                 break;
             }
             case 'win32': {
-                core.info(`Download nightly build to ${opts.downloadDir}`);
-                const downloadDir = yield toolCache.downloadTool(nightlyUrlWin32, opts.downloadDir);
-                core.info(`Finished download: ${downloadDir}`);
-                const installDir = yield toolCache.extractZip(downloadDir, opts.installDir);
-                core.info(`Extracted to ${installDir}`);
-                exec.exec(`dir ${installDir}`);
                 break;
             }
         }

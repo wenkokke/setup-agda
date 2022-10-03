@@ -7,10 +7,10 @@ import * as opts from '../opts'
 
 const nightlyUrlLinux =
   'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz'
-const nightlyUrlDarwin =
-  'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz'
-const nightlyUrlWin32 =
-  'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip'
+// const nightlyUrlDarwin =
+//   'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz'
+// const nightlyUrlWin32 =
+//   'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip'
 
 // core.toPlatformPath
 
@@ -34,17 +34,10 @@ export default async function setupAgdaNightly(): Promise<void> {
       core.info(`Download nightly build from ${nightlyUrlLinux}`)
       const nightlyPathLinux = await toolCache.downloadTool(nightlyUrlLinux)
 
-      core.info(`Copy nightly build to ${opts.downloadDir}`)
-      io.mkdirP(opts.downloadDir)
-      io.cp(
-        nightlyPathLinux,
-        core.toPlatformPath(`${opts.downloadDir}/Agda-nightly-linux.tar.xz`)
-      )
-
       core.info(`Extract nightly build to ${opts.installDir}`)
       io.mkdirP(opts.installDir)
       const installDir = await toolCache.extractTar(
-        core.toPlatformPath(`${opts.downloadDir}/Agda-nightly-linux.tar.xz`),
+        nightlyPathLinux,
         opts.installDir,
         ['--extract', '--xz', '--preserve-permissions']
       )
@@ -52,33 +45,9 @@ export default async function setupAgdaNightly(): Promise<void> {
       break
     }
     case 'darwin': {
-      core.info(`Download nightly build to ${opts.downloadDir}`)
-      const downloadDir = await toolCache.downloadTool(
-        nightlyUrlDarwin,
-        opts.downloadDir
-      )
-      core.info(`Finished download: ${downloadDir}`)
-      const installDir = await toolCache.extractTar(
-        downloadDir,
-        opts.installDir
-      )
-      core.info(`Extracted to ${installDir}`)
-      exec.exec(`ls -R ${installDir}`)
       break
     }
     case 'win32': {
-      core.info(`Download nightly build to ${opts.downloadDir}`)
-      const downloadDir = await toolCache.downloadTool(
-        nightlyUrlWin32,
-        opts.downloadDir
-      )
-      core.info(`Finished download: ${downloadDir}`)
-      const installDir = await toolCache.extractZip(
-        downloadDir,
-        opts.installDir
-      )
-      core.info(`Extracted to ${installDir}`)
-      exec.exec(`dir ${installDir}`)
       break
     }
   }
