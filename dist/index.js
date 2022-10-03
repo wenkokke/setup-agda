@@ -261,24 +261,27 @@ function setupAgdaNightly() {
         switch (platform) {
             case 'linux': {
                 core.debug(`Download nightly build to ${opts.downloadDir}`);
-                const nightlyLinuxPath = yield toolCache.downloadTool(nightlyLinux, opts.downloadDir);
-                const installDir = yield toolCache.extractTar(nightlyLinuxPath, opts.installDir);
+                const downloadDir = yield toolCache.downloadTool(nightlyLinux, opts.downloadDir);
+                core.debug(`Finished download: ${downloadDir}`);
+                const installDir = yield toolCache.extractTar(downloadDir, opts.installDir);
                 core.info(`Extracted to ${installDir}`);
                 exec.exec(`ls -R ${installDir}`);
                 break;
             }
             case 'darwin': {
                 core.debug(`Download nightly build to ${opts.downloadDir}`);
-                const nightlyDarwinPath = yield toolCache.downloadTool(nightlyDarwin, opts.downloadDir);
-                const installDir = yield toolCache.extractTar(nightlyDarwinPath, opts.installDir);
+                const downloadDir = yield toolCache.downloadTool(nightlyDarwin, opts.downloadDir);
+                core.debug(`Finished download: ${downloadDir}`);
+                const installDir = yield toolCache.extractTar(downloadDir, opts.installDir);
                 core.info(`Extracted to ${installDir}`);
                 exec.exec(`ls -R ${installDir}`);
                 break;
             }
             case 'win32': {
                 core.debug(`Download nightly build to ${opts.downloadDir}`);
-                const nightlyWin32Path = yield toolCache.downloadTool(nightlyWin32, opts.downloadDir);
-                const installDir = yield toolCache.extractZip(nightlyWin32Path, opts.installDir);
+                const downloadDir = yield toolCache.downloadTool(nightlyWin32, opts.downloadDir);
+                core.debug(`Finished download: ${downloadDir}`);
+                const installDir = yield toolCache.extractZip(downloadDir, opts.installDir);
                 core.info(`Extracted to ${installDir}`);
                 exec.exec(`dir ${installDir}`);
                 break;

@@ -9,3 +9,7 @@
 
 # Build dist/index.js:
 npm run all
+
+# Commit generated files:
+git add dist/index.js
+git add dist/index.js.map
