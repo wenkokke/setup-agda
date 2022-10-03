@@ -247,6 +247,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
+const io = __importStar(__nccwpck_require__(7436));
 const toolCache = __importStar(__nccwpck_require__(7784));
 const os = __importStar(__nccwpck_require__(2037));
 const opts = __importStar(__nccwpck_require__(1352));
@@ -260,8 +261,12 @@ function setupAgdaNightly() {
         core.debug(`Setup 'nightly' on ${platform}`);
         switch (platform) {
             case 'linux': {
+                core.debug(`Create download directory ${opts.downloadDir}`);
+                io.mkdirP(opts.downloadDir);
                 core.debug(`Download nightly build to ${opts.downloadDir}`);
                 const downloadDir = yield toolCache.downloadTool(nightlyLinux, opts.downloadDir);
+                core.debug(`Create installation directory ${opts.installDir}`);
+                io.mkdirP(opts.installDir);
                 const agdaNightlyTar = core.toPlatformPath(`${downloadDir}/Agda-nightly-linux.tar.xz`);
                 core.debug(`Finished download: ${downloadDir}`);
                 const installDir = yield toolCache.extractTar(agdaNightlyTar, opts.installDir);
