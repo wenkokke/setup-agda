@@ -435,7 +435,7 @@ function agda(args, options) {
             return agdaOutput;
         }
         else {
-            throw Error(`Call to 'agda ${args.join(' ')}' failed with:${os.EOL}${agdaErrors}`);
+            throw Error([`Call to 'agda ${args.join(' ')}' failed with:`, agdaErrors].join(os.EOL));
         }
     });
 }
@@ -469,15 +469,24 @@ function agdaTest() {
 exports.agdaTest = agdaTest;
 function lsR(dir) {
     return __awaiter(this, void 0, void 0, function* () {
-        let output = '';
+        let commandOutput = '';
+        let commandErrors = '';
         const options = {};
         options.listeners = {
             stdout: (data) => {
-                output += data.toString();
+                commandOutput += data.toString();
+            },
+            stderr: (data) => {
+                commandErrors += data.toString();
             }
         };
-        yield exec.exec('ls', ['-R', dir], options);
-        core.info(output);
+        const exitCode = yield exec.exec('ls', ['-R', dir], options);
+        if (exitCode === 0) {
+            return commandOutput;
+        }
+        else {
+            throw Error([`Call to 'ls -R ${dir} failed with:`, commandErrors].join(os.EOL));
+        }
     });
 }
 exports.lsR = lsR;

@@ -49,7 +49,7 @@ export async function agda(
     return agdaOutput
   } else {
     throw Error(
-      `Call to 'agda ${args.join(' ')}' failed with:${os.EOL}${agdaErrors}`
+      [`Call to 'agda ${args.join(' ')}' failed with:`, agdaErrors].join(os.EOL)
     )
   }
 }
@@ -69,14 +69,24 @@ export async function agdaTest(): Promise<void> {
   }
 }
 
-export async function lsR(dir: string): Promise<void> {
-  let output = ''
+export async function lsR(dir: string): Promise<string> {
+  let commandOutput = ''
+  let commandErrors = ''
   const options: exec.ExecOptions = {}
   options.listeners = {
     stdout: (data: Buffer) => {
-      output += data.toString()
+      commandOutput += data.toString()
+    },
+    stderr: (data: Buffer) => {
+      commandErrors += data.toString()
     }
   }
-  await exec.exec('ls', ['-R', dir], options)
-  core.info(output)
+  const exitCode = await exec.exec('ls', ['-R', dir], options)
+  if (exitCode === 0) {
+    return commandOutput
+  } else {
+    throw Error(
+      [`Call to 'ls -R ${dir} failed with:`, commandErrors].join(os.EOL)
+    )
+  }
 }
