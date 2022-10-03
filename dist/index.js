@@ -266,6 +266,17 @@ function lsR(dir) {
     exec.exec('ls', ['-R', dir], options);
     core.info(output);
 }
+function file(path) {
+    let output = '';
+    const options = {};
+    options.listeners = {
+        stdout: (data) => {
+            output += data.toString();
+        }
+    };
+    exec.exec('file', [path], options);
+    core.info(output);
+}
 function setupAgdaNightly() {
     return __awaiter(this, void 0, void 0, function* () {
         const platform = process.platform;
@@ -275,6 +286,7 @@ function setupAgdaNightly() {
                 core.info(`Download nightly build to ${opts.downloadDir}`);
                 io.mkdirP(opts.downloadDir);
                 const nightlyPathLinux = yield toolCache.downloadTool(nightlyUrlLinux);
+                file(nightlyPathLinux);
                 lsR(opts.downloadDir);
                 core.info(`Extract nightly build to ${opts.installDir}`);
                 io.mkdirP(opts.installDir);

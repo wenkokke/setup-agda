@@ -26,6 +26,18 @@ function lsR(dir: string): void {
   core.info(output)
 }
 
+function file(path: string): void {
+  let output = ''
+  const options: exec.ExecOptions = {}
+  options.listeners = {
+    stdout: (data: Buffer) => {
+      output += data.toString()
+    }
+  }
+  exec.exec('file', [path], options)
+  core.info(output)
+}
+
 export default async function setupAgdaNightly(): Promise<void> {
   const platform = process.platform as opts.Platform
   core.info(`Setup 'nightly' on ${platform}`)
@@ -34,6 +46,7 @@ export default async function setupAgdaNightly(): Promise<void> {
       core.info(`Download nightly build to ${opts.downloadDir}`)
       io.mkdirP(opts.downloadDir)
       const nightlyPathLinux = await toolCache.downloadTool(nightlyUrlLinux)
+      file(nightlyPathLinux)
       lsR(opts.downloadDir)
       core.info(`Extract nightly build to ${opts.installDir}`)
       io.mkdirP(opts.installDir)
