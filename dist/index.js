@@ -279,7 +279,7 @@ function setupAgdaNightly() {
                 io.cp(nightlyPathLinux, core.toPlatformPath(`${opts.downloadDir}/Agda-nightly-linux.tar.xz`));
                 core.info(`Extract nightly build to ${opts.installDir}`);
                 io.mkdirP(opts.installDir);
-                const installDir = yield toolCache.extractTar(core.toPlatformPath(`${opts.downloadDir}/Agda-nightly-linux.tar.xz`), opts.installDir);
+                const installDir = yield toolCache.extractTar(core.toPlatformPath(`${opts.downloadDir}/Agda-nightly-linux.tar.xz`), opts.installDir, ['--xz']);
                 lsR(installDir);
                 break;
             }
