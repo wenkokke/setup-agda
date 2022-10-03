@@ -1,10 +1,9 @@
 import * as core from '@actions/core'
 import * as io from '@actions/io'
-import * as glob from '@actions/glob'
 import * as toolCache from '@actions/tool-cache'
 import * as process from 'process'
 import * as opts from '../opts'
-import {agdaCompile, agdaDataDir, agdaVersion} from './utils'
+import {agdaTest} from './utils'
 
 const nightlyUrlLinux =
   'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz'
@@ -26,22 +25,6 @@ const nightlyUrlLinux =
 //   exec.exec('ls', ['-R', dir], options)
 //   core.info(output)
 // }
-
-async function testAgda(): Promise<void> {
-  const pathToAgda = await io.which('agda')
-  core.info(`Found Agda on PATH at ${pathToAgda}`)
-  const versionString = await agdaVersion()
-  core.info(`Found Agda version ${versionString}`)
-  const dataDir = await agdaDataDir()
-  core.info(`Found Agda data directory at ${dataDir}`)
-  const globber = await glob.create(
-    core.toPlatformPath(`${dataDir}/lib/prim/**/*.agda`)
-  )
-  for await (const agdaFile of globber.globGenerator()) {
-    core.info(`Compile ${agdaFile}`)
-    await agdaCompile(['-v2', agdaFile])
-  }
-}
 
 export default async function setupAgdaNightly(): Promise<void> {
   const platform = process.platform as opts.Platform
@@ -66,7 +49,7 @@ export default async function setupAgdaNightly(): Promise<void> {
       core.addPath(`${installDir}/bin`)
 
       // Test Agda:
-      await testAgda()
+      await agdaTest()
       break
     }
     case 'darwin': {

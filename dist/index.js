@@ -244,17 +244,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __asyncValues = (this && this.__asyncValues) || function (o) {
-    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-    var m = o[Symbol.asyncIterator], i;
-    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
-    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
-    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const io = __importStar(__nccwpck_require__(7436));
-const glob = __importStar(__nccwpck_require__(8090));
 const toolCache = __importStar(__nccwpck_require__(7784));
 const process = __importStar(__nccwpck_require__(7282));
 const opts = __importStar(__nccwpck_require__(1352));
@@ -276,32 +268,6 @@ const nightlyUrlLinux = 'https://github.com/agda/agda/releases/download/nightly/
 //   exec.exec('ls', ['-R', dir], options)
 //   core.info(output)
 // }
-function testAgda() {
-    var e_1, _a;
-    return __awaiter(this, void 0, void 0, function* () {
-        const pathToAgda = yield io.which('agda');
-        core.info(`Found Agda on PATH at ${pathToAgda}`);
-        const versionString = yield (0, utils_1.agdaVersion)();
-        core.info(`Found Agda version ${versionString}`);
-        const dataDir = yield (0, utils_1.agdaDataDir)();
-        core.info(`Found Agda data directory at ${dataDir}`);
-        const globber = yield glob.create(core.toPlatformPath(`${dataDir}/lib/prim/**/*.agda`));
-        try {
-            for (var _b = __asyncValues(globber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
-                const agdaFile = _c.value;
-                core.info(`Compile ${agdaFile}`);
-                yield (0, utils_1.agdaCompile)(['-v2', agdaFile]);
-            }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-    });
-}
 function setupAgdaNightly() {
     return __awaiter(this, void 0, void 0, function* () {
         const platform = process.platform;
@@ -319,7 +285,7 @@ function setupAgdaNightly() {
                 core.exportVariable('Agda_datadir', `${installDir}/data`);
                 core.addPath(`${installDir}/bin`);
                 // Test Agda:
-                yield testAgda();
+                yield (0, utils_1.agdaTest)();
                 break;
             }
             case 'darwin': {
@@ -373,66 +339,43 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.agdaCompile = exports.agdaDataDir = exports.agdaVersion = void 0;
+exports.agdaTest = exports.agda = exports.agdaDataDir = exports.agdaVersion = void 0;
+const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
+const glob = __importStar(__nccwpck_require__(8090));
+const io = __importStar(__nccwpck_require__(7436));
 const os = __importStar(__nccwpck_require__(2037));
 function agdaVersion() {
     return __awaiter(this, void 0, void 0, function* () {
-        let agdaVersionOutput = '';
-        let agdaVersionErrors = '';
-        const options = {};
-        options.listeners = {
-            stdout: (data) => {
-                agdaVersionOutput += data.toString();
-            },
-            stderr: (data) => {
-                agdaVersionErrors += data.toString();
-            }
-        };
-        const exitCode = yield exec.exec('agda', ['--version'], options);
-        if (exitCode === 0) {
-            if (agdaVersionOutput.startsWith('Agda version ')) {
-                return agdaVersionOutput.substring('Agda version '.length);
-            }
-            else {
-                throw Error(`Could not parse Agda version: '${agdaVersionOutput}'`);
-            }
+        const agdaVersionOutput = yield agda(['--version']);
+        if (agdaVersionOutput.startsWith('Agda version ')) {
+            return agdaVersionOutput.substring('Agda version '.length).trim();
         }
         else {
-            throw Error(`Call to 'agda --version' failed with:${os.EOL}${agdaVersionErrors}'`);
+            throw Error(`Could not parse Agda version: '${agdaVersionOutput}'`);
         }
     });
 }
 exports.agdaVersion = agdaVersion;
 function agdaDataDir() {
     return __awaiter(this, void 0, void 0, function* () {
-        let agdaDataDirOutput = '';
-        let agdaDataDirErrors = '';
-        const options = {};
-        options.listeners = {
-            stdout: (data) => {
-                agdaDataDirOutput += data.toString();
-            },
-            stderr: (data) => {
-                agdaDataDirErrors += data.toString();
-            }
-        };
-        const exitCode = yield exec.exec('agda', ['--print-agda-dir'], options);
-        if (exitCode === 0) {
-            return agdaDataDirOutput.trim();
-        }
-        else {
-            throw Error(`Call to '--print-agda-dir' failed with:${os.EOL}${agdaDataDirErrors}`);
-        }
+        return (yield agda(['--print-agda-dir'])).trim();
     });
 }
 exports.agdaDataDir = agdaDataDir;
-function agdaCompile(args) {
+function agda(args, options) {
     return __awaiter(this, void 0, void 0, function* () {
         let agdaOutput = '';
         let agdaErrors = '';
-        const options = {};
+        options = options !== null && options !== void 0 ? options : {};
         options.listeners = {
             stdout: (data) => {
                 agdaOutput += data.toString();
@@ -450,7 +393,35 @@ function agdaCompile(args) {
         }
     });
 }
-exports.agdaCompile = agdaCompile;
+exports.agda = agda;
+function agdaTest() {
+    var e_1, _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        core.info('Test Agda installation:');
+        const pathToAgda = yield io.which('agda');
+        core.info(`Found Agda on PATH at ${pathToAgda}`);
+        const versionString = yield agdaVersion();
+        core.info(`Found Agda version ${versionString}`);
+        const dataDir = yield agdaDataDir();
+        core.info(`Found Agda data directory at ${dataDir}`);
+        const globber = yield glob.create(core.toPlatformPath(`${dataDir}/lib/prim/**/*.agda`));
+        try {
+            for (var _b = __asyncValues(globber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
+                const agdaFile = _c.value;
+                core.info(`Compile ${agdaFile}`);
+                yield agda(['-v2', agdaFile]);
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+    });
+}
+exports.agdaTest = agdaTest;
 
 
 /***/ }),
