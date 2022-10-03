@@ -2,9 +2,9 @@ import * as core from '@actions/core'
 import * as exec from '@actions/exec'
 import * as glob from '@actions/glob'
 import * as io from '@actions/io'
+import appDirs from 'appdirsjs'
 import * as os from 'os'
 import * as process from 'process'
-import appDirs from 'appdirsjs'
 
 export type Platform = 'linux' | 'darwin' | 'win32'
 
