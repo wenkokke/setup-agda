@@ -23,15 +23,16 @@ export default async function setupAgdaNightly(): Promise<void> {
       core.info(`Create download directory ${opts.downloadDir}`)
       io.mkdirP(opts.downloadDir)
       core.info(`Download nightly build to ${opts.downloadDir}`)
-      const nightlyPath = await toolCache.downloadTool(
+      const downloadDir = await toolCache.downloadTool(
         nightlyUrlLinux,
         opts.downloadDir
       )
+      exec.exec(`ls -R ${downloadDir}`)
       core.info(`Create installation directory ${opts.installDir}`)
       io.mkdirP(opts.installDir)
-      core.info(`Finished download: ${nightlyPath}`)
+      core.info(`Finished download: ${downloadDir}`)
       const installDir = await toolCache.extractTar(
-        nightlyPath,
+        downloadDir,
         opts.installDir
       )
       core.info(`Extracted to ${installDir}`)
