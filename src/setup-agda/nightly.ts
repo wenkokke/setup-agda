@@ -81,8 +81,9 @@ export default async function setupAgdaNightly(): Promise<void> {
       const cacheDir = await toolCache.extractZip(agdaNightlyZip, opts.cacheDir)
 
       // Copy extracted files to installDir:
-      core.info(`Copy nightly build to ${opts.installDir}`)
-      io.mkdirP(opts.installDir)
+      installDir = opts.installDir
+      core.info(`Copy nightly build to ${installDir}`)
+      io.mkdirP(installDir)
       const globber = await glob.create(
         core.toPlatformPath(`${cacheDir}/Agda-nightly/*`),
         {matchDirectories: true}
