@@ -283,17 +283,15 @@ function setupAgdaNightly() {
         core.info(`Setup 'nightly' on ${platform}`);
         switch (platform) {
             case 'linux': {
-                core.info(`Download nightly build to ${opts.downloadDir}`);
-                io.mkdirP(opts.downloadDir);
+                core.info(`Download nightly build from ${nightlyUrlLinux}`);
                 const nightlyPathLinux = yield toolCache.downloadTool(nightlyUrlLinux);
-                file(nightlyPathLinux);
-                lsR(opts.downloadDir);
+                core.info(`Copy nightly build to ${opts.downloadDir}`);
+                io.mkdirP(opts.downloadDir);
+                io.cp(nightlyPathLinux, core.toPlatformPath(`${opts.downloadDir}/Agda-nightly-linux.tar.xz`));
                 core.info(`Extract nightly build to ${opts.installDir}`);
                 io.mkdirP(opts.installDir);
-                const installDir = yield toolCache.extractTar(nightlyPathLinux, opts.installDir);
+                const installDir = yield toolCache.extractTar(core.toPlatformPath(`${opts.downloadDir}/Agda-nightly-linux.tar.xz`), opts.installDir);
                 lsR(installDir);
-                core.info(`Extracted to ${installDir}`);
-                exec.exec('ls', ['-R', installDir]);
                 break;
             }
             case 'darwin': {
