@@ -14,7 +14,19 @@ const nightlyUrlLinux =
 
 // core.toPlatformPath
 
-function lsR(dir: string): void {
+// function lsR(dir: string): void {
+//   let output = ''
+//   const options: exec.ExecOptions = {}
+//   options.listeners = {
+//     stdout: (data: Buffer) => {
+//       output += data.toString()
+//     }
+//   }
+//   exec.exec('ls', ['-R', dir], options)
+//   core.info(output)
+// }
+
+function agdaVersion(): void {
   let output = ''
   const options: exec.ExecOptions = {}
   options.listeners = {
@@ -22,7 +34,7 @@ function lsR(dir: string): void {
       output += data.toString()
     }
   }
-  exec.exec('ls', ['-R', dir], options)
+  exec.exec('agda', ['--version'], options)
   core.info(output)
 }
 
@@ -41,7 +53,15 @@ export default async function setupAgdaNightly(): Promise<void> {
         opts.installDir,
         ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']
       )
-      lsR(installDir)
+
+      core.info('Add Agda to the PATH')
+      core.exportVariable('Agda_datadir', `${installDir}/data`)
+      core.addPath(`${installDir}/bin`)
+
+      core.info('Test Agda')
+      agdaVersion()
+
+      core.info(await io.which('agda', true))
       break
     }
     case 'darwin': {

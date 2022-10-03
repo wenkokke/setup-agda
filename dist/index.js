@@ -257,7 +257,18 @@ const nightlyUrlLinux = 'https://github.com/agda/agda/releases/download/nightly/
 // const nightlyUrlWin32 =
 //   'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip'
 // core.toPlatformPath
-function lsR(dir) {
+// function lsR(dir: string): void {
+//   let output = ''
+//   const options: exec.ExecOptions = {}
+//   options.listeners = {
+//     stdout: (data: Buffer) => {
+//       output += data.toString()
+//     }
+//   }
+//   exec.exec('ls', ['-R', dir], options)
+//   core.info(output)
+// }
+function agdaVersion() {
     let output = '';
     const options = {};
     options.listeners = {
@@ -265,7 +276,7 @@ function lsR(dir) {
             output += data.toString();
         }
     };
-    exec.exec('ls', ['-R', dir], options);
+    exec.exec('agda', ['--version'], options);
     core.info(output);
 }
 function setupAgdaNightly() {
@@ -279,7 +290,12 @@ function setupAgdaNightly() {
                 core.info(`Extract nightly build to ${opts.installDir}`);
                 io.mkdirP(opts.installDir);
                 const installDir = yield toolCache.extractTar(nightlyPathLinux, opts.installDir, ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']);
-                lsR(installDir);
+                core.info('Add Agda to the PATH');
+                core.exportVariable('Agda_datadir', `${installDir}/data`);
+                core.addPath(`${installDir}/bin`);
+                core.info('Test Agda');
+                agdaVersion();
+                core.info(yield io.which('agda', true));
                 break;
             }
             case 'darwin': {
