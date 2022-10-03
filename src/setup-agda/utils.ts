@@ -4,7 +4,15 @@ import * as glob from '@actions/glob'
 import * as io from '@actions/io'
 import * as os from 'os'
 import * as process from 'process'
-import {Platform} from '../opts'
+import appDirs from 'appdirsjs'
+
+export type Platform = 'linux' | 'darwin' | 'win32'
+
+const agdaDirs = appDirs({appName: 'agda'})
+
+export const cacheDir: string = agdaDirs.cache
+
+export const installDir: string = agdaDirs.data
 
 export async function agdaVersion(): Promise<string> {
   const agdaVersionOutput = await agda(['--version'])
