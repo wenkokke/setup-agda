@@ -28,15 +28,25 @@ export async function agdaVersion(): Promise<string> {
 }
 
 export async function agdaDataDir(): Promise<string> {
-  let output = ''
+  let agdaDataDirOutput = ''
+  let agdaDataDirErrors = ''
   const options: exec.ExecOptions = {}
   options.listeners = {
     stdout: (data: Buffer) => {
-      output += data.toString()
+      agdaDataDirOutput += data.toString()
+    },
+    stderr: (data: Buffer) => {
+      agdaDataDirErrors += data.toString()
     }
   }
-  exec.exec('agda', ['--print-agda-dir'], options)
-  return output
+  const exitCode = await exec.exec('agda', ['--print-agda-dir'], options)
+  if (exitCode === 0) {
+    return agdaDataDirOutput.trim()
+  } else {
+    throw Error(
+      `Call to '--print-agda-dir' failed with:${os.EOL}${agdaDataDirErrors}`
+    )
+  }
 }
 
 export async function agdaCompile(args: string[]): Promise<string> {

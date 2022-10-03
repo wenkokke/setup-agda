@@ -407,15 +407,24 @@ function agdaVersion() {
 exports.agdaVersion = agdaVersion;
 function agdaDataDir() {
     return __awaiter(this, void 0, void 0, function* () {
-        let output = '';
+        let agdaDataDirOutput = '';
+        let agdaDataDirErrors = '';
         const options = {};
         options.listeners = {
             stdout: (data) => {
-                output += data.toString();
+                agdaDataDirOutput += data.toString();
+            },
+            stderr: (data) => {
+                agdaDataDirErrors += data.toString();
             }
         };
-        exec.exec('agda', ['--print-agda-dir'], options);
-        return output;
+        const exitCode = yield exec.exec('agda', ['--print-agda-dir'], options);
+        if (exitCode === 0) {
+            return agdaDataDirOutput.trim();
+        }
+        else {
+            throw Error(`Call to '--print-agda-dir' failed with:${os.EOL}${agdaDataDirErrors}`);
+        }
     });
 }
 exports.agdaDataDir = agdaDataDir;
