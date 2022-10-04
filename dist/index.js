@@ -250,7 +250,7 @@ function setupAgdaNightly() {
                     for (var _b = __asyncValues(globber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
                         const file = _c.value;
                         core.info(`Copy ${file} to ${config_1.installDir}`);
-                        io.cp(file, config_1.installDir, { recursive: true });
+                        io.cp(file, config_1.installDir, { recursive: true, copySourceDirectory: true });
                     }
                 }
                 catch (e_1_1) { e_1 = { error: e_1_1 }; }

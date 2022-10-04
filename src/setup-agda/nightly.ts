@@ -97,7 +97,7 @@ export default async function setupAgdaNightly(): Promise<void> {
       )
       for await (const file of globber.globGenerator()) {
         core.info(`Copy ${file} to ${installDir}`)
-        io.cp(file, installDir, {recursive: true})
+        io.cp(file, installDir, {recursive: true, copySourceDirectory: true})
       }
 
       // Clean up cacheDir
