@@ -245,11 +245,11 @@ function setupAgdaNightly() {
                 // Copy extracted files to installDir:
                 core.info(`Copy nightly build to ${config_1.installDir}`);
                 io.mkdirP(config_1.installDir);
-                const globber = yield glob.create(core.toPlatformPath(`${cacheDirTC}/Agda-nightly/*`), { matchDirectories: true });
+                const globber = yield glob.create(core.toPlatformPath(`${cacheDirTC}/Agda-nightly/*`), { matchDirectories: true, implicitDescendants: false });
                 try {
                     for (var _b = __asyncValues(globber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
                         const file = _c.value;
-                        core.info(`Install ${file} to ${config_1.installDir}`);
+                        core.info(`Copy ${file} to ${config_1.installDir}`);
                         io.cp(file, config_1.installDir, { recursive: true });
                     }
                 }
