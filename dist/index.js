@@ -349,11 +349,10 @@ exports.resolveGhcVersion = resolveGhcVersion;
 function setupAgdaVersion(versionStringOrParts) {
     return __awaiter(this, void 0, void 0, function* () {
         const builder = (0, version_1.resolveAgdaVersion)(versionStringOrParts);
-        // const {version, setup} =
-        yield resolveGhcVersion(builder);
-        // if (setup) {
-        //   await setupHaskell({'ghc-version': version.version})
-        // }
+        const { version, setup } = yield resolveGhcVersion(builder);
+        if (setup) {
+            yield (0, setup_haskell_1.setupHaskell)({ 'ghc-version': version.version });
+        }
     });
 }
 exports["default"] = setupAgdaVersion;

@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import {ghcVersion} from '../setup-haskell'
+import {ghcVersion, setupHaskell} from '../setup-haskell'
 import * as semver from 'semver'
 import {
   resolveAgdaVersion,
@@ -35,9 +35,8 @@ export default async function setupAgdaVersion(
   versionStringOrParts?: string | AgdaVersionParts
 ): Promise<void> {
   const builder = resolveAgdaVersion(versionStringOrParts)
-  // const {version, setup} =
-  await resolveGhcVersion(builder)
-  // if (setup) {
-  //   await setupHaskell({'ghc-version': version.version})
-  // }
+  const {version, setup} = await resolveGhcVersion(builder)
+  if (setup) {
+    await setupHaskell({'ghc-version': version.version})
+  }
 }
