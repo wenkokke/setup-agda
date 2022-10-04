@@ -661,32 +661,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.resolveAgdaVersion = exports.findBuilder = exports.allBuilders = exports.allBuildData = exports.AgdaBuilder = exports.AgdaVersion = exports.parse = void 0;
+exports.resolveAgdaVersion = exports.findBuilder = exports.allBuilders = exports.allBuildData = exports.AgdaBuilder = exports.AgdaVersion = exports.AgdaVersionSpec = exports.parse = void 0;
 const semver = __importStar(__nccwpck_require__(1383));
 const versions_json_1 = __importDefault(__nccwpck_require__(7164));
-const agdaVersionPartKeys = [
+const wildcard = '*';
+const versionNumericFields = [
     'major',
     'minor',
     'micro',
-    'patch',
-    'buildYear',
-    'buildMonth',
-    'buildDate'
+    'patch'
 ];
 function nextUndefined(parts) {
-    for (const key of [
-        'major',
-        'minor',
-        'micro',
-        'patch'
-    ]) {
-        if (parts[key] === undefined) {
-            return key;
+    for (const field of versionNumericFields) {
+        if (parts[field] === undefined) {
+            return field;
         }
     }
+    return null;
 }
 function parse(versionString) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     const matchReleaseTag = versionString.match('^(?<versionString>[\\d\\.]+)-(?<releaseTag>[\\w\\d]+)$');
     let releaseTag;
     if (matchReleaseTag !== null &&
@@ -708,19 +702,22 @@ function parse(versionString) {
             versionParts.build = new Date(buildYear, buildMonth, buildDate);
         }
         else {
-            const key = nextUndefined(versionParts);
-            if (key !== undefined) {
-                versionParts[key] = parseInt(versionStringPart);
+            const field = nextUndefined(versionParts);
+            if (field !== null) {
+                versionParts[field] = parseInt(versionStringPart);
             }
             else {
                 throw Error(errorMessage);
             }
         }
     }
+    for (const field of versionNumericFields) {
+        versionParts[field] = (_e = versionParts[field]) !== null && _e !== void 0 ? _e : 0;
+    }
     return versionParts;
 }
 exports.parse = parse;
-class AgdaVersion {
+class AgdaVersionSpec {
     constructor(versionStringOrParts) {
         if (typeof versionStringOrParts === 'string') {
             versionStringOrParts = parse(versionStringOrParts);
@@ -733,34 +730,28 @@ class AgdaVersion {
         this.releaseTag = versionStringOrParts.releaseTag;
     }
     get buildYear() {
-        var _a;
-        return (_a = this.build) === null || _a === void 0 ? void 0 : _a.getFullYear();
+        if (this.build === undefined) {
+            return undefined;
+        }
+        else {
+            return this.build.getFullYear();
+        }
     }
     get buildMonth() {
-        if (this.build !== undefined) {
+        if (this.build === undefined) {
+            return undefined;
+        }
+        else {
             return this.build.getMonth() + 1;
         }
     }
     get buildDate() {
-        var _a;
-        return (_a = this.build) === null || _a === void 0 ? void 0 : _a.getDate();
-    }
-    compare(that) {
-        var _a, _b;
-        for (const key of agdaVersionPartKeys) {
-            const thisPart = (_a = this[key]) !== null && _a !== void 0 ? _a : 0;
-            const thatPart = (_b = that[key]) !== null && _b !== void 0 ? _b : 0;
-            if (thisPart < thatPart) {
-                return -1;
-            }
-            else if (thisPart > thatPart) {
-                return 1;
-            }
-            else {
-                continue;
-            }
+        if (this.build === undefined) {
+            return undefined;
         }
-        return 0;
+        else {
+            return this.build.getDate();
+        }
     }
     get buildString() {
         if (this.buildYear !== undefined &&
@@ -774,34 +765,63 @@ class AgdaVersion {
                 .filter(value => value !== undefined)
                 .join('');
         }
+        else {
+            return undefined;
+        }
     }
     get version() {
-        var _a, _b;
         return [
-            this.major.toString(),
-            this.minor.toString(),
-            (_a = this.micro) === null || _a === void 0 ? void 0 : _a.toString(),
-            (_b = this.patch) === null || _b === void 0 ? void 0 : _b.toString(),
+            this.major,
+            this.minor,
+            this.micro,
+            this.patch,
             this.buildString,
             this.releaseTag
         ]
-            .filter(value => value !== undefined)
+            .filter(value => value !== undefined && value !== wildcard)
             .join('.');
     }
     toString() {
         return this.version;
     }
-    satisfies(spec) {
+}
+exports.AgdaVersionSpec = AgdaVersionSpec;
+class AgdaVersion extends AgdaVersionSpec {
+    constructor(versionStringOrParts) {
+        super(versionStringOrParts);
+        this.major = super.major === wildcard ? 0 : super.major;
+        this.minor = super.minor === wildcard ? 0 : super.minor;
+        this.micro = super.micro === wildcard ? 0 : super.micro;
+        this.patch = super.patch === wildcard ? 0 : super.patch;
+    }
+    compare(that) {
         var _a, _b;
+        for (const field of versionNumericFields) {
+            const thisPart = (_a = this[field]) !== null && _a !== void 0 ? _a : 0;
+            const thatPart = (_b = that[field]) !== null && _b !== void 0 ? _b : 0;
+            if (thisPart < thatPart) {
+                return -1;
+            }
+            else if (thisPart > thatPart) {
+                return 1;
+            }
+            else {
+                continue;
+            }
+        }
+        return 0;
+    }
+    satisfies(spec) {
         if (spec === undefined) {
             return true;
         }
         else {
-            return (spec.major === this.major &&
-                spec.minor === this.minor &&
-                (spec.micro === undefined || spec.micro === ((_a = this.micro) !== null && _a !== void 0 ? _a : 0)) &&
-                (spec.patch === undefined || spec.patch === ((_b = this.patch) !== null && _b !== void 0 ? _b : 0)) &&
-                (spec.build === undefined || spec.build === this.build));
+            return ((spec.major === wildcard || spec.major === this.major) &&
+                (spec.minor === wildcard || spec.minor === this.minor) &&
+                (spec.micro === wildcard || spec.micro === this.micro) &&
+                (spec.patch === wildcard || spec.patch === this.patch) &&
+                (spec.build === undefined || spec.build === this.build) &&
+                (spec.releaseTag === undefined || spec.releaseTag === this.releaseTag));
         }
     }
 }
@@ -889,7 +909,7 @@ function resolveAgdaVersion(versionStringOrParts) {
     // Parse the version specification
     let agdaVer;
     if (versionStringOrParts !== undefined && versionStringOrParts !== 'latest') {
-        agdaVer = new AgdaVersion(versionStringOrParts);
+        agdaVer = new AgdaVersionSpec(versionStringOrParts);
     }
     // Find the appropriate builder:
     const agdaBuilder = findBuilder(agdaVer);

@@ -1,10 +1,10 @@
 import * as core from '@actions/core'
 import setupAgdaNightly from './setup-agda/nightly'
 import setupAgdaVersion from './setup-agda/version'
-import {AgdaVersionParts} from './util/version'
+import {AgdaVersionData} from './util/version'
 
 export default async function setupAgda(
-  spec?: string | AgdaVersionParts
+  spec?: string | AgdaVersionData
 ): Promise<void> {
   try {
     core.info(`Set up Agda version ${spec}`)

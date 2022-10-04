@@ -9,6 +9,7 @@ import {resolveGhcVersion} from '../src/setup-agda/version'
 
 test('latest version', async () => {
   const builder = await findBuilder()
+  console.log(builder?.version.version)
   expect(builder?.version.toString()).toBe('2.6.2.2')
 })
 
@@ -25,9 +26,9 @@ test('known versions of Agda have valid GHC versions', async () => {
 })
 
 const specsAndVersions = [
-  ['2.6.2', '2.6.2.2'],
+  ['2.6.2.*', '2.6.2.2'],
   ['2.6.2.0', '2.6.2'],
-  ['2.5.4', '2.5.4.2.20190330']
+  ['2.5.4.*', '2.5.4.2.20190330']
 ]
 
 test('resolve Agda versions', async () => {

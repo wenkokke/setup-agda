@@ -1,53 +1,57 @@
 import * as semver from 'semver'
 import versions from '../versions.json'
 
-export type AgdaVersionPartKeys =
-  | 'major'
-  | 'minor'
-  | 'micro'
-  | 'patch'
-  | 'buildYear'
-  | 'buildMonth'
-  | 'buildDate'
+type Wildcard = '*'
 
-const agdaVersionPartKeys: AgdaVersionPartKeys[] = [
+const wildcard: Wildcard = '*'
+
+export type VersionNumericField = 'major' | 'minor' | 'micro' | 'patch'
+
+export type VersionBuildField = 'buildYear' | 'buildMonth' | 'buildDate'
+
+const versionNumericFields: VersionNumericField[] = [
   'major',
   'minor',
   'micro',
-  'patch',
-  'buildYear',
-  'buildMonth',
-  'buildDate'
+  'patch'
 ]
 
-export interface AgdaVersionParts {
-  major: number
-  minor: number
-  micro?: number
-  patch?: number
+export interface AgdaVersionSpecData {
+  major: number | Wildcard
+  minor: number | Wildcard
+  micro: number | Wildcard
+  patch: number | Wildcard
+  readonly buildYear?: number
+  readonly buildMonth?: number
+  readonly buildDate?: number
   build?: Date
-  buildYear?: number
-  buildMonth?: number
-  buildDate?: number
   releaseTag?: string
 }
 
-function nextUndefined(
-  parts: Partial<AgdaVersionParts>
-): AgdaVersionPartKeys | undefined {
-  for (const key of [
-    'major',
-    'minor',
-    'micro',
-    'patch'
-  ] as AgdaVersionPartKeys[]) {
-    if (parts[key] === undefined) {
-      return key
-    }
-  }
+export interface AgdaVersionData extends AgdaVersionSpecData {
+  major: number
+  minor: number
+  micro: number
+  patch: number
+  readonly buildYear: number
+  readonly buildMonth: number
+  readonly buildDate: number
+  build: Date
+  releaseTag: string
 }
 
-export function parse(versionString: string): Readonly<AgdaVersionParts> {
+function nextUndefined(
+  parts: Partial<AgdaVersionSpecData>
+): VersionNumericField | null {
+  for (const field of versionNumericFields) {
+    if (parts[field] === undefined) {
+      return field
+    }
+  }
+  return null
+}
+
+export function parse(versionString: string): Readonly<AgdaVersionSpecData> {
   const matchReleaseTag = versionString.match(
     '^(?<versionString>[\\d\\.]+)-(?<releaseTag>[\\w\\d]+)$'
   )
@@ -62,7 +66,7 @@ export function parse(versionString: string): Readonly<AgdaVersionParts> {
   }
   const versionStringParts = versionString.split('.')
   const errorMessage = `Agda version numbers have the form '2.X.Y[.Z][.YYYY0M0D][-tag]', found ${versionString}'`
-  const versionParts: Partial<AgdaVersionParts> = {releaseTag}
+  const versionParts: Partial<AgdaVersionSpecData> = {releaseTag}
   // Iterate over the version parts:
   for (const versionStringPart of versionStringParts) {
     // If we have seen the major and minor numbers, start looking for build dates:
@@ -72,26 +76,33 @@ export function parse(versionString: string): Readonly<AgdaVersionParts> {
       const buildDate = parseInt(versionStringPart.substring(6, 8))
       versionParts.build = new Date(buildYear, buildMonth, buildDate)
     } else {
-      const key = nextUndefined(versionParts)
-      if (key !== undefined) {
-        versionParts[key] = parseInt(versionStringPart)
+      const field = nextUndefined(versionParts)
+      if (field !== null) {
+        if (versionStringPart === wildcard) {
+          versionParts[field] = wildcard
+        } else {
+          versionParts[field] = parseInt(versionStringPart)
+        }
       } else {
         throw Error(errorMessage)
       }
     }
   }
-  return versionParts as AgdaVersionParts
+  for (const field of versionNumericFields) {
+    versionParts[field] = versionParts[field] ?? 0
+  }
+  return versionParts as AgdaVersionSpecData
 }
 
-export class AgdaVersion implements Readonly<AgdaVersionParts> {
-  readonly major: number
-  readonly minor: number
-  readonly micro?: number
-  readonly patch?: number
+export class AgdaVersionSpec implements Readonly<AgdaVersionSpecData> {
+  readonly major: number | Wildcard
+  readonly minor: number | Wildcard
+  readonly micro: number | Wildcard
+  readonly patch: number | Wildcard
   readonly build?: Date
   readonly releaseTag?: string
 
-  constructor(versionStringOrParts: string | AgdaVersionParts) {
+  constructor(versionStringOrParts: string | AgdaVersionSpecData) {
     if (typeof versionStringOrParts === 'string') {
       versionStringOrParts = parse(versionStringOrParts)
     }
@@ -104,32 +115,27 @@ export class AgdaVersion implements Readonly<AgdaVersionParts> {
   }
 
   get buildYear(): number | undefined {
-    return this.build?.getFullYear()
+    if (this.build === undefined) {
+      return undefined
+    } else {
+      return this.build.getFullYear()
+    }
   }
 
   get buildMonth(): number | undefined {
-    if (this.build !== undefined) {
+    if (this.build === undefined) {
+      return undefined
+    } else {
       return this.build.getMonth() + 1
     }
   }
 
   get buildDate(): number | undefined {
-    return this.build?.getDate()
-  }
-
-  compare(that: AgdaVersion): number {
-    for (const key of agdaVersionPartKeys) {
-      const thisPart = this[key] ?? 0
-      const thatPart = that[key] ?? 0
-      if (thisPart < thatPart) {
-        return -1
-      } else if (thisPart > thatPart) {
-        return 1
-      } else {
-        continue
-      }
+    if (this.build === undefined) {
+      return undefined
+    } else {
+      return this.build.getDate()
     }
-    return 0
   }
 
   get buildString(): string | undefined {
@@ -145,36 +151,70 @@ export class AgdaVersion implements Readonly<AgdaVersionParts> {
       ]
         .filter(value => value !== undefined)
         .join('')
+    } else {
+      return undefined
     }
   }
 
   get version(): string {
     return [
-      this.major.toString(),
-      this.minor.toString(),
-      this.micro?.toString(),
-      this.patch?.toString(),
+      this.major,
+      this.minor,
+      this.micro,
+      this.patch,
       this.buildString,
       this.releaseTag
     ]
-      .filter(value => value !== undefined)
+      .filter(value => value !== undefined && value !== wildcard)
       .join('.')
   }
 
   toString(): string {
     return this.version
   }
+}
 
-  satisfies(spec?: AgdaVersion): boolean {
+export class AgdaVersion extends AgdaVersionSpec {
+  readonly major: number
+  readonly minor: number
+  readonly micro: number
+  readonly patch: number
+  readonly build?: Date
+  readonly releaseTag?: string
+
+  constructor(versionStringOrParts: string | AgdaVersionData) {
+    super(versionStringOrParts)
+    this.major = super.major === wildcard ? 0 : super.major
+    this.minor = super.minor === wildcard ? 0 : super.minor
+    this.micro = super.micro === wildcard ? 0 : super.micro
+    this.patch = super.patch === wildcard ? 0 : super.patch
+  }
+  compare(that: AgdaVersion): number {
+    for (const field of versionNumericFields) {
+      const thisPart = this[field] ?? 0
+      const thatPart = that[field] ?? 0
+      if (thisPart < thatPart) {
+        return -1
+      } else if (thisPart > thatPart) {
+        return 1
+      } else {
+        continue
+      }
+    }
+    return 0
+  }
+
+  satisfies(spec?: AgdaVersionSpec): boolean {
     if (spec === undefined) {
       return true
     } else {
       return (
-        spec.major === this.major &&
-        spec.minor === this.minor &&
-        (spec.micro === undefined || spec.micro === (this.micro ?? 0)) &&
-        (spec.patch === undefined || spec.patch === (this.patch ?? 0)) &&
-        (spec.build === undefined || spec.build === this.build)
+        (spec.major === wildcard || spec.major === this.major) &&
+        (spec.minor === wildcard || spec.minor === this.minor) &&
+        (spec.micro === wildcard || spec.micro === this.micro) &&
+        (spec.patch === wildcard || spec.patch === this.patch) &&
+        (spec.build === undefined || spec.build === this.build) &&
+        (spec.releaseTag === undefined || spec.releaseTag === this.releaseTag)
       )
     }
   }
@@ -254,7 +294,7 @@ export const allBuilders = allBuildData
   .map(buildData => new AgdaBuilder(buildData))
   .filter(builder => builder.supported)
 
-export function findBuilder(spec?: AgdaVersion): AgdaBuilder | null {
+export function findBuilder(spec?: AgdaVersionSpec): AgdaBuilder | null {
   // Get all builders that satsify the spec:
   const builders = (versions.agda as AgdaBuildData[])
     .map(buildData => new AgdaBuilder(buildData))
@@ -275,12 +315,12 @@ export function findBuilder(spec?: AgdaVersion): AgdaBuilder | null {
 }
 
 export function resolveAgdaVersion(
-  versionStringOrParts?: string | AgdaVersionParts
+  versionStringOrParts?: string | AgdaVersionSpecData
 ): AgdaBuilder {
   // Parse the version specification
-  let agdaVer: AgdaVersion | undefined
+  let agdaVer: AgdaVersionSpec | undefined
   if (versionStringOrParts !== undefined && versionStringOrParts !== 'latest') {
-    agdaVer = new AgdaVersion(versionStringOrParts)
+    agdaVer = new AgdaVersionSpec(versionStringOrParts)
   }
 
   // Find the appropriate builder:
