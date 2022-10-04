@@ -349,10 +349,11 @@ exports.resolveGhcVersion = resolveGhcVersion;
 function setupAgdaVersion(versionStringOrParts) {
     return __awaiter(this, void 0, void 0, function* () {
         const builder = (0, version_1.resolveAgdaVersion)(versionStringOrParts);
-        const { version, setup } = yield resolveGhcVersion(builder);
-        if (setup) {
-            yield (0, setup_haskell_1.setupHaskell)({ 'ghc-version': version.version });
-        }
+        // const {version, setup} =
+        yield resolveGhcVersion(builder);
+        // if (setup) {
+        //   await setupHaskell({'ghc-version': version.version})
+        // }
     });
 }
 exports["default"] = setupAgdaVersion;
@@ -436,42 +437,16 @@ function ghcVersion() {
             }
             else {
                 // This case should not happen, as the error should always be an instance of Error:
-                core.warning(`Could not find GHC versio, but caught error is not instance of Error: ${error}`);
+                core.warning(`Could not find GHC version, but caught error is not instance of Error: ${error}`);
             }
             return null;
         }
     });
 }
 exports.ghcVersion = ghcVersion;
-function haskellOptions(options) {
-    var _a, _b, _c;
-    const inputs = {};
-    if ((options === null || options === void 0 ? void 0 : options['ghc-version']) !== undefined) {
-        inputs['ghc-version'] = (_a = options === null || options === void 0 ? void 0 : options['ghc-version']) !== null && _a !== void 0 ? _a : 'latest';
-    }
-    if ((options === null || options === void 0 ? void 0 : options['cabal-version']) !== undefined) {
-        inputs['cabal-version'] = (_b = options === null || options === void 0 ? void 0 : options['cabal-version']) !== null && _b !== void 0 ? _b : 'latest';
-    }
-    if ((options === null || options === void 0 ? void 0 : options['stack-version']) !== undefined) {
-        inputs['stack-version'] = (_c = options === null || options === void 0 ? void 0 : options['stack-version']) !== null && _c !== void 0 ? _c : 'latest';
-    }
-    if ((options === null || options === void 0 ? void 0 : options['enable-stack']) === true) {
-        inputs['enable-stack'] = '';
-    }
-    if ((options === null || options === void 0 ? void 0 : options['stack-no-global']) === true) {
-        inputs['stack-no-global'] = '';
-    }
-    if ((options === null || options === void 0 ? void 0 : options['stack-setup-ghc']) === true) {
-        inputs['stack-setup-ghc'] = '';
-    }
-    if ((options === null || options === void 0 ? void 0 : options['disable-matcher']) === true) {
-        inputs['disable-matcher'] = '';
-    }
-    return inputs;
-}
-function setupHaskell(options) {
+function setupHaskell(inputs) {
     return __awaiter(this, void 0, void 0, function* () {
-        yield (0, setup_haskell_1.default)(haskellOptions(options));
+        yield (0, setup_haskell_1.default)(inputs);
     });
 }
 exports.setupHaskell = setupHaskell;
