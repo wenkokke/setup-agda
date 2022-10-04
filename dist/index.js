@@ -319,27 +319,11 @@ exports.resolveGhcVersion = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const setup_haskell_1 = __nccwpck_require__(6933);
 const version_1 = __nccwpck_require__(8271);
-function resolveAgdaVersion(versionStringOrParts) {
-    // Parse the version specification
-    let agdaVer;
-    if (versionStringOrParts !== undefined && versionStringOrParts !== 'latest') {
-        agdaVer = new version_1.AgdaVersion(versionStringOrParts);
-    }
-    // Find the appropriate builder:
-    const agdaBuilder = (0, version_1.findBuilder)(agdaVer);
-    if (agdaBuilder === null) {
-        throw Error(`Could not resolve Agda version '${versionStringOrParts}' to any known version`);
-    }
-    else {
-        core.info(`Resolved version '${versionStringOrParts}' to '${agdaBuilder.version.toString()}'`);
-        return agdaBuilder;
-    }
-}
 function resolveGhcVersion(agdaBuilder) {
     return __awaiter(this, void 0, void 0, function* () {
         // Find a compatible GHC version:
         let version = yield (0, setup_haskell_1.ghcVersion)();
-        if (version !== null && agdaBuilder.testedWith(version)) {
+        if (version !== null && agdaBuilder.isTestedWithGhcVersion(version)) {
             core.info(`Found compatible GHC version ${version.version}`);
             return { version, setup: false };
         }
@@ -361,7 +345,7 @@ function resolveGhcVersion(agdaBuilder) {
 exports.resolveGhcVersion = resolveGhcVersion;
 function setupAgdaVersion(versionStringOrParts) {
     return __awaiter(this, void 0, void 0, function* () {
-        const builder = resolveAgdaVersion(versionStringOrParts);
+        const builder = (0, version_1.resolveAgdaVersion)(versionStringOrParts);
         const { version, setup } = yield resolveGhcVersion(builder);
         if (setup) {
             yield (0, setup_haskell_1.setupHaskell)({ 'ghc-version': version.version });
@@ -698,87 +682,63 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.findBuilder = exports.allBuilders = exports.allBuildData = exports.AgdaBuilder = exports.AgdaVersion = exports.parse = void 0;
-const assert_1 = __importDefault(__nccwpck_require__(9491));
+exports.resolveAgdaVersion = exports.findBuilder = exports.allBuilders = exports.allBuildData = exports.AgdaBuilder = exports.AgdaVersion = exports.parse = void 0;
 const semver = __importStar(__nccwpck_require__(1383));
 const versions_json_1 = __importDefault(__nccwpck_require__(7164));
-function compareNumber(n1, n2) {
-    if (n1 < n2) {
-        return -1;
-    }
-    else if (n1 > n2) {
-        return 1;
-    }
-    else {
-        return 0;
-    }
-}
-function toStringBuildDate(build) {
-    if (build === undefined) {
-        return undefined;
-    }
-    else {
-        return [
-            build.getFullYear().toString().padStart(4, '0'),
-            build.getMonth().toString().padStart(2, '0'),
-            build.getMonth().toString().padStart(2, '0')
-        ].join('');
+const agdaVersionPartKeys = [
+    'major',
+    'minor',
+    'micro',
+    'patch',
+    'buildYear',
+    'buildMonth',
+    'buildDate'
+];
+function nextUndefined(parts) {
+    for (const key of [
+        'major',
+        'minor',
+        'micro',
+        'patch'
+    ]) {
+        if (parts[key] === undefined) {
+            return key;
+        }
     }
 }
 function parse(versionString) {
-    var _a;
-    const versionParts = versionString.split('.');
-    const errorMessage = `Agda version numbers have the form '2.X.Y[.Z[.YYYY0M0D]]', found ${versionString}'`;
-    (0, assert_1.default)(3 <= versionParts.length &&
-        versionParts.length <= 5 &&
-        versionParts.at(0) === '2' &&
-        (versionParts.at(4) === undefined || ((_a = versionParts.at(4)) === null || _a === void 0 ? void 0 : _a.length) === 8), errorMessage);
-    const major = (() => {
-        const majorString = versionParts.at(0);
-        if (majorString !== undefined) {
-            return parseInt(majorString);
+    var _a, _b, _c, _d;
+    const matchReleaseTag = versionString.match('^(?<versionString>[\\d\\.]+)-(?<releaseTag>[\\w\\d]+)$');
+    let releaseTag;
+    if (matchReleaseTag !== null &&
+        ((_a = matchReleaseTag.groups) === null || _a === void 0 ? void 0 : _a.versionString) !== undefined &&
+        ((_b = matchReleaseTag.groups) === null || _b === void 0 ? void 0 : _b.releaseTag) !== undefined) {
+        versionString = (_c = matchReleaseTag.groups) === null || _c === void 0 ? void 0 : _c.versionString;
+        releaseTag = (_d = matchReleaseTag.groups) === null || _d === void 0 ? void 0 : _d.releaseTag;
+    }
+    const versionStringParts = versionString.split('.');
+    const errorMessage = `Agda version numbers have the form '2.X.Y[.Z][.YYYY0M0D][-tag]', found ${versionString}'`;
+    const versionParts = { releaseTag };
+    // Iterate over the version parts:
+    for (const versionStringPart of versionStringParts) {
+        // If we have seen the major and minor numbers, start looking for build dates:
+        if (versionStringPart.length === 8) {
+            const buildYear = parseInt(versionStringPart.substring(0, 4));
+            const buildMonth = parseInt(versionStringPart.substring(4, 6)) - 1;
+            const buildDate = parseInt(versionStringPart.substring(6, 8));
+            versionParts.build = new Date(buildYear, buildMonth, buildDate);
         }
         else {
-            throw Error(errorMessage);
+            const key = nextUndefined(versionParts);
+            if (key !== undefined) {
+                versionParts[key] = parseInt(versionStringPart);
+            }
+            else {
+                throw Error(errorMessage);
+            }
         }
-    })();
-    const minor = (() => {
-        const minorString = versionParts.at(1);
-        if (minorString !== undefined) {
-            return parseInt(minorString);
-        }
-        else {
-            throw Error(errorMessage);
-        }
-    })();
-    const micro = (() => {
-        const microString = versionParts.at(2);
-        if (microString !== undefined) {
-            return parseInt(microString);
-        }
-        else {
-            return undefined;
-        }
-    })();
-    const patch = (() => {
-        const patchString = versionParts.at(3);
-        if (patchString !== undefined) {
-            return parseInt(patchString);
-        }
-        else {
-            return undefined;
-        }
-    })();
-    const build = (() => {
-        const buildString = versionParts.at(4);
-        if (buildString !== undefined) {
-            const buildYear = parseInt(buildString.substring(0, 4));
-            const buildMonth = parseInt(buildString.substring(4, 6));
-            const buildDay = parseInt(buildString.substring(6, 8));
-            return new Date(buildYear, buildMonth, buildDay);
-        }
-    })();
-    return { major, minor, micro, patch, build };
+    }
+    return versionParts;
 }
 exports.parse = parse;
 class AgdaVersion {
@@ -791,43 +751,79 @@ class AgdaVersion {
         this.micro = versionStringOrParts.micro;
         this.patch = versionStringOrParts.patch;
         this.build = versionStringOrParts.build;
+        this.releaseTag = versionStringOrParts.releaseTag;
+    }
+    get buildYear() {
+        var _a;
+        return (_a = this.build) === null || _a === void 0 ? void 0 : _a.getFullYear();
+    }
+    get buildMonth() {
+        if (this.build !== undefined) {
+            return this.build.getMonth() + 1;
+        }
+    }
+    get buildDate() {
+        var _a;
+        return (_a = this.build) === null || _a === void 0 ? void 0 : _a.getDate();
     }
     compare(that) {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
-        const compareParts = [
-            compareNumber(this.major, that.major),
-            compareNumber(this.minor, that.minor),
-            compareNumber((_a = this.micro) !== null && _a !== void 0 ? _a : 0, (_b = that.micro) !== null && _b !== void 0 ? _b : 0),
-            compareNumber((_c = this.patch) !== null && _c !== void 0 ? _c : 0, (_d = that.patch) !== null && _d !== void 0 ? _d : 0),
-            compareNumber((_f = (_e = this.build) === null || _e === void 0 ? void 0 : _e.getFullYear()) !== null && _f !== void 0 ? _f : 0, (_h = (_g = that.build) === null || _g === void 0 ? void 0 : _g.getFullYear()) !== null && _h !== void 0 ? _h : 0),
-            compareNumber((_k = (_j = this.build) === null || _j === void 0 ? void 0 : _j.getMonth()) !== null && _k !== void 0 ? _k : 0, (_m = (_l = that.build) === null || _l === void 0 ? void 0 : _l.getMonth()) !== null && _m !== void 0 ? _m : 0),
-            compareNumber((_p = (_o = this.build) === null || _o === void 0 ? void 0 : _o.getDay()) !== null && _p !== void 0 ? _p : 0, (_r = (_q = that.build) === null || _q === void 0 ? void 0 : _q.getDay()) !== null && _r !== void 0 ? _r : 0)
-        ];
-        for (const comparePart of compareParts) {
-            if (comparePart !== 0) {
-                return comparePart;
+        var _a, _b;
+        for (const key of agdaVersionPartKeys) {
+            const thisPart = (_a = this[key]) !== null && _a !== void 0 ? _a : 0;
+            const thatPart = (_b = that[key]) !== null && _b !== void 0 ? _b : 0;
+            if (thisPart < thatPart) {
+                return -1;
+            }
+            else if (thisPart > thatPart) {
+                return 1;
+            }
+            else {
+                continue;
             }
         }
         return 0;
     }
-    toString() {
+    get buildString() {
+        if (this.buildYear !== undefined &&
+            this.buildMonth !== undefined &&
+            this.buildDate !== undefined) {
+            return [
+                this.buildYear.toString().padStart(4, '0'),
+                this.buildMonth.toString().padStart(2, '0'),
+                this.buildDate.toString().padStart(2, '0')
+            ]
+                .filter(value => value !== undefined)
+                .join('');
+        }
+    }
+    get version() {
         var _a, _b;
         return [
             this.major.toString(),
             this.minor.toString(),
             (_a = this.micro) === null || _a === void 0 ? void 0 : _a.toString(),
             (_b = this.patch) === null || _b === void 0 ? void 0 : _b.toString(),
-            toStringBuildDate(this.build)
+            this.buildString,
+            this.releaseTag
         ]
             .filter(value => value !== undefined)
             .join('.');
     }
+    toString() {
+        return this.version;
+    }
     satisfies(spec) {
-        return (spec.major === this.major &&
-            spec.minor === this.minor &&
-            (spec.micro === undefined || spec.micro === this.micro) &&
-            (spec.patch === undefined || spec.patch === this.patch) &&
-            (spec.build === undefined || spec.build === this.build));
+        var _a, _b;
+        if (spec === undefined) {
+            return true;
+        }
+        else {
+            return (spec.major === this.major &&
+                spec.minor === this.minor &&
+                (spec.micro === undefined || spec.micro === ((_a = this.micro) !== null && _a !== void 0 ? _a : 0)) &&
+                (spec.patch === undefined || spec.patch === ((_b = this.patch) !== null && _b !== void 0 ? _b : 0)) &&
+                (spec.build === undefined || spec.build === this.build));
+        }
     }
 }
 exports.AgdaVersion = AgdaVersion;
@@ -863,7 +859,7 @@ class AgdaBuilder {
         var _a;
         return (_a = this._supported) !== null && _a !== void 0 ? _a : true;
     }
-    testedWith(version) {
+    isTestedWithGhcVersion(version) {
         var _a, _b;
         return (_b = (_a = this.ghc) === null || _a === void 0 ? void 0 : _a['tested-with'].includes(version)) !== null && _b !== void 0 ? _b : false;
     }
@@ -891,14 +887,11 @@ exports.allBuilders = exports.allBuildData
     .map(buildData => new AgdaBuilder(buildData))
     .filter(builder => builder.supported);
 function findBuilder(spec) {
-    let builders = versions_json_1.default.agda.map(buildData => new AgdaBuilder(buildData));
-    // If range is specified, filter all Agda versions by the range:
-    if (spec !== undefined) {
-        builders = builders.filter(builder => {
-            return builder.version.satisfies(spec);
-        });
-    }
-    // Find the latest matching version:
+    // Get all builders that satsify the spec:
+    const builders = versions_json_1.default.agda
+        .map(buildData => new AgdaBuilder(buildData))
+        .filter(builder => builder.version.satisfies(spec));
+    // Get the latest builder:
     let latest = null;
     for (const builder of builders) {
         if (latest === null) {
@@ -913,6 +906,22 @@ function findBuilder(spec) {
     return latest;
 }
 exports.findBuilder = findBuilder;
+function resolveAgdaVersion(versionStringOrParts) {
+    // Parse the version specification
+    let agdaVer;
+    if (versionStringOrParts !== undefined && versionStringOrParts !== 'latest') {
+        agdaVer = new AgdaVersion(versionStringOrParts);
+    }
+    // Find the appropriate builder:
+    const agdaBuilder = findBuilder(agdaVer);
+    if (agdaBuilder === null) {
+        throw Error(`Could not resolve Agda version '${versionStringOrParts}' to any known version`);
+    }
+    else {
+        return agdaBuilder;
+    }
+}
+exports.resolveAgdaVersion = resolveAgdaVersion;
 
 
 /***/ }),

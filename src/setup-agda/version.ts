@@ -2,41 +2,17 @@ import * as core from '@actions/core'
 import {ghcVersion, setupHaskell} from '../setup-haskell'
 import * as semver from 'semver'
 import {
-  findBuilder,
-  AgdaVersion,
+  resolveAgdaVersion,
   AgdaVersionParts,
   AgdaBuilder
 } from '../util/version'
-
-function resolveAgdaVersion(
-  versionStringOrParts?: string | AgdaVersionParts
-): AgdaBuilder {
-  // Parse the version specification
-  let agdaVer: AgdaVersion | undefined
-  if (versionStringOrParts !== undefined && versionStringOrParts !== 'latest') {
-    agdaVer = new AgdaVersion(versionStringOrParts)
-  }
-
-  // Find the appropriate builder:
-  const agdaBuilder = findBuilder(agdaVer)
-  if (agdaBuilder === null) {
-    throw Error(
-      `Could not resolve Agda version '${versionStringOrParts}' to any known version`
-    )
-  } else {
-    core.info(
-      `Resolved version '${versionStringOrParts}' to '${agdaBuilder.version.toString()}'`
-    )
-    return agdaBuilder
-  }
-}
 
 export async function resolveGhcVersion(
   agdaBuilder: AgdaBuilder
 ): Promise<{version: semver.SemVer; setup: boolean}> {
   // Find a compatible GHC version:
   let version = await ghcVersion()
-  if (version !== null && agdaBuilder.testedWith(version)) {
+  if (version !== null && agdaBuilder.isTestedWithGhcVersion(version)) {
     core.info(`Found compatible GHC version ${version.version}`)
     return {version, setup: false}
   } else {

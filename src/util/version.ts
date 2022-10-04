@@ -1,97 +1,95 @@
-import assert from 'assert'
 import * as semver from 'semver'
 import versions from '../versions.json'
 
-function compareNumber(n1: number, n2: number): number {
-  if (n1 < n2) {
-    return -1
-  } else if (n1 > n2) {
-    return 1
-  } else {
-    return 0
-  }
-}
+export type AgdaVersionPartKeys =
+  | 'major'
+  | 'minor'
+  | 'micro'
+  | 'patch'
+  | 'buildYear'
+  | 'buildMonth'
+  | 'buildDate'
 
-function toStringBuildDate(build?: Date): string | undefined {
-  if (build === undefined) {
-    return undefined
-  } else {
-    return [
-      build.getFullYear().toString().padStart(4, '0'),
-      build.getMonth().toString().padStart(2, '0'),
-      build.getMonth().toString().padStart(2, '0')
-    ].join('')
-  }
-}
-
-export function parse(versionString: string): AgdaVersionParts {
-  const versionParts = versionString.split('.')
-  const errorMessage = `Agda version numbers have the form '2.X.Y[.Z[.YYYY0M0D]]', found ${versionString}'`
-  assert(
-    3 <= versionParts.length &&
-      versionParts.length <= 5 &&
-      versionParts.at(0) === '2' &&
-      (versionParts.at(4) === undefined || versionParts.at(4)?.length === 8),
-    errorMessage
-  )
-  const major = ((): number => {
-    const majorString = versionParts.at(0)
-    if (majorString !== undefined) {
-      return parseInt(majorString)
-    } else {
-      throw Error(errorMessage)
-    }
-  })()
-  const minor = ((): number => {
-    const minorString = versionParts.at(1)
-    if (minorString !== undefined) {
-      return parseInt(minorString)
-    } else {
-      throw Error(errorMessage)
-    }
-  })()
-  const micro = ((): number | undefined => {
-    const microString = versionParts.at(2)
-    if (microString !== undefined) {
-      return parseInt(microString)
-    } else {
-      return undefined
-    }
-  })()
-  const patch = ((): number | undefined => {
-    const patchString = versionParts.at(3)
-    if (patchString !== undefined) {
-      return parseInt(patchString)
-    } else {
-      return undefined
-    }
-  })()
-  const build = ((): Date | undefined => {
-    const buildString = versionParts.at(4)
-    if (buildString !== undefined) {
-      const buildYear = parseInt(buildString.substring(0, 4))
-      const buildMonth = parseInt(buildString.substring(4, 6))
-      const buildDay = parseInt(buildString.substring(6, 8))
-      return new Date(buildYear, buildMonth, buildDay)
-    }
-  })()
-  return {major, minor, micro, patch, build}
-}
+const agdaVersionPartKeys: AgdaVersionPartKeys[] = [
+  'major',
+  'minor',
+  'micro',
+  'patch',
+  'buildYear',
+  'buildMonth',
+  'buildDate'
+]
 
 export interface AgdaVersionParts {
-  readonly major: number
-  readonly minor: number
-  readonly micro?: number
-  readonly patch?: number
-  readonly build?: Date
+  major: number
+  minor: number
+  micro?: number
+  patch?: number
+  build?: Date
+  buildYear?: number
+  buildMonth?: number
+  buildDate?: number
+  releaseTag?: string
 }
 
-export class AgdaVersion implements AgdaVersionParts {
+function nextUndefined(
+  parts: Partial<AgdaVersionParts>
+): AgdaVersionPartKeys | undefined {
+  for (const key of [
+    'major',
+    'minor',
+    'micro',
+    'patch'
+  ] as AgdaVersionPartKeys[]) {
+    if (parts[key] === undefined) {
+      return key
+    }
+  }
+}
+
+export function parse(versionString: string): Readonly<AgdaVersionParts> {
+  const matchReleaseTag = versionString.match(
+    '^(?<versionString>[\\d\\.]+)-(?<releaseTag>[\\w\\d]+)$'
+  )
+  let releaseTag: string | undefined
+  if (
+    matchReleaseTag !== null &&
+    matchReleaseTag.groups?.versionString !== undefined &&
+    matchReleaseTag.groups?.releaseTag !== undefined
+  ) {
+    versionString = matchReleaseTag.groups?.versionString
+    releaseTag = matchReleaseTag.groups?.releaseTag
+  }
+  const versionStringParts = versionString.split('.')
+  const errorMessage = `Agda version numbers have the form '2.X.Y[.Z][.YYYY0M0D][-tag]', found ${versionString}'`
+  const versionParts: Partial<AgdaVersionParts> = {releaseTag}
+  // Iterate over the version parts:
+  for (const versionStringPart of versionStringParts) {
+    // If we have seen the major and minor numbers, start looking for build dates:
+    if (versionStringPart.length === 8) {
+      const buildYear = parseInt(versionStringPart.substring(0, 4))
+      const buildMonth = parseInt(versionStringPart.substring(4, 6)) - 1
+      const buildDate = parseInt(versionStringPart.substring(6, 8))
+      versionParts.build = new Date(buildYear, buildMonth, buildDate)
+    } else {
+      const key = nextUndefined(versionParts)
+      if (key !== undefined) {
+        versionParts[key] = parseInt(versionStringPart)
+      } else {
+        throw Error(errorMessage)
+      }
+    }
+  }
+  return versionParts as AgdaVersionParts
+}
+
+export class AgdaVersion implements Readonly<AgdaVersionParts> {
   readonly major: number
   readonly minor: number
   readonly micro?: number
   readonly patch?: number
   readonly build?: Date
+  readonly releaseTag?: string
 
   constructor(versionStringOrParts: string | AgdaVersionParts) {
     if (typeof versionStringOrParts === 'string') {
@@ -102,49 +100,83 @@ export class AgdaVersion implements AgdaVersionParts {
     this.micro = versionStringOrParts.micro
     this.patch = versionStringOrParts.patch
     this.build = versionStringOrParts.build
+    this.releaseTag = versionStringOrParts.releaseTag
+  }
+
+  get buildYear(): number | undefined {
+    return this.build?.getFullYear()
+  }
+
+  get buildMonth(): number | undefined {
+    if (this.build !== undefined) {
+      return this.build.getMonth() + 1
+    }
+  }
+
+  get buildDate(): number | undefined {
+    return this.build?.getDate()
   }
 
   compare(that: AgdaVersion): number {
-    const compareParts = [
-      compareNumber(this.major, that.major),
-      compareNumber(this.minor, that.minor),
-      compareNumber(this.micro ?? 0, that.micro ?? 0),
-      compareNumber(this.patch ?? 0, that.patch ?? 0),
-      compareNumber(
-        this.build?.getFullYear() ?? 0,
-        that.build?.getFullYear() ?? 0
-      ),
-      compareNumber(this.build?.getMonth() ?? 0, that.build?.getMonth() ?? 0),
-      compareNumber(this.build?.getDay() ?? 0, that.build?.getDay() ?? 0)
-    ]
-    for (const comparePart of compareParts) {
-      if (comparePart !== 0) {
-        return comparePart
+    for (const key of agdaVersionPartKeys) {
+      const thisPart = this[key] ?? 0
+      const thatPart = that[key] ?? 0
+      if (thisPart < thatPart) {
+        return -1
+      } else if (thisPart > thatPart) {
+        return 1
+      } else {
+        continue
       }
     }
     return 0
   }
 
-  toString(): string {
+  get buildString(): string | undefined {
+    if (
+      this.buildYear !== undefined &&
+      this.buildMonth !== undefined &&
+      this.buildDate !== undefined
+    ) {
+      return [
+        this.buildYear.toString().padStart(4, '0'),
+        this.buildMonth.toString().padStart(2, '0'),
+        this.buildDate.toString().padStart(2, '0')
+      ]
+        .filter(value => value !== undefined)
+        .join('')
+    }
+  }
+
+  get version(): string {
     return [
       this.major.toString(),
       this.minor.toString(),
       this.micro?.toString(),
       this.patch?.toString(),
-      toStringBuildDate(this.build)
+      this.buildString,
+      this.releaseTag
     ]
       .filter(value => value !== undefined)
       .join('.')
   }
 
-  satisfies(spec: AgdaVersion): boolean {
-    return (
-      spec.major === this.major &&
-      spec.minor === this.minor &&
-      (spec.micro === undefined || spec.micro === this.micro) &&
-      (spec.patch === undefined || spec.patch === this.patch) &&
-      (spec.build === undefined || spec.build === this.build)
-    )
+  toString(): string {
+    return this.version
+  }
+
+  satisfies(spec?: AgdaVersion): boolean {
+    if (spec === undefined) {
+      return true
+    } else {
+      return (
+        spec.major === this.major &&
+        spec.minor === this.minor &&
+        (spec.micro === undefined || spec.micro === (this.micro ?? 0)) &&
+        (spec.patch === undefined || spec.patch === (this.patch ?? 0)) &&
+        (spec.build === undefined || spec.build === this.build)
+      )
+    }
   }
 }
 
@@ -194,7 +226,7 @@ export class AgdaBuilder implements AgdaBuildData {
     return this._supported ?? true
   }
 
-  testedWith(version: semver.SemVer): boolean {
+  isTestedWithGhcVersion(version: semver.SemVer): boolean {
     return this.ghc?.['tested-with'].includes(version) ?? false
   }
 
@@ -223,18 +255,12 @@ export const allBuilders = allBuildData
   .filter(builder => builder.supported)
 
 export function findBuilder(spec?: AgdaVersion): AgdaBuilder | null {
-  let builders = (versions.agda as AgdaBuildData[]).map(
-    buildData => new AgdaBuilder(buildData)
-  )
+  // Get all builders that satsify the spec:
+  const builders = (versions.agda as AgdaBuildData[])
+    .map(buildData => new AgdaBuilder(buildData))
+    .filter(builder => builder.version.satisfies(spec))
 
-  // If range is specified, filter all Agda versions by the range:
-  if (spec !== undefined) {
-    builders = builders.filter(builder => {
-      return builder.version.satisfies(spec)
-    })
-  }
-
-  // Find the latest matching version:
+  // Get the latest builder:
   let latest: AgdaBuilder | null = null
   for (const builder of builders) {
     if (latest === null) {
@@ -246,4 +272,24 @@ export function findBuilder(spec?: AgdaVersion): AgdaBuilder | null {
     }
   }
   return latest
+}
+
+export function resolveAgdaVersion(
+  versionStringOrParts?: string | AgdaVersionParts
+): AgdaBuilder {
+  // Parse the version specification
+  let agdaVer: AgdaVersion | undefined
+  if (versionStringOrParts !== undefined && versionStringOrParts !== 'latest') {
+    agdaVer = new AgdaVersion(versionStringOrParts)
+  }
+
+  // Find the appropriate builder:
+  const agdaBuilder = findBuilder(agdaVer)
+  if (agdaBuilder === null) {
+    throw Error(
+      `Could not resolve Agda version '${versionStringOrParts}' to any known version`
+    )
+  } else {
+    return agdaBuilder
+  }
 }
