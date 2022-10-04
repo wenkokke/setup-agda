@@ -1,5 +1,6 @@
 import {test, expect} from '@jest/globals'
 import {allBuilders, findBuilder} from '../src/util/version'
+import {resolveGhcVersion} from '../src/setup-agda/version'
 
 test('latest version', async () => {
   const builder = await findBuilder()
@@ -14,15 +15,6 @@ test('known versions of Agda are valid', async () => {
 
 test('known versions of Agda have valid GHC versions', async () => {
   for (const builder of allBuilders) {
-    expect(() => {
-      const ghcVersion = builder.maxGhcVersionSatisfying()
-      if (ghcVersion == null) {
-        throw Error(
-          `Could not find GHC version for Agda version ${builder.version}`
-        )
-      } else {
-        return ghcVersion
-      }
-    }).not.toThrowError()
+    expect(() => builder.maxGhcVersionSatisfying()).not.toThrowError()
   }
 })

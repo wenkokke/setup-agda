@@ -315,6 +315,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.resolveGhcVersion = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const setup_haskell_1 = __nccwpck_require__(6933);
 const version_1 = __nccwpck_require__(8271);
@@ -334,23 +335,22 @@ function resolveAgdaVersion(versionStringOrParts) {
         return agdaBuilder;
     }
 }
-function resolveAndSetupGhcVersion(agdaBuilder) {
+function resolveGhcVersion(agdaBuilder) {
     return __awaiter(this, void 0, void 0, function* () {
         // Find a compatible GHC version:
-        let ghcVer = yield (0, setup_haskell_1.ghcVersion)();
-        if (ghcVer !== null && agdaBuilder.testedWith(ghcVer)) {
-            core.info(`Found compatible GHC version ${ghcVer.version}`);
-            return ghcVer;
+        let version = yield (0, setup_haskell_1.ghcVersion)();
+        if (version !== null && agdaBuilder.testedWith(version)) {
+            core.info(`Found compatible GHC version ${version.version}`);
+            return { version, setup: false };
         }
         else {
-            if (ghcVer !== null) {
-                core.info(`Found incompatible GHC version ${ghcVer.version}`);
+            if (version !== null) {
+                core.info(`Found incompatible GHC version ${version.version}`);
             }
-            ghcVer = agdaBuilder.maxGhcVersionSatisfying();
-            if (ghcVer !== null) {
-                core.info(`Setting up GHC version ${ghcVer.version}`);
-                yield (0, setup_haskell_1.setupHaskell)({ 'ghc-version': ghcVer.version });
-                return ghcVer;
+            version = agdaBuilder.maxGhcVersionSatisfying();
+            if (version !== null) {
+                core.info(`Setting up GHC version ${version.version}`);
+                return { version, setup: true };
             }
             else {
                 throw Error(`Could not find compatible GHC version for Agda ${agdaBuilder.version.toString()}`);
@@ -358,10 +358,14 @@ function resolveAndSetupGhcVersion(agdaBuilder) {
         }
     });
 }
+exports.resolveGhcVersion = resolveGhcVersion;
 function setupAgdaVersion(versionStringOrParts) {
     return __awaiter(this, void 0, void 0, function* () {
         const builder = resolveAgdaVersion(versionStringOrParts);
-        yield resolveAndSetupGhcVersion(builder);
+        const { version, setup } = yield resolveGhcVersion(builder);
+        if (setup) {
+            yield (0, setup_haskell_1.setupHaskell)({ 'ghc-version': version.version });
+        }
     });
 }
 exports["default"] = setupAgdaVersion;
