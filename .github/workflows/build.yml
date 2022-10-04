@@ -15,6 +15,9 @@ jobs:
         with:
           submodules: true
       - run: npm install
+      - run: npm run bundle
+        with:
+          working-directory: vendor/haskell/actions/setup
       - run: npm run all
 
   test:
@@ -38,8 +41,6 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: true
       - uses: ./
         with:
           agda-version: ${{ matrix.agda-version }}
