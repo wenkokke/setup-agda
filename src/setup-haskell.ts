@@ -40,5 +40,6 @@ export async function ghcVersion(): Promise<semver.SemVer | null> {
 export async function setupHaskell(
   inputs: Record<string, string>
 ): Promise<void> {
+  core.info('haskell/actions/setup')
   await haskellActionsSetup(inputs)
 }
