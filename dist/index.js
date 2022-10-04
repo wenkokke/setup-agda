@@ -421,27 +421,28 @@ function ghcVersion() {
 }
 exports.ghcVersion = ghcVersion;
 function haskellOptions(options) {
+    var _a, _b, _c;
     const inputs = {};
     if ((options === null || options === void 0 ? void 0 : options['ghc-version']) !== undefined) {
-        inputs['ghc-version'] = options === null || options === void 0 ? void 0 : options['ghc-version'];
+        inputs['ghc-version'] = (_a = options === null || options === void 0 ? void 0 : options['ghc-version']) !== null && _a !== void 0 ? _a : 'latest';
     }
     if ((options === null || options === void 0 ? void 0 : options['cabal-version']) !== undefined) {
-        inputs['cabal-version'] = options === null || options === void 0 ? void 0 : options['cabal-version'];
+        inputs['cabal-version'] = (_b = options === null || options === void 0 ? void 0 : options['cabal-version']) !== null && _b !== void 0 ? _b : 'latest';
     }
     if ((options === null || options === void 0 ? void 0 : options['stack-version']) !== undefined) {
-        inputs['stack-version'] = options === null || options === void 0 ? void 0 : options['stack-version'];
+        inputs['stack-version'] = (_c = options === null || options === void 0 ? void 0 : options['stack-version']) !== null && _c !== void 0 ? _c : 'latest';
     }
     if ((options === null || options === void 0 ? void 0 : options['enable-stack']) === true) {
-        inputs['enable-stack'] = '1';
+        inputs['enable-stack'] = '';
     }
     if ((options === null || options === void 0 ? void 0 : options['stack-no-global']) === true) {
-        inputs['stack-no-global'] = '1';
+        inputs['stack-no-global'] = '';
     }
     if ((options === null || options === void 0 ? void 0 : options['stack-setup-ghc']) === true) {
-        inputs['stack-setup-ghc'] = '1';
+        inputs['stack-setup-ghc'] = '';
     }
     if ((options === null || options === void 0 ? void 0 : options['disable-matcher']) === true) {
-        inputs['disable-matcher'] = '1';
+        inputs['disable-matcher'] = '';
     }
     return inputs;
 }

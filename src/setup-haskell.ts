@@ -66,25 +66,25 @@ export async function ghcVersion(): Promise<semver.SemVer | null> {
 function haskellOptions(options?: HaskellOptions): Record<string, string> {
   const inputs: Record<string, string> = {}
   if (options?.['ghc-version'] !== undefined) {
-    inputs['ghc-version'] = options?.['ghc-version']
+    inputs['ghc-version'] = options?.['ghc-version'] ?? 'latest'
   }
   if (options?.['cabal-version'] !== undefined) {
-    inputs['cabal-version'] = options?.['cabal-version']
+    inputs['cabal-version'] = options?.['cabal-version'] ?? 'latest'
   }
   if (options?.['stack-version'] !== undefined) {
-    inputs['stack-version'] = options?.['stack-version']
+    inputs['stack-version'] = options?.['stack-version'] ?? 'latest'
   }
   if (options?.['enable-stack'] === true) {
-    inputs['enable-stack'] = '1'
+    inputs['enable-stack'] = ''
   }
   if (options?.['stack-no-global'] === true) {
-    inputs['stack-no-global'] = '1'
+    inputs['stack-no-global'] = ''
   }
   if (options?.['stack-setup-ghc'] === true) {
-    inputs['stack-setup-ghc'] = '1'
+    inputs['stack-setup-ghc'] = ''
   }
   if (options?.['disable-matcher'] === true) {
-    inputs['disable-matcher'] = '1'
+    inputs['disable-matcher'] = ''
   }
   return inputs
 }
