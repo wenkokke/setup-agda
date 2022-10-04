@@ -2,17 +2,8 @@ import * as core from '@actions/core'
 import * as exec from '@actions/exec'
 import * as glob from '@actions/glob'
 import * as io from '@actions/io'
-import appDirs from 'appdirsjs'
 import * as os from 'os'
-import * as process from 'process'
-
-export type Platform = 'linux' | 'darwin' | 'win32'
-
-const agdaDirs = appDirs({appName: 'agda'})
-
-export const cacheDir: string = agdaDirs.cache
-
-export const installDir: string = agdaDirs.data
+import {platform} from './config'
 
 export async function agdaVersion(): Promise<string> {
   const agdaVersionOutput = await agda(['--version'])
@@ -28,7 +19,6 @@ export async function agdaDataDir(): Promise<string> {
 }
 
 function agdaName(): string {
-  const platform = process.platform as Platform
   switch (platform) {
     case 'win32':
       return 'agda.exe'
@@ -61,6 +51,7 @@ export async function agda(
     )
   }
 }
+
 export async function agdaTest(): Promise<void> {
   const pathToAgda = await io.which(agdaName(), true)
   core.info(`Found Agda on PATH at ${pathToAgda}`)
@@ -74,27 +65,5 @@ export async function agdaTest(): Promise<void> {
   for await (const agdaFile of globber.globGenerator()) {
     core.info(`Compile ${agdaFile}`)
     await agda(['-v2', agdaFile])
-  }
-}
-
-export async function lsR(dir: string): Promise<string> {
-  let commandOutput = ''
-  let commandErrors = ''
-  const options: exec.ExecOptions = {}
-  options.listeners = {
-    stdout: (data: Buffer) => {
-      commandOutput += data.toString()
-    },
-    stderr: (data: Buffer) => {
-      commandErrors += data.toString()
-    }
-  }
-  const exitCode = await exec.exec('ls', ['-R', dir], options)
-  if (exitCode === 0) {
-    return commandOutput
-  } else {
-    throw Error(
-      [`Call to 'ls -R ${dir} failed with:`, commandErrors].join(os.EOL)
-    )
   }
 }

@@ -3,10 +3,10 @@ import * as glob from '@actions/glob'
 import * as io from '@actions/io'
 import * as toolCache from '@actions/tool-cache'
 import assert from 'assert'
-import * as process from 'process'
-import {agdaTest, installDir, cacheDir, Platform} from './utils'
-import * as os from 'os'
 import * as fs from 'fs'
+import * as os from 'os'
+import {cacheDir, installDir, platform} from '../util/config'
+import {agdaTest} from '../util/exec'
 
 const nightlyUrlLinux =
   'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz'
@@ -16,7 +16,6 @@ const nightlyUrlWin32 =
   'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip'
 
 export default async function setupAgdaNightly(): Promise<void> {
-  const platform = process.platform as Platform
   core.info(`Setup 'nightly' on ${platform}`)
   switch (platform) {
     case 'linux': {

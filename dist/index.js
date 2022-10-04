@@ -104,27 +104,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const nightly_1 = __importDefault(__nccwpck_require__(3244));
-const latest_1 = __importDefault(__nccwpck_require__(5718));
 const version_1 = __importDefault(__nccwpck_require__(1522));
-const semver = __importStar(__nccwpck_require__(1383));
-function setupAgda(agdaVersion) {
+function setupAgda(spec) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            core.info(`Set up Agda version ${agdaVersion}`);
-            if (agdaVersion === 'nightly') {
+            core.info(`Set up Agda version ${spec}`);
+            if (spec === 'nightly') {
                 yield (0, nightly_1.default)();
             }
-            else if (agdaVersion === 'latest') {
-                yield (0, latest_1.default)();
-            }
             else {
-                const agdaSemVer = semver.parse(agdaVersion);
-                if (agdaSemVer !== null) {
-                    yield (0, version_1.default)(agdaSemVer);
-                }
-                else {
-                    core.setFailed(`Could not parse requested Agda version ${agdaVersion}`);
-                }
+                yield (0, version_1.default)(spec);
             }
         }
         catch (error) {
@@ -134,57 +123,6 @@ function setupAgda(agdaVersion) {
     });
 }
 exports["default"] = setupAgda;
-
-
-/***/ }),
-
-/***/ 5718:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const core = __importStar(__nccwpck_require__(2186));
-const os = __importStar(__nccwpck_require__(2037));
-function setupAgdaLatest() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const platform = os.platform();
-        core.debug(`Setup 'latest' on ${platform}`);
-    });
-}
-exports["default"] = setupAgdaLatest;
 
 
 /***/ }),
@@ -242,19 +180,18 @@ const glob = __importStar(__nccwpck_require__(8090));
 const io = __importStar(__nccwpck_require__(7436));
 const toolCache = __importStar(__nccwpck_require__(7784));
 const assert_1 = __importDefault(__nccwpck_require__(9491));
-const process = __importStar(__nccwpck_require__(7282));
-const utils_1 = __nccwpck_require__(7880);
-const os = __importStar(__nccwpck_require__(2037));
 const fs = __importStar(__nccwpck_require__(7147));
+const os = __importStar(__nccwpck_require__(2037));
+const config_1 = __nccwpck_require__(2156);
+const exec_1 = __nccwpck_require__(4369);
 const nightlyUrlLinux = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz';
 const nightlyUrlDarwin = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz';
 const nightlyUrlWin32 = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip';
 function setupAgdaNightly() {
     var e_1, _a;
     return __awaiter(this, void 0, void 0, function* () {
-        const platform = process.platform;
-        core.info(`Setup 'nightly' on ${platform}`);
-        switch (platform) {
+        core.info(`Setup 'nightly' on ${config_1.platform}`);
+        switch (config_1.platform) {
             case 'linux': {
                 // Download archive:
                 core.info(`Download nightly build from ${nightlyUrlLinux}`);
@@ -262,17 +199,17 @@ function setupAgdaNightly() {
                 const { mtime } = fs.statSync(agdaNightlyTar);
                 core.info(`Nighly build last modified at ${mtime.toUTCString()}`);
                 // Extract archive:
-                core.info(`Extract nightly build to ${utils_1.installDir}`);
-                io.mkdirP(utils_1.installDir);
-                const installDirTC = yield toolCache.extractTar(agdaNightlyTar, utils_1.installDir, ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']);
+                core.info(`Extract nightly build to ${config_1.installDir}`);
+                io.mkdirP(config_1.installDir);
+                const installDirTC = yield toolCache.extractTar(agdaNightlyTar, config_1.installDir, ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']);
                 // Configure Agda:
-                (0, assert_1.default)(utils_1.installDir === installDirTC, [
+                (0, assert_1.default)(config_1.installDir === installDirTC, [
                     'Wrong installation directory:',
-                    `Expected ${utils_1.installDir}`,
+                    `Expected ${config_1.installDir}`,
                     `Actual ${installDirTC}`
                 ].join(os.EOL));
-                core.exportVariable('Agda_datadir', `${utils_1.installDir}/data`);
-                core.addPath(`${utils_1.installDir}/bin`);
+                core.exportVariable('Agda_datadir', `${config_1.installDir}/data`);
+                core.addPath(`${config_1.installDir}/bin`);
                 break;
             }
             case 'darwin': {
@@ -282,17 +219,17 @@ function setupAgdaNightly() {
                 const { mtime } = fs.statSync(agdaNightlyTar);
                 core.info(`Nighly build last modified at ${mtime.toUTCString()}`);
                 // Extract archive:
-                core.info(`Extract nightly build to ${utils_1.installDir}`);
-                io.mkdirP(utils_1.installDir);
-                const installDirTC = yield toolCache.extractTar(agdaNightlyTar, utils_1.installDir, ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']);
+                core.info(`Extract nightly build to ${config_1.installDir}`);
+                io.mkdirP(config_1.installDir);
+                const installDirTC = yield toolCache.extractTar(agdaNightlyTar, config_1.installDir, ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']);
                 // Configure Agda:
-                (0, assert_1.default)(utils_1.installDir === installDirTC, [
+                (0, assert_1.default)(config_1.installDir === installDirTC, [
                     'Wrong installation directory:',
-                    `Expected ${utils_1.installDir}`,
+                    `Expected ${config_1.installDir}`,
                     `Actual ${installDirTC}`
                 ].join(os.EOL));
-                core.exportVariable('Agda_datadir', `${utils_1.installDir}/data`);
-                core.addPath(`${utils_1.installDir}/bin`);
+                core.exportVariable('Agda_datadir', `${config_1.installDir}/data`);
+                core.addPath(`${config_1.installDir}/bin`);
                 break;
             }
             case 'win32': {
@@ -302,18 +239,18 @@ function setupAgdaNightly() {
                 const { mtime } = fs.statSync(agdaNightlyZip);
                 core.info(`Nighly build last modified at ${mtime.toUTCString()}`);
                 // Extract archive:
-                core.info(`Extract nightly build to ${utils_1.cacheDir}`);
-                io.mkdirP(utils_1.cacheDir);
-                const cacheDirTC = yield toolCache.extractZip(agdaNightlyZip, utils_1.cacheDir);
+                core.info(`Extract nightly build to ${config_1.cacheDir}`);
+                io.mkdirP(config_1.cacheDir);
+                const cacheDirTC = yield toolCache.extractZip(agdaNightlyZip, config_1.cacheDir);
                 // Copy extracted files to installDir:
-                core.info(`Copy nightly build to ${utils_1.installDir}`);
-                io.mkdirP(utils_1.installDir);
+                core.info(`Copy nightly build to ${config_1.installDir}`);
+                io.mkdirP(config_1.installDir);
                 const globber = yield glob.create(core.toPlatformPath(`${cacheDirTC}/Agda-nightly/*`), { matchDirectories: true });
                 try {
                     for (var _b = __asyncValues(globber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
                         const file = _c.value;
-                        core.info(`Install ${file} to ${utils_1.installDir}`);
-                        io.cp(file, utils_1.installDir, { recursive: true });
+                        core.info(`Install ${file} to ${config_1.installDir}`);
+                        io.cp(file, config_1.installDir, { recursive: true });
                     }
                 }
                 catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -329,176 +266,13 @@ function setupAgdaNightly() {
             }
         }
         // Configure Agda:
-        core.exportVariable('Agda_datadir', core.toPlatformPath(`${utils_1.installDir}/data`));
-        core.addPath(core.toPlatformPath(`${utils_1.installDir}/bin`));
+        core.exportVariable('Agda_datadir', core.toPlatformPath(`${config_1.installDir}/data`));
+        core.addPath(core.toPlatformPath(`${config_1.installDir}/bin`));
         // Test Agda installation:
-        yield (0, utils_1.agdaTest)();
+        yield (0, exec_1.agdaTest)();
     });
 }
 exports["default"] = setupAgdaNightly;
-
-
-/***/ }),
-
-/***/ 7880:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __asyncValues = (this && this.__asyncValues) || function (o) {
-    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-    var m = o[Symbol.asyncIterator], i;
-    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
-    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
-    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.lsR = exports.agdaTest = exports.agda = exports.agdaDataDir = exports.agdaVersion = exports.installDir = exports.cacheDir = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const exec = __importStar(__nccwpck_require__(1514));
-const glob = __importStar(__nccwpck_require__(8090));
-const io = __importStar(__nccwpck_require__(7436));
-const appdirsjs_1 = __importDefault(__nccwpck_require__(360));
-const os = __importStar(__nccwpck_require__(2037));
-const process = __importStar(__nccwpck_require__(7282));
-const agdaDirs = (0, appdirsjs_1.default)({ appName: 'agda' });
-exports.cacheDir = agdaDirs.cache;
-exports.installDir = agdaDirs.data;
-function agdaVersion() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const agdaVersionOutput = yield agda(['--version']);
-        if (agdaVersionOutput.startsWith('Agda version ')) {
-            return agdaVersionOutput.substring('Agda version '.length).trim();
-        }
-        else {
-            throw Error(`Could not parse Agda version: '${agdaVersionOutput}'`);
-        }
-    });
-}
-exports.agdaVersion = agdaVersion;
-function agdaDataDir() {
-    return __awaiter(this, void 0, void 0, function* () {
-        return (yield agda(['--print-agda-dir'])).trim();
-    });
-}
-exports.agdaDataDir = agdaDataDir;
-function agdaName() {
-    const platform = process.platform;
-    switch (platform) {
-        case 'win32':
-            return 'agda.exe';
-        default:
-            return 'agda';
-    }
-}
-function agda(args, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let agdaOutput = '';
-        let agdaErrors = '';
-        options = options !== null && options !== void 0 ? options : {};
-        options.listeners = {
-            stdout: (data) => {
-                agdaOutput += data.toString();
-            },
-            stderr: (data) => {
-                agdaErrors += data.toString();
-            }
-        };
-        const exitCode = yield exec.exec(agdaName(), args, options);
-        if (exitCode === 0) {
-            return agdaOutput;
-        }
-        else {
-            throw Error([`Call to 'agda ${args.join(' ')}' failed with:`, agdaErrors].join(os.EOL));
-        }
-    });
-}
-exports.agda = agda;
-function agdaTest() {
-    var e_1, _a;
-    return __awaiter(this, void 0, void 0, function* () {
-        const pathToAgda = yield io.which(agdaName(), true);
-        core.info(`Found Agda on PATH at ${pathToAgda}`);
-        const versionString = yield agdaVersion();
-        core.info(`Found Agda version ${versionString}`);
-        const dataDir = yield agdaDataDir();
-        core.info(`Found Agda data directory at ${dataDir}`);
-        const globber = yield glob.create(core.toPlatformPath(`${dataDir}/lib/prim/**/*.agda`));
-        try {
-            for (var _b = __asyncValues(globber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
-                const agdaFile = _c.value;
-                core.info(`Compile ${agdaFile}`);
-                yield agda(['-v2', agdaFile]);
-            }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-    });
-}
-exports.agdaTest = agdaTest;
-function lsR(dir) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let commandOutput = '';
-        let commandErrors = '';
-        const options = {};
-        options.listeners = {
-            stdout: (data) => {
-                commandOutput += data.toString();
-            },
-            stderr: (data) => {
-                commandErrors += data.toString();
-            }
-        };
-        const exitCode = yield exec.exec('ls', ['-R', dir], options);
-        if (exitCode === 0) {
-            return commandOutput;
-        }
-        else {
-            throw Error([`Call to 'ls -R ${dir} failed with:`, commandErrors].join(os.EOL));
-        }
-    });
-}
-exports.lsR = lsR;
 
 
 /***/ }),
@@ -542,13 +316,52 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
-const setupHaskell = __importStar(__nccwpck_require__(6933));
-const os = __importStar(__nccwpck_require__(2037));
-function setupAgdaVersion(agdaSemVer) {
+const setup_haskell_1 = __nccwpck_require__(6933);
+const version_1 = __nccwpck_require__(8271);
+function resolveAgdaVersion(versionStringOrParts) {
+    // Parse the version specification
+    let agdaVer;
+    if (versionStringOrParts !== undefined && versionStringOrParts !== 'latest') {
+        agdaVer = new version_1.AgdaVersion(versionStringOrParts);
+    }
+    // Find the appropriate builder:
+    const agdaBuilder = (0, version_1.findBuilder)(agdaVer);
+    if (agdaBuilder === null) {
+        throw Error(`Could not resolve Agda version '${agdaVer}' to any known version`);
+    }
+    else {
+        core.info(`Resolved version '${agdaVer}' to '${agdaBuilder.version.toString()}'`);
+        return agdaBuilder;
+    }
+}
+function resolveAndSetupGhcVersion(agdaBuilder) {
     return __awaiter(this, void 0, void 0, function* () {
-        core.debug(`Setup '${agdaSemVer.version}' on ${os.platform()}`);
-        const ghcVersion = yield setupHaskell.ghcVersion();
-        core.info(`Found GHC version ${ghcVersion === null || ghcVersion === void 0 ? void 0 : ghcVersion.version}`);
+        // Find a compatible GHC version:
+        let ghcVer = yield (0, setup_haskell_1.ghcVersion)();
+        if (ghcVer !== null && agdaBuilder.testedWith(ghcVer)) {
+            core.info(`Found compatible GHC version ${ghcVer.version}`);
+            return ghcVer;
+        }
+        else {
+            if (ghcVer !== null) {
+                core.info(`Found incompatible GHC version ${ghcVer.version}`);
+            }
+            ghcVer = agdaBuilder.maxGhcVersionSatisfying();
+            if (ghcVer !== null) {
+                core.info(`Setting up GHC version ${ghcVer.version}`);
+                yield (0, setup_haskell_1.setupHaskell)({ 'ghc-version': ghcVer.version });
+                return ghcVer;
+            }
+            else {
+                throw Error(`Could not find compatible GHC version for Agda ${agdaBuilder.version.toString()}`);
+            }
+        }
+    });
+}
+function setupAgdaVersion(versionStringOrParts) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const builder = resolveAgdaVersion(versionStringOrParts);
+        yield resolveAndSetupGhcVersion(builder);
     });
 }
 exports["default"] = setupAgdaVersion;
@@ -641,26 +454,26 @@ function ghcVersion() {
 exports.ghcVersion = ghcVersion;
 function haskellOptions(options) {
     const inputs = {};
-    if ((options === null || options === void 0 ? void 0 : options.ghc_version) !== undefined) {
-        inputs['ghc_version'] = options === null || options === void 0 ? void 0 : options.ghc_version;
+    if ((options === null || options === void 0 ? void 0 : options['ghc-version']) !== undefined) {
+        inputs['ghc-version'] = options === null || options === void 0 ? void 0 : options['ghc-version'];
     }
-    if ((options === null || options === void 0 ? void 0 : options.cabal_version) !== undefined) {
-        inputs['cabal_version'] = options === null || options === void 0 ? void 0 : options.cabal_version;
+    if ((options === null || options === void 0 ? void 0 : options['cabal-version']) !== undefined) {
+        inputs['cabal-version'] = options === null || options === void 0 ? void 0 : options['cabal-version'];
     }
-    if ((options === null || options === void 0 ? void 0 : options.stack_version) !== undefined) {
-        inputs['stack_version'] = options === null || options === void 0 ? void 0 : options.stack_version;
+    if ((options === null || options === void 0 ? void 0 : options['stack-version']) !== undefined) {
+        inputs['stack-version'] = options === null || options === void 0 ? void 0 : options['stack-version'];
     }
-    if ((options === null || options === void 0 ? void 0 : options.enable_stack) === true) {
-        inputs['enable_stack'] = '1';
+    if ((options === null || options === void 0 ? void 0 : options['enable-stack']) === true) {
+        inputs['enable-stack'] = '1';
     }
-    if ((options === null || options === void 0 ? void 0 : options.stack_no_global) === true) {
-        inputs['stack_no_global'] = '1';
+    if ((options === null || options === void 0 ? void 0 : options['stack-no-global']) === true) {
+        inputs['stack-no-global'] = '1';
     }
-    if ((options === null || options === void 0 ? void 0 : options.stack_setup_ghc) === true) {
-        inputs['stack_setup_ghc'] = '1';
+    if ((options === null || options === void 0 ? void 0 : options['stack-setup-ghc']) === true) {
+        inputs['stack-setup-ghc'] = '1';
     }
-    if ((options === null || options === void 0 ? void 0 : options.disable_matcher) === true) {
-        inputs['disable_matcher'] = '1';
+    if ((options === null || options === void 0 ? void 0 : options['disable-matcher']) === true) {
+        inputs['disable-matcher'] = '1';
     }
     return inputs;
 }
@@ -670,6 +483,432 @@ function setupHaskell(options) {
     });
 }
 exports.setupHaskell = setupHaskell;
+
+
+/***/ }),
+
+/***/ 2156:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.installDir = exports.cacheDir = exports.platform = void 0;
+const appdirsjs_1 = __importDefault(__nccwpck_require__(360));
+const process = __importStar(__nccwpck_require__(7282));
+exports.platform = process.platform;
+const agdaDirs = (0, appdirsjs_1.default)({ appName: 'agda' });
+exports.cacheDir = agdaDirs.cache;
+exports.installDir = agdaDirs.data;
+
+
+/***/ }),
+
+/***/ 4369:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.agdaTest = exports.agda = exports.agdaDataDir = exports.agdaVersion = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const exec = __importStar(__nccwpck_require__(1514));
+const glob = __importStar(__nccwpck_require__(8090));
+const io = __importStar(__nccwpck_require__(7436));
+const os = __importStar(__nccwpck_require__(2037));
+const config_1 = __nccwpck_require__(2156);
+function agdaVersion() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const agdaVersionOutput = yield agda(['--version']);
+        if (agdaVersionOutput.startsWith('Agda version ')) {
+            return agdaVersionOutput.substring('Agda version '.length).trim();
+        }
+        else {
+            throw Error(`Could not parse Agda version: '${agdaVersionOutput}'`);
+        }
+    });
+}
+exports.agdaVersion = agdaVersion;
+function agdaDataDir() {
+    return __awaiter(this, void 0, void 0, function* () {
+        return (yield agda(['--print-agda-dir'])).trim();
+    });
+}
+exports.agdaDataDir = agdaDataDir;
+function agdaName() {
+    switch (config_1.platform) {
+        case 'win32':
+            return 'agda.exe';
+        default:
+            return 'agda';
+    }
+}
+function agda(args, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let agdaOutput = '';
+        let agdaErrors = '';
+        options = options !== null && options !== void 0 ? options : {};
+        options.listeners = {
+            stdout: (data) => {
+                agdaOutput += data.toString();
+            },
+            stderr: (data) => {
+                agdaErrors += data.toString();
+            }
+        };
+        const exitCode = yield exec.exec(agdaName(), args, options);
+        if (exitCode === 0) {
+            return agdaOutput;
+        }
+        else {
+            throw Error([`Call to 'agda ${args.join(' ')}' failed with:`, agdaErrors].join(os.EOL));
+        }
+    });
+}
+exports.agda = agda;
+function agdaTest() {
+    var e_1, _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        const pathToAgda = yield io.which(agdaName(), true);
+        core.info(`Found Agda on PATH at ${pathToAgda}`);
+        const versionString = yield agdaVersion();
+        core.info(`Found Agda version ${versionString}`);
+        const dataDir = yield agdaDataDir();
+        core.info(`Found Agda data directory at ${dataDir}`);
+        const globber = yield glob.create(core.toPlatformPath(`${dataDir}/lib/prim/**/*.agda`));
+        try {
+            for (var _b = __asyncValues(globber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
+                const agdaFile = _c.value;
+                core.info(`Compile ${agdaFile}`);
+                yield agda(['-v2', agdaFile]);
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+    });
+}
+exports.agdaTest = agdaTest;
+
+
+/***/ }),
+
+/***/ 8271:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.findBuilder = exports.allBuilders = exports.allBuildData = exports.AgdaBuilder = exports.AgdaVersion = exports.parse = void 0;
+const assert_1 = __importDefault(__nccwpck_require__(9491));
+const semver = __importStar(__nccwpck_require__(1383));
+const versions_json_1 = __importDefault(__nccwpck_require__(7164));
+function compareNumber(n1, n2) {
+    if (n1 < n2) {
+        return -1;
+    }
+    else if (n1 > n2) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+function toStringBuildDate(build) {
+    if (build === undefined) {
+        return undefined;
+    }
+    else {
+        return [
+            build.getFullYear().toString().padStart(4, '0'),
+            build.getMonth().toString().padStart(2, '0'),
+            build.getMonth().toString().padStart(2, '0')
+        ].join('');
+    }
+}
+function parse(versionString) {
+    var _a;
+    const versionParts = versionString.split('.');
+    const errorMessage = `Agda version numbers have the form '2.X.Y[.Z[.YYYY0M0D]]', found ${versionString}'`;
+    (0, assert_1.default)(3 <= versionParts.length &&
+        versionParts.length <= 5 &&
+        versionParts.at(0) === '2' &&
+        (versionParts.at(4) === undefined || ((_a = versionParts.at(4)) === null || _a === void 0 ? void 0 : _a.length) === 8), errorMessage);
+    const major = (() => {
+        const majorString = versionParts.at(0);
+        if (majorString !== undefined) {
+            return parseInt(majorString);
+        }
+        else {
+            throw Error(errorMessage);
+        }
+    })();
+    const minor = (() => {
+        const minorString = versionParts.at(1);
+        if (minorString !== undefined) {
+            return parseInt(minorString);
+        }
+        else {
+            throw Error(errorMessage);
+        }
+    })();
+    const micro = (() => {
+        const microString = versionParts.at(2);
+        if (microString !== undefined) {
+            return parseInt(microString);
+        }
+        else {
+            return undefined;
+        }
+    })();
+    const patch = (() => {
+        const patchString = versionParts.at(3);
+        if (patchString !== undefined) {
+            return parseInt(patchString);
+        }
+        else {
+            return undefined;
+        }
+    })();
+    const build = (() => {
+        const buildString = versionParts.at(4);
+        if (buildString !== undefined) {
+            const buildYear = parseInt(buildString.substring(0, 4));
+            const buildMonth = parseInt(buildString.substring(4, 6));
+            const buildDay = parseInt(buildString.substring(6, 8));
+            return new Date(buildYear, buildMonth, buildDay);
+        }
+    })();
+    return { major, minor, micro, patch, build };
+}
+exports.parse = parse;
+class AgdaVersion {
+    constructor(versionStringOrParts) {
+        if (typeof versionStringOrParts === 'string') {
+            versionStringOrParts = parse(versionStringOrParts);
+        }
+        this.major = versionStringOrParts.major;
+        this.minor = versionStringOrParts.minor;
+        this.micro = versionStringOrParts.micro;
+        this.patch = versionStringOrParts.patch;
+        this.build = versionStringOrParts.build;
+    }
+    compare(that) {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
+        const compareParts = [
+            compareNumber(this.major, that.major),
+            compareNumber(this.minor, that.minor),
+            compareNumber((_a = this.micro) !== null && _a !== void 0 ? _a : 0, (_b = that.micro) !== null && _b !== void 0 ? _b : 0),
+            compareNumber((_c = this.patch) !== null && _c !== void 0 ? _c : 0, (_d = that.patch) !== null && _d !== void 0 ? _d : 0),
+            compareNumber((_f = (_e = this.build) === null || _e === void 0 ? void 0 : _e.getFullYear()) !== null && _f !== void 0 ? _f : 0, (_h = (_g = that.build) === null || _g === void 0 ? void 0 : _g.getFullYear()) !== null && _h !== void 0 ? _h : 0),
+            compareNumber((_k = (_j = this.build) === null || _j === void 0 ? void 0 : _j.getMonth()) !== null && _k !== void 0 ? _k : 0, (_m = (_l = that.build) === null || _l === void 0 ? void 0 : _l.getMonth()) !== null && _m !== void 0 ? _m : 0),
+            compareNumber((_p = (_o = this.build) === null || _o === void 0 ? void 0 : _o.getDay()) !== null && _p !== void 0 ? _p : 0, (_r = (_q = that.build) === null || _q === void 0 ? void 0 : _q.getDay()) !== null && _r !== void 0 ? _r : 0)
+        ];
+        for (const comparePart of compareParts) {
+            if (comparePart !== 0) {
+                return comparePart;
+            }
+        }
+        return 0;
+    }
+    toString() {
+        var _a, _b;
+        return [
+            this.major.toString(),
+            this.minor.toString(),
+            (_a = this.micro) === null || _a === void 0 ? void 0 : _a.toString(),
+            (_b = this.patch) === null || _b === void 0 ? void 0 : _b.toString(),
+            toStringBuildDate(this.build)
+        ]
+            .filter(value => value !== undefined)
+            .join('.');
+    }
+    satisfies(spec) {
+        return (spec.major === this.major &&
+            spec.minor === this.minor &&
+            (spec.micro === undefined || spec.micro === this.micro) &&
+            (spec.patch === undefined || spec.patch === this.patch) &&
+            (spec.build === undefined || spec.build === this.build));
+    }
+}
+exports.AgdaVersion = AgdaVersion;
+class AgdaBuilder {
+    constructor(buildData) {
+        this._version = buildData.version;
+        this.tag = buildData.tag;
+        this._ghc = buildData.ghc;
+        this._supported = buildData.supported;
+    }
+    get version() {
+        if (typeof this._version === 'string') {
+            this._version = new AgdaVersion(this._version);
+        }
+        return this._version;
+    }
+    get ghc() {
+        if (this._ghc !== undefined) {
+            return {
+                'tested-with': this._ghc['tested-with'].map(versionString => {
+                    const version = semver.parse(versionString, { loose: true });
+                    if (version === null) {
+                        throw Error(`Could not parse GHC version ${versionString}`);
+                    }
+                    else {
+                        return version;
+                    }
+                })
+            };
+        }
+    }
+    get supported() {
+        var _a;
+        return (_a = this._supported) !== null && _a !== void 0 ? _a : true;
+    }
+    testedWith(version) {
+        var _a, _b;
+        return (_b = (_a = this.ghc) === null || _a === void 0 ? void 0 : _a['tested-with'].includes(version)) !== null && _b !== void 0 ? _b : false;
+    }
+    maxGhcVersionSatisfying(range) {
+        var _a, _b;
+        const ghcVersions = (_b = (_a = this.ghc) === null || _a === void 0 ? void 0 : _a['tested-with']) !== null && _b !== void 0 ? _b : [];
+        if (range !== undefined) {
+            return semver.maxSatisfying(ghcVersions, range);
+        }
+        else {
+            let latestGhcVersion = null;
+            for (const ghcVersion of ghcVersions) {
+                if (latestGhcVersion === null ||
+                    latestGhcVersion.compare(ghcVersion) === -1) {
+                    latestGhcVersion = ghcVersion;
+                }
+            }
+            return latestGhcVersion;
+        }
+    }
+}
+exports.AgdaBuilder = AgdaBuilder;
+exports.allBuildData = versions_json_1.default.agda;
+exports.allBuilders = exports.allBuildData
+    .map(buildData => new AgdaBuilder(buildData))
+    .filter(builder => builder.supported);
+function findBuilder(spec) {
+    let builders = versions_json_1.default.agda.map(buildData => new AgdaBuilder(buildData));
+    // If range is specified, filter all Agda versions by the range:
+    if (spec !== undefined) {
+        builders = builders.filter(builder => {
+            return builder.version.satisfies(spec);
+        });
+    }
+    // Find the latest matching version:
+    let latest = null;
+    for (const builder of builders) {
+        if (latest === null) {
+            latest = builder;
+        }
+        else {
+            if (latest.version.compare(builder.version) === -1) {
+                latest = builder;
+            }
+        }
+    }
+    return latest;
+}
+exports.findBuilder = findBuilder;
 
 
 /***/ }),
@@ -14383,7 +14622,7 @@ module.exports = coerce
 
 /***/ }),
 
-/***/ 2156:
+/***/ 7254:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const SemVer = __nccwpck_require__(8088)
@@ -14630,7 +14869,7 @@ module.exports = rcompare
 /***/ 8701:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-const compareBuild = __nccwpck_require__(2156)
+const compareBuild = __nccwpck_require__(7254)
 const rsort = (list, loose) => list.sort((a, b) => compareBuild(b, a, loose))
 module.exports = rsort
 
@@ -14657,7 +14896,7 @@ module.exports = satisfies
 /***/ 1426:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-const compareBuild = __nccwpck_require__(2156)
+const compareBuild = __nccwpck_require__(7254)
 const sort = (list, loose) => list.sort((a, b) => compareBuild(a, b, loose))
 module.exports = sort
 
@@ -14702,7 +14941,7 @@ module.exports = {
   compare: __nccwpck_require__(4309),
   rcompare: __nccwpck_require__(6417),
   compareLoose: __nccwpck_require__(2804),
-  compareBuild: __nccwpck_require__(2156),
+  compareBuild: __nccwpck_require__(7254),
   sort: __nccwpck_require__(1426),
   rsort: __nccwpck_require__(8701),
   gt: __nccwpck_require__(4123),
@@ -22061,6 +22300,14 @@ function ensureError(input) {
 	return error;
 }
 
+
+/***/ }),
+
+/***/ 7164:
+/***/ ((module) => {
+
+"use strict";
+module.exports = JSON.parse('{"agda":[{"version":"2.4.0.1","tag":"2.4.0.1","ghc":{"tested-with":["7.2.2","7.4.2","7.6.3","7.8.2"]}},{"version":"2.4.0.2","tag":"2.4.0.2","ghc":{"tested-with":["7.2.2","7.4.2","7.6.3","7.8.3"]}},{"version":"2.4.2","tag":"2.4.2","ghc":{"tested-with":["7.2.2","7.4.2","7.6.3","7.8.3"]}},{"version":"2.4.2.1","tag":"2.4.2.1","ghc":{"tested-with":["7.0.4","7.2.2","7.4.2","7.6.3","7.8.3"]}},{"version":"2.4.2.2","tag":"2.4.2.2","ghc":{"tested-with":["7.0.4","7.4.2","7.6.3","7.8.3"]}},{"version":"2.4.2.2.20150518","tag":"2.4.2.2.20150518","ghc":{"tested-with":["7.4.2","7.6.3","7.8.4","7.10.1"]}},{"version":"2.4.2.3","tag":"2.4.2.3","ghc":{"tested-with":["7.4.2","7.6.3","7.8.4","7.10.1"]}},{"version":"2.4.2.3.20150913","tag":"2.4.2.3.20150913","ghc":{"tested-with":["7.6.3","7.8.4","7.10.2"]}},{"version":"2.4.2.4","tag":"2.4.2.4","ghc":{"tested-with":["7.6.3","7.8.4","7.10.2"]}},{"version":"2.4.2.4.20151210","tag":"2.4.2.4.20151210","ghc":{"tested-with":["7.6.3","7.8.4","7.10.3"]}},{"version":"2.4.2.5","tag":"2.4.2.5","ghc":{"tested-with":["7.6.3","7.8.4","7.10.3"]}},{"version":"2.5.0.20160213","tag":"2.5.0.20160213","ghc":{"tested-with":["7.6.3","7.8.4","7.10.3"]}},{"version":"2.5.0.20160412","tag":"2.5.0.20160412","ghc":{"tested-with":["7.6.3","7.8.4","7.10.3"]}},{"version":"2.5.1","tag":"2.5.1","ghc":{"tested-with":["7.6.3","7.8.4","7.10.3"]}},{"version":"2.5.1.1-rc1","tag":"2.5.1.1-rc1","ghc":{"tested-with":["7.6.3","7.8.4","7.10.3","8.0.1"]}},{"version":"2.0.0","tag":"2_0_0","ghc":{"tested-with":[]},"supported":false},{"version":"2.0.1","tag":"2_0_1","ghc":{"tested-with":[]},"supported":false},{"version":"2.1.0","tag":"2_1_0","ghc":{"tested-with":[]},"supported":false},{"version":"2.1.2","tag":"2_1_2","ghc":{"tested-with":[]},"supported":false},{"version":"2.2.0","tag":"2_2_0","ghc":{"tested-with":["6.8.3"]}},{"version":"2.2.10","tag":"2_2_10","ghc":{"tested-with":["6.12.1","6.12.3","7.0.1"]}},{"version":"2.2.2","tag":"2_2_2","ghc":{"tested-with":["6.8.3"]}},{"version":"2.2.4","tag":"2_2_4","ghc":{"tested-with":["6.10.3"]}},{"version":"2.2.6","tag":"2_2_6","ghc":{"tested-with":["6.10.4"]}},{"version":"2.2.8","tag":"2_2_8","ghc":{"tested-with":["6.12.1","6.12.3"]}},{"version":"2.3.0","tag":"2_3_0","ghc":{"tested-with":["7.2.2"]}},{"version":"2.3.2","tag":"2_3_2","ghc":{"tested-with":["7.6.1"]}},{"version":"2.3.2.1","tag":"2_3_2_1","ghc":{"tested-with":["7.6.3"]}},{"version":"2.3.2.2","tag":"2_3_2_2","ghc":{"tested-with":["7.6.3"]}},{"version":"2.4.0","tag":"2_4_0","ghc":{"tested-with":["7.2.2","7.4.2","7.6.3","7.8.2"]}},{"version":"2.5.1.1","tag":"v2.5.1.1","ghc":{"tested-with":["7.6.3","7.8.4","7.10.3","8.0.1"]}},{"version":"2.5.1.2","tag":"v2.5.1.2","ghc":{"tested-with":["7.6.3","7.8.4","7.10.3","8.0.1"]}},{"version":"2.5.1.2.20161216","tag":"v2.5.1.2.20161216","ghc":{"tested-with":["7.6.3","7.8.4","7.10.3","8.0.1"]}},{"version":"2.5.2","tag":"v2.5.2","ghc":{"tested-with":["7.6.3","7.8.4","7.10.3","8.0.1"]}},{"version":"2.5.2.20170816","tag":"v2.5.2.20170816","ghc":{"tested-with":["7.8.4","7.10.3","8.0.2","8.2.1"]}},{"version":"2.5.3","tag":"v2.5.3","ghc":{"tested-with":["7.8.4","7.10.3","8.0.2","8.2.1"]}},{"version":"2.5.3.20180519","tag":"v2.5.3.20180519","ghc":{"tested-with":["7.10.3","8.0.2","8.2.2","8.4.2"]}},{"version":"2.5.3.20180526","tag":"v2.5.3.20180526","ghc":{"tested-with":["7.10.3","8.0.2","8.2.2","8.4.2"]}},{"version":"2.5.4","tag":"v2.5.4","ghc":{"tested-with":["7.10.3","8.0.2","8.2.2","8.4.3"]}},{"version":"2.5.4.1","tag":"v2.5.4.1","ghc":{"tested-with":["7.10.3","8.0.2","8.2.2","8.4.3"]}},{"version":"2.5.4.1.20181026","tag":"v2.5.4.1.20181026","ghc":{"tested-with":["7.10.3","8.0.2","8.2.2","8.4.4"]}},{"version":"2.5.4.1.20181027","tag":"v2.5.4.1.20181027","ghc":{"tested-with":["7.10.3","8.0.2","8.2.2","8.4.4"]}},{"version":"2.5.4.2","tag":"v2.5.4.2","ghc":{"tested-with":["7.10.3","8.0.2","8.2.2","8.4.4"]}},{"version":"2.5.4.2.20190217","tag":"v2.5.4.2.20190217","ghc":{"tested-with":["7.10.3","8.0.2","8.2.2","8.4.4","8.6.3"]}},{"version":"2.5.4.2.20190310","tag":"v2.5.4.2.20190310","ghc":{"tested-with":["7.10.3","8.0.2","8.2.2","8.4.4","8.6.4"]}},{"version":"2.5.4.2.20190330","tag":"v2.5.4.2.20190330","ghc":{"tested-with":["7.10.3","8.0.2","8.2.2","8.4.4","8.6.4"]}},{"version":"2.6.0","tag":"v2.6.0","ghc":{"tested-with":["7.10.3","8.0.2","8.2.2","8.4.4","8.6.4"]}},{"version":"2.6.0.1","tag":"v2.6.0.1","ghc":{"tested-with":["7.10.3","8.0.2","8.2.2","8.4.4","8.6.5"]}},{"version":"2.6.0.1.20191219","tag":"v2.6.0.1.20191219","ghc":{"tested-with":["8.0.2","8.2.2","8.4.4","8.6.5","8.8.1"]}},{"version":"2.6.0.1.20200307","tag":"v2.6.0.1.20200307","ghc":{"tested-with":["8.0.2","8.2.2","8.4.4","8.6.5","8.8.3"]}},{"version":"2.6.1","tag":"v2.6.1","ghc":{"tested-with":["8.0.2","8.2.2","8.4.4","8.6.5","8.8.3"]}},{"version":"2.6.1.1","tag":"v2.6.1.1","ghc":{"tested-with":["8.0.2","8.2.2","8.4.4","8.6.5","8.8.4","8.10.2"]}},{"version":"2.6.1.2","tag":"v2.6.1.2","ghc":{"tested-with":["8.0.2","8.2.2","8.4.4","8.6.5","8.8.4","8.10.2"]}},{"version":"2.6.1.3","tag":"v2.6.1.3","ghc":{"tested-with":["8.0.2","8.2.2","8.4.4","8.6.5","8.8.4","8.10.3"]}},{"version":"2.6.1.3.20210524","tag":"v2.6.1.3.20210524","ghc":{"tested-with":["8.0.2","8.2.2","8.4.4","8.6.5","8.8.4","8.10.4","9.0.1"]}},{"version":"2.6.1.3.20210605","tag":"v2.6.1.3.20210605","ghc":{"tested-with":["8.0.2","8.2.2","8.4.4","8.6.5","8.8.4","8.10.4","9.0.1"]}},{"version":"2.6.2","tag":"v2.6.2","ghc":{"tested-with":["8.0.2","8.2.2","8.4.4","8.6.5","8.8.4","8.10.5","9.0.1"]}},{"version":"2.6.2.1","tag":"v2.6.2.1","ghc":{"tested-with":["8.0.2","8.2.2","8.4.4","8.6.5","8.8.4","8.10.7","9.0.1","9.2.1"]}},{"version":"2.6.2.2","tag":"v2.6.2.2","ghc":{"tested-with":["8.0.2","8.2.2","8.4.4","8.6.5","8.8.4","8.10.7","9.0.1","9.0.2","9.2.1","9.2.2"]}}]}');
 
 /***/ }),
 
