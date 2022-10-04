@@ -16,8 +16,7 @@ jobs:
           submodules: true
       - run: npm install
       - run: npm run bundle
-        with:
-          working-directory: vendor/haskell/actions/setup
+        working-directory: vendor/haskell/actions/setup
       - run: npm run all
 
   test:
