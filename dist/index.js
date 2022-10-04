@@ -328,10 +328,10 @@ function resolveAgdaVersion(versionStringOrParts) {
     // Find the appropriate builder:
     const agdaBuilder = (0, version_1.findBuilder)(agdaVer);
     if (agdaBuilder === null) {
-        throw Error(`Could not resolve Agda version '${agdaVer}' to any known version`);
+        throw Error(`Could not resolve Agda version '${versionStringOrParts}' to any known version`);
     }
     else {
-        core.info(`Resolved version '${agdaVer}' to '${agdaBuilder.version.toString()}'`);
+        core.info(`Resolved version '${versionStringOrParts}' to '${agdaBuilder.version.toString()}'`);
         return agdaBuilder;
     }
 }

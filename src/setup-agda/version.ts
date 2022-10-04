@@ -21,11 +21,11 @@ function resolveAgdaVersion(
   const agdaBuilder = findBuilder(agdaVer)
   if (agdaBuilder === null) {
     throw Error(
-      `Could not resolve Agda version '${agdaVer}' to any known version`
+      `Could not resolve Agda version '${versionStringOrParts}' to any known version`
     )
   } else {
     core.info(
-      `Resolved version '${agdaVer}' to '${agdaBuilder.version.toString()}'`
+      `Resolved version '${versionStringOrParts}' to '${agdaBuilder.version.toString()}'`
     )
     return agdaBuilder
   }
