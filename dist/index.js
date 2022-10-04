@@ -17664,7 +17664,9 @@ async function run(inputs) {
     try {
         core.info('Preparing to setup a Haskell environment');
         const os = process.platform;
+        core.info(`os=${os}`);
         const opts = (0, opts_1.getOpts)((0, opts_1.getDefaults)(os), os, inputs);
+        core.info(`opts=${opts}`);
         for (const [t, { resolved }] of Object.entries(opts).filter(o => o[1].enable)) {
             await core.group(`Preparing ${t} environment`, async () => (0, installer_1.resetTool)(t, resolved, os));
             await core.group(`Installing ${t} version ${resolved}`, async () => (0, installer_1.installTool)(t, resolved, os));

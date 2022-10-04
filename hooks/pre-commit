@@ -10,6 +10,9 @@ set -euxo pipefail
 
 # To enable this hook, rename this file to "pre-commit".
 
+# Build vendor/haskell/actions/setup/index.js:
+(cd vendor/haskell/actions/setup && npm test && npm run bundle)
+
 # Build dist/index.js:
 npm run all
 
