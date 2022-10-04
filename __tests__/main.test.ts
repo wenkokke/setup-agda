@@ -17,7 +17,9 @@ test('known versions of Agda have valid GHC versions', async () => {
     expect(() => {
       const ghcVersion = builder.maxGhcVersionSatisfying()
       if (ghcVersion == null) {
-        throw Error(`Could not find GHC version for Agda version ${builder.version}`)
+        throw Error(
+          `Could not find GHC version for Agda version ${builder.version}`
+        )
       } else {
         return ghcVersion
       }
