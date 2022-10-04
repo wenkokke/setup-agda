@@ -176,7 +176,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
-const glob = __importStar(__nccwpck_require__(8090));
 const io = __importStar(__nccwpck_require__(7436));
 const toolCache = __importStar(__nccwpck_require__(7784));
 const assert_1 = __importDefault(__nccwpck_require__(9491));
@@ -245,12 +244,16 @@ function setupAgdaNightly() {
                 // Copy extracted files to installDir:
                 core.info(`Copy nightly build to ${config_1.installDir}`);
                 io.mkdirP(config_1.installDir);
-                const globber = yield glob.create(core.toPlatformPath(`${cacheDirTC}/Agda-nightly/*`), { matchDirectories: true, implicitDescendants: false });
                 try {
-                    for (var _b = __asyncValues(globber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
-                        const file = _c.value;
-                        core.info(`Copy ${file} to ${config_1.installDir}`);
-                        io.cp(file, config_1.installDir, { recursive: true, copySourceDirectory: true });
+                    for (var _b = __asyncValues(['bin', 'data']), _c; _c = yield _b.next(), !_c.done;) {
+                        const dir = _c.value;
+                        const sourceDir = core.toPlatformPath(`${cacheDirTC}/${dir}`);
+                        const targetDir = core.toPlatformPath(`${config_1.installDir}/${dir}`);
+                        core.info(`Copy ${sourceDir} to ${targetDir}`);
+                        io.cp(sourceDir, targetDir, {
+                            recursive: true,
+                            copySourceDirectory: true
+                        });
                     }
                 }
                 catch (e_1_1) { e_1 = { error: e_1_1 }; }
