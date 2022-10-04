@@ -1,4 +1,4 @@
-// import * as core from '@actions/core'
+import * as core from '@actions/core'
 import {ghcVersion, setupHaskell} from '../setup-haskell'
 import * as semver from 'semver'
 import {
@@ -13,15 +13,15 @@ export async function resolveGhcVersion(
   // Find a compatible GHC version:
   let version = await ghcVersion()
   if (version !== null && agdaBuilder.isTestedWithGhcVersion(version)) {
-    // core.info(`Found compatible GHC version ${version.version}`)
+    core.info(`Found compatible GHC version ${version.version}`)
     return {version, setup: false}
   } else {
     if (version !== null) {
-      // core.info(`Found incompatible GHC version ${version.version}`)
+      core.info(`Found incompatible GHC version ${version.version}`)
     }
     version = agdaBuilder.maxGhcVersionSatisfying()
     if (version !== null) {
-      // core.info(`Setting up GHC version ${version.version}`)
+      core.info(`Setting up GHC version ${version.version}`)
       return {version, setup: true}
     } else {
       throw Error(
