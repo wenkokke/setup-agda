@@ -244,17 +244,21 @@ function setupAgdaNightly() {
                 const cacheDirTC = yield toolCache.extractZip(agdaNightlyZip, config.cacheDir);
                 // Copy extracted files to installDir:
                 core.info(`Copy nightly build to ${config.installDir}`);
-                const agdaRootCacheDir = path.join(cacheDirTC, 'Agda-nightly');
-                const globber = yield glob.create(`${agdaRootCacheDir}/**`, {
+                const agdaCacheDirTC = path.join(cacheDirTC, 'Agda-nightly');
+                const globber = yield glob.create(`${agdaCacheDirTC}/**`, {
                     implicitDescendants: false,
                     matchDirectories: false
                 });
                 try {
                     for (var _b = __asyncValues(globber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
                         const file = _c.value;
-                        const relativeFile = path.relative(agdaRootCacheDir, file);
+                        core.info(`Copy file ${file}`);
+                        const relativeFile = path.relative(agdaCacheDirTC, file);
+                        core.info(`- relative file path: ${relativeFile}`);
                         const relativeDir = path.dirname(relativeFile);
+                        core.info(`- relative directory: ${relativeDir}`);
                         io.mkdirP(path.join(config.installDir, relativeDir));
+                        core.info(`cp ${file} ${path.join(config.installDir, relativeFile)}`);
                         io.cp(file, path.join(config.installDir, relativeFile));
                     }
                 }
@@ -266,7 +270,7 @@ function setupAgdaNightly() {
                     finally { if (e_1) throw e_1.error; }
                 }
                 // Clean up cacheDir
-                io.rmRF(agdaRootCacheDir);
+                io.rmRF(agdaCacheDirTC);
                 break;
             }
         }

@@ -94,20 +94,24 @@ export default async function setupAgdaNightly(): Promise<void> {
 
       // Copy extracted files to installDir:
       core.info(`Copy nightly build to ${config.installDir}`)
-      const agdaRootCacheDir = path.join(cacheDirTC, 'Agda-nightly')
-      const globber = await glob.create(`${agdaRootCacheDir}/**`, {
+      const agdaCacheDirTC = path.join(cacheDirTC, 'Agda-nightly')
+      const globber = await glob.create(`${agdaCacheDirTC}/**`, {
         implicitDescendants: false,
         matchDirectories: false
       })
       for await (const file of globber.globGenerator()) {
-        const relativeFile = path.relative(agdaRootCacheDir, file)
+        core.info(`Copy file ${file}`)
+        const relativeFile = path.relative(agdaCacheDirTC, file)
+        core.info(`- relative file path: ${relativeFile}`)
         const relativeDir = path.dirname(relativeFile)
+        core.info(`- relative directory: ${relativeDir}`)
         io.mkdirP(path.join(config.installDir, relativeDir))
+        core.info(`cp ${file} ${path.join(config.installDir, relativeFile)}`)
         io.cp(file, path.join(config.installDir, relativeFile))
       }
 
       // Clean up cacheDir
-      io.rmRF(agdaRootCacheDir)
+      io.rmRF(agdaCacheDirTC)
       break
     }
   }
