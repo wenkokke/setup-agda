@@ -7,7 +7,8 @@ import * as semver from 'semver'
 import {
   cabal,
   getCabalVersion,
-  getGHCVersionsTestedWith
+  getGHCVersionsTestedWith,
+  setupHaskell
 } from '../setup-haskell'
 
 export async function buildAgda(
@@ -30,13 +31,16 @@ export async function buildAgda(
   const sourceDir = await getAgdaSource(agdaVersion)
   const agdaCabalFile = path.join(sourceDir, 'Agda.cabal')
 
-  // Find compatible GHC versions:
-  const ghcVersion = selectGHCVersion(
+  // Select compatible GHC versions:
+  const ghcVersion = await selectGHCVersion(
     agdaVersion,
     agdaCabalFile,
     ghcVersionRange
   )
   core.info(`Selected GHC version ${ghcVersion}`)
+
+  // Setup GHC via haskell/actions/setup
+  await setupHaskell({'ghc-version': ghcVersion})
 }
 
 async function selectGHCVersion(
