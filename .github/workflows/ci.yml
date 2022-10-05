@@ -1,14 +1,10 @@
-name: Build & Test
+name: CI
 
 on:
   pull_request:
   push:
     branches:
       - main
-
-env:
-  SKIP_NIGHTLY: ${{ contains(github.event.head_commit.message, '[skip nightly]') }}
-  SKIP_LATEST: ${{ contains(github.event.head_commit.message, '[skip nightly]') }}
 
 jobs:
   build:
@@ -21,22 +17,30 @@ jobs:
       - run: npm install
       - run: npm run all
 
-  test:
+  nightly:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         agda-version: ['nightly']
         experimental: [false]
-        include:
-          - os: ubuntu-latest
-            agda-version: 'latest'
-            experimental: true
     name: Test
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
-    if: |
-      matrix.agda-version == 'nightly' && !${{ env.SKIP_NIGHTLY }} ||
-      matrix.agda-version == 'latest' && !${{ env.SKIP_LATEST }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./
+        with:
+          agda-version: ${{ matrix.agda-version }}
+
+  latest:
+    strategy:
+      matrix:
+        os: [ubuntu-latest] # macos-latest, windows-latest
+        agda-version: ['latest']
+        experimental: [false]
+    name: Test
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
     steps:
       - uses: actions/checkout@v3
       - uses: ./
