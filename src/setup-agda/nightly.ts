@@ -109,9 +109,6 @@ export default async function setupAgdaNightly(): Promise<void> {
         core.info(`cp ${file} ${path.join(config.installDir, relativeFile)}`)
         await io.cp(file, path.join(config.installDir, relativeFile))
       }
-
-      // Clean up cacheDir
-      await io.rmRF(agdaCacheDirTC)
       break
     }
   }
