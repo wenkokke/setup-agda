@@ -29,34 +29,32 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
+const opts_1 = __nccwpck_require__(1352);
 const setup_agda_1 = __importDefault(__nccwpck_require__(8021));
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const agdaVersion = core.getInput('agda-version');
-            (0, setup_agda_1.default)(agdaVersion);
-        }
-        catch (error) {
-            if (error instanceof Error)
-                core.setFailed(error.message);
-        }
-    });
-}
-run();
+(0, setup_agda_1.default)(Object.fromEntries(Object.keys(opts_1.yamlInputs).map(k => [k, core.getInput(k)])));
+
+
+/***/ }),
+
+/***/ 1352:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.yamlInputs = void 0;
+const fs_1 = __nccwpck_require__(7147);
+const js_yaml_1 = __nccwpck_require__(1917);
+const path_1 = __nccwpck_require__(1017);
+exports.yamlInputs = (0, js_yaml_1.load)((0, fs_1.readFileSync)((0, path_1.join)(__dirname, '..', 'action.yml'), 'utf8')
+// The action.yml file structure is statically known.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+).inputs;
 
 
 /***/ }),
@@ -103,17 +101,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
+const opts_1 = __nccwpck_require__(1352);
 const nightly_1 = __importDefault(__nccwpck_require__(3244));
 const source_1 = __nccwpck_require__(9648);
-function setupAgda(version) {
+function setupAgda(options) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            core.info(`Set up Agda version ${version}`);
-            if (version === 'nightly') {
+            const agdaVersion = (_a = options === null || options === void 0 ? void 0 : options['agda-version']) !== null && _a !== void 0 ? _a : opts_1.yamlInputs['agda-version'].default;
+            core.info(`Set up Agda version ${agdaVersion}`);
+            if (agdaVersion === 'nightly') {
                 yield (0, nightly_1.default)();
             }
             else {
-                yield (0, source_1.buildAgda)(version);
+                yield (0, source_1.buildAgda)(agdaVersion);
             }
         }
         catch (error) {
@@ -320,7 +321,7 @@ const path = __importStar(__nccwpck_require__(1017));
 const os = __importStar(__nccwpck_require__(2037));
 const semver = __importStar(__nccwpck_require__(1383));
 const setup_haskell_1 = __importDefault(__nccwpck_require__(6501));
-const haskell_1 = __nccwpck_require__(1352);
+const haskell_1 = __nccwpck_require__(1310);
 function buildAgda(agdaVersion, options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Check if Cabal is available:
@@ -639,7 +640,7 @@ exports.progVersion = progVersion;
 
 /***/ }),
 
-/***/ 1352:
+/***/ 1310:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
