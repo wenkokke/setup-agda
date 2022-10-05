@@ -1,69 +1,43 @@
-import * as core from '@actions/core'
 import * as exec from '@actions/exec'
-import * as glob from '@actions/glob'
-import * as io from '@actions/io'
 import * as os from 'os'
-import {platform} from './config'
 
-export async function agdaVersion(): Promise<string> {
-  const agdaVersionOutput = await agda(['--version'])
-  if (agdaVersionOutput.startsWith('Agda version ')) {
-    return agdaVersionOutput.substring('Agda version '.length).trim()
-  } else {
-    throw Error(`Could not parse Agda version: '${agdaVersionOutput}'`)
-  }
-}
-
-export async function agdaDataDir(): Promise<string> {
-  return (await agda(['--print-agda-dir'])).trim()
-}
-
-function agdaName(): string {
-  switch (platform) {
-    case 'win32':
-      return 'agda.exe'
-    default:
-      return 'agda'
-  }
-}
-
-export async function agda(
+export async function execOutput(
+  prog: string,
   args: string[],
-  options?: exec.ExecOptions
+  execOptions?: exec.ExecOptions
 ): Promise<string> {
-  let agdaOutput = ''
-  let agdaErrors = ''
-  options = options ?? {}
-  options.listeners = {
+  let progOutput = ''
+  let progErrors = ''
+  execOptions = execOptions ?? {}
+  execOptions.listeners = {
     stdout: (data: Buffer) => {
-      agdaOutput += data.toString()
+      progOutput += data.toString()
     },
     stderr: (data: Buffer) => {
-      agdaErrors += data.toString()
+      progErrors += data.toString()
     }
   }
-  const exitCode = await exec.exec(agdaName(), args, options)
+  const exitCode = await exec.exec(prog, args, execOptions)
   if (exitCode === 0) {
-    return agdaOutput
+    return progOutput
   } else {
-    throw Error(
-      [`Call to 'agda ${args.join(' ')}' failed with:`, agdaErrors].join(os.EOL)
-    )
+    throw Error(progErrors)
   }
 }
 
-export async function agdaTest(): Promise<void> {
-  const pathToAgda = await io.which(agdaName(), true)
-  core.info(`Found Agda on PATH at ${pathToAgda}`)
-  const versionString = await agdaVersion()
-  core.info(`Found Agda version ${versionString}`)
-  const dataDir = await agdaDataDir()
-  core.info(`Found Agda data directory at ${dataDir}`)
-  const globber = await glob.create(
-    core.toPlatformPath(`${dataDir}/lib/prim/**/*.agda`)
-  )
-  for await (const agdaFile of globber.globGenerator()) {
-    core.info(`Compile ${agdaFile}`)
-    await agda(['-v2', agdaFile])
+export async function progVersion(
+  prog: string,
+  versionFlag?: string,
+  parseOutput?: (output: string) => string,
+  execOptions?: Omit<exec.ExecOptions, 'stdout'>
+): Promise<string> {
+  versionFlag = versionFlag ?? '--version'
+  try {
+    const output = await execOutput(prog, [versionFlag], execOptions)
+    return parseOutput !== undefined ? parseOutput(output) : output
+  } catch (error) {
+    throw error instanceof Error
+      ? Error([`Could not get ${prog} version:`, error.message].join(os.EOL))
+      : error
   }
 }
