@@ -1,16 +1,14 @@
 import * as core from '@actions/core'
-import setupAgdaNightly from './setup-agda/nightly'
-import {AgdaVersionData} from './util/version'
+import setupNightly from './setup-agda/nightly'
+import {buildAgda} from './setup-agda/source'
 
-export default async function setupAgda(
-  spec?: string | AgdaVersionData
-): Promise<void> {
+export default async function setupAgda(version?: string): Promise<void> {
   try {
-    core.info(`Set up Agda version ${spec}`)
-    if (spec === 'nightly') {
-      await setupAgdaNightly()
+    core.info(`Set up Agda version ${version}`)
+    if (version === 'nightly') {
+      await setupNightly()
     } else {
-      core.info("Don't know how to build Agda from source.")
+      await buildAgda(version === 'latest' ? undefined : version)
     }
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
