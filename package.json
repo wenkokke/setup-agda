@@ -37,7 +37,7 @@
     "setup-haskell": "file:./vendor/haskell/actions/setup"
   },
   "devDependencies": {
-    "@types/node": "^18.8.1",
+    "@types/node": "^18.8.2",
     "@typescript-eslint/parser": "^5.39.0",
     "@vercel/ncc": "^0.34.0",
     "eslint": "^8.24.0",
