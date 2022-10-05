@@ -26,9 +26,6 @@ export async function buildAgda(
   await cabal(['update'])
 
   // Get the Agda source from Hackage:
-  //
-  // TODO: fallback to GitHub using the tags in versions?
-  //
   core.info(`Get Agda ${agdaVersion} from Hackage`)
   const sourceDir = await getAgdaSource(agdaVersion)
   const agdaCabalFile = path.join(sourceDir, 'Agda.cabal')
