@@ -27,7 +27,7 @@ export async function buildAgda(
 
   // Get the Agda source from Hackage:
   core.info(`Get Agda ${agdaVersion} from Hackage`)
-  const sourceDir = await getAgdaSource(agdaVersion)
+  const sourceDir = await cabalGetAgda(agdaVersion)
   const agdaCabalFile = path.join(sourceDir, 'Agda.cabal')
 
   // Select compatible GHC versions:
@@ -83,7 +83,7 @@ async function selectGHCVersion(
   }
 }
 
-async function getAgdaSource(version: string): Promise<string> {
+async function cabalGetAgda(version: string): Promise<string> {
   const packageName = version === 'latest' ? 'Agda' : `Agda-${version}`
   await cabal(['get', packageName, '--destdir', config.cacheDir])
   const agdaCabalGlobber = await glob.create(

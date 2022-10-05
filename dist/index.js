@@ -331,7 +331,7 @@ function buildAgda(agdaVersion, options) {
         yield (0, haskell_1.cabal)(['update']);
         // Get the Agda source from Hackage:
         core.info(`Get Agda ${agdaVersion} from Hackage`);
-        const sourceDir = yield getAgdaSource(agdaVersion);
+        const sourceDir = yield cabalGetAgda(agdaVersion);
         const agdaCabalFile = path.join(sourceDir, 'Agda.cabal');
         // Select compatible GHC versions:
         const ghcVersion = yield selectGHCVersion(agdaVersion, agdaCabalFile, options);
@@ -378,7 +378,7 @@ function selectGHCVersion(agdaVersion, agdaCabalFile, options) {
         }
     });
 }
-function getAgdaSource(version) {
+function cabalGetAgda(version) {
     return __awaiter(this, void 0, void 0, function* () {
         const packageName = version === 'latest' ? 'Agda' : `Agda-${version}`;
         yield (0, haskell_1.cabal)(['get', packageName, '--destdir', config.cacheDir]);
