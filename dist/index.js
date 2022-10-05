@@ -310,8 +310,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.buildAgda = void 0;
 const core = __importStar(__nccwpck_require__(2186));
+const glob = __importStar(__nccwpck_require__(8090));
 const config = __importStar(__nccwpck_require__(2156));
 const path = __importStar(__nccwpck_require__(1017));
+const os = __importStar(__nccwpck_require__(2037));
 const setup_haskell_1 = __nccwpck_require__(6933);
 const exec_1 = __nccwpck_require__(4369);
 function buildAgda(version) {
@@ -329,7 +331,15 @@ function buildAgda(version) {
         //
         core.info(`Get ${packageName} from Hackage`);
         yield (0, setup_haskell_1.cabal)(['get', packageName, '--destdir', config.cacheDir]);
-        const sourceDir = path.join(config.cacheDir, packageName);
+        const agdaCabalGlobber = yield glob.create(path.join(config.cacheDir, 'Agda-*', 'Agda.cabal'));
+        const agdaCabalFiles = yield agdaCabalGlobber.glob();
+        if (agdaCabalFiles.length !== 1) {
+            throw Error(agdaCabalFiles.length === 0
+                ? 'Could not find Agda source distribution'
+                : ['Found multiple Agda source distributions:', agdaCabalFiles].join(os.EOL));
+        }
+        const [agdaCabalFile] = agdaCabalFiles;
+        const sourceDir = path.dirname(agdaCabalFile);
         const output = yield (0, exec_1.execOutput)('ls', ['-R', sourceDir]);
         core.info(output);
     });

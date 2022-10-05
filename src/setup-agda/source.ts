@@ -1,6 +1,8 @@
 import * as core from '@actions/core'
+import * as glob from '@actions/glob'
 import * as config from '../util/config'
 import * as path from 'path'
+import * as os from 'os'
 import {cabal, getCabalVersion} from '../setup-haskell'
 import {execOutput} from '../util/exec'
 
@@ -21,7 +23,21 @@ export async function buildAgda(version?: string): Promise<void> {
   //
   core.info(`Get ${packageName} from Hackage`)
   await cabal(['get', packageName, '--destdir', config.cacheDir])
-  const sourceDir = path.join(config.cacheDir, packageName)
+  const agdaCabalGlobber = await glob.create(
+    path.join(config.cacheDir, 'Agda-*', 'Agda.cabal')
+  )
+  const agdaCabalFiles = await agdaCabalGlobber.glob()
+  if (agdaCabalFiles.length !== 1) {
+    throw Error(
+      agdaCabalFiles.length === 0
+        ? 'Could not find Agda source distribution'
+        : ['Found multiple Agda source distributions:', agdaCabalFiles].join(
+            os.EOL
+          )
+    )
+  }
+  const [agdaCabalFile] = agdaCabalFiles
+  const sourceDir = path.dirname(agdaCabalFile)
   const output = await execOutput('ls', ['-R', sourceDir])
   core.info(output)
 }
