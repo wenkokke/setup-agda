@@ -321,7 +321,7 @@ const os = __importStar(__nccwpck_require__(2037));
 const semver = __importStar(__nccwpck_require__(1383));
 const setup_haskell_1 = __importDefault(__nccwpck_require__(6501));
 const haskell_1 = __nccwpck_require__(1352);
-function buildAgda(agdaVersion, ghcVersionRange) {
+function buildAgda(agdaVersion, options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Check if Cabal is available:
         const cabalVersion = yield (0, haskell_1.getCabalVersion)();
@@ -337,22 +337,39 @@ function buildAgda(agdaVersion, ghcVersionRange) {
         const sourceDir = yield getAgdaSource(agdaVersion);
         const agdaCabalFile = path.join(sourceDir, 'Agda.cabal');
         // Select compatible GHC versions:
-        const ghcVersion = yield selectGHCVersion(agdaVersion, agdaCabalFile, ghcVersionRange);
+        const ghcVersion = yield selectGHCVersion(agdaVersion, agdaCabalFile, options);
         core.info(`Selected GHC version ${ghcVersion}`);
         // Setup GHC via haskell/actions/setup
-        yield (0, setup_haskell_1.default)({ 'ghc-version': ghcVersion });
+        yield (0, setup_haskell_1.default)({
+            'ghc-version': ghcVersion,
+            // NOTE:
+            //   haskell/actions/setup reads action.yml from __dirname/../action.yml
+            //   which resolves to wenkokke/setup-agda/action.yml if used as a library.
+            //   haskell/actions/setup reads default values for:
+            //   - ghc-version
+            //   - cabal-version
+            //   - stack-version
+            //   As these are undefined, this throws the following error:
+            //
+            //   Error: Cannot read properties of undefined (reading 'default')
+            //
+            'cabal-version': cabalVersion,
+            'stack-version': 'latest'
+        });
     });
 }
 exports.buildAgda = buildAgda;
-function selectGHCVersion(agdaVersion, agdaCabalFile, ghcVersionRange) {
+function selectGHCVersion(agdaVersion, agdaCabalFile, options) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
-        const compatibleGHCVersions = (0, haskell_1.getGHCVersionsTestedWith)(agdaCabalFile);
+        // Get all compatible GHC versions from Agda.cabal
+        const compatibleGhcVersions = (0, haskell_1.getGHCVersionsTestedWith)(agdaCabalFile);
         core.info([
             `Agda version ${agdaVersion} is compatible with GHC versions:`,
-            compatibleGHCVersions.map(ghcVersion => ghcVersion.version).join(', ')
+            compatibleGhcVersions.map(ghcVersion => ghcVersion.version).join(', ')
         ].join(os.EOL));
-        ghcVersionRange = ghcVersionRange !== null && ghcVersionRange !== void 0 ? ghcVersionRange : '*';
-        const ghcVersion = semver.maxSatisfying(compatibleGHCVersions, ghcVersionRange);
+        // Compute the latest satisying GHC version
+        const ghcVersion = semver.maxSatisfying(compatibleGhcVersions, (_a = options === null || options === void 0 ? void 0 : options.ghcVersion) !== null && _a !== void 0 ? _a : '*');
         if (ghcVersion === null) {
             throw Error(`Could not find compatible GHC version`);
         }

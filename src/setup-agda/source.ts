@@ -5,11 +5,17 @@ import * as path from 'path'
 import * as os from 'os'
 import * as semver from 'semver'
 import setupHaskell from 'setup-haskell'
-import {cabal, getCabalVersion, getGHCVersionsTestedWith} from '../util/haskell'
+import {
+  cabal,
+  getCabalVersion,
+  getGHCVersionsTestedWith as getGhcVersionsTestedWith
+} from '../util/haskell'
 
 export async function buildAgda(
   agdaVersion: string,
-  ghcVersionRange?: string
+  options?: {
+    ghcVersion?: string | semver.Range
+  }
 ): Promise<void> {
   // Check if Cabal is available:
   const cabalVersion = await getCabalVersion()
@@ -28,33 +34,47 @@ export async function buildAgda(
   const agdaCabalFile = path.join(sourceDir, 'Agda.cabal')
 
   // Select compatible GHC versions:
-  const ghcVersion = await selectGHCVersion(
-    agdaVersion,
-    agdaCabalFile,
-    ghcVersionRange
-  )
+  const ghcVersion = await selectGHCVersion(agdaVersion, agdaCabalFile, options)
   core.info(`Selected GHC version ${ghcVersion}`)
 
   // Setup GHC via haskell/actions/setup
-  await setupHaskell({'ghc-version': ghcVersion})
+  await setupHaskell({
+    'ghc-version': ghcVersion,
+    // NOTE:
+    //   haskell/actions/setup reads action.yml from __dirname/../action.yml
+    //   which resolves to wenkokke/setup-agda/action.yml if used as a library.
+    //   haskell/actions/setup reads default values for:
+    //   - ghc-version
+    //   - cabal-version
+    //   - stack-version
+    //   As these are undefined, this throws the following error:
+    //
+    //   Error: Cannot read properties of undefined (reading 'default')
+    //
+    'cabal-version': cabalVersion,
+    'stack-version': 'latest'
+  })
 }
 
 async function selectGHCVersion(
   agdaVersion: string,
   agdaCabalFile: string,
-  ghcVersionRange?: string
+  options?: {
+    ghcVersion?: string | semver.Range
+  }
 ): Promise<string> {
-  const compatibleGHCVersions = getGHCVersionsTestedWith(agdaCabalFile)
+  // Get all compatible GHC versions from Agda.cabal
+  const compatibleGhcVersions = getGhcVersionsTestedWith(agdaCabalFile)
   core.info(
     [
       `Agda version ${agdaVersion} is compatible with GHC versions:`,
-      compatibleGHCVersions.map(ghcVersion => ghcVersion.version).join(', ')
+      compatibleGhcVersions.map(ghcVersion => ghcVersion.version).join(', ')
     ].join(os.EOL)
   )
-  ghcVersionRange = ghcVersionRange ?? '*'
+  // Compute the latest satisying GHC version
   const ghcVersion = semver.maxSatisfying(
-    compatibleGHCVersions,
-    ghcVersionRange
+    compatibleGhcVersions,
+    options?.ghcVersion ?? '*'
   )
   if (ghcVersion === null) {
     throw Error(`Could not find compatible GHC version`)
