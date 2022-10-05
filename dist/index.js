@@ -315,48 +315,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.buildAgda = void 0;
 const core = __importStar(__nccwpck_require__(2186));
-const glob = __importStar(__nccwpck_require__(8090));
-const config = __importStar(__nccwpck_require__(2156));
 const path = __importStar(__nccwpck_require__(1017));
 const os = __importStar(__nccwpck_require__(2037));
 const semver = __importStar(__nccwpck_require__(1383));
 const setup_haskell_1 = __importDefault(__nccwpck_require__(6501));
 const haskell_1 = __nccwpck_require__(1310);
+const hackage_1 = __nccwpck_require__(903);
 function buildAgda(agdaVersion, options) {
     return __awaiter(this, void 0, void 0, function* () {
-        // Check if Cabal is available:
-        const cabalVersion = yield (0, haskell_1.getCabalVersion)();
-        core.info(`Found Cabal version ${cabalVersion}`);
-        // Update the Cabal package list:
-        core.info(`Update the Cabal package list`);
-        yield (0, haskell_1.cabal)(['update']);
         // Get the Agda source from Hackage:
         core.info(`Get Agda ${agdaVersion} from Hackage`);
-        const sourceDir = yield cabalGetAgda(agdaVersion);
+        const sourceDir = yield (0, hackage_1.getPackageSource)('agda', agdaVersion);
         const agdaCabalFile = path.join(sourceDir, 'Agda.cabal');
         // Select compatible GHC versions:
         const ghcVersion = yield selectGHCVersion(agdaVersion, agdaCabalFile, options);
         core.info(`Selected GHC version ${ghcVersion}`);
         // Setup GHC via haskell/actions/setup
-        yield (0, setup_haskell_1.default)({
-            'ghc-version': ghcVersion,
-            // NOTE:
-            //   haskell/actions/setup reads action.yml from __dirname/../action.yml
-            //   which resolves to wenkokke/setup-agda/action.yml if used as a library.
-            //   haskell/actions/setup reads default values for:
-            //   - ghc-version
-            //   - cabal-version
-            //   - stack-version
-            //   As these are undefined, this throws the following error:
-            //
-            //   Error: Cannot read properties of undefined (reading 'default')
-            //
-            //   As a workaround, we pass these options to haskell/actions/setup.
-            //   We choose to set cabal-version to whichever version is installed.
-            //   We set stack-version to latest, as enable-stack defaults to false.
-            'cabal-version': cabalVersion,
-            'stack-version': 'latest'
-        });
+        yield (0, setup_haskell_1.default)({ 'ghc-version': ghcVersion });
     });
 }
 exports.buildAgda = buildAgda;
@@ -377,21 +352,6 @@ function selectGHCVersion(agdaVersion, agdaCabalFile, options) {
         else {
             return ghcVersion.version;
         }
-    });
-}
-function cabalGetAgda(version) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const packageName = version === 'latest' ? 'Agda' : `Agda-${version}`;
-        yield (0, haskell_1.cabal)(['get', packageName, '--destdir', config.cacheDir]);
-        const agdaCabalGlobber = yield glob.create(path.join(config.cacheDir, 'Agda-*', 'Agda.cabal'));
-        const agdaCabalFiles = yield agdaCabalGlobber.glob();
-        if (agdaCabalFiles.length !== 1) {
-            throw Error(agdaCabalFiles.length === 0
-                ? 'Could not find Agda source distribution'
-                : ['Found multiple Agda source distributions:', agdaCabalFiles].join(os.EOL));
-        }
-        const [agdaCabalFile] = agdaCabalFiles;
-        return path.dirname(agdaCabalFile);
     });
 }
 
@@ -640,6 +600,114 @@ exports.progVersion = progVersion;
 
 /***/ }),
 
+/***/ 903:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getPackageSource = exports.getLatestVersion = exports.getPackageVersions = void 0;
+const httpm = __importStar(__nccwpck_require__(6255));
+const os = __importStar(__nccwpck_require__(2037));
+const simver = __importStar(__nccwpck_require__(530));
+const tc = __importStar(__nccwpck_require__(7784));
+function getPackageInfo(packageName) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const http = new httpm.HttpClient('setup-agda');
+        const resp = yield http.get(`https://hackage.haskell.org/package/${packageName}.json`);
+        if (resp.message.statusCode !== 200) {
+            throw Error([
+                `Could not get package info for ${packageName}:`,
+                `${resp.message.statusCode}: ${resp.message.statusMessage}`
+            ].join(os.EOL));
+        }
+        else {
+            const respBody = yield resp.readBody();
+            return JSON.parse(respBody);
+        }
+    });
+}
+function getPackageSimpleVersions(packageName) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const packageInfo = yield getPackageInfo(packageName);
+        return Object.keys(packageInfo)
+            .filter(version => packageInfo[version] === 'normal')
+            .map(simver.parse);
+    });
+}
+function getPackageVersions(packageName) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const versions = yield getPackageSimpleVersions(packageName);
+        return versions.map(simver.toString);
+    });
+}
+exports.getPackageVersions = getPackageVersions;
+function getLatestSimpleVersion(packageName) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const versions = yield getPackageSimpleVersions(packageName);
+        return simver.max(versions);
+    });
+}
+function getLatestVersion(packageName) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const latestSimVer = yield getLatestSimpleVersion(packageName);
+        return latestSimVer !== null ? simver.toString(latestSimVer) : null;
+    });
+}
+exports.getLatestVersion = getLatestVersion;
+function getPackageSource(packageName, packageVersion, dest, flags) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (packageVersion === undefined || packageVersion === 'latest') {
+            const latestVersion = yield getLatestVersion(packageName);
+            if (latestVersion === null) {
+                throw Error(`Could not determine latest version of ${packageName}`);
+            }
+            else {
+                packageVersion = latestVersion;
+            }
+        }
+        const packageUrl = `https://hackage.haskell.org/package/${packageName}-${packageVersion}/${packageName}-${packageVersion}.tar.gz`;
+        const packagePath = yield tc.downloadTool(packageUrl);
+        return tc.extractTar(packagePath, dest, flags);
+    });
+}
+exports.getPackageSource = getPackageSource;
+
+
+/***/ }),
+
 /***/ 1310:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -725,6 +793,58 @@ function getGHCVersionsTestedWith(cabalFile) {
     return versions;
 }
 exports.getGHCVersionsTestedWith = getGHCVersionsTestedWith;
+
+
+/***/ }),
+
+/***/ 530:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.toString = exports.max = exports.compare = exports.parse = void 0;
+function parse(version) {
+    return version.split('.').map(number => parseInt(number));
+}
+exports.parse = parse;
+function compare(version1, version2) {
+    var _a, _b;
+    for (let i = 0; i < Math.max(version1.length, version2.length); i++) {
+        const part1 = (_a = version1.at(i)) !== null && _a !== void 0 ? _a : 0;
+        const part2 = (_b = version2.at(i)) !== null && _b !== void 0 ? _b : 0;
+        if (part1 > part2) {
+            return 1;
+        }
+        else if (part1 < part2) {
+            return -1;
+        }
+        else {
+            continue;
+        }
+    }
+    return 0;
+}
+exports.compare = compare;
+function max(versions) {
+    let maxSoFar = null;
+    for (const version of versions) {
+        if (maxSoFar === null) {
+            maxSoFar = version;
+        }
+        else {
+            if (compare(maxSoFar, version) === -1) {
+                maxSoFar = version;
+            }
+        }
+    }
+    return maxSoFar;
+}
+exports.max = max;
+function toString(version) {
+    return version.join('.');
+}
+exports.toString = toString;
 
 
 /***/ }),
