@@ -314,6 +314,7 @@ const glob = __importStar(__nccwpck_require__(8090));
 const config = __importStar(__nccwpck_require__(2156));
 const path = __importStar(__nccwpck_require__(1017));
 const os = __importStar(__nccwpck_require__(2037));
+const semver = __importStar(__nccwpck_require__(1383));
 const setup_haskell_1 = __nccwpck_require__(6933);
 function buildAgda(version) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -334,8 +335,13 @@ function buildAgda(version) {
         const compatibleGHCVersions = (0, setup_haskell_1.getGHCVersionsTestedWith)(agdaCabalFile);
         core.info([
             `Agda version ${version} is compatible with GHC versions:`,
-            compatibleGHCVersions.map(ghcVersion => ghcVersion.version)
+            compatibleGHCVersions.map(ghcVersion => ghcVersion.version).join(', ')
         ].join(os.EOL));
+        const ghcVersion = semver.maxSatisfying(compatibleGHCVersions, '*');
+        if (ghcVersion === null) {
+            throw Error(`Could not find compatible GHC version`);
+        }
+        core.info(`Chose GHC version ${ghcVersion === null || ghcVersion === void 0 ? void 0 : ghcVersion.version}`);
     });
 }
 exports.buildAgda = buildAgda;

@@ -3,6 +3,7 @@ import * as glob from '@actions/glob'
 import * as config from '../util/config'
 import * as path from 'path'
 import * as os from 'os'
+import * as semver from 'semver'
 import {
   cabal,
   getCabalVersion,
@@ -31,9 +32,14 @@ export async function buildAgda(version: string): Promise<void> {
   core.info(
     [
       `Agda version ${version} is compatible with GHC versions:`,
-      compatibleGHCVersions.map(ghcVersion => ghcVersion.version)
+      compatibleGHCVersions.map(ghcVersion => ghcVersion.version).join(', ')
     ].join(os.EOL)
   )
+  const ghcVersion = semver.maxSatisfying(compatibleGHCVersions, '*')
+  if (ghcVersion === null) {
+    throw Error(`Could not find compatible GHC version`)
+  }
+  core.info(`Chose GHC version ${ghcVersion?.version}`)
 }
 
 async function getAgdaSource(version: string): Promise<string> {
