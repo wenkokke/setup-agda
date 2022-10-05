@@ -316,7 +316,7 @@ const path = __importStar(__nccwpck_require__(1017));
 const os = __importStar(__nccwpck_require__(2037));
 const semver = __importStar(__nccwpck_require__(1383));
 const setup_haskell_1 = __nccwpck_require__(6933);
-function buildAgda(version) {
+function buildAgda(agdaVersion, ghcVersionRange) {
     return __awaiter(this, void 0, void 0, function* () {
         // Check if Cabal is available:
         const cabalVersion = yield (0, setup_haskell_1.getCabalVersion)();
@@ -328,23 +328,32 @@ function buildAgda(version) {
         //
         // TODO: fallback to GitHub using the tags in versions?
         //
-        core.info(`Get Agda ${version} from Hackage`);
-        const sourceDir = yield getAgdaSource(version);
+        core.info(`Get Agda ${agdaVersion} from Hackage`);
+        const sourceDir = yield getAgdaSource(agdaVersion);
         const agdaCabalFile = path.join(sourceDir, 'Agda.cabal');
         // Find compatible GHC versions:
-        const compatibleGHCVersions = (0, setup_haskell_1.getGHCVersionsTestedWith)(agdaCabalFile);
-        core.info([
-            `Agda version ${version} is compatible with GHC versions:`,
-            compatibleGHCVersions.map(ghcVersion => ghcVersion.version).join(', ')
-        ].join(os.EOL));
-        const ghcVersion = semver.maxSatisfying(compatibleGHCVersions, '*');
-        if (ghcVersion === null) {
-            throw Error(`Could not find compatible GHC version`);
-        }
-        core.info(`Chose GHC version ${ghcVersion === null || ghcVersion === void 0 ? void 0 : ghcVersion.version}`);
+        const ghcVersion = selectGHCVersion(agdaVersion, agdaCabalFile, ghcVersionRange);
+        core.info(`Selected GHC version ${ghcVersion}`);
     });
 }
 exports.buildAgda = buildAgda;
+function selectGHCVersion(agdaVersion, agdaCabalFile, ghcVersionRange) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const compatibleGHCVersions = (0, setup_haskell_1.getGHCVersionsTestedWith)(agdaCabalFile);
+        core.info([
+            `Agda version ${agdaVersion} is compatible with GHC versions:`,
+            compatibleGHCVersions.map(ghcVersion => ghcVersion.version).join(', ')
+        ].join(os.EOL));
+        ghcVersionRange = ghcVersionRange !== null && ghcVersionRange !== void 0 ? ghcVersionRange : '*';
+        const ghcVersion = semver.maxSatisfying(compatibleGHCVersions, ghcVersionRange);
+        if (ghcVersion === null) {
+            throw Error(`Could not find compatible GHC version`);
+        }
+        else {
+            return ghcVersion.version;
+        }
+    });
+}
 function getAgdaSource(version) {
     return __awaiter(this, void 0, void 0, function* () {
         const packageName = version === 'latest' ? 'Agda' : `Agda-${version}`;

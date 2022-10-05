@@ -10,7 +10,10 @@ import {
   getGHCVersionsTestedWith
 } from '../setup-haskell'
 
-export async function buildAgda(version: string): Promise<void> {
+export async function buildAgda(
+  agdaVersion: string,
+  ghcVersionRange?: string
+): Promise<void> {
   // Check if Cabal is available:
   const cabalVersion = await getCabalVersion()
   core.info(`Found Cabal version ${cabalVersion}`)
@@ -23,23 +26,41 @@ export async function buildAgda(version: string): Promise<void> {
   //
   // TODO: fallback to GitHub using the tags in versions?
   //
-  core.info(`Get Agda ${version} from Hackage`)
-  const sourceDir = await getAgdaSource(version)
+  core.info(`Get Agda ${agdaVersion} from Hackage`)
+  const sourceDir = await getAgdaSource(agdaVersion)
   const agdaCabalFile = path.join(sourceDir, 'Agda.cabal')
 
   // Find compatible GHC versions:
+  const ghcVersion = selectGHCVersion(
+    agdaVersion,
+    agdaCabalFile,
+    ghcVersionRange
+  )
+  core.info(`Selected GHC version ${ghcVersion}`)
+}
+
+async function selectGHCVersion(
+  agdaVersion: string,
+  agdaCabalFile: string,
+  ghcVersionRange?: string
+): Promise<string> {
   const compatibleGHCVersions = getGHCVersionsTestedWith(agdaCabalFile)
   core.info(
     [
-      `Agda version ${version} is compatible with GHC versions:`,
+      `Agda version ${agdaVersion} is compatible with GHC versions:`,
       compatibleGHCVersions.map(ghcVersion => ghcVersion.version).join(', ')
     ].join(os.EOL)
   )
-  const ghcVersion = semver.maxSatisfying(compatibleGHCVersions, '*')
+  ghcVersionRange = ghcVersionRange ?? '*'
+  const ghcVersion = semver.maxSatisfying(
+    compatibleGHCVersions,
+    ghcVersionRange
+  )
   if (ghcVersion === null) {
     throw Error(`Could not find compatible GHC version`)
+  } else {
+    return ghcVersion.version
   }
-  core.info(`Chose GHC version ${ghcVersion?.version}`)
 }
 
 async function getAgdaSource(version: string): Promise<string> {
