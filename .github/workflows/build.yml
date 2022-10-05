@@ -6,6 +6,10 @@ on:
     branches:
       - main
 
+env:
+  SKIP_NIGHTLY: ${{ contains(github.event.head_commit.message, '[skip nightly]') }}
+  SKIP_LATEST: ${{ contains(github.event.head_commit.message, '[skip nightly]') }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,8 +35,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     if: |
-      (matrix.agda-version == 'nightly' && !contains(github.event.head_commit.message, '[skip nightly]')) ||
-      (matrix.agda-version == 'latest' && !contains(github.event.head_commit.message, '[skip latest]'))
+      matrix.agda-version == 'nightly' && !${{ env.SKIP_NIGHTLY }} ||
+      matrix.agda-version == 'latest' && !${{ env.SKIP_LATEST }}
     steps:
       - uses: actions/checkout@v3
       - uses: ./
