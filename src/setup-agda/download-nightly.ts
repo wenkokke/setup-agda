@@ -5,8 +5,8 @@ import assert from 'assert'
 import * as path from 'path'
 import * as fs from 'fs'
 import * as os from 'os'
-import * as config from '../util/config'
-import {agdaTest} from '../util/agda'
+import * as config from './util/config'
+import {agdaTest} from './util/agda'
 
 const nightlyUrlLinux =
   'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz'

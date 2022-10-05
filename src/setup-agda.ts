@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import {yamlInputs} from './opts'
-import setupNightly from './setup-agda/nightly'
-import {buildAgda} from './setup-agda/source'
+import setupNightly from './setup-agda/download-nightly'
+import {buildAgda} from './setup-agda/build-from-source'
 
 export default async function setupAgda(
   options?: Record<string, string>

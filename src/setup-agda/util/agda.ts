@@ -2,7 +2,17 @@ import * as core from '@actions/core'
 import * as exec from '@actions/exec'
 import * as glob from '@actions/glob'
 import * as os from 'os'
+import * as fs from 'fs'
+import * as path from 'path'
 import {execOutput, progVersion} from './exec'
+import {PackageInfoCache} from './hackage'
+
+export async function getAgdaPackageInfoCache(): Promise<PackageInfoCache> {
+  const packageInfoPath = path.join(__dirname, 'Agda.json')
+  const packageInfo = JSON.parse(fs.readFileSync(packageInfoPath, 'utf8'))
+  const {mtime} = fs.statSync(packageInfoPath)
+  return {packageInfo, lastModified: mtime} as PackageInfoCache
+}
 
 export async function getAgdaVersion(): Promise<string> {
   return await progVersion('agda', {
