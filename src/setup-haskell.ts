@@ -27,7 +27,7 @@ export async function getCabalVersion(): Promise<string> {
   return progVersion('cabal', '--numeric-version')
 }
 
-const ghcVersionRegExp = RegExp('GHC == (?<version>\\d+\\.\\d+\\.\\d+)')
+const ghcVersionRegExp = RegExp('GHC == (?<version>\\d+\\.\\d+\\.\\d+)', 'g')
 
 export function getGHCVersionsTestedWith(cabalFile: string): semver.SemVer[] {
   const cabalFileContents = fs.readFileSync(cabalFile).toString()

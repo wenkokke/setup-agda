@@ -429,7 +429,7 @@ function getCabalVersion() {
     });
 }
 exports.getCabalVersion = getCabalVersion;
-const ghcVersionRegExp = RegExp('GHC == (?<version>\\d+\\.\\d+\\.\\d+)');
+const ghcVersionRegExp = RegExp('GHC == (?<version>\\d+\\.\\d+\\.\\d+)', 'g');
 function getGHCVersionsTestedWith(cabalFile) {
     const cabalFileContents = fs.readFileSync(cabalFile).toString();
     const versions = [];
