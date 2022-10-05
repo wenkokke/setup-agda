@@ -15,6 +15,9 @@ const nightlyUrlDarwin =
 const nightlyUrlWin32 =
   'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip'
 
+// check_agda.sh
+// install_emacs_mode.sh
+
 export default async function setupAgdaNightly(): Promise<void> {
   core.info(`Setup 'nightly' on ${config.platform}`)
   switch (config.platform) {
@@ -31,7 +34,14 @@ export default async function setupAgdaNightly(): Promise<void> {
       const installDirTC = await toolCache.extractTar(
         agdaNightlyTar,
         config.installDir,
-        ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']
+        [
+          '--extract',
+          '--xz',
+          '--preserve-permissions',
+          '--strip-components=1',
+          '--exclude=check_agda.sh',
+          '--exclude=install_emacs_mode.sh'
+        ]
       )
 
       // Configure Agda:
@@ -60,7 +70,14 @@ export default async function setupAgdaNightly(): Promise<void> {
       const installDirTC = await toolCache.extractTar(
         agdaNightlyTar,
         config.installDir,
-        ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']
+        [
+          '--extract',
+          '--xz',
+          '--preserve-permissions',
+          '--strip-components=1',
+          '--exclude=check_agda.sh',
+          '--exclude=install_emacs_mode.sh'
+        ]
       )
 
       // Configure Agda:

@@ -179,6 +179,8 @@ const agda_1 = __nccwpck_require__(9552);
 const nightlyUrlLinux = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz';
 const nightlyUrlDarwin = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz';
 const nightlyUrlWin32 = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip';
+// check_agda.sh
+// install_emacs_mode.sh
 function setupAgdaNightly() {
     return __awaiter(this, void 0, void 0, function* () {
         core.info(`Setup 'nightly' on ${config.platform}`);
@@ -192,7 +194,14 @@ function setupAgdaNightly() {
                 // Extract archive:
                 core.info(`Extract nightly build to ${config.installDir}`);
                 yield io.mkdirP(config.installDir);
-                const installDirTC = yield toolCache.extractTar(agdaNightlyTar, config.installDir, ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']);
+                const installDirTC = yield toolCache.extractTar(agdaNightlyTar, config.installDir, [
+                    '--extract',
+                    '--xz',
+                    '--preserve-permissions',
+                    '--strip-components=1',
+                    '--exclude=check_agda.sh',
+                    '--exclude=install_emacs_mode.sh'
+                ]);
                 // Configure Agda:
                 (0, assert_1.default)(config.installDir === installDirTC, [
                     'Wrong installation directory:',
@@ -212,7 +221,14 @@ function setupAgdaNightly() {
                 // Extract archive:
                 core.info(`Extract nightly build to ${config.installDir}`);
                 yield io.mkdirP(config.installDir);
-                const installDirTC = yield toolCache.extractTar(agdaNightlyTar, config.installDir, ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']);
+                const installDirTC = yield toolCache.extractTar(agdaNightlyTar, config.installDir, [
+                    '--extract',
+                    '--xz',
+                    '--preserve-permissions',
+                    '--strip-components=1',
+                    '--exclude=check_agda.sh',
+                    '--exclude=install_emacs_mode.sh'
+                ]);
                 // Configure Agda:
                 (0, assert_1.default)(config.installDir === installDirTC, [
                     'Wrong installation directory:',
