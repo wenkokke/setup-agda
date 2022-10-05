@@ -27,12 +27,12 @@ jobs:
           - os: ubuntu-latest
             agda-version: 'latest'
             experimental: true
-          - os: ubuntu-latest
-            agda-version: '2.6.2'
-            experimental: true
     name: Test
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
+    if: |
+      (matrix.agda-version == 'nightly' && !contains(github.event.head_commit.message, '[skip nightly]')) ||
+      (matrix.agda-version == 'latest' && !contains(github.event.head_commit.message, '[skip latest]'))
     steps:
       - uses: actions/checkout@v3
       - uses: ./
