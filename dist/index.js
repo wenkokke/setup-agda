@@ -117,8 +117,9 @@ function setupAgda(version) {
             }
         }
         catch (error) {
-            if (error instanceof Error)
-                core.setFailed(error.message);
+            if (error instanceof Error) {
+                core.setFailed(error);
+            }
         }
     });
 }
@@ -307,6 +308,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.buildAgda = void 0;
 const core = __importStar(__nccwpck_require__(2186));
@@ -315,15 +319,16 @@ const config = __importStar(__nccwpck_require__(2156));
 const path = __importStar(__nccwpck_require__(1017));
 const os = __importStar(__nccwpck_require__(2037));
 const semver = __importStar(__nccwpck_require__(1383));
-const setup_haskell_1 = __nccwpck_require__(6933);
+const setup_haskell_1 = __importDefault(__nccwpck_require__(6501));
+const haskell_1 = __nccwpck_require__(1352);
 function buildAgda(agdaVersion, ghcVersionRange) {
     return __awaiter(this, void 0, void 0, function* () {
         // Check if Cabal is available:
-        const cabalVersion = yield (0, setup_haskell_1.getCabalVersion)();
+        const cabalVersion = yield (0, haskell_1.getCabalVersion)();
         core.info(`Found Cabal version ${cabalVersion}`);
         // Update the Cabal package list:
         core.info(`Update the Cabal package list`);
-        yield (0, setup_haskell_1.cabal)(['update']);
+        yield (0, haskell_1.cabal)(['update']);
         // Get the Agda source from Hackage:
         //
         // TODO: fallback to GitHub using the tags in versions?
@@ -335,13 +340,13 @@ function buildAgda(agdaVersion, ghcVersionRange) {
         const ghcVersion = yield selectGHCVersion(agdaVersion, agdaCabalFile, ghcVersionRange);
         core.info(`Selected GHC version ${ghcVersion}`);
         // Setup GHC via haskell/actions/setup
-        yield (0, setup_haskell_1.setupHaskell)({ 'ghc-version': ghcVersion });
+        yield (0, setup_haskell_1.default)({ 'ghc-version': ghcVersion });
     });
 }
 exports.buildAgda = buildAgda;
 function selectGHCVersion(agdaVersion, agdaCabalFile, ghcVersionRange) {
     return __awaiter(this, void 0, void 0, function* () {
-        const compatibleGHCVersions = (0, setup_haskell_1.getGHCVersionsTestedWith)(agdaCabalFile);
+        const compatibleGHCVersions = (0, haskell_1.getGHCVersionsTestedWith)(agdaCabalFile);
         core.info([
             `Agda version ${agdaVersion} is compatible with GHC versions:`,
             compatibleGHCVersions.map(ghcVersion => ghcVersion.version).join(', ')
@@ -359,7 +364,7 @@ function selectGHCVersion(agdaVersion, agdaCabalFile, ghcVersionRange) {
 function getAgdaSource(version) {
     return __awaiter(this, void 0, void 0, function* () {
         const packageName = version === 'latest' ? 'Agda' : `Agda-${version}`;
-        yield (0, setup_haskell_1.cabal)(['get', packageName, '--destdir', config.cacheDir]);
+        yield (0, haskell_1.cabal)(['get', packageName, '--destdir', config.cacheDir]);
         const agdaCabalGlobber = yield glob.create(path.join(config.cacheDir, 'Agda-*', 'Agda.cabal'));
         const agdaCabalFiles = yield agdaCabalGlobber.glob();
         if (agdaCabalFiles.length !== 1) {
@@ -371,105 +376,6 @@ function getAgdaSource(version) {
         return path.dirname(agdaCabalFile);
     });
 }
-
-
-/***/ }),
-
-/***/ 6933:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setupHaskell = exports.getGHCVersionsTestedWith = exports.getCabalVersion = exports.getGHCVersion = exports.ghc = exports.cabal = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const fs = __importStar(__nccwpck_require__(7147));
-const semver = __importStar(__nccwpck_require__(1383));
-const setup_haskell_1 = __importDefault(__nccwpck_require__(6501));
-const exec_1 = __nccwpck_require__(4369);
-function cabal(args, execOptions) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield (0, exec_1.execOutput)('cabal', args, execOptions);
-    });
-}
-exports.cabal = cabal;
-function ghc(args, execOptions) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield (0, exec_1.execOutput)('ghc', args, execOptions);
-    });
-}
-exports.ghc = ghc;
-function getGHCVersion() {
-    return __awaiter(this, void 0, void 0, function* () {
-        return (0, exec_1.progVersion)('ghc', '--numeric-version');
-    });
-}
-exports.getGHCVersion = getGHCVersion;
-function getCabalVersion() {
-    return __awaiter(this, void 0, void 0, function* () {
-        return (0, exec_1.progVersion)('cabal', '--numeric-version');
-    });
-}
-exports.getCabalVersion = getCabalVersion;
-const ghcVersionRegExp = RegExp('GHC == (?<version>\\d+\\.\\d+\\.\\d+)', 'g');
-function getGHCVersionsTestedWith(cabalFile) {
-    const cabalFileContents = fs.readFileSync(cabalFile).toString();
-    const versions = [];
-    for (const match of cabalFileContents.matchAll(ghcVersionRegExp)) {
-        if (match.groups !== undefined) {
-            const parsedVersion = semver.parse(match.groups.version);
-            if (parsedVersion !== null) {
-                versions.push(parsedVersion);
-            }
-            else {
-                core.warning(`Could not parse GHC version ${match.groups.version} in ${cabalFile}`);
-            }
-        }
-    }
-    return versions;
-}
-exports.getGHCVersionsTestedWith = getGHCVersionsTestedWith;
-function setupHaskell(inputs) {
-    return __awaiter(this, void 0, void 0, function* () {
-        yield (0, setup_haskell_1.default)(inputs);
-    });
-}
-exports.setupHaskell = setupHaskell;
 
 
 /***/ }),
@@ -718,6 +624,95 @@ function progVersion(prog, versionFlag, parseOutput, execOptions) {
     });
 }
 exports.progVersion = progVersion;
+
+
+/***/ }),
+
+/***/ 1352:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getGHCVersionsTestedWith = exports.getCabalVersion = exports.getGHCVersion = exports.ghc = exports.cabal = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const fs = __importStar(__nccwpck_require__(7147));
+const semver = __importStar(__nccwpck_require__(1383));
+const exec_1 = __nccwpck_require__(4369);
+function cabal(args, execOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield (0, exec_1.execOutput)('cabal', args, execOptions);
+    });
+}
+exports.cabal = cabal;
+function ghc(args, execOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield (0, exec_1.execOutput)('ghc', args, execOptions);
+    });
+}
+exports.ghc = ghc;
+function getGHCVersion() {
+    return __awaiter(this, void 0, void 0, function* () {
+        return (0, exec_1.progVersion)('ghc', '--numeric-version');
+    });
+}
+exports.getGHCVersion = getGHCVersion;
+function getCabalVersion() {
+    return __awaiter(this, void 0, void 0, function* () {
+        return (0, exec_1.progVersion)('cabal', '--numeric-version');
+    });
+}
+exports.getCabalVersion = getCabalVersion;
+const ghcVersionRegExp = RegExp('GHC == (?<version>\\d+\\.\\d+\\.\\d+)', 'g');
+function getGHCVersionsTestedWith(cabalFile) {
+    const cabalFileContents = fs.readFileSync(cabalFile).toString();
+    const versions = [];
+    for (const match of cabalFileContents.matchAll(ghcVersionRegExp)) {
+        if (match.groups !== undefined) {
+            const parsedVersion = semver.parse(match.groups.version);
+            if (parsedVersion !== null) {
+                versions.push(parsedVersion);
+            }
+            else {
+                core.warning(`Could not parse GHC version ${match.groups.version} in ${cabalFile}`);
+            }
+        }
+    }
+    return versions;
+}
+exports.getGHCVersionsTestedWith = getGHCVersionsTestedWith;
 
 
 /***/ }),

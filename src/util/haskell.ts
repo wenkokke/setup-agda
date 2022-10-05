@@ -2,8 +2,7 @@ import * as core from '@actions/core'
 import * as exec from '@actions/exec'
 import * as fs from 'fs'
 import * as semver from 'semver'
-import haskellActionsSetup from 'setup-haskell'
-import {execOutput, progVersion} from './util/exec'
+import {execOutput, progVersion} from './exec'
 
 export async function cabal(
   args: string[],
@@ -45,10 +44,4 @@ export function getGHCVersionsTestedWith(cabalFile: string): semver.SemVer[] {
     }
   }
   return versions
-}
-
-export async function setupHaskell(
-  inputs: Record<string, string>
-): Promise<void> {
-  await haskellActionsSetup(inputs)
 }

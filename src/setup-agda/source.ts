@@ -4,12 +4,8 @@ import * as config from '../util/config'
 import * as path from 'path'
 import * as os from 'os'
 import * as semver from 'semver'
-import {
-  cabal,
-  getCabalVersion,
-  getGHCVersionsTestedWith,
-  setupHaskell
-} from '../setup-haskell'
+import setupHaskell from 'setup-haskell'
+import {cabal, getCabalVersion, getGHCVersionsTestedWith} from '../util/haskell'
 
 export async function buildAgda(
   agdaVersion: string,

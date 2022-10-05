@@ -29,7 +29,7 @@ export async function progVersion(
   prog: string,
   versionFlag?: string,
   parseOutput?: (output: string) => string,
-  execOptions?: Omit<exec.ExecOptions, 'stdout'>
+  execOptions?: exec.ExecOptions
 ): Promise<string> {
   versionFlag = versionFlag ?? '--version'
   try {
