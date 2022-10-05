@@ -200,7 +200,7 @@ function setupAgdaNightly() {
                 core.info(`Nighly build last modified at ${mtime.toUTCString()}`);
                 // Extract archive:
                 core.info(`Extract nightly build to ${config.installDir}`);
-                io.mkdirP(config.installDir);
+                yield io.mkdirP(config.installDir);
                 const installDirTC = yield toolCache.extractTar(agdaNightlyTar, config.installDir, ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']);
                 // Configure Agda:
                 (0, assert_1.default)(config.installDir === installDirTC, [
@@ -220,7 +220,7 @@ function setupAgdaNightly() {
                 core.info(`Nighly build last modified at ${mtime.toUTCString()}`);
                 // Extract archive:
                 core.info(`Extract nightly build to ${config.installDir}`);
-                io.mkdirP(config.installDir);
+                yield io.mkdirP(config.installDir);
                 const installDirTC = yield toolCache.extractTar(agdaNightlyTar, config.installDir, ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']);
                 // Configure Agda:
                 (0, assert_1.default)(config.installDir === installDirTC, [
@@ -240,7 +240,7 @@ function setupAgdaNightly() {
                 core.info(`Nighly build last modified at ${mtime.toUTCString()}`);
                 // Extract archive:
                 core.info(`Extract nightly build to ${config.cacheDir}`);
-                io.mkdirP(config.cacheDir);
+                yield io.mkdirP(config.cacheDir);
                 const cacheDirTC = yield toolCache.extractZip(agdaNightlyZip, config.cacheDir);
                 // Copy extracted files to installDir:
                 core.info(`Copy nightly build to ${config.installDir}`);
@@ -257,9 +257,9 @@ function setupAgdaNightly() {
                         core.info(`- relative file path: ${relativeFile}`);
                         const relativeDir = path.dirname(relativeFile);
                         core.info(`- relative directory: ${relativeDir}`);
-                        io.mkdirP(path.join(config.installDir, relativeDir));
+                        yield io.mkdirP(path.join(config.installDir, relativeDir));
                         core.info(`cp ${file} ${path.join(config.installDir, relativeFile)}`);
-                        io.cp(file, path.join(config.installDir, relativeFile));
+                        yield io.cp(file, path.join(config.installDir, relativeFile));
                     }
                 }
                 catch (e_1_1) { e_1 = { error: e_1_1 }; }

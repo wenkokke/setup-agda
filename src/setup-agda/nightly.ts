@@ -28,7 +28,7 @@ export default async function setupAgdaNightly(): Promise<void> {
 
       // Extract archive:
       core.info(`Extract nightly build to ${config.installDir}`)
-      io.mkdirP(config.installDir)
+      await io.mkdirP(config.installDir)
       const installDirTC = await toolCache.extractTar(
         agdaNightlyTar,
         config.installDir,
@@ -57,7 +57,7 @@ export default async function setupAgdaNightly(): Promise<void> {
 
       // Extract archive:
       core.info(`Extract nightly build to ${config.installDir}`)
-      io.mkdirP(config.installDir)
+      await io.mkdirP(config.installDir)
       const installDirTC = await toolCache.extractTar(
         agdaNightlyTar,
         config.installDir,
@@ -86,7 +86,7 @@ export default async function setupAgdaNightly(): Promise<void> {
 
       // Extract archive:
       core.info(`Extract nightly build to ${config.cacheDir}`)
-      io.mkdirP(config.cacheDir)
+      await io.mkdirP(config.cacheDir)
       const cacheDirTC = await toolCache.extractZip(
         agdaNightlyZip,
         config.cacheDir
@@ -105,9 +105,9 @@ export default async function setupAgdaNightly(): Promise<void> {
         core.info(`- relative file path: ${relativeFile}`)
         const relativeDir = path.dirname(relativeFile)
         core.info(`- relative directory: ${relativeDir}`)
-        io.mkdirP(path.join(config.installDir, relativeDir))
+        await io.mkdirP(path.join(config.installDir, relativeDir))
         core.info(`cp ${file} ${path.join(config.installDir, relativeFile)}`)
-        io.cp(file, path.join(config.installDir, relativeFile))
+        await io.cp(file, path.join(config.installDir, relativeFile))
       }
 
       // Clean up cacheDir
