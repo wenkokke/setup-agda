@@ -111,7 +111,7 @@ export default async function setupAgdaNightly(): Promise<void> {
       }
 
       // Clean up cacheDir
-      io.rmRF(agdaCacheDirTC)
+      await io.rmRF(agdaCacheDirTC)
       break
     }
   }

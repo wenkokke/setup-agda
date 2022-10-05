@@ -270,7 +270,7 @@ function setupAgdaNightly() {
                     finally { if (e_1) throw e_1.error; }
                 }
                 // Clean up cacheDir
-                io.rmRF(agdaCacheDirTC);
+                yield io.rmRF(agdaCacheDirTC);
                 break;
             }
         }
