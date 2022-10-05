@@ -313,6 +313,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const config = __importStar(__nccwpck_require__(2156));
 const path = __importStar(__nccwpck_require__(1017));
+const fs = __importStar(__nccwpck_require__(7147));
 const os = __importStar(__nccwpck_require__(2037));
 const setup_haskell_1 = __nccwpck_require__(6933);
 const exec_1 = __nccwpck_require__(4369);
@@ -342,6 +343,9 @@ function buildAgda(version) {
         const sourceDir = path.dirname(agdaCabalFile);
         const output = yield (0, exec_1.execOutput)('ls', ['-R', sourceDir]);
         core.info(output);
+        // Find compatible GHC versions:
+        const agdaCabal = fs.readFileSync(agdaCabalFile).toString();
+        core.info(agdaCabal);
     });
 }
 exports.buildAgda = buildAgda;

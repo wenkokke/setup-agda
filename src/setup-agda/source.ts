@@ -2,6 +2,7 @@ import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as config from '../util/config'
 import * as path from 'path'
+import * as fs from 'fs'
 import * as os from 'os'
 import {cabal, getCabalVersion} from '../setup-haskell'
 import {execOutput} from '../util/exec'
@@ -40,4 +41,8 @@ export async function buildAgda(version?: string): Promise<void> {
   const sourceDir = path.dirname(agdaCabalFile)
   const output = await execOutput('ls', ['-R', sourceDir])
   core.info(output)
+
+  // Find compatible GHC versions:
+  const agdaCabal = fs.readFileSync(agdaCabalFile).toString()
+  core.info(agdaCabal)
 }
