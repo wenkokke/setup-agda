@@ -29,7 +29,7 @@ export async function getCabalVersion(): Promise<string> {
 
 const ghcVersionRegExp = RegExp('GHC == (?<version>\\d+\\.\\d+\\.\\d+)')
 
-export function getCompatibleGHCVersions(cabalFile: string): semver.SemVer[] {
+export function getGHCVersionsTestedWith(cabalFile: string): semver.SemVer[] {
   const cabalFileContents = fs.readFileSync(cabalFile).toString()
   const versions = []
   for (const match of cabalFileContents.matchAll(ghcVersionRegExp)) {

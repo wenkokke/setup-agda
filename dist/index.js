@@ -113,7 +113,7 @@ function setupAgda(version) {
                 yield (0, nightly_1.default)();
             }
             else {
-                yield (0, source_1.buildAgda)(version === 'latest' ? undefined : version);
+                yield (0, source_1.buildAgda)(version);
             }
         }
         catch (error) {
@@ -315,10 +315,8 @@ const config = __importStar(__nccwpck_require__(2156));
 const path = __importStar(__nccwpck_require__(1017));
 const os = __importStar(__nccwpck_require__(2037));
 const setup_haskell_1 = __nccwpck_require__(6933);
-const exec_1 = __nccwpck_require__(4369);
 function buildAgda(version) {
     return __awaiter(this, void 0, void 0, function* () {
-        const packageName = version === undefined ? 'Agda' : `Agda-${version}`;
         // Check if Cabal is available:
         const cabalVersion = yield (0, setup_haskell_1.getCabalVersion)();
         core.info(`Found Cabal version ${cabalVersion}`);
@@ -329,7 +327,21 @@ function buildAgda(version) {
         //
         // TODO: fallback to GitHub using the tags in versions?
         //
-        core.info(`Get ${packageName} from Hackage`);
+        core.info(`Get Agda ${version} from Hackage`);
+        const sourceDir = yield getAgdaSource(version);
+        const agdaCabalFile = path.join(sourceDir, 'Agda.cabal');
+        // Find compatible GHC versions:
+        const compatibleGHCVersions = (0, setup_haskell_1.getGHCVersionsTestedWith)(agdaCabalFile);
+        core.info([
+            `Agda version ${version} is compatible with GHC versions:`,
+            compatibleGHCVersions.map(ghcVersion => ghcVersion.version)
+        ].join(os.EOL));
+    });
+}
+exports.buildAgda = buildAgda;
+function getAgdaSource(version) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const packageName = version === 'latest' ? 'Agda' : `Agda-${version}`;
         yield (0, setup_haskell_1.cabal)(['get', packageName, '--destdir', config.cacheDir]);
         const agdaCabalGlobber = yield glob.create(path.join(config.cacheDir, 'Agda-*', 'Agda.cabal'));
         const agdaCabalFiles = yield agdaCabalGlobber.glob();
@@ -339,18 +351,9 @@ function buildAgda(version) {
                 : ['Found multiple Agda source distributions:', agdaCabalFiles].join(os.EOL));
         }
         const [agdaCabalFile] = agdaCabalFiles;
-        const sourceDir = path.dirname(agdaCabalFile);
-        const output = yield (0, exec_1.execOutput)('ls', ['-R', sourceDir]);
-        core.info(output);
-        // Find compatible GHC versions:
-        const compatibleGHCVersions = (0, setup_haskell_1.getCompatibleGHCVersions)(agdaCabalFile);
-        core.info([
-            `Agda version ${version} is compatible with GHC versions:`,
-            compatibleGHCVersions.map(ghcVersion => ghcVersion.version)
-        ].join(os.EOL));
+        return path.dirname(agdaCabalFile);
     });
 }
-exports.buildAgda = buildAgda;
 
 
 /***/ }),
@@ -396,7 +399,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setupHaskell = exports.getCompatibleGHCVersions = exports.getCabalVersion = exports.getGHCVersion = exports.ghc = exports.cabal = void 0;
+exports.setupHaskell = exports.getGHCVersionsTestedWith = exports.getCabalVersion = exports.getGHCVersion = exports.ghc = exports.cabal = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const fs = __importStar(__nccwpck_require__(7147));
 const semver = __importStar(__nccwpck_require__(1383));
@@ -427,7 +430,7 @@ function getCabalVersion() {
 }
 exports.getCabalVersion = getCabalVersion;
 const ghcVersionRegExp = RegExp('GHC == (?<version>\\d+\\.\\d+\\.\\d+)');
-function getCompatibleGHCVersions(cabalFile) {
+function getGHCVersionsTestedWith(cabalFile) {
     const cabalFileContents = fs.readFileSync(cabalFile).toString();
     const versions = [];
     for (const match of cabalFileContents.matchAll(ghcVersionRegExp)) {
@@ -443,7 +446,7 @@ function getCompatibleGHCVersions(cabalFile) {
     }
     return versions;
 }
-exports.getCompatibleGHCVersions = getCompatibleGHCVersions;
+exports.getGHCVersionsTestedWith = getGHCVersionsTestedWith;
 function setupHaskell(inputs) {
     return __awaiter(this, void 0, void 0, function* () {
         yield (0, setup_haskell_1.default)(inputs);

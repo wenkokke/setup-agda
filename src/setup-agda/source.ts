@@ -6,13 +6,10 @@ import * as os from 'os'
 import {
   cabal,
   getCabalVersion,
-  getCompatibleGHCVersions
+  getGHCVersionsTestedWith
 } from '../setup-haskell'
-import {execOutput} from '../util/exec'
 
-export async function buildAgda(version?: string): Promise<void> {
-  const packageName = version === undefined ? 'Agda' : `Agda-${version}`
-
+export async function buildAgda(version: string): Promise<void> {
   // Check if Cabal is available:
   const cabalVersion = await getCabalVersion()
   core.info(`Found Cabal version ${cabalVersion}`)
@@ -25,7 +22,22 @@ export async function buildAgda(version?: string): Promise<void> {
   //
   // TODO: fallback to GitHub using the tags in versions?
   //
-  core.info(`Get ${packageName} from Hackage`)
+  core.info(`Get Agda ${version} from Hackage`)
+  const sourceDir = await getAgdaSource(version)
+  const agdaCabalFile = path.join(sourceDir, 'Agda.cabal')
+
+  // Find compatible GHC versions:
+  const compatibleGHCVersions = getGHCVersionsTestedWith(agdaCabalFile)
+  core.info(
+    [
+      `Agda version ${version} is compatible with GHC versions:`,
+      compatibleGHCVersions.map(ghcVersion => ghcVersion.version)
+    ].join(os.EOL)
+  )
+}
+
+async function getAgdaSource(version: string): Promise<string> {
+  const packageName = version === 'latest' ? 'Agda' : `Agda-${version}`
   await cabal(['get', packageName, '--destdir', config.cacheDir])
   const agdaCabalGlobber = await glob.create(
     path.join(config.cacheDir, 'Agda-*', 'Agda.cabal')
@@ -41,16 +53,5 @@ export async function buildAgda(version?: string): Promise<void> {
     )
   }
   const [agdaCabalFile] = agdaCabalFiles
-  const sourceDir = path.dirname(agdaCabalFile)
-  const output = await execOutput('ls', ['-R', sourceDir])
-  core.info(output)
-
-  // Find compatible GHC versions:
-  const compatibleGHCVersions = getCompatibleGHCVersions(agdaCabalFile)
-  core.info(
-    [
-      `Agda version ${version} is compatible with GHC versions:`,
-      compatibleGHCVersions.map(ghcVersion => ghcVersion.version)
-    ].join(os.EOL)
-  )
+  return path.dirname(agdaCabalFile)
 }
