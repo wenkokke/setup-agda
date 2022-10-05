@@ -15,9 +15,6 @@ const nightlyUrlDarwin =
 const nightlyUrlWin32 =
   'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip'
 
-// check_agda.sh
-// install_emacs_mode.sh
-
 export default async function setupAgdaNightly(): Promise<void> {
   core.info(`Setup 'nightly' on ${config.platform}`)
   switch (config.platform) {

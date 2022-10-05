@@ -179,8 +179,6 @@ const agda_1 = __nccwpck_require__(9552);
 const nightlyUrlLinux = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz';
 const nightlyUrlDarwin = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz';
 const nightlyUrlWin32 = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip';
-// check_agda.sh
-// install_emacs_mode.sh
 function setupAgdaNightly() {
     return __awaiter(this, void 0, void 0, function* () {
         core.info(`Setup 'nightly' on ${config.platform}`);
