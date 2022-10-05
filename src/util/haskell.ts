@@ -19,11 +19,11 @@ export async function ghc(
 }
 
 export async function getGHCVersion(): Promise<string> {
-  return progVersion('ghc', '--numeric-version')
+  return progVersion('ghc', {versionFlag: '--numeric-version', silent: true})
 }
 
 export async function getCabalVersion(): Promise<string> {
-  return progVersion('cabal', '--numeric-version')
+  return progVersion('cabal', {versionFlag: '--numeric-version', silent: true})
 }
 
 const ghcVersionRegExp = RegExp('GHC == (?<version>\\d+\\.\\d+\\.\\d+)', 'g')

@@ -428,19 +428,21 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.agdaTest = exports.agda = exports.getAgdaDataDir = exports.getAgdaVersion = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
-const io = __importStar(__nccwpck_require__(7436));
 const os = __importStar(__nccwpck_require__(2037));
-const config_1 = __nccwpck_require__(2156);
 const exec_1 = __nccwpck_require__(4369);
 function getAgdaVersion() {
     return __awaiter(this, void 0, void 0, function* () {
-        const agdaVersionOutput = yield agda(['--version']);
-        if (agdaVersionOutput.startsWith('Agda version ')) {
-            return agdaVersionOutput.substring('Agda version '.length).trim();
-        }
-        else {
-            throw Error(`Could not parse Agda version: '${agdaVersionOutput}'`);
-        }
+        return yield (0, exec_1.progVersion)('agda', {
+            parseOutput: output => {
+                if (output.startsWith('Agda version ')) {
+                    return output.substring('Agda version '.length).trim();
+                }
+                else {
+                    throw Error(`Could not parse Agda version: '${output}'`);
+                }
+            },
+            silent: true
+        });
     });
 }
 exports.getAgdaVersion = getAgdaVersion;
@@ -450,14 +452,6 @@ function getAgdaDataDir() {
     });
 }
 exports.getAgdaDataDir = getAgdaDataDir;
-function getAgdaName() {
-    switch (config_1.platform) {
-        case 'win32':
-            return 'agda.exe';
-        default:
-            return 'agda';
-    }
-}
 function agda(args, execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -474,8 +468,6 @@ exports.agda = agda;
 function agdaTest() {
     var e_1, _a;
     return __awaiter(this, void 0, void 0, function* () {
-        const pathToAgda = yield io.which(getAgdaName(), true);
-        core.info(`Found Agda on PATH at ${pathToAgda}`);
         const versionString = yield getAgdaVersion();
         core.info(`Found Agda version ${versionString}`);
         const dataDir = yield getAgdaDataDir();
@@ -609,17 +601,19 @@ function execOutput(prog, args, execOptions) {
     });
 }
 exports.execOutput = execOutput;
-function progVersion(prog, versionFlag, parseOutput, execOptions) {
+function progVersion(prog, options) {
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
-        versionFlag = versionFlag !== null && versionFlag !== void 0 ? versionFlag : '--version';
+        const versionFlag = (_a = options === null || options === void 0 ? void 0 : options.versionFlag) !== null && _a !== void 0 ? _a : '--version';
+        const parseOutput = (_b = options === null || options === void 0 ? void 0 : options.parseOutput) !== null && _b !== void 0 ? _b : (output => output);
         try {
-            const output = yield execOutput(prog, [versionFlag], execOptions);
-            return parseOutput !== undefined ? parseOutput(output) : output;
+            return parseOutput(yield execOutput(prog, [versionFlag], options));
         }
         catch (error) {
-            throw error instanceof Error
-                ? Error([`Could not get ${prog} version:`, error.message].join(os.EOL))
-                : error;
+            if (error instanceof Error) {
+                error.message = [`Could not get ${prog} version:`, error.message].join(os.EOL);
+            }
+            throw error;
         }
     });
 }
@@ -685,13 +679,13 @@ function ghc(args, execOptions) {
 exports.ghc = ghc;
 function getGHCVersion() {
     return __awaiter(this, void 0, void 0, function* () {
-        return (0, exec_1.progVersion)('ghc', '--numeric-version');
+        return (0, exec_1.progVersion)('ghc', { versionFlag: '--numeric-version', silent: true });
     });
 }
 exports.getGHCVersion = getGHCVersion;
 function getCabalVersion() {
     return __awaiter(this, void 0, void 0, function* () {
-        return (0, exec_1.progVersion)('cabal', '--numeric-version');
+        return (0, exec_1.progVersion)('cabal', { versionFlag: '--numeric-version', silent: true });
     });
 }
 exports.getCabalVersion = getCabalVersion;

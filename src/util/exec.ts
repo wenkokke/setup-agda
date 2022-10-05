@@ -25,19 +25,25 @@ export async function execOutput(
   }
 }
 
+export interface VersionOptions extends exec.ExecOptions {
+  versionFlag?: string
+  parseOutput?: (output: string) => string
+}
+
 export async function progVersion(
   prog: string,
-  versionFlag?: string,
-  parseOutput?: (output: string) => string,
-  execOptions?: exec.ExecOptions
+  options?: VersionOptions
 ): Promise<string> {
-  versionFlag = versionFlag ?? '--version'
+  const versionFlag = options?.versionFlag ?? '--version'
+  const parseOutput = options?.parseOutput ?? (output => output)
   try {
-    const output = await execOutput(prog, [versionFlag], execOptions)
-    return parseOutput !== undefined ? parseOutput(output) : output
+    return parseOutput(await execOutput(prog, [versionFlag], options))
   } catch (error) {
-    throw error instanceof Error
-      ? Error([`Could not get ${prog} version:`, error.message].join(os.EOL))
-      : error
+    if (error instanceof Error) {
+      error.message = [`Could not get ${prog} version:`, error.message].join(
+        os.EOL
+      )
+    }
+    throw error
   }
 }
