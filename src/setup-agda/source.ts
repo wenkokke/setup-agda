@@ -11,6 +11,10 @@ export async function buildAgda(version?: string): Promise<void> {
   const cabalVersion = await getCabalVersion()
   core.info(`Found Cabal version ${cabalVersion}`)
 
+  // Update the Cabal package list:
+  core.info(`Update the Cabal package list`)
+  await cabal(['update'])
+
   // Get the Agda source from Hackage:
   //
   // TODO: fallback to GitHub using the tags in versions?

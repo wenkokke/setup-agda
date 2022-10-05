@@ -320,6 +320,9 @@ function buildAgda(version) {
         // Check if Cabal is available:
         const cabalVersion = yield (0, setup_haskell_1.getCabalVersion)();
         core.info(`Found Cabal version ${cabalVersion}`);
+        // Update the Cabal package list:
+        core.info(`Update the Cabal package list`);
+        yield (0, setup_haskell_1.cabal)(['update']);
         // Get the Agda source from Hackage:
         //
         // TODO: fallback to GitHub using the tags in versions?
