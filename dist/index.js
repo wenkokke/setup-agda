@@ -353,6 +353,9 @@ function buildAgda(agdaVersion, options) {
             //
             //   Error: Cannot read properties of undefined (reading 'default')
             //
+            //   As a workaround, we pass these options to haskell/actions/setup.
+            //   We choose to set cabal-version to whichever version is installed.
+            //   We set stack-version to latest, as enable-stack defaults to false.
             'cabal-version': cabalVersion,
             'stack-version': 'latest'
         });
