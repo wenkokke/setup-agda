@@ -27,12 +27,12 @@ export async function getPackageInfo(
   packageName: string,
   packageInfoCache?: PackageInfoCache
 ): Promise<PackageInfoCache> {
-  const http = new httpm.HttpClient('setup-agda')
-  const additionalHeaders: OutgoingHttpHeaders = {}
+  const httpClient = new httpm.HttpClient('setup-agda')
+  const headers: OutgoingHttpHeaders = {}
   if (packageInfoCache !== undefined) {
-    additionalHeaders['if-modified-since'] = packageInfoCache.lastModified
+    headers['if-modified-since'] = packageInfoCache.lastModified
   }
-  const resp = await http.get(packageInfoUrl(packageName), additionalHeaders)
+  const resp = await httpClient.get(packageInfoUrl(packageName), headers)
   core.debug(
     `getPackageInfo: received '${resp.message.statusCode}: ${resp.message.statusMessage}' for package ${packageName}`
   )

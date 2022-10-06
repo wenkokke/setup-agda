@@ -4,27 +4,34 @@ import * as glob from '@actions/glob'
 import * as os from 'os'
 import {execOutput, getVersion} from './exec'
 import * as hackage from './hackage'
-import agdaPackageInfoCache from '../package-info/Agda.json'
+import packageInfoCache from '../package-info/Agda.json'
 
-export async function getPackageInfo(): Promise<hackage.PackageInfoCache> {
-  return await hackage.getPackageInfo(
-    'Agda',
-    agdaPackageInfoCache as hackage.PackageInfoCache
-  )
+const oldPackageInfoCache = packageInfoCache as hackage.PackageInfoCache
+
+export async function getPackageInfo(
+  returnCacheOnError?: boolean
+): Promise<hackage.PackageInfoCache> {
+  returnCacheOnError = returnCacheOnError ?? true
+  try {
+    return await hackage.getPackageInfo('Agda', oldPackageInfoCache)
+  } catch (error) {
+    if (returnCacheOnError === true) {
+      if (error instanceof Error) {
+        core.warning(error)
+      }
+      return oldPackageInfoCache
+    } else {
+      throw error
+    }
+  }
 }
 
 export async function getVersions(): Promise<string[]> {
-  return await hackage.getPackageVersions(
-    'Agda',
-    agdaPackageInfoCache as hackage.PackageInfoCache
-  )
+  return await hackage.getPackageVersions('Agda', oldPackageInfoCache)
 }
 
 export async function getLatestVersion(): Promise<string | null> {
-  return await hackage.getPackageLatestVersion(
-    'Agda',
-    agdaPackageInfoCache as hackage.PackageInfoCache
-  )
+  return await hackage.getPackageLatestVersion('Agda', oldPackageInfoCache)
 }
 
 export async function getSystemAgdaVersion(): Promise<string> {

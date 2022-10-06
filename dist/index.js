@@ -394,21 +394,36 @@ const os = __importStar(__nccwpck_require__(2037));
 const exec_1 = __nccwpck_require__(4369);
 const hackage = __importStar(__nccwpck_require__(903));
 const Agda_json_1 = __importDefault(__nccwpck_require__(4862));
-function getPackageInfo() {
+const oldPackageInfoCache = Agda_json_1.default;
+function getPackageInfo(returnCacheOnError) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield hackage.getPackageInfo('Agda', Agda_json_1.default);
+        returnCacheOnError = returnCacheOnError !== null && returnCacheOnError !== void 0 ? returnCacheOnError : true;
+        try {
+            return yield hackage.getPackageInfo('Agda', oldPackageInfoCache);
+        }
+        catch (error) {
+            if (returnCacheOnError === true) {
+                if (error instanceof Error) {
+                    core.warning(error);
+                }
+                return oldPackageInfoCache;
+            }
+            else {
+                throw error;
+            }
+        }
     });
 }
 exports.getPackageInfo = getPackageInfo;
 function getVersions() {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield hackage.getPackageVersions('Agda', Agda_json_1.default);
+        return yield hackage.getPackageVersions('Agda', oldPackageInfoCache);
     });
 }
 exports.getVersions = getVersions;
 function getLatestVersion() {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield hackage.getPackageLatestVersion('Agda', Agda_json_1.default);
+        return yield hackage.getPackageLatestVersion('Agda', oldPackageInfoCache);
     });
 }
 exports.getLatestVersion = getLatestVersion;
@@ -657,12 +672,12 @@ function packageUrl(packageName, packageVersion) {
 }
 function getPackageInfo(packageName, packageInfoCache) {
     return __awaiter(this, void 0, void 0, function* () {
-        const http = new httpm.HttpClient('setup-agda');
-        const additionalHeaders = {};
+        const httpClient = new httpm.HttpClient('setup-agda');
+        const headers = {};
         if (packageInfoCache !== undefined) {
-            additionalHeaders['if-modified-since'] = packageInfoCache.lastModified;
+            headers['if-modified-since'] = packageInfoCache.lastModified;
         }
-        const resp = yield http.get(packageInfoUrl(packageName), additionalHeaders);
+        const resp = yield httpClient.get(packageInfoUrl(packageName), headers);
         core.debug(`getPackageInfo: received '${resp.message.statusCode}: ${resp.message.statusMessage}' for package ${packageName}`);
         if (resp.message.statusCode === 200) {
             const respBody = yield resp.readBody();
@@ -22330,7 +22345,7 @@ function ensureError(input) {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4":"deprecated","2.5.4.1":"deprecated","2.5.4.2":"normal","2.6.0":"deprecated","2.6.0.1":"normal","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Thu, 06 Oct 2022 14:12:58 GMT"}');
+module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4":"deprecated","2.5.4.1":"deprecated","2.5.4.2":"normal","2.6.0":"deprecated","2.6.0.1":"normal","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Thu, 06 Oct 2022 14:27:43 GMT"}');
 
 /***/ }),
 
