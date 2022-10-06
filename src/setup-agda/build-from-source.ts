@@ -2,9 +2,9 @@ import * as core from '@actions/core'
 import * as path from 'path'
 import * as semver from 'semver'
 import setupHaskell from 'setup-haskell'
-import * as haskell from './util/haskell'
-import * as hackage from './util/hackage'
-import {execOutput} from './util/exec'
+import * as haskell from '../util/haskell'
+import * as hackage from '../util/hackage'
+import {execOutput} from '../util/exec'
 
 export async function buildAgda(
   agdaVersion: string,
@@ -19,7 +19,7 @@ export async function buildAgda(
   const agdaCabalFile = path.join(sourceDir, 'Agda.cabal')
 
   // Select compatible GHC versions:
-  const ghcVersion = haskell.getLatestCompatibleGhcVersion(
+  const ghcVersion = haskell.getLatestCompatibleGHCVersion(
     agdaCabalFile,
     options
   )

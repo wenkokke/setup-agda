@@ -30,7 +30,7 @@ export interface VersionOptions extends exec.ExecOptions {
   parseOutput?: (output: string) => string
 }
 
-export async function progVersion(
+export async function getVersion(
   prog: string,
   options?: VersionOptions
 ): Promise<string> {

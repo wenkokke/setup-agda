@@ -10,6 +10,7 @@
     "esModuleInterop": true,
   },
   "exclude": [
+    "src/package-info/update.ts",
     "node_modules",
     "**/*.test.ts",
     "vendor"

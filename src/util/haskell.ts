@@ -3,40 +3,40 @@ import * as exec from '@actions/exec'
 import * as fs from 'fs'
 import * as semver from 'semver'
 import * as os from 'os'
-import {execOutput, progVersion} from './exec'
+import {execOutput, getVersion} from './exec'
 
-export async function cabal(
+export async function execSystemCabal(
   args: string[],
   execOptions?: exec.ExecOptions
 ): Promise<string> {
   return await execOutput('cabal', args, execOptions)
 }
 
-export async function ghc(
+export async function execSystemGHC(
   args: string[],
   execOptions?: exec.ExecOptions
 ): Promise<string> {
   return await execOutput('ghc', args, execOptions)
 }
 
-export async function getGHCVersion(): Promise<string> {
-  return progVersion('ghc', {versionFlag: '--numeric-version', silent: true})
+export async function getSystemGHCVersion(): Promise<string> {
+  return getVersion('ghc', {versionFlag: '--numeric-version', silent: true})
 }
 
-export async function getCabalVersion(): Promise<string> {
-  return progVersion('cabal', {versionFlag: '--numeric-version', silent: true})
+export async function getSystemCabalVersion(): Promise<string> {
+  return getVersion('cabal', {versionFlag: '--numeric-version', silent: true})
 }
 
-const ghcVersionTestedWithRegExp = RegExp(
+const compatibleGHCVersionRegExp = RegExp(
   'GHC == (?<version>\\d+\\.\\d+\\.\\d+)',
   'g'
 )
 
-function getCompatibleGhcVersions(cabalFile: string): semver.SemVer[] {
+function getCompatibleGHCVersions(cabalFile: string): semver.SemVer[] {
   const packageCabalFileContents = fs.readFileSync(cabalFile).toString()
   const versions = []
   for (const match of packageCabalFileContents.matchAll(
-    ghcVersionTestedWithRegExp
+    compatibleGHCVersionRegExp
   )) {
     if (match.groups !== undefined) {
       const parsedVersion = semver.parse(match.groups.version)
@@ -52,14 +52,14 @@ function getCompatibleGhcVersions(cabalFile: string): semver.SemVer[] {
   return versions
 }
 
-export function getLatestCompatibleGhcVersion(
+export function getLatestCompatibleGHCVersion(
   cabalFile: string,
   options?: {
     ghcVersion?: string | semver.Range
   }
 ): string {
   // Get all compatible GHC versions from Cabal file:
-  const compatibleGhcVersions = getCompatibleGhcVersions(cabalFile)
+  const compatibleGhcVersions = getCompatibleGHCVersions(cabalFile)
   core.info(
     [
       `Found compatible GHC versions:`,

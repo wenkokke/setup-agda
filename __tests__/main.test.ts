@@ -1,6 +1,6 @@
 import {test, expect} from '@jest/globals'
-import * as hackage from '../src/setup-agda/util/hackage'
+import * as agda from '../src/util/agda'
 
 test('test latest Agda version', async () => {
-  expect(await hackage.getLatestVersion('Agda')).toEqual('2.6.2.2')
+  expect(await agda.getLatestVersion()).toEqual('2.6.2.2')
 })
