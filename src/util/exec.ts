@@ -1,6 +1,8 @@
 import * as exec from '@actions/exec'
 import * as os from 'os'
 
+export * from '@actions/exec'
+
 export async function execOutput(
   prog: string,
   args: string[],

@@ -9,7 +9,7 @@ const oldPackageInfoCache = packageInfoCache as hackage.PackageInfoCache
 
 async function run(): Promise<void> {
   try {
-    const newPackageInfoCache = await agda.getPackageInfo(false)
+    const newPackageInfoCache = await agda.getPackageInfo()
     const oldTime = new Date(oldPackageInfoCache.lastModified).getTime()
     const newTime = new Date(newPackageInfoCache.lastModified).getTime()
     let failed = false

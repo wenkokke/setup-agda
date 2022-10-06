@@ -4,7 +4,8 @@ import * as os from 'os'
 import * as simver from './simver'
 import * as tc from '@actions/tool-cache'
 import * as path from 'path'
-import {OutgoingHttpHeaders} from 'http'
+import * as http from 'http'
+import assert from 'assert'
 
 export type PackageStatus = 'normal' | 'deprecated'
 
@@ -23,103 +24,151 @@ function packageUrl(packageName: string, packageVersion: string): string {
   return `https://hackage.haskell.org/package/${packageName}-${packageVersion}/${packageName}-${packageVersion}.tar.gz`
 }
 
+export interface PackageInfoOptions {
+  fetchPackageInfo?: boolean
+  packageInfoCache?: PackageInfoCache
+  packageInfoHeaders?: http.OutgoingHttpHeaders
+  returnCacheOnError?: boolean
+}
+
 export async function getPackageInfo(
   packageName: string,
-  packageInfoCache?: PackageInfoCache
+  options?: Readonly<PackageInfoOptions>
 ): Promise<PackageInfoCache> {
-  const httpClient = new httpm.HttpClient('setup-agda')
-  const headers: OutgoingHttpHeaders = {}
-  if (packageInfoCache !== undefined) {
-    headers['if-modified-since'] = packageInfoCache.lastModified
-  }
-  const resp = await httpClient.get(packageInfoUrl(packageName), headers)
-  core.debug(
-    `getPackageInfo: received '${resp.message.statusCode}: ${resp.message.statusMessage}' for package ${packageName}`
-  )
-  if (resp.message.statusCode === 200) {
-    const respBody = await resp.readBody()
-    const packageInfo = JSON.parse(respBody) as PackageInfo
-    return {
-      packageInfo,
-      lastModified: new Date(Date.now()).toUTCString()
-    }
-  } else if (
-    packageInfoCache?.packageInfo !== undefined &&
-    resp.message.statusCode === 304
-  ) {
+  const fetchPackageInfo = options?.fetchPackageInfo ?? true
+  const returnCacheOnError = options?.returnCacheOnError ?? true
+  const packageInfoCache = options?.packageInfoCache
+  if (fetchPackageInfo !== true && packageInfoCache === undefined) {
+    throw Error(
+      'getPackageInfo: if fetchPackageInfo is false, packageInfoCache must be passed'
+    )
+  } else if (returnCacheOnError !== true && packageInfoCache === undefined) {
+    throw Error(
+      'getPackageInfo: if returnCacheOnError is false, packageInfoCache must be passed'
+    )
+  } else if (fetchPackageInfo !== true && packageInfoCache !== undefined) {
     return packageInfoCache
   } else {
-    throw Error(
-      [
+    const httpClient = new httpm.HttpClient('setup-agda')
+    const headers: http.OutgoingHttpHeaders = options?.packageInfoHeaders ?? {}
+    if (packageInfoCache !== undefined) {
+      headers['if-modified-since'] = packageInfoCache.lastModified
+    }
+    const resp = await httpClient.get(packageInfoUrl(packageName), headers)
+    core.debug(
+      `getPackageInfo: received '${resp.message.statusCode}: ${resp.message.statusMessage}' for package ${packageName}`
+    )
+    if (resp.message.statusCode === 200) {
+      const respBody = await resp.readBody()
+      const packageInfo = JSON.parse(respBody) as PackageInfo
+      return {
+        packageInfo,
+        lastModified: new Date(Date.now()).toUTCString()
+      }
+    } else if (
+      packageInfoCache?.packageInfo !== undefined &&
+      resp.message.statusCode === 304
+    ) {
+      return packageInfoCache
+    } else {
+      const errorMessage = [
         `Could not get package info for ${packageName}:`,
         `${resp.message.statusCode}: ${resp.message.statusMessage}`
       ].join(os.EOL)
-    )
+      if (returnCacheOnError !== true && packageInfoCache !== undefined) {
+        core.warning(errorMessage)
+        return packageInfoCache
+      } else {
+        throw Error(errorMessage)
+      }
+    }
   }
 }
 
-async function getPackageSimVers(
+async function getPackageLatestVersion(
   packageName: string,
-  packageInfoCache?: PackageInfoCache
-): Promise<simver.SimVer[]> {
-  const updatedPackageInfo = await getPackageInfo(packageName, packageInfoCache)
-  return Object.keys(updatedPackageInfo.packageInfo)
+  options?: Readonly<PackageInfoOptions>
+): Promise<string> {
+  const updatedPackageInfo = await getPackageInfo(packageName, options)
+  const versions = Object.keys(updatedPackageInfo.packageInfo)
     .filter(version => updatedPackageInfo.packageInfo[version] === 'normal')
     .map(simver.parse)
+  const maxVersion = simver.max(versions)
+  if (maxVersion === null) {
+    throw Error(
+      `Could not determine latest version from [${versions.join(', ')}]`
+    )
+  } else {
+    return maxVersion
+  }
 }
 
-async function getPackageLatestSimVer(
-  packageName: string,
-  packageInfoCache?: PackageInfoCache
-): Promise<simver.SimVer | null> {
-  const versions = await getPackageSimVers(packageName, packageInfoCache)
-  return simver.max(versions)
+export interface PackageSourceOptions extends PackageInfoOptions {
+  packageVersion?: 'latest' | string
+  archivePath?: string
+  downloadAuth?: string
+  downloadHeaders?: http.OutgoingHttpHeaders
+  extractToPath?: string
+  tarFlags?: string[]
+  validateVersion?: boolean
 }
 
-export async function getPackageVersions(
+async function validatePackageVersion(
   packageName: string,
-  packageInfoCache?: PackageInfoCache
-): Promise<string[]> {
-  const versions = await getPackageSimVers(packageName, packageInfoCache)
-  return versions.map(simver.toString)
+  packageVersion: string,
+  options?: Readonly<PackageInfoOptions>
+): Promise<string> {
+  const packageInfo = await getPackageInfo(packageName, options)
+  const packageVersionStatus = packageInfo.packageInfo[packageVersion]
+  if (packageVersionStatus === undefined) {
+    throw Error(`Could not find ${packageName} version ${packageVersion}`)
+  } else if (packageVersionStatus === 'deprecated') {
+    throw Error(`${packageName} version ${packageVersion} is deprecated`)
+  } else {
+    assert(
+      packageVersionStatus === 'normal',
+      `Unexpected package version status for ${packageName}-${packageVersion}: ${packageVersionStatus}`
+    )
+    return packageVersion
+  }
 }
 
-export async function getPackageLatestVersion(
+export async function resolvePackageVersion(
   packageName: string,
-  packageInfoCache?: PackageInfoCache
-): Promise<string | null> {
-  const latestSimVer = await getPackageLatestSimVer(
-    packageName,
-    packageInfoCache
-  )
-  return latestSimVer !== null ? simver.toString(latestSimVer) : null
+  packageVersion: string,
+  options?: Readonly<PackageInfoOptions>
+): Promise<string> {
+  if (packageVersion === 'latest') {
+    return await getPackageLatestVersion(packageName, options)
+  } else {
+    return await validatePackageVersion(packageName, packageVersion, options)
+  }
 }
 
 export async function getPackageSource(
   packageName: string,
-  packageVersion?: string,
-  dest?: string,
-  flags?: string[],
-  packageInfoCache?: PackageInfoCache
-): Promise<string> {
-  if (packageVersion === undefined || packageVersion === 'latest') {
-    const latestVersion = await getPackageLatestVersion(
+  options?: Readonly<PackageSourceOptions>
+): Promise<{packageVersion: string; packageDir: string}> {
+  let packageVersion = options?.packageVersion ?? 'latest'
+  const validateVersion = options?.validateVersion ?? true
+  if (packageVersion === 'latest' || validateVersion) {
+    packageVersion = await resolvePackageVersion(
       packageName,
-      packageInfoCache
+      packageVersion,
+      options
     )
-    if (latestVersion === null) {
-      throw Error(`Could not determine latest version of ${packageName}`)
-    } else {
-      packageVersion = latestVersion
-    }
   }
-  const packageSourceArchive = await tc.downloadTool(
-    packageUrl(packageName, packageVersion)
+  const packageArchive = await tc.downloadTool(
+    packageUrl(packageName, packageVersion),
+    options?.archivePath,
+    options?.downloadAuth,
+    options?.downloadHeaders
   )
-  const packageSourceDir = await tc.extractTar(
-    packageSourceArchive,
-    dest,
-    flags
+  let packageDir = await tc.extractTar(
+    packageArchive,
+    options?.extractToPath,
+    options?.tarFlags
   )
-  return path.join(packageSourceDir, `${packageName}-${packageVersion}`)
+  packageDir = path.join(packageDir, `${packageName}-${packageVersion}`)
+  return {packageVersion, packageDir}
 }

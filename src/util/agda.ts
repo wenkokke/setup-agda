@@ -1,41 +1,52 @@
 import * as core from '@actions/core'
-import * as exec from '@actions/exec'
 import * as glob from '@actions/glob'
 import * as os from 'os'
-import {execOutput, getVersion} from './exec'
+import * as exec from './exec'
 import * as hackage from './hackage'
 import packageInfoCache from '../package-info/Agda.json'
+import assert from 'assert'
 
+export {
+  PackageInfoCache,
+  PackageInfoOptions,
+  PackageSourceOptions
+} from './hackage'
+
+const packageName = 'Agda'
 const oldPackageInfoCache = packageInfoCache as hackage.PackageInfoCache
 
+export async function getPackageSource(
+  options?: hackage.PackageSourceOptions
+): Promise<{packageVersion: string; packageDir: string}> {
+  return await hackage.getPackageSource(
+    packageName,
+    Object.assign({packageInfoCache: oldPackageInfoCache}, options)
+  )
+}
+
 export async function getPackageInfo(
-  returnCacheOnError?: boolean
+  options?: Readonly<hackage.PackageInfoOptions>
 ): Promise<hackage.PackageInfoCache> {
-  returnCacheOnError = returnCacheOnError ?? true
-  try {
-    return await hackage.getPackageInfo('Agda', oldPackageInfoCache)
-  } catch (error) {
-    if (returnCacheOnError === true) {
-      if (error instanceof Error) {
-        core.warning(error)
-      }
-      return oldPackageInfoCache
-    } else {
-      throw error
-    }
-  }
+  return await hackage.getPackageInfo(
+    packageName,
+    Object.assign({packageInfoCache: oldPackageInfoCache}, options)
+  )
 }
 
-export async function getVersions(): Promise<string[]> {
-  return await hackage.getPackageVersions('Agda', oldPackageInfoCache)
-}
-
-export async function getLatestVersion(): Promise<string | null> {
-  return await hackage.getPackageLatestVersion('Agda', oldPackageInfoCache)
+export async function resolvePackageVersion(
+  packageVersion: string,
+  options?: Readonly<hackage.PackageInfoOptions>
+): Promise<string> {
+  assert(packageVersion !== 'nightly', "resolveVersion: got 'nightly'")
+  return await hackage.resolvePackageVersion(
+    packageName,
+    packageVersion,
+    Object.assign({packageInfoCache: oldPackageInfoCache}, options)
+  )
 }
 
 export async function getSystemAgdaVersion(): Promise<string> {
-  return await getVersion('agda', {
+  return await exec.getVersion('agda', {
     parseOutput: output => {
       if (output.startsWith('Agda version ')) {
         return output.substring('Agda version '.length).trim()
@@ -56,7 +67,7 @@ export async function execSystemAgda(
   execOptions?: exec.ExecOptions
 ): Promise<string> {
   try {
-    return await execOutput('agda', args, execOptions)
+    return await exec.execOutput('agda', args, execOptions)
   } catch (error) {
     throw error instanceof Error
       ? Error([`Call to Agda failed with:`, error.message].join(os.EOL))

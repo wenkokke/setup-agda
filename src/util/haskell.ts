@@ -4,6 +4,33 @@ import * as fs from 'fs'
 import * as semver from 'semver'
 import * as os from 'os'
 import {execOutput, getVersion} from './exec'
+import setupHaskell from 'setup-haskell'
+
+export type SetupOptionKey =
+  | 'ghc-version'
+  | 'cabal-version'
+  | 'stack-version'
+  | 'enable-stack'
+  | 'stack-no-global'
+  | 'stack-setup-ghc'
+  | 'disable-matcher'
+
+export const setupOptionKeys: SetupOptionKey[] = [
+  'ghc-version',
+  'cabal-version',
+  'stack-version',
+  'enable-stack',
+  'stack-no-global',
+  'stack-setup-ghc',
+  'disable-matcher'
+]
+
+export type SetupOptions = Partial<Record<SetupOptionKey, string>>
+
+export async function setup(options?: Readonly<SetupOptions>): Promise<void> {
+  // TODO: upstream ghc-version as a semver.Range to setup
+  await setupHaskell((options ?? {}) as Record<string, string>)
+}
 
 export async function execSystemCabal(
   args: string[],
@@ -54,9 +81,7 @@ function getCompatibleGHCVersions(cabalFile: string): semver.SemVer[] {
 
 export function getLatestCompatibleGHCVersion(
   cabalFile: string,
-  options?: {
-    ghcVersion?: string | semver.Range
-  }
+  ghcVersionRange?: string | semver.Range
 ): string {
   // Get all compatible GHC versions from Cabal file:
   const compatibleGhcVersions = getCompatibleGHCVersions(cabalFile)
@@ -69,7 +94,7 @@ export function getLatestCompatibleGHCVersion(
   // Compute the latest satisying GHC version
   const latestCompatibleGhcVersion = semver.maxSatisfying(
     compatibleGhcVersions,
-    options?.ghcVersion ?? '*'
+    ghcVersionRange ?? '*'
   )
   if (latestCompatibleGhcVersion === null) {
     throw Error(`Could not find compatible GHC version`)
