@@ -1,4 +1,5 @@
 import * as httpm from '@actions/http-client'
+import * as core from '@actions/core'
 import * as os from 'os'
 import * as simver from './simver'
 import * as tc from '@actions/tool-cache'
@@ -32,6 +33,9 @@ export async function getPackageInfo(
     additionalHeaders['if-modified-since'] = packageInfoCache.lastModified
   }
   const resp = await http.get(packageInfoUrl(packageName), additionalHeaders)
+  core.debug(
+    `getPackageInfo: received '${resp.message.statusCode}: ${resp.message.statusMessage}' for package ${packageName}`
+  )
   if (resp.message.statusCode === 200) {
     const respBody = await resp.readBody()
     const packageInfo = JSON.parse(respBody) as PackageInfo

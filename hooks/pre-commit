@@ -19,3 +19,4 @@ npm run all
 # Commit generated files:
 git add dist/index.js
 git add dist/index.js.map
+git add src/package-info/Agda.json
