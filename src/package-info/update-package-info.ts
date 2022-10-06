@@ -76,7 +76,8 @@ async function run(): Promise<void> {
     if (errorMessage.startsWith('Error: ')) {
       errorMessage = errorMessage.substring('Error: '.length)
     }
-    process.stderr.write(`update-package-info: Error: ${errorMessage}`)
+    errorMessage = errorMessage.trim()
+    process.stderr.write(`update-package-info: Error: ${errorMessage}${os.EOL}`)
   }
 }
 
