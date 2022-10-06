@@ -217,6 +217,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
+const io = __importStar(__nccwpck_require__(7436));
 const path = __importStar(__nccwpck_require__(1017));
 const semver = __importStar(__nccwpck_require__(1383));
 const haskell = __importStar(__nccwpck_require__(1310));
@@ -309,8 +310,33 @@ function buildAgda(options) {
             'ghc-version': yield haskell.getSystemGHCVersion(),
             'cabal-version': yield haskell.getSystemCabalVersion()
         };
+        // Copy data to opts.installDir/data:
+        const installDataDir = path.join(opts.installDir, 'data');
+        core.info(`Install Agda-${packageVersion} data to ${installDataDir}`);
+        yield io.cp(path.join(packageDir, 'src', 'data'), opts.installDir, {
+            recursive: true
+        });
         // Cabal configure:
+        core.info(`Configure Agda-${packageVersion}`);
         yield haskell.execSystemCabal(['configure'].concat(buildFlags(versionInfo)), {
+            cwd: packageDir
+        });
+        // Cabal build:
+        core.info(`Build Agda-${packageVersion}`);
+        yield haskell.execSystemCabal(['build', 'exe:agda', 'exe:agda-mode'], {
+            cwd: packageDir
+        });
+        // Cabal install binaries to opts.installDir/bin:
+        const installBinDir = path.join(opts.installDir, 'bin');
+        core.info(`Install Agda-${packageVersion} binaries to ${installBinDir}`);
+        yield io.mkdirP(installBinDir);
+        yield haskell.execSystemCabal([
+            'install',
+            'exe:agda',
+            'exe:agda-mode',
+            '--install-method=copy',
+            `--installdir=${installBinDir}`
+        ], {
             cwd: packageDir
         });
     });
@@ -22516,7 +22542,7 @@ function ensureError(input) {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4":"deprecated","2.5.4.1":"deprecated","2.5.4.2":"normal","2.6.0":"deprecated","2.6.0.1":"normal","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Thu, 06 Oct 2022 18:31:58 GMT"}');
+module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4":"deprecated","2.5.4.1":"deprecated","2.5.4.2":"normal","2.6.0":"deprecated","2.6.0.1":"normal","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Thu, 06 Oct 2022 19:42:49 GMT"}');
 
 /***/ }),
 

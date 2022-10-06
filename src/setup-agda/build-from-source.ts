@@ -1,4 +1,5 @@
 import * as core from '@actions/core'
+import * as io from '@actions/io'
 import * as path from 'path'
 import * as semver from 'semver'
 import * as haskell from '../util/haskell'
@@ -120,8 +121,39 @@ export default async function buildAgda(
     'cabal-version': await haskell.getSystemCabalVersion()
   }
 
+  // Copy data to opts.installDir/data:
+  const installDataDir = path.join(opts.installDir, 'data')
+  core.info(`Install Agda-${packageVersion} data to ${installDataDir}`)
+  await io.cp(path.join(packageDir, 'src', 'data'), opts.installDir, {
+    recursive: true
+  })
+
   // Cabal configure:
+  core.info(`Configure Agda-${packageVersion}`)
   await haskell.execSystemCabal(['configure'].concat(buildFlags(versionInfo)), {
     cwd: packageDir
   })
+
+  // Cabal build:
+  core.info(`Build Agda-${packageVersion}`)
+  await haskell.execSystemCabal(['build', 'exe:agda', 'exe:agda-mode'], {
+    cwd: packageDir
+  })
+
+  // Cabal install binaries to opts.installDir/bin:
+  const installBinDir = path.join(opts.installDir, 'bin')
+  core.info(`Install Agda-${packageVersion} binaries to ${installBinDir}`)
+  await io.mkdirP(installBinDir)
+  await haskell.execSystemCabal(
+    [
+      'install',
+      'exe:agda',
+      'exe:agda-mode',
+      '--install-method=copy',
+      `--installdir=${installBinDir}`
+    ],
+    {
+      cwd: packageDir
+    }
+  )
 }
