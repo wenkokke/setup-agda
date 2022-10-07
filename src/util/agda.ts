@@ -3,50 +3,22 @@ import * as glob from '@actions/glob'
 import * as os from 'os'
 import * as exec from './exec'
 import * as hackage from './hackage'
-import packageInfoCache from '../package-info/Agda.json'
-import assert from 'assert'
+import distPackageInfoCache from '../package-info/Agda.json'
 
-export {
-  PackageInfoCache,
-  PackageInfoOptions,
-  PackageSourceOptions
-} from './hackage'
+export {PackageInfoCache} from './hackage'
 
-const packageName = 'Agda'
-const oldPackageInfoCache = packageInfoCache as hackage.PackageInfoCache
+export const packageInfoCache = distPackageInfoCache as hackage.PackageInfoCache
 
-export async function getPackageSource(
-  options?: hackage.PackageSourceOptions
-): Promise<{packageVersion: string; packageDir: string}> {
-  return await hackage.getPackageSource(
-    packageName,
-    Object.assign({packageInfoCache: oldPackageInfoCache}, options)
-  )
+export interface AgdaExecOptions extends exec.ExecOptions {
+  systemAgda?: string
+  systemAgdaDataDir?: string
 }
 
-export async function getPackageInfo(
-  options?: Readonly<hackage.PackageInfoOptions>
-): Promise<hackage.PackageInfoCache> {
-  return await hackage.getPackageInfo(
-    packageName,
-    Object.assign({packageInfoCache: oldPackageInfoCache}, options)
-  )
-}
-
-export async function resolvePackageVersion(
-  packageVersion: string,
-  options?: Readonly<hackage.PackageInfoOptions>
+export async function getSystemAgdaVersion(
+  options?: AgdaExecOptions
 ): Promise<string> {
-  assert(packageVersion !== 'nightly', "resolveVersion: got 'nightly'")
-  return await hackage.resolvePackageVersion(
-    packageName,
-    packageVersion,
-    Object.assign({packageInfoCache: oldPackageInfoCache}, options)
-  )
-}
-
-export async function getSystemAgdaVersion(): Promise<string> {
-  return await exec.getVersion('agda', {
+  const systemAgdaPath = options?.systemAgda ?? 'agda'
+  return await exec.getVersion(systemAgdaPath, {
     parseOutput: output => {
       if (output.startsWith('Agda version ')) {
         return output.substring('Agda version '.length).trim()
@@ -58,16 +30,23 @@ export async function getSystemAgdaVersion(): Promise<string> {
   })
 }
 
-export async function getSystemAgdaDataDir(): Promise<string> {
-  return (await execSystemAgda(['--print-agda-dir'])).trim()
+export async function getSystemAgdaDataDir(
+  options?: AgdaExecOptions
+): Promise<string> {
+  if (options?.systemAgdaDataDir !== undefined) {
+    return options?.systemAgdaDataDir
+  } else {
+    return await execSystemAgda(['--print-agda-dir'], options)
+  }
 }
 
 export async function execSystemAgda(
   args: string[],
-  execOptions?: exec.ExecOptions
+  options?: AgdaExecOptions
 ): Promise<string> {
   try {
-    return await exec.execOutput('agda', args, execOptions)
+    const systemAgdaPath = options?.systemAgda ?? 'agda'
+    return await exec.execOutput(systemAgdaPath, args, options)
   } catch (error) {
     throw error instanceof Error
       ? Error([`Call to Agda failed with:`, error.message].join(os.EOL))
@@ -75,16 +54,16 @@ export async function execSystemAgda(
   }
 }
 
-export async function testSystemAgda(): Promise<void> {
-  const versionString = await getSystemAgdaVersion()
+export async function testSystemAgda(options?: AgdaExecOptions): Promise<void> {
+  const versionString = await getSystemAgdaVersion(options)
   core.info(`Found Agda version ${versionString}`)
-  const dataDir = await getSystemAgdaDataDir()
+  const dataDir = await getSystemAgdaDataDir(options)
   core.info(`Found Agda data directory at ${dataDir}`)
   const globber = await glob.create(
     core.toPlatformPath(`${dataDir}/lib/prim/**/*.agda`)
   )
   for await (const agdaFile of globber.globGenerator()) {
     core.info(`Compile ${agdaFile}`)
-    await execSystemAgda(['-v2', agdaFile])
+    await execSystemAgda(['-v2', agdaFile], options)
   }
 }

@@ -1,15 +1,13 @@
-import * as agda from '../util/agda'
-import * as os from 'os'
 import * as fs from 'fs'
+import * as os from 'os'
 import * as path from 'path'
+import * as agda from '../util/agda'
 import * as hackage from '../util/hackage'
-import * as packageInfoCache from './Agda.json'
-
-const oldPackageInfoCache = packageInfoCache as hackage.PackageInfoCache
 
 async function run(): Promise<void> {
   try {
-    const newPackageInfoCache = await agda.getPackageInfo()
+    const oldPackageInfoCache = agda.packageInfoCache
+    const newPackageInfoCache = await hackage.getPackageInfo('Agda')
     const oldTime = new Date(oldPackageInfoCache.lastModified).getTime()
     const newTime = new Date(newPackageInfoCache.lastModified).getTime()
     let failed = false

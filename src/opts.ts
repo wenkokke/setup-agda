@@ -1,9 +1,9 @@
+import appDirs from 'appdirsjs'
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
 import * as path from 'path'
-import * as haskell from './util/haskell'
-import appDirs from 'appdirsjs'
 import * as process from 'process'
+import * as haskell from './util/haskell'
 
 // Setup options from actions.yml:
 
@@ -39,12 +39,25 @@ export function setDefaults(
 
 // Other options:
 
-export type Platform = 'linux' | 'darwin' | 'win32'
+export type OS = 'linux' | 'macos' | 'windows'
 
-export const platform = process.platform as Platform
+export const os: OS = (() => {
+  switch (process.platform) {
+    case 'linux':
+      return 'linux'
+    case 'darwin':
+      return 'macos'
+    case 'win32':
+      return 'windows'
+    default:
+      throw Error(`Unsupported platform ${process.platform}`)
+  }
+})()
 
 const agdaDirs = appDirs({appName: 'agda'})
 
 export const cacheDir: string = agdaDirs.cache
 
-export const installDir: string = agdaDirs.data
+export function installDir(version: string, ...paths: string[]): string {
+  return path.join(agdaDirs.data, version, ...paths)
+}

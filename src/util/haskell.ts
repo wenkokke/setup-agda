@@ -1,10 +1,10 @@
 import * as core from '@actions/core'
 import * as exec from '@actions/exec'
 import * as fs from 'fs'
-import * as semver from 'semver'
 import * as os from 'os'
-import {execOutput, getVersion} from './exec'
+import * as semver from 'semver'
 import setupHaskell from 'setup-haskell'
+import {execOutput, getVersion} from './exec'
 
 export type SetupOptionKey =
   | 'ghc-version'
@@ -39,14 +39,14 @@ export async function execSystemCabal(
   return await execOutput('cabal', args, execOptions)
 }
 
-export async function execSystemGHC(
+export async function execSystemGhc(
   args: string[],
   execOptions?: exec.ExecOptions
 ): Promise<string> {
   return await execOutput('ghc', args, execOptions)
 }
 
-export async function getSystemGHCVersion(): Promise<string> {
+export async function getSystemGhcVersion(): Promise<string> {
   return getVersion('ghc', {versionFlag: '--numeric-version', silent: true})
 }
 
@@ -59,7 +59,7 @@ const compatibleGHCVersionRegExp = RegExp(
   'g'
 )
 
-function getCompatibleGHCVersions(cabalFile: string): semver.SemVer[] {
+function getCompatibleGhcVersions(cabalFile: string): semver.SemVer[] {
   const packageCabalFileContents = fs.readFileSync(cabalFile).toString()
   const versions = []
   for (const match of packageCabalFileContents.matchAll(
@@ -79,12 +79,12 @@ function getCompatibleGHCVersions(cabalFile: string): semver.SemVer[] {
   return versions
 }
 
-export function getLatestCompatibleGHCVersion(
+export function getLatestCompatibleGhcVersion(
   cabalFile: string,
   ghcVersionRange?: string | semver.Range
 ): string {
   // Get all compatible GHC versions from Cabal file:
-  const compatibleGhcVersions = getCompatibleGHCVersions(cabalFile)
+  const compatibleGhcVersions = getCompatibleGhcVersions(cabalFile)
   core.info(
     [
       `Found compatible GHC versions:`,
