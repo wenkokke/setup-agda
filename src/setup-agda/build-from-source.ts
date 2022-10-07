@@ -251,7 +251,7 @@ function supportsExecutableStatic(versionInfo: VersionInfo): boolean {
   // NOTE:
   //  We only set --enable-executable-static on Linux, because the deploy workflow does it.
   //  https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-executable-static
-  const osOK = opts.os === 'linux'
+  const osOK = false // opts.os === 'linux'
   // NOTE:
   //  We only set --enable-executable-static if Ghc >=8.4, when the flag was added:
   //  https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-static
