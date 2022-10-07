@@ -10,15 +10,13 @@ export {PackageInfoCache} from './hackage'
 export const packageInfoCache = distPackageInfoCache as hackage.PackageInfoCache
 
 export interface AgdaExecOptions extends exec.ExecOptions {
-  systemAgda?: string
-  systemAgdaDataDir?: string
+  agdaPath?: string
 }
 
 export async function getSystemAgdaVersion(
   options?: AgdaExecOptions
 ): Promise<string> {
-  const systemAgdaPath = options?.systemAgda ?? 'agda'
-  return await exec.getVersion(systemAgdaPath, {
+  return await exec.getVersion(options?.agdaPath ?? 'agda', {
     parseOutput: output => {
       if (output.startsWith('Agda version ')) {
         return output.substring('Agda version '.length).trim()
@@ -33,11 +31,7 @@ export async function getSystemAgdaVersion(
 export async function getSystemAgdaDataDir(
   options?: AgdaExecOptions
 ): Promise<string> {
-  if (options?.systemAgdaDataDir !== undefined) {
-    return options?.systemAgdaDataDir
-  } else {
-    return await execSystemAgda(['--print-agda-dir'], options)
-  }
+  return await execSystemAgda(['--print-agda-dir'], options)
 }
 
 export async function execSystemAgda(
@@ -45,8 +39,7 @@ export async function execSystemAgda(
   options?: AgdaExecOptions
 ): Promise<string> {
   try {
-    const systemAgdaPath = options?.systemAgda ?? 'agda'
-    return await exec.execOutput(systemAgdaPath, args, options)
+    return await exec.execOutput(options?.agdaPath ?? 'agda', args, options)
   } catch (error) {
     throw error instanceof Error
       ? Error([`Call to Agda failed with:`, error.message].join(os.EOL))

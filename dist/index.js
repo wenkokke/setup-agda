@@ -291,10 +291,9 @@ function findCachedAgda(agdaVersion) {
         else {
             try {
                 core.info(`Found Agda ${agdaVersion} in cache`);
-                agda.testSystemAgda({
-                    systemAgda: path.join(installDirTC, 'bin', 'agda'),
-                    systemAgdaDataDir: path.join(installDirTC, 'data')
-                });
+                const agdaPath = path.join(installDirTC, 'bin', 'agda');
+                const env = { Agda_datadir: path.join(installDirTC, 'data') };
+                agda.testSystemAgda({ agdaPath, env });
                 return installDirTC;
             }
             catch (error) {
@@ -361,10 +360,9 @@ function buildAgda(options, packageInfoOptions) {
             recursive: true
         });
         // 8. Test the installation:
-        yield agda.testSystemAgda({
-            systemAgda: path.join(binDir, 'agda'),
-            systemAgdaDataDir: dataDir
-        });
+        const agdaPath = path.join(binDir, 'agda');
+        const env = { Agda_datadir: dataDir };
+        yield agda.testSystemAgda({ agdaPath, env });
         // 10. Cache the installation:
         const installDirTC = yield tc.cacheDir(installDir, 'agda', options['agda-version']);
         // 11. Upload as artifact:
@@ -471,10 +469,9 @@ function supportsSplitSections(versionInfo) {
 function uploadAsArtifact(installDir) {
     return __awaiter(this, void 0, void 0, function* () {
         // Gather info for artifact:
-        const version = yield agda.getSystemAgdaVersion({
-            systemAgda: path.join(installDir, 'bin', 'agda'),
-            systemAgdaDataDir: path.join(installDir, 'data')
-        });
+        const agdaPath = path.join(installDir, 'bin', 'agda');
+        const env = { Agda_datadir: path.join(installDir, 'data') };
+        const version = yield agda.getSystemAgdaVersion({ agdaPath, env });
         const name = `Agda-${version}-${opts.os}-${process.arch}`;
         const globber = yield glob.create(path.join(installDir, '**', '*'), {
             followSymbolicLinks: false,
@@ -693,8 +690,7 @@ exports.packageInfoCache = Agda_json_1.default;
 function getSystemAgdaVersion(options) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
-        const systemAgdaPath = (_a = options === null || options === void 0 ? void 0 : options.systemAgda) !== null && _a !== void 0 ? _a : 'agda';
-        return yield exec.getVersion(systemAgdaPath, {
+        return yield exec.getVersion((_a = options === null || options === void 0 ? void 0 : options.agdaPath) !== null && _a !== void 0 ? _a : 'agda', {
             parseOutput: output => {
                 if (output.startsWith('Agda version ')) {
                     return output.substring('Agda version '.length).trim();
@@ -710,12 +706,7 @@ function getSystemAgdaVersion(options) {
 exports.getSystemAgdaVersion = getSystemAgdaVersion;
 function getSystemAgdaDataDir(options) {
     return __awaiter(this, void 0, void 0, function* () {
-        if ((options === null || options === void 0 ? void 0 : options.systemAgdaDataDir) !== undefined) {
-            return options === null || options === void 0 ? void 0 : options.systemAgdaDataDir;
-        }
-        else {
-            return yield execSystemAgda(['--print-agda-dir'], options);
-        }
+        return yield execSystemAgda(['--print-agda-dir'], options);
     });
 }
 exports.getSystemAgdaDataDir = getSystemAgdaDataDir;
@@ -723,8 +714,7 @@ function execSystemAgda(args, options) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const systemAgdaPath = (_a = options === null || options === void 0 ? void 0 : options.systemAgda) !== null && _a !== void 0 ? _a : 'agda';
-            return yield exec.execOutput(systemAgdaPath, args, options);
+            return yield exec.execOutput((_a = options === null || options === void 0 ? void 0 : options.agdaPath) !== null && _a !== void 0 ? _a : 'agda', args, options);
         }
         catch (error) {
             throw error instanceof Error
@@ -28241,7 +28231,7 @@ function ensureError(input) {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4":"deprecated","2.5.4.1":"deprecated","2.5.4.2":"normal","2.6.0":"deprecated","2.6.0.1":"normal","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Fri, 07 Oct 2022 17:51:13 GMT"}');
+module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4":"deprecated","2.5.4.1":"deprecated","2.5.4.2":"normal","2.6.0":"deprecated","2.6.0.1":"normal","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Fri, 07 Oct 2022 18:49:19 GMT"}');
 
 /***/ }),
 

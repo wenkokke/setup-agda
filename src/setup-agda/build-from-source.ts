@@ -37,10 +37,9 @@ async function findCachedAgda(agdaVersion: string): Promise<string | null> {
   } else {
     try {
       core.info(`Found Agda ${agdaVersion} in cache`)
-      agda.testSystemAgda({
-        systemAgda: path.join(installDirTC, 'bin', 'agda'),
-        systemAgdaDataDir: path.join(installDirTC, 'data')
-      })
+      const agdaPath = path.join(installDirTC, 'bin', 'agda')
+      const env = {Agda_datadir: path.join(installDirTC, 'data')}
+      agda.testSystemAgda({agdaPath, env})
       return installDirTC
     } catch (error) {
       if (error instanceof Error) {
@@ -124,10 +123,9 @@ async function buildAgda(
   })
 
   // 8. Test the installation:
-  await agda.testSystemAgda({
-    systemAgda: path.join(binDir, 'agda'),
-    systemAgdaDataDir: dataDir
-  })
+  const agdaPath = path.join(binDir, 'agda')
+  const env = {Agda_datadir: dataDir}
+  await agda.testSystemAgda({agdaPath, env})
 
   // 10. Cache the installation:
   const installDirTC = await tc.cacheDir(
@@ -274,10 +272,9 @@ function supportsSplitSections(versionInfo: VersionInfo): boolean {
 
 async function uploadAsArtifact(installDir: string): Promise<string> {
   // Gather info for artifact:
-  const version = await agda.getSystemAgdaVersion({
-    systemAgda: path.join(installDir, 'bin', 'agda'),
-    systemAgdaDataDir: path.join(installDir, 'data')
-  })
+  const agdaPath = path.join(installDir, 'bin', 'agda')
+  const env = {Agda_datadir: path.join(installDir, 'data')}
+  const version = await agda.getSystemAgdaVersion({agdaPath, env})
   const name = `Agda-${version}-${opts.os}-${process.arch}`
   const globber = await glob.create(path.join(installDir, '**', '*'), {
     followSymbolicLinks: false,
