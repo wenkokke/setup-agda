@@ -684,6 +684,7 @@ exports.testSystemAgda = exports.execSystemAgda = exports.getSystemAgdaDataDir =
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const os = __importStar(__nccwpck_require__(2037));
+const path = __importStar(__nccwpck_require__(1017));
 const exec = __importStar(__nccwpck_require__(4369));
 const Agda_json_1 = __importDefault(__nccwpck_require__(4862));
 exports.packageInfoCache = Agda_json_1.default;
@@ -731,12 +732,16 @@ function testSystemAgda(options) {
         core.info(`Found Agda version ${versionString}`);
         const dataDir = yield getSystemAgdaDataDir(options);
         core.info(`Found Agda data directory at ${dataDir}`);
-        const globber = yield glob.create(core.toPlatformPath(`${dataDir}/lib/prim/**/*.agda`));
+        const globber = yield glob.create(path.join(dataDir, 'lib', 'prim', '**', '*.agda'), {
+            followSymbolicLinks: false,
+            implicitDescendants: false,
+            matchDirectories: false
+        });
         try {
             for (var _b = __asyncValues(globber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
                 const agdaFile = _c.value;
                 core.info(`Compile ${agdaFile}`);
-                yield execSystemAgda(['-v2', agdaFile], options);
+                yield execSystemAgda(['-v2', agdaFile], Object.assign(Object.assign({}, options), { cwd: path.join(dataDir, 'lib', 'prim') }));
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -28231,7 +28236,7 @@ function ensureError(input) {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4":"deprecated","2.5.4.1":"deprecated","2.5.4.2":"normal","2.6.0":"deprecated","2.6.0.1":"normal","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Fri, 07 Oct 2022 18:49:19 GMT"}');
+module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4":"deprecated","2.5.4.1":"deprecated","2.5.4.2":"normal","2.6.0":"deprecated","2.6.0.1":"normal","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Fri, 07 Oct 2022 23:03:31 GMT"}');
 
 /***/ }),
 

@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as os from 'os'
+import * as path from 'path'
 import * as exec from './exec'
 import * as hackage from './hackage'
 import distPackageInfoCache from '../package-info/Agda.json'
@@ -53,10 +54,18 @@ export async function testSystemAgda(options?: AgdaExecOptions): Promise<void> {
   const dataDir = await getSystemAgdaDataDir(options)
   core.info(`Found Agda data directory at ${dataDir}`)
   const globber = await glob.create(
-    core.toPlatformPath(`${dataDir}/lib/prim/**/*.agda`)
+    path.join(dataDir, 'lib', 'prim', '**', '*.agda'),
+    {
+      followSymbolicLinks: false,
+      implicitDescendants: false,
+      matchDirectories: false
+    }
   )
   for await (const agdaFile of globber.globGenerator()) {
     core.info(`Compile ${agdaFile}`)
-    await execSystemAgda(['-v2', agdaFile], options)
+    await execSystemAgda(['-v2', agdaFile], {
+      ...options,
+      cwd: path.join(dataDir, 'lib', 'prim')
+    })
   }
 }
