@@ -65,13 +65,9 @@ function buildFlags(options: Readonly<opts.SetupOptions>): string[] {
     flags.push('--flag=Agda:-enable-cluster-counting')
   }
   // If supported, build a static executable
-  if (haskell.supportsExecutableStatic(options)) {
-    flags.push('--enable-executable-static')
-  }
+  // if (haskell.supportsExecutableStatic(options))
   // If supported, set --split-sections.
-  if (haskell.supportsSplitSections(options)) {
-    flags.push('--enable-split-sections')
-  }
+  // if (haskell.supportsSplitSections(options))
   // Finally, add --copy-bins to install to stack local:
   flags.push('--copy-bins')
   return flags
