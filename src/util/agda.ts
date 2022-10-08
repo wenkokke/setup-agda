@@ -1,14 +1,17 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
-import * as os from 'os'
 import * as path from 'path'
+import * as opts from '../opts'
 import * as exec from './exec'
 import * as hackage from './hackage'
 import distPackageInfoCache from '../package-info/Agda.json'
 
-export {PackageInfoCache} from './hackage'
-
 export const packageInfoCache = distPackageInfoCache as hackage.PackageInfoCache
+
+export const agdaExe: string = opts.os === 'windows' ? 'agda.exe' : 'agda'
+
+export const agdaModeExe: string =
+  opts.os === 'windows' ? 'agda-mode.exe' : 'agda-mode'
 
 export interface AgdaExecOptions extends exec.ExecOptions {
   agdaPath?: string
@@ -17,7 +20,7 @@ export interface AgdaExecOptions extends exec.ExecOptions {
 export async function getSystemAgdaVersion(
   options?: AgdaExecOptions
 ): Promise<string> {
-  return await exec.getVersion(options?.agdaPath ?? 'agda', {
+  return await exec.getVersion(options?.agdaPath ?? agdaExe, {
     parseOutput: output => {
       if (output.startsWith('Agda version ')) {
         return output.substring('Agda version '.length).trim()
@@ -39,13 +42,7 @@ export async function execSystemAgda(
   args: string[],
   options?: AgdaExecOptions
 ): Promise<string> {
-  try {
-    return await exec.execOutput(options?.agdaPath ?? 'agda', args, options)
-  } catch (error) {
-    throw error instanceof Error
-      ? Error([`Call to Agda failed with:`, error.message].join(os.EOL))
-      : error
-  }
+  return await exec.execOutput(options?.agdaPath ?? agdaExe, args, options)
 }
 
 export async function testSystemAgda(options?: AgdaExecOptions): Promise<void> {

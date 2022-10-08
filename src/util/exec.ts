@@ -1,5 +1,4 @@
 import * as exec from '@actions/exec'
-import * as os from 'os'
 
 export * from '@actions/exec'
 
@@ -37,15 +36,8 @@ export async function getVersion(
   options?: VersionOptions
 ): Promise<string> {
   const versionFlag = options?.versionFlag ?? '--version'
-  const parseOutput = options?.parseOutput ?? (output => output)
-  try {
-    return parseOutput(await execOutput(prog, [versionFlag], options))
-  } catch (error) {
-    if (error instanceof Error) {
-      error.message = [`Could not get ${prog} version:`, error.message].join(
-        os.EOL
-      )
-    }
-    throw error
-  }
+  const output = await execOutput(prog, [versionFlag], options)
+  return options?.parseOutput !== undefined
+    ? options?.parseOutput(output)
+    : output
 }

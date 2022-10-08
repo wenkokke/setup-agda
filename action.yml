@@ -43,7 +43,7 @@ inputs:
     description: 'If specified, will setup Stack'
   stack-no-global:
     required: false
-    description: 'Unsupported.'
+    description: 'If specified, enable-stack must be set. Prevents installing GHC and Cabal globally.'
   stack-setup-ghc:
     required: false
     description: 'If specified, enable-stack must be set. Will run stack setup to install the specified GHC'

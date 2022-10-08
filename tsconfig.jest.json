@@ -1,3 +1,0 @@
-{
-  "include": ["jest.config.js", "__tests__/**/*.test.ts"]
-}
