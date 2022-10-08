@@ -7,11 +7,14 @@ import * as haskell from './util/haskell'
 
 // Setup options from actions.yml:
 
-export type SetupOptionKey = 'agda-version' | haskell.SetupOptionKey
+export type SetupOptionKey =
+  | 'agda-version'
+  | 'upload-artifact'
+  | haskell.SetupOptionKey
 
-export const setupOptionKeys: SetupOptionKey[] = [
-  'agda-version' as SetupOptionKey
-].concat(haskell.setupOptionKeys)
+export const setupOptionKeys: SetupOptionKey[] = (
+  ['agda-version', 'upload-artifact'] as SetupOptionKey[]
+).concat(haskell.setupOptionKeys)
 
 export type SetupOptions = Record<SetupOptionKey, string>
 

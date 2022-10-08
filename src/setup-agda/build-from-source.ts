@@ -4,6 +4,7 @@ import * as glob from '@actions/glob'
 import * as io from '@actions/io'
 import * as tc from '@actions/tool-cache'
 import assert from 'assert'
+import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
 import * as semver from 'semver'
@@ -80,20 +81,20 @@ async function buildAgda(
   // 3. Setup Ghc via <haskell/actions/setup>:
   await haskell.setup({...options, 'ghc-version': ghcVersion})
 
-  // 4. Configure the build:
+  // 4. Configure:
   core.info(`Configure Agda-${options['agda-version']}`)
   const flags = buildFlags({
     'agda-version': options['agda-version'],
     'ghc-version': await haskell.getSystemGhcVersion(),
     'cabal-version': await haskell.getSystemCabalVersion()
   })
-  await haskell.execSystemCabal(['configure'].concat(flags), {
+  await haskell.execSystemCabal(['v2-configure'].concat(flags), {
     cwd: sourceDir
   })
 
   // 5. Build:
   core.info(`Build Agda-${options['agda-version']}`)
-  await haskell.execSystemCabal(['build', 'exe:agda', 'exe:agda-mode'], {
+  await haskell.execSystemCabal(['v2-build', 'exe:agda', 'exe:agda-mode'], {
     cwd: sourceDir
   })
 
@@ -104,7 +105,7 @@ async function buildAgda(
   await io.mkdirP(binDir)
   await haskell.execSystemCabal(
     [
-      'install',
+      'v2-install',
       'exe:agda',
       'exe:agda-mode',
       '--install-method=copy',
@@ -134,9 +135,12 @@ async function buildAgda(
     options['agda-version']
   )
 
-  // 11. Upload as artifact:
-  const artifactName = await uploadAsArtifact(installDir)
-  core.info(`Uploaded build artiface '${artifactName}'`)
+  // 11. If 'upload-artifact' is specified, upload as a binary distribution:
+  if (options['upload-artifact'] !== '') {
+    const platformTag = readPlatformTagSync(options, sourceDir)
+    const artifactName = await uploadAsArtifact(installDir, platformTag)
+    core.info(`Uploaded build artiface '${artifactName}'`)
+  }
 
   return installDirTC
 }
@@ -270,12 +274,45 @@ function supportsSplitSections(versionInfo: VersionInfo): boolean {
   return osOK && ghcVersionOK && cabalVersionOK
 }
 
-async function uploadAsArtifact(installDir: string): Promise<string> {
+function readPlatformTagSync(
+  options: Readonly<opts.SetupOptions>,
+  sourceDir: string
+): string {
+  // Nix-style local builds were introduced in Cabal version 1.24, and are
+  // supported on all compatible GHC versions, i.e., 7.0 and later, see:
+  // https://cabal.readthedocs.io/en/3.8/nix-local-build-overview.html
+  if (
+    simver.gte(options['ghc-version'], '7.0') &&
+    simver.gte(options['cabal-version'], '1.24')
+  ) {
+    const planPath = path.join(sourceDir, 'dist-newstyle', 'cache', 'plan.json')
+    if (!fs.existsSync(planPath)) {
+      throw Error('Run `cabal configure` first.')
+    } else {
+      const planString = fs.readFileSync(planPath).toString()
+      const plan = JSON.parse(planString)
+      if (plan?.os !== undefined && plan?.arch !== undefined) {
+        return `${plan?.os}-${plan?.arch}`
+      } else {
+        throw Error([`Could not parse ${planPath}:`, planString].join(os.EOL))
+      }
+    }
+  } else {
+    throw Error(
+      `Cabal version ${options['cabal-version']} does not support Nix-style local builds`
+    )
+  }
+}
+
+async function uploadAsArtifact(
+  installDir: string,
+  platformTag: string
+): Promise<string> {
   // Gather info for artifact:
   const agdaPath = path.join(installDir, 'bin', 'agda')
   const env = {Agda_datadir: path.join(installDir, 'data')}
   const version = await agda.getSystemAgdaVersion({agdaPath, env})
-  const name = `Agda-${version}-${opts.os}-${process.arch}`
+  const name = `Agda-${version}-${platformTag}`
   const globber = await glob.create(path.join(installDir, '**', '*'), {
     followSymbolicLinks: false,
     implicitDescendants: false,

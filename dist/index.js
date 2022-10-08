@@ -80,9 +80,7 @@ const yaml = __importStar(__nccwpck_require__(1917));
 const path = __importStar(__nccwpck_require__(1017));
 const process = __importStar(__nccwpck_require__(7282));
 const haskell = __importStar(__nccwpck_require__(1310));
-exports.setupOptionKeys = [
-    'agda-version'
-].concat(haskell.setupOptionKeys);
+exports.setupOptionKeys = ['agda-version', 'upload-artifact'].concat(haskell.setupOptionKeys);
 exports.setupOptionDefaults = yaml.load(fs.readFileSync(path.join(__dirname, '..', 'action.yml'), 'utf8')).inputs;
 function setDefaults(options) {
     var _a, _b;
@@ -257,6 +255,7 @@ const glob = __importStar(__nccwpck_require__(8090));
 const io = __importStar(__nccwpck_require__(7436));
 const tc = __importStar(__nccwpck_require__(7784));
 const assert_1 = __importDefault(__nccwpck_require__(9491));
+const fs = __importStar(__nccwpck_require__(7147));
 const os = __importStar(__nccwpck_require__(2037));
 const path = __importStar(__nccwpck_require__(1017));
 const semver = __importStar(__nccwpck_require__(1383));
@@ -324,19 +323,19 @@ function buildAgda(options, packageInfoOptions) {
         core.debug(`Selected Ghc version ${ghcVersion}`);
         // 3. Setup Ghc via <haskell/actions/setup>:
         yield haskell.setup(Object.assign(Object.assign({}, options), { 'ghc-version': ghcVersion }));
-        // 4. Configure the build:
+        // 4. Configure:
         core.info(`Configure Agda-${options['agda-version']}`);
         const flags = buildFlags({
             'agda-version': options['agda-version'],
             'ghc-version': yield haskell.getSystemGhcVersion(),
             'cabal-version': yield haskell.getSystemCabalVersion()
         });
-        yield haskell.execSystemCabal(['configure'].concat(flags), {
+        yield haskell.execSystemCabal(['v2-configure'].concat(flags), {
             cwd: sourceDir
         });
         // 5. Build:
         core.info(`Build Agda-${options['agda-version']}`);
-        yield haskell.execSystemCabal(['build', 'exe:agda', 'exe:agda-mode'], {
+        yield haskell.execSystemCabal(['v2-build', 'exe:agda', 'exe:agda-mode'], {
             cwd: sourceDir
         });
         // 6. Install binaries to installDir/bin:
@@ -345,7 +344,7 @@ function buildAgda(options, packageInfoOptions) {
         core.info(`Install Agda-${options['agda-version']} binaries to ${binDir}`);
         yield io.mkdirP(binDir);
         yield haskell.execSystemCabal([
-            'install',
+            'v2-install',
             'exe:agda',
             'exe:agda-mode',
             '--install-method=copy',
@@ -365,9 +364,12 @@ function buildAgda(options, packageInfoOptions) {
         yield agda.testSystemAgda({ agdaPath, env });
         // 10. Cache the installation:
         const installDirTC = yield tc.cacheDir(installDir, 'agda', options['agda-version']);
-        // 11. Upload as artifact:
-        const artifactName = yield uploadAsArtifact(installDir);
-        core.info(`Uploaded build artiface '${artifactName}'`);
+        // 11. If 'upload-artifact' is specified, upload as a binary distribution:
+        if (options['upload-artifact'] !== '') {
+            const platformTag = readPlatformTagSync(options, sourceDir);
+            const artifactName = yield uploadAsArtifact(installDir, platformTag);
+            core.info(`Uploaded build artiface '${artifactName}'`);
+        }
         return installDirTC;
     });
 }
@@ -466,13 +468,38 @@ function supportsSplitSections(versionInfo) {
     const cabalVersionOK = simver.gte(versionInfo['cabal-version'], '2.2');
     return osOK && ghcVersionOK && cabalVersionOK;
 }
-function uploadAsArtifact(installDir) {
+function readPlatformTagSync(options, sourceDir) {
+    // Nix-style local builds were introduced in Cabal version 1.24, and are
+    // supported on all compatible GHC versions, i.e., 7.0 and later, see:
+    // https://cabal.readthedocs.io/en/3.8/nix-local-build-overview.html
+    if (simver.gte(options['ghc-version'], '7.0') &&
+        simver.gte(options['cabal-version'], '1.24')) {
+        const planPath = path.join(sourceDir, 'dist-newstyle', 'cache', 'plan.json');
+        if (!fs.existsSync(planPath)) {
+            throw Error('Run `cabal configure` first.');
+        }
+        else {
+            const planString = fs.readFileSync(planPath).toString();
+            const plan = JSON.parse(planString);
+            if ((plan === null || plan === void 0 ? void 0 : plan.os) !== undefined && (plan === null || plan === void 0 ? void 0 : plan.arch) !== undefined) {
+                return `${plan === null || plan === void 0 ? void 0 : plan.os}-${plan === null || plan === void 0 ? void 0 : plan.arch}`;
+            }
+            else {
+                throw Error([`Could not parse ${planPath}:`, planString].join(os.EOL));
+            }
+        }
+    }
+    else {
+        throw Error(`Cabal version ${options['cabal-version']} does not support Nix-style local builds`);
+    }
+}
+function uploadAsArtifact(installDir, platformTag) {
     return __awaiter(this, void 0, void 0, function* () {
         // Gather info for artifact:
         const agdaPath = path.join(installDir, 'bin', 'agda');
         const env = { Agda_datadir: path.join(installDir, 'data') };
         const version = yield agda.getSystemAgdaVersion({ agdaPath, env });
-        const name = `Agda-${version}-${opts.os}-${process.arch}`;
+        const name = `Agda-${version}-${platformTag}`;
         const globber = yield glob.create(path.join(installDir, '**', '*'), {
             followSymbolicLinks: false,
             implicitDescendants: false,
@@ -28236,7 +28263,7 @@ function ensureError(input) {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4":"deprecated","2.5.4.1":"deprecated","2.5.4.2":"normal","2.6.0":"deprecated","2.6.0.1":"normal","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Fri, 07 Oct 2022 23:56:24 GMT"}');
+module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4":"deprecated","2.5.4.1":"deprecated","2.5.4.2":"normal","2.6.0":"deprecated","2.6.0.1":"normal","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Sat, 08 Oct 2022 13:23:38 GMT"}');
 
 /***/ }),
 
