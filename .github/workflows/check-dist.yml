@@ -15,7 +15,7 @@ jobs:
   check-dist:
     runs-on: ubuntu-latest
 
-    if: ! contains(github.event.head_commit.message, '[skip check dist]')
+    if: ${{ !contains(github.event.head_commit.message, '[skip check dist]') }}
 
     steps:
       - uses: actions/checkout@v3
