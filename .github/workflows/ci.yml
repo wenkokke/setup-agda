@@ -43,6 +43,8 @@ jobs:
       matrix:
         os_with_name:
         - [ubuntu-latest, Linux]
+        - [macos-latest, MacOS]
+        - [windows-latest, Windows]
         agda-version: ['latest']
         experimental: [true]
 
