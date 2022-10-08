@@ -61,15 +61,15 @@ function buildFlags(options: Readonly<opts.SetupOptions>): string[] {
   flags.push('--no-executable-profiling')
   flags.push('--no-library-profiling')
   // Disable --cluster-counting
-  if (opts.supportsClusterCounting(options)) {
+  if (agda.supportsClusterCounting(options)) {
     flags.push('--flag=Agda:-enable-cluster-counting')
   }
   // If supported, build a static executable
-  if (opts.supportsExecutableStatic(options)) {
+  if (haskell.supportsExecutableStatic(options)) {
     flags.push('--enable-executable-static')
   }
   // If supported, set --split-sections.
-  if (opts.supportsSplitSections(options)) {
+  if (haskell.supportsSplitSections(options)) {
     flags.push('--enable-split-sections')
   }
   // Finally, add --copy-bins to install to stack local:
@@ -122,25 +122,3 @@ export async function findCompatibleGhcVersions(
   }
   return versions
 }
-
-// function buildFlagsStack(versionInfo: VersionInfo): string[] {
-//   // NOTE:
-//   //   We set the build flags following Agda's deploy workflow, which builds
-//   //   the nightly distributions, except that we disable --cluster-counting
-//   //   for all builds. See:
-//   //   https://github.com/agda/agda/blob/d5b5d90a3e34cf8cbae838bc20e94b74a20fea9c/src/github/workflows/deploy.yml#L37-L47
-//   const flags: string[] = []
-//   flags.push('--no-executable-profiling')
-//   flags.push('--no-library-profiling')
-//   // Disable --cluster-counting
-//   if (supportsClusterCounting(versionInfo)) {
-//     flags.push('--flag Agda:-enable-cluster-counting')
-//   }
-//   // If supported, build a static executable
-//   // NOTE: not supported by stack
-//   // If supported, set --split-sections.
-//   if (supportsSplitSections(versionInfo)) {
-//     flags.push('--split-objs')
-//   }
-//   return flags
-// }

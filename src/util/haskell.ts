@@ -5,6 +5,7 @@ import * as semver from 'semver'
 import setupHaskell from 'setup-haskell'
 import assert from 'assert'
 import ensureError from 'ensure-error'
+import * as simver from './simver'
 
 export type SetupOptionKey =
   | 'ghc-version'
@@ -180,4 +181,31 @@ export async function getSystemStackVersion(): Promise<string> {
     versionFlag: '--numeric-version',
     silent: true
   })
+}
+
+// Helper functions to check support for build flags
+
+export function supportsExecutableStatic(options: opts.SetupOptions): boolean {
+  // NOTE:
+  //  We only set --enable-executable-static on Linux, because the deploy workflow does it.
+  //  https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-executable-static
+  const osOK = false // os === 'linux' // Unsupported on Ubuntu 20.04
+  // NOTE:
+  //  We only set --enable-executable-static if Ghc >=8.4, when the flag was added:
+  //  https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-static
+  const ghcVersionOK = simver.gte(options['ghc-version'], '8.4')
+  return osOK && ghcVersionOK
+}
+
+export function supportsSplitSections(options: opts.SetupOptions): boolean {
+  // NOTE:
+  //   We only set --split-sections on Linux and Windows, as it does nothing on MacOS:
+  //   https://github.com/agda/agda/issues/5940
+  const osOK = opts.os === 'linux' || opts.os === 'windows'
+  // NOTE:
+  //   We only set --split-sections if Ghc >=8.0 and Cabal >=2.2, when the flag was added:
+  //   https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-split-sections
+  const ghcVersionOK = simver.gte(options['ghc-version'], '8.0')
+  const cabalVersionOK = simver.gte(options['cabal-version'], '2.2')
+  return osOK && ghcVersionOK && cabalVersionOK
 }

@@ -73,7 +73,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsClusterCounting = exports.installDir = exports.cacheDir = exports.os = exports.validSetupOptions = exports.setupOptionDefaults = exports.setupOptionKeys = void 0;
+exports.installDir = exports.cacheDir = exports.os = exports.validSetupOptions = exports.setupOptionDefaults = exports.setupOptionKeys = void 0;
 const appdirsjs_1 = __importDefault(__nccwpck_require__(360));
 const fs = __importStar(__nccwpck_require__(7147));
 const semver = __importStar(__nccwpck_require__(1383));
@@ -81,7 +81,6 @@ const yaml = __importStar(__nccwpck_require__(1917));
 const path = __importStar(__nccwpck_require__(1017));
 const process = __importStar(__nccwpck_require__(7282));
 const haskell = __importStar(__nccwpck_require__(1310));
-const simver = __importStar(__nccwpck_require__(7609));
 exports.setupOptionKeys = ['agda-version', 'ghc-version-range', 'upload-artifact'].concat(haskell.setupOptionKeys);
 exports.setupOptionDefaults = yaml.load(fs.readFileSync(path.join(__dirname, '..', 'action.yml'), 'utf8')).inputs;
 function validSetupOptions(options) {
@@ -94,7 +93,7 @@ function validSetupOptions(options) {
         }
     }
     // Was 'agda-version' set to 'nightly'?
-    if (options['agda-version'] !== 'nightly') {
+    if (options['agda-version'] === 'nightly') {
         throw Error(`Value 'nightly' for 'agda-version' is no longer supported.`);
     }
     // Was 'ghc-version' set?
@@ -131,41 +130,6 @@ function installDir(version, ...paths) {
     return path.join(agdaDirs.data, version, ...paths);
 }
 exports.installDir = installDir;
-// Helpers for determining build flag support:
-// TODO: move to util/haskell
-function supportsClusterCounting(options) {
-    // NOTE:
-    //   We only disable --cluster-counting on versions which support it,
-    //   i.e., versions after 2.5.3:
-    //   https://github.com/agda/agda/blob/f50c14d3a4e92ed695783e26dbe11ad1ad7b73f7/doc/release-notes/2.5.3.md
-    return simver.gte(options['agda-version'], '2.5.3');
-}
-exports.supportsClusterCounting = supportsClusterCounting;
-function supportsExecutableStatic(options) {
-    // NOTE:
-    //  We only set --enable-executable-static on Linux, because the deploy workflow does it.
-    //  https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-executable-static
-    const osOK = false; // os === 'linux' // Unsupported on Ubuntu 20.04
-    // NOTE:
-    //  We only set --enable-executable-static if Ghc >=8.4, when the flag was added:
-    //  https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-static
-    const ghcVersionOK = simver.gte(options['ghc-version'], '8.4');
-    return osOK && ghcVersionOK;
-}
-exports.supportsExecutableStatic = supportsExecutableStatic;
-function supportsSplitSections(options) {
-    // NOTE:
-    //   We only set --split-sections on Linux and Windows, as it does nothing on MacOS:
-    //   https://github.com/agda/agda/issues/5940
-    const osOK = exports.os === 'linux' || exports.os === 'windows';
-    // NOTE:
-    //   We only set --split-sections if Ghc >=8.0 and Cabal >=2.2, when the flag was added:
-    //   https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-split-sections
-    const ghcVersionOK = simver.gte(options['ghc-version'], '8.0');
-    const cabalVersionOK = simver.gte(options['cabal-version'], '2.2');
-    return osOK && ghcVersionOK && cabalVersionOK;
-}
-exports.supportsSplitSections = supportsSplitSections;
 
 
 /***/ }),
@@ -518,7 +482,7 @@ const fs = __importStar(__nccwpck_require__(7147));
 const os = __importStar(__nccwpck_require__(2037));
 const path = __importStar(__nccwpck_require__(1017));
 const semver = __importStar(__nccwpck_require__(1383));
-const opts = __importStar(__nccwpck_require__(1352));
+const agda = __importStar(__nccwpck_require__(9552));
 const haskell = __importStar(__nccwpck_require__(1310));
 function build(sourceDir, installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -592,15 +556,15 @@ function buildFlags(options) {
     flags.push('--disable-executable-profiling');
     flags.push('--disable-library-profiling');
     // Disable --cluster-counting
-    if (opts.supportsClusterCounting(options)) {
+    if (agda.supportsClusterCounting(options)) {
         flags.push('--flags=-enable-cluster-counting');
     }
     // If supported, build a static executable
-    if (opts.supportsExecutableStatic(options)) {
+    if (haskell.supportsExecutableStatic(options)) {
         flags.push('--enable-executable-static');
     }
     // If supported, set --split-sections.
-    if (opts.supportsSplitSections(options)) {
+    if (haskell.supportsSplitSections(options)) {
         flags.push('--enable-split-sections');
     }
     return flags;
@@ -693,7 +657,6 @@ const io = __importStar(__nccwpck_require__(7436));
 const os = __importStar(__nccwpck_require__(2037));
 const path = __importStar(__nccwpck_require__(1017));
 const semver = __importStar(__nccwpck_require__(1383));
-const opts = __importStar(__nccwpck_require__(1352));
 const agda = __importStar(__nccwpck_require__(9552));
 const haskell = __importStar(__nccwpck_require__(1310));
 function build(sourceDir, installDir, options) {
@@ -740,15 +703,15 @@ function buildFlags(options) {
     flags.push('--no-executable-profiling');
     flags.push('--no-library-profiling');
     // Disable --cluster-counting
-    if (opts.supportsClusterCounting(options)) {
+    if (agda.supportsClusterCounting(options)) {
         flags.push('--flag=Agda:-enable-cluster-counting');
     }
     // If supported, build a static executable
-    if (opts.supportsExecutableStatic(options)) {
+    if (haskell.supportsExecutableStatic(options)) {
         flags.push('--enable-executable-static');
     }
     // If supported, set --split-sections.
-    if (opts.supportsSplitSections(options)) {
+    if (haskell.supportsSplitSections(options)) {
         flags.push('--enable-split-sections');
     }
     // Finally, add --copy-bins to install to stack local:
@@ -796,27 +759,6 @@ function findCompatibleGhcVersions(sourceDir) {
     });
 }
 exports.findCompatibleGhcVersions = findCompatibleGhcVersions;
-// function buildFlagsStack(versionInfo: VersionInfo): string[] {
-//   // NOTE:
-//   //   We set the build flags following Agda's deploy workflow, which builds
-//   //   the nightly distributions, except that we disable --cluster-counting
-//   //   for all builds. See:
-//   //   https://github.com/agda/agda/blob/d5b5d90a3e34cf8cbae838bc20e94b74a20fea9c/src/github/workflows/deploy.yml#L37-L47
-//   const flags: string[] = []
-//   flags.push('--no-executable-profiling')
-//   flags.push('--no-library-profiling')
-//   // Disable --cluster-counting
-//   if (supportsClusterCounting(versionInfo)) {
-//     flags.push('--flag Agda:-enable-cluster-counting')
-//   }
-//   // If supported, build a static executable
-//   // NOTE: not supported by stack
-//   // If supported, set --split-sections.
-//   if (supportsSplitSections(versionInfo)) {
-//     flags.push('--split-objs')
-//   }
-//   return flags
-// }
 
 
 /***/ }),
@@ -1004,12 +946,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.testSystemAgda = exports.execSystemAgda = exports.getSystemAgdaDataDir = exports.getSystemAgdaVersion = exports.agdaModeExe = exports.agdaExe = exports.packageInfoCache = void 0;
+exports.supportsClusterCounting = exports.testSystemAgda = exports.execSystemAgda = exports.getSystemAgdaDataDir = exports.getSystemAgdaVersion = exports.agdaModeExe = exports.agdaExe = exports.packageInfoCache = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const path = __importStar(__nccwpck_require__(1017));
 const opts = __importStar(__nccwpck_require__(1352));
 const exec = __importStar(__nccwpck_require__(4369));
+const simver = __importStar(__nccwpck_require__(7609));
 const Agda_json_1 = __importDefault(__nccwpck_require__(4862));
 exports.packageInfoCache = Agda_json_1.default;
 exports.agdaExe = opts.os === 'windows' ? 'agda.exe' : 'agda';
@@ -1073,6 +1016,15 @@ function testSystemAgda(options) {
     });
 }
 exports.testSystemAgda = testSystemAgda;
+// Helper functions to check support for build flags
+function supportsClusterCounting(options) {
+    // NOTE:
+    //   We only disable --cluster-counting on versions which support it,
+    //   i.e., versions after 2.5.3:
+    //   https://github.com/agda/agda/blob/f50c14d3a4e92ed695783e26dbe11ad1ad7b73f7/doc/release-notes/2.5.3.md
+    return simver.gte(options['agda-version'], '2.5.3');
+}
+exports.supportsClusterCounting = supportsClusterCounting;
 
 
 /***/ }),
@@ -1368,13 +1320,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getSystemStackVersion = exports.getStackCabalVersionForGhc = exports.getSystemCabalVersion = exports.getSystemGhcVersion = exports.execSystemStack = exports.execSystemCabal = exports.execSystemGhc = exports.setup = exports.setupOptionKeys = void 0;
+exports.supportsSplitSections = exports.supportsExecutableStatic = exports.getSystemStackVersion = exports.getStackCabalVersionForGhc = exports.getSystemCabalVersion = exports.getSystemGhcVersion = exports.execSystemStack = exports.execSystemCabal = exports.execSystemGhc = exports.setup = exports.setupOptionKeys = void 0;
 const core = __importStar(__nccwpck_require__(2186));
+const opts = __importStar(__nccwpck_require__(1352));
 const exec = __importStar(__nccwpck_require__(4369));
 const semver = __importStar(__nccwpck_require__(1383));
 const setup_haskell_1 = __importDefault(__nccwpck_require__(6501));
 const assert_1 = __importDefault(__nccwpck_require__(9491));
 const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
+const simver = __importStar(__nccwpck_require__(7609));
 exports.setupOptionKeys = [
     'ghc-version',
     'cabal-version',
@@ -1524,6 +1478,32 @@ function getSystemStackVersion() {
     });
 }
 exports.getSystemStackVersion = getSystemStackVersion;
+// Helper functions to check support for build flags
+function supportsExecutableStatic(options) {
+    // NOTE:
+    //  We only set --enable-executable-static on Linux, because the deploy workflow does it.
+    //  https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-executable-static
+    const osOK = false; // os === 'linux' // Unsupported on Ubuntu 20.04
+    // NOTE:
+    //  We only set --enable-executable-static if Ghc >=8.4, when the flag was added:
+    //  https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-static
+    const ghcVersionOK = simver.gte(options['ghc-version'], '8.4');
+    return osOK && ghcVersionOK;
+}
+exports.supportsExecutableStatic = supportsExecutableStatic;
+function supportsSplitSections(options) {
+    // NOTE:
+    //   We only set --split-sections on Linux and Windows, as it does nothing on MacOS:
+    //   https://github.com/agda/agda/issues/5940
+    const osOK = opts.os === 'linux' || opts.os === 'windows';
+    // NOTE:
+    //   We only set --split-sections if Ghc >=8.0 and Cabal >=2.2, when the flag was added:
+    //   https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-split-sections
+    const ghcVersionOK = simver.gte(options['ghc-version'], '8.0');
+    const cabalVersionOK = simver.gte(options['cabal-version'], '2.2');
+    return osOK && ghcVersionOK && cabalVersionOK;
+}
+exports.supportsSplitSections = supportsSplitSections;
 
 
 /***/ }),

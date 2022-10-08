@@ -4,6 +4,7 @@ import * as path from 'path'
 import * as opts from '../opts'
 import * as exec from './exec'
 import * as hackage from './hackage'
+import * as simver from './simver'
 import distPackageInfoCache from '../package-info/Agda.json'
 
 export const packageInfoCache = distPackageInfoCache as hackage.PackageInfoCache
@@ -65,4 +66,14 @@ export async function testSystemAgda(options?: AgdaExecOptions): Promise<void> {
       cwd: path.join(dataDir, 'lib', 'prim')
     })
   }
+}
+
+// Helper functions to check support for build flags
+
+export function supportsClusterCounting(options: opts.SetupOptions): boolean {
+  // NOTE:
+  //   We only disable --cluster-counting on versions which support it,
+  //   i.e., versions after 2.5.3:
+  //   https://github.com/agda/agda/blob/f50c14d3a4e92ed695783e26dbe11ad1ad7b73f7/doc/release-notes/2.5.3.md
+  return simver.gte(options['agda-version'], '2.5.3')
 }
