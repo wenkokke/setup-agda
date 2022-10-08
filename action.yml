@@ -1,42 +1,49 @@
 name: 'Setup Agda'
 author: 'Wen Kokke'
-description: 'Set up a specific version of Agda.'
+description: 'Set up a specific version of Agda'
 inputs:
   agda-version:
     description: "The Agda version. Can be 'nightly', 'latest', a specific version number (e.g., 2.6.2.2), a partial version number (e.g., 2.6), or a git commit hash."
     required: true
     default: 'latest'
   upload-artifact:
-    description: 'If specified, will upload a binary distribution for the specified Agda version.'
+    description: 'If specified, will upload a binary distribution for the specified Agda version'
     required: false
+  ghc-version-range:
+    required: false
+    description: 'Range of GHC versions to use. It will be used to restrict the set of GHC versions compatible with the specified Agda version'
+    default: '*'
+
+  # The following inputs are used exclusively by actions/haskell/setup:
   #
-  # NOTE:
-  #   The following inputs are taken from actions/haskell/setup, because
-  #   haskell/actions/setup reads action.yml from `__dirname/../action.yml`,
-  #   which resolves to wenkokke/setup-agda/action.yml when we use it.
-  #   When haskell/actions/setup reads default values for ghc-version,
-  #   cabal-version, and stack-version, this fails with:
+  # NOTE: All inputs for actions/haskell/setup are reproduced here, even the unsupported ones,
+  #       because actions/haskell/setup reads its default values from `__dirname/../actions.yml`,
+  #       which resolves to this file when using actions/haskell/setup as a library.
   #
-  #   Error: Cannot read properties of undefined (reading 'default')
+  #       The implementation for actions/haskell/setup does not account for the default values not
+  #       being present, and ALWAYS reads the defaults, even if the inputs are specified, this always
+  #       fails with:
+  #
+  #         Error: Cannot read properties of undefined (reading 'default')
   #
   ghc-version:
     required: false
-    description: 'Version of GHC to use. If set to "latest", it will always get the latest stable version. If set to "head", it will always get the latest build of GHC.'
+    description: 'Unsupported. Use "ghc-version-range"'
     default: 'latest'
   cabal-version:
     required: false
-    description: 'Version of Cabal to use. If set to "latest", it will always get the latest stable version.'
+    description: 'Version of Cabal to use. If set to "latest", it will always get the latest stable version'
     default: 'latest'
   stack-version:
     required: false
-    description: 'Version of Stack to use. If set to "latest", it will always get the latest stable version.'
+    description: 'Version of Stack to use. If set to "latest", it will always get the latest stable version'
     default: 'latest'
   enable-stack:
     required: false
     description: 'If specified, will setup Stack'
   stack-no-global:
     required: false
-    description: 'If specified, enable-stack must be set. Prevents installing GHC and Cabal globally'
+    description: 'Unsupported.'
   stack-setup-ghc:
     required: false
     description: 'If specified, enable-stack must be set. Will run stack setup to install the specified GHC'
@@ -48,10 +55,10 @@ outputs:
     description: 'The path of the agda executable _directory_'
   agda-data-path:
     description: 'The path of the agda data _directory_'
-  #
-  # NOTE:
-  #   The following outputs are set by actions/haskell/setup, if it is called.
-  #
+  haskell-setup:
+    description: 'Whether or not actions/haskell/setup ran'
+
+  # The following outputs are set by actions/haskell/setup, if it runs:
   ghc-path:
     description: 'The path of the ghc executable _directory_'
   cabal-path:

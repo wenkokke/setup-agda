@@ -9,7 +9,6 @@ import * as os from 'os'
 import * as path from 'path'
 import * as semver from 'semver'
 import * as opts from '../opts'
-import {SetupOptions} from '../opts'
 import * as agda from '../util/agda'
 import * as hackage from '../util/hackage'
 import * as haskell from '../util/haskell'
@@ -72,14 +71,12 @@ async function buildAgda(
   core.debug(`Downloaded source to ${sourceDir}`)
 
   // 2. Select compatible Ghc versions:
-  const ghcVersion = haskell.getLatestCompatibleGhcVersion(
-    path.join(sourceDir, 'Agda.cabal'),
-    resolveGhcVersionRange(options)
-  )
-  core.debug(`Selected Ghc version ${ghcVersion}`)
+  const cabalFile = path.join(sourceDir, 'Agda.cabal')
+  const ghcVersionRange = findGhcVersionRange(cabalFile, options)
+  core.debug(`Determined compatible GHC version range to be ${ghcVersionRange}`)
 
   // 3. Setup Ghc via <haskell/actions/setup>:
-  await haskell.setup({...options, 'ghc-version': ghcVersion})
+  await haskell.setup({...options, 'ghc-version-range': ghcVersionRange})
 
   // 4. Configure:
   core.info(`Configure Agda-${options['agda-version']}`)
@@ -135,7 +132,7 @@ async function buildAgda(
     options['agda-version']
   )
 
-  // 11. If 'upload-artifact' is specified, upload as a binary distribution:
+  // 11. (Optional) If 'upload-artifact' is specified, upload as a binary distribution:
   if (options['upload-artifact'] !== '') {
     const platformTag = readPlatformTagSync(options, sourceDir)
     const artifactName = await uploadAsArtifact(installDir, platformTag)
@@ -176,19 +173,43 @@ async function resolveAgdaVersion(
   return [options, packageInfoOptions]
 }
 
-function resolveGhcVersionRange(options: SetupOptions): semver.Range {
-  // Parse the 'ghc-version' input as a semantic version range:
-  const ghcVersionRange =
-    options?.['ghc-version'] === undefined ||
-    options?.['ghc-version'] === 'latest'
-      ? '*'
-      : options?.['ghc-version']
-  if (semver.validRange(ghcVersionRange) === null) {
-    throw Error(
-      `ghc-version is set to an unsupported version range '${options?.['ghc-version']}'`
-    )
+const ghcVersionRegExp = RegExp('GHC == (?<version>\\d+\\.\\d+\\.\\d+)', 'g')
+
+function findGhcVersionRange(
+  cabalFile: string,
+  options: Readonly<opts.SetupOptions>
+): string {
+  let versions: string[] = []
+
+  // Get versions from Cabal file
+  const cabalFileContents = fs.readFileSync(cabalFile).toString()
+  for (const match of cabalFileContents.matchAll(ghcVersionRegExp)) {
+    if (match.groups !== undefined) {
+      if (semver.valid(match.groups.version) !== null) {
+        versions.push(match.groups.version)
+      } else {
+        core.warning(
+          `Could not parse GHC version '${match.groups.version}' in: ${cabalFile}`
+        )
+      }
+    }
+  }
+
+  // Filter versions using 'ghc-version-range'
+  versions = versions.filter(version =>
+    semver.satisfies(version, options['ghc-version-range'])
+  )
+
+  // Return version range:
+  if (versions.length === null) {
+    throw Error(`No compatible GHC versions found`)
   } else {
-    return new semver.Range(ghcVersionRange, {loose: true})
+    const range = versions.join(' || ')
+    assert(
+      semver.validRange(range) !== null,
+      `Invalid GHC version range ${range}`
+    )
+    return range
   }
 }
 
