@@ -17,34 +17,19 @@ jobs:
       - run: npm install
       - run: npm run all
 
-  # NOTE: agda/agda deleted their nightly releases
-  #
-  # nightly:
-  #   strategy:
-  #     matrix:
-  #       os: [ubuntu-latest, macos-latest, windows-latest]
-  #       agda-version: ['nightly']
-  #       experimental: [false]
-  #   name: Test
-  #   runs-on: ${{ matrix.os }}
-  #   continue-on-error: ${{ matrix.experimental }}
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: ./
-  #       with:
-  #         agda-version: ${{ matrix.agda-version }}
-
   latest:
     strategy:
       matrix:
-        os: [ubuntu-latest] # macos-latest, windows-latest
+        os: [ubuntu-latest, macos-latest, windows-latest]
         agda-version: ['latest']
-        experimental: [false]
+        experimental: [true]
     name: Test
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     steps:
       - uses: actions/checkout@v3
-      - uses: ./
+      - name: wenkokke/setup-agda
+        uses: ./
         with:
           agda-version: ${{ matrix.agda-version }}
+          upload-artifact: true
