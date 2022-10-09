@@ -38,7 +38,7 @@ jobs:
         with:
           agda-version: ${{ matrix.agda-version }}
           cabal-version: ${{ matrix.cabal-version }}
-          upload-artifact: true
+          upload-bdist: true
           upload-bdist-compress-bin: true
 
   latest_stack:
