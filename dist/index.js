@@ -1568,27 +1568,39 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.rmRF = exports.mkdirP = exports.mv = exports.cp = void 0;
 const io = __importStar(__nccwpck_require__(7436));
+const opts = __importStar(__nccwpck_require__(1352));
+const unescapedSpaceRegex = new RegExp('(?<!\\\\) ');
+function escape(filePath) {
+    switch (opts.os) {
+        case 'macos':
+        case 'linux':
+            return filePath.replace(unescapedSpaceRegex, '\\ ');
+        case 'windows':
+        default:
+            return filePath;
+    }
+}
 function cp(source, dest, options) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield io.cp(`'${source}'`, `'${dest}'`, options);
+        return yield io.cp(escape(source), escape(dest), options);
     });
 }
 exports.cp = cp;
 function mv(source, dest, options) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield io.mv(`'${source}'`, `'${dest}'`, options);
+        return yield io.mv(escape(source), escape(dest), options);
     });
 }
 exports.mv = mv;
 function mkdirP(fsPath) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield io.mkdirP(`'${fsPath}'`);
+        return yield io.mkdirP(escape(fsPath));
     });
 }
 exports.mkdirP = mkdirP;
 function rmRF(inputPath) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield io.rmRF(`'${inputPath}'`);
+        return yield io.rmRF(escape(inputPath));
     });
 }
 exports.rmRF = rmRF;
