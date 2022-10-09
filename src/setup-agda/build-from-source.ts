@@ -94,8 +94,7 @@ async function build(
 
   // 7. If 'upload-artifact' is specified, upload as a binary distribution:
   if (options['upload-artifact'] !== '') {
-    const platformTag = await buildTool.readPlatformTag(sourceDir)
-    const artifactName = await uploadAsArtifact(installDir, platformTag)
+    const artifactName = await uploadAsArtifact(installDir)
     core.info(`Uploaded build artiface '${artifactName}'`)
   }
 
@@ -201,14 +200,14 @@ async function findGhcVersionRange(
   }
 }
 
-async function uploadAsArtifact(
-  installDir: string,
-  platformTag: string
-): Promise<string> {
+async function uploadAsArtifact(installDir: string): Promise<string> {
+  // NOTE: Requires GHC
+
   // Gather info for artifact:
   const agdaPath = path.join(installDir, 'bin', agda.agdaExe)
   const env = {Agda_datadir: path.join(installDir, 'data')}
   const version = await agda.getSystemAgdaVersion({agdaPath, env})
+  const platformTag = await haskell.getGhcTargetPlatform()
   const name = `Agda-${version}-${platformTag}`
   const globber = await glob.create(path.join(installDir, '**', '*'), {
     followSymbolicLinks: false,

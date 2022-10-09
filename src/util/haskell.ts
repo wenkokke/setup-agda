@@ -126,6 +126,26 @@ function latestSatisfyingGhcVersion(
   }
 }
 
+export async function getGhcInfo(
+  execOptions?: exec.ExecOptions
+): Promise<Partial<Record<string, string>>> {
+  const ghcInfoString = await execSystemGhc(['--info'], execOptions)
+  const ghcInfo = JSON.parse(ghcInfoString.replace('(', '[').replace(')', ']'))
+  return Object.fromEntries(ghcInfo)
+}
+
+export async function getGhcTargetPlatform(
+  execOptions?: exec.ExecOptions
+): Promise<string> {
+  const ghcInfo = await getGhcInfo(execOptions)
+  const targetPlatform = ghcInfo['Target platform']
+  if (targetPlatform === undefined) {
+    throw Error('Could not determine GHC target platform')
+  } else {
+    return targetPlatform
+  }
+}
+
 export async function execSystemGhc(
   args: string[],
   execOptions?: exec.ExecOptions

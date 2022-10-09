@@ -335,8 +335,7 @@ function build(options, packageInfoOptions) {
         const installDirTC = yield tc.cacheDir(installDir, 'agda', options['agda-version']);
         // 7. If 'upload-artifact' is specified, upload as a binary distribution:
         if (options['upload-artifact'] !== '') {
-            const platformTag = yield buildTool.readPlatformTag(sourceDir);
-            const artifactName = yield uploadAsArtifact(installDir, platformTag);
+            const artifactName = yield uploadAsArtifact(installDir);
             core.info(`Uploaded build artiface '${artifactName}'`);
         }
         return installDirTC;
@@ -401,12 +400,14 @@ function findGhcVersionRange(versions, options) {
         }
     });
 }
-function uploadAsArtifact(installDir, platformTag) {
+function uploadAsArtifact(installDir) {
     return __awaiter(this, void 0, void 0, function* () {
+        // NOTE: Requires GHC
         // Gather info for artifact:
         const agdaPath = path.join(installDir, 'bin', agda.agdaExe);
         const env = { Agda_datadir: path.join(installDir, 'data') };
         const version = yield agda.getSystemAgdaVersion({ agdaPath, env });
+        const platformTag = yield haskell.getGhcTargetPlatform();
         const name = `Agda-${version}-${platformTag}`;
         const globber = yield glob.create(path.join(installDir, '**', '*'), {
             followSymbolicLinks: false,
@@ -1318,7 +1319,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.supportsSplitSections = exports.supportsExecutableStatic = exports.getSystemStackVersion = exports.getStackCabalVersionForGhc = exports.getSystemCabalVersion = exports.getSystemGhcVersion = exports.execSystemStack = exports.execSystemCabal = exports.execSystemGhc = exports.setup = exports.setupOptionKeys = void 0;
+exports.supportsSplitSections = exports.supportsExecutableStatic = exports.getSystemStackVersion = exports.getStackCabalVersionForGhc = exports.getSystemCabalVersion = exports.getSystemGhcVersion = exports.execSystemStack = exports.execSystemCabal = exports.execSystemGhc = exports.getGhcTargetPlatform = exports.getGhcInfo = exports.setup = exports.setupOptionKeys = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const opts = __importStar(__nccwpck_require__(1352));
 const exec = __importStar(__nccwpck_require__(4369));
@@ -1419,6 +1420,27 @@ function latestSatisfyingGhcVersion(options) {
         return ghcVersion;
     }
 }
+function getGhcInfo(execOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const ghcInfoString = yield execSystemGhc(['--info'], execOptions);
+        const ghcInfo = JSON.parse(ghcInfoString.replace('(', '[').replace(')', ']'));
+        return Object.fromEntries(ghcInfo);
+    });
+}
+exports.getGhcInfo = getGhcInfo;
+function getGhcTargetPlatform(execOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const ghcInfo = yield getGhcInfo(execOptions);
+        const targetPlatform = ghcInfo['Target platform'];
+        if (targetPlatform === undefined) {
+            throw Error('Could not determine GHC target platform');
+        }
+        else {
+            return targetPlatform;
+        }
+    });
+}
+exports.getGhcTargetPlatform = getGhcTargetPlatform;
 function execSystemGhc(args, execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield exec.execOutput('ghc', args, execOptions);
