@@ -84,17 +84,8 @@ async function build(
     const {extraLibDir, extraIncludeDir} = await icu.installICU(
       options['icu-version']
     )
-    options = {
-      ...options,
-      'extra-lib-dirs': [
-        extraLibDir,
-        ...options['extra-lib-dirs'].split(',').filter(dir => dir !== '')
-      ].join(','),
-      'extra-include-dirs': [
-        extraIncludeDir,
-        ...options['extra-include-dirs'].split(',').filter(dir => dir !== '')
-      ].join(',')
-    }
+    options = opts.addLibDir(options, extraLibDir)
+    options = opts.addIncludeDir(options, extraIncludeDir)
   }
 
   // 4. Build:
@@ -246,7 +237,12 @@ async function uploadAsArtifact(
   // Copy data
   await copyData(path.join(installDir, 'data'), bdistDir)
 
-  // Gather info for artifact:
+  // Test artifact
+  const agdaPath = path.join(bdistDir, 'bin', agda.agdaExe)
+  const env = {Agda_datadir: path.join(bdistDir, 'data')}
+  await agda.testSystemAgda({agdaPath, env})
+
+  // Create file list for artifact:
   const globber = await glob.create(path.join(bdistDir, '**', '*'), {
     followSymbolicLinks: false,
     implicitDescendants: false,

@@ -89,6 +89,14 @@ function buildFlags(options: Readonly<opts.SetupOptions>): string[] {
   if (haskell.supportsSplitSections(options)) {
     flags.push('--enable-split-sections')
   }
+  // Add --extra-lib-dirs
+  for (const libDir of opts.libDirs(options)) {
+    flags.push(`--extra-lib-dirs=${libDir}`)
+  }
+  // Add --extra-include-dirs
+  for (const includeDir of opts.includeDirs(options)) {
+    flags.push(`--extra-include-dirs=${includeDir}`)
+  }
   return flags
 }
 

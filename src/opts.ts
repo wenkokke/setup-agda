@@ -80,6 +80,33 @@ export function validSetupOptions(
   return options as Required<SetupOptions>
 }
 
+export function libDirs(options: Readonly<SetupOptions>): string[] {
+  return options['extra-lib-dirs'].split(',').filter(libDir => libDir !== '')
+}
+
+export function addLibDir(
+  options: Readonly<SetupOptions>,
+  libDir: string
+): SetupOptions {
+  return {...options, 'extra-lib-dirs': [libDir, libDirs(options)].join(',')}
+}
+
+export function includeDirs(options: Readonly<SetupOptions>): string[] {
+  return options['extra-include-dirs']
+    .split(',')
+    .filter(includeDir => includeDir !== '')
+}
+
+export function addIncludeDir(
+  options: Readonly<SetupOptions>,
+  includeDir: string
+): SetupOptions {
+  return {
+    ...options,
+    'extra-include-dirs': [includeDir, includeDirs(options)].join(',')
+  }
+}
+
 // Helpers for matching the OS:
 
 export type OS = 'linux' | 'macos' | 'windows'

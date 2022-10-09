@@ -1,0 +1,87 @@
+name: Build Agda
+
+on:
+  workflow_call:
+    inputs: &inputs
+      runs-on:
+        default: 'ubuntu-latest'
+        description: 'The type of machine to run the job on. Default "ubuntu-latest"'
+        required: true
+        type: string
+      agda-version:
+        default: 'latest'
+        description: 'The Agda version. Can be "nightly", "latest", a specific version number (e.g., 2.6.2.2), a partial version number (e.g., 2.6), or a git commit hash'
+        required: true
+        type: string
+      ghc-version-range:
+        default: '*'
+        description: 'Range of GHC versions to use. It will be used to restrict the set of GHC versions compatible with the specified Agda version'
+        required: false
+        type: string
+      upload-bdist:
+        default: ''
+        description: 'If specified, will upload a binary distribution for the specified Agda version'
+        required: false
+        type: string
+      upload-bdist-target-platform:
+        default: ''
+        description: 'If specified, will override the target platform triple used in the archive. Otherwise, this is inferred from `ghc --info`'
+        required: false
+        type: string
+      upload-bdist-compress-bin:
+        default: ''
+        description: 'If specified, will compress the Agda binaries'
+        required: false
+        type: string
+      cabal-version:
+        default: 'latest'
+        description: 'Version of Cabal to use. If set to "latest", it will always get the latest stable version'
+        required: false
+        type: string
+      stack-version:
+        default: 'latest'
+        description: 'Version of Stack to use. If set to "latest", it will always get the latest stable version'
+        required: false
+        type: string
+      enable-stack:
+        default: ''
+        description: 'If specified, will setup Stack'
+        required: false
+        type: string
+      stack-no-global:
+        default: ''
+        description: 'If specified, enable-stack must be set. Prevents installing GHC and Cabal globally'
+        required: false
+        type: string
+      stack-setup-ghc:
+        default: ''
+        description: 'If specified, enable-stack must be set. Will run stack setup to install the specified GHC'
+        required: false
+        type: string
+      disable-matcher:
+        default: ''
+        description: 'If specified, disables match messages from GHC as GitHub CI annotations'
+        required: false
+        type: string
+
+  workflow_dispatch: *inputs
+
+jobs:
+  build:
+    name: Build Agda ${{ inputs.agda-version }} on ${{ inputs.runs-on }}
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./
+        with:
+          agda-version: ${{ inputs.agda-version }}
+          ghc-version-range: ${{ inputs.ghc-version-range }}
+          upload-bdist: ${{ inputs.upload-bdist }}
+          upload-bdist-target-platform: ${{ inputs.upload-bdist-target-platform }}
+          upload-bdist-compress-bin: ${{ inputs.upload-bdist-compress-bin }}
+          cabal-version: ${{ inputs.cabal-version }}
+          stack-version: ${{ inputs.stack-version }}
+          enable-stack: ${{ inputs.enable-stack }}
+          stack-no-global: ${{ inputs.stack-no-global }}
+          stack-setup-ghc: ${{ inputs.stack-setup-ghc }}
+          disable-matcher: ${{ inputs.disable-matcher }}

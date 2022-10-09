@@ -3,21 +3,21 @@ author: 'Wen Kokke'
 description: 'Set up a specific version of Agda'
 inputs:
   agda-version:
-    description: "The Agda version. Can be 'nightly', 'latest', a specific version number (e.g., 2.6.2.2), a partial version number (e.g., 2.6), or a git commit hash."
-    required: true
     default: 'latest'
+    description: 'The Agda version. Can be "nightly", "latest", a specific version number (e.g., 2.6.2.2), a partial version number (e.g., 2.6), or a git commit hash'
+    required: true
   ghc-version-range:
-    required: false
-    description: 'Range of GHC versions to use. It will be used to restrict the set of GHC versions compatible with the specified Agda version'
     default: '*'
+    description: 'Range of GHC versions to use. It will be used to restrict the set of GHC versions compatible with the specified Agda version'
+    required: false
   upload-bdist:
-    description: 'If specified, will upload a binary distribution for the specified Agda version.'
+    description: 'If specified, will upload a binary distribution for the specified Agda version'
     required: false
   upload-bdist-target-platform:
-    description: 'If specified, will override the target platform triple used in the archive. Otherwise, this is inferred from `ghc --info`.'
+    description: 'If specified, will override the target platform triple used in the archive. Otherwise, this is inferred from `ghc --info`'
     required: false
   upload-bdist-compress-bin:
-    description: 'If specified, will compress the Agda binaries.'
+    description: 'If specified, will compress the Agda binaries'
     required: false
 
   # The following inputs are used exclusively by actions/haskell/setup:
@@ -33,29 +33,30 @@ inputs:
   #         Error: Cannot read properties of undefined (reading 'default')
   #
   ghc-version:
-    required: false
+    default: 'latest'
     description: 'Unsupported. Use "ghc-version-range"'
-    default: 'latest'
+    required: false
   cabal-version:
-    required: false
+    default: 'latest'
     description: 'Version of Cabal to use. If set to "latest", it will always get the latest stable version'
-    default: 'latest'
+    required: false
   stack-version:
-    required: false
-    description: 'Version of Stack to use. If set to "latest", it will always get the latest stable version'
     default: 'latest'
+    description: 'Version of Stack to use. If set to "latest", it will always get the latest stable version'
+    required: false
   enable-stack:
-    required: false
     description: 'If specified, will setup Stack'
+    required: false
   stack-no-global:
+    description: 'If specified, enable-stack must be set. Prevents installing GHC and Cabal globally'
     required: false
-    description: 'If specified, enable-stack must be set. Prevents installing GHC and Cabal globally.'
   stack-setup-ghc:
-    required: false
     description: 'If specified, enable-stack must be set. Will run stack setup to install the specified GHC'
-  disable-matcher:
     required: false
+  disable-matcher:
     description: 'If specified, disables match messages from GHC as GitHub CI annotations'
+    required: false
+
 outputs:
   agda-path:
     description: 'The path of the agda executable _directory_'
@@ -81,6 +82,7 @@ outputs:
     description: 'The path of the cabal _executable_'
   stack-exe:
     description: 'The path of the stack _executable_'
+
 runs:
   using: 'node16'
   main: 'dist/index.js'

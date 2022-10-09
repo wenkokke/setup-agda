@@ -70,7 +70,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.os = exports.validSetupOptions = exports.setupOptionDefaults = exports.setupOptionKeys = void 0;
+exports.os = exports.addIncludeDir = exports.includeDirs = exports.addLibDir = exports.libDirs = exports.validSetupOptions = exports.setupOptionDefaults = exports.setupOptionKeys = void 0;
 const fs = __importStar(__nccwpck_require__(7147));
 const semver = __importStar(__nccwpck_require__(1383));
 const yaml = __importStar(__nccwpck_require__(1917));
@@ -117,6 +117,24 @@ function validSetupOptions(options) {
     return options;
 }
 exports.validSetupOptions = validSetupOptions;
+function libDirs(options) {
+    return options['extra-lib-dirs'].split(',').filter(libDir => libDir !== '');
+}
+exports.libDirs = libDirs;
+function addLibDir(options, libDir) {
+    return Object.assign(Object.assign({}, options), { 'extra-lib-dirs': [libDir, libDirs(options)].join(',') });
+}
+exports.addLibDir = addLibDir;
+function includeDirs(options) {
+    return options['extra-include-dirs']
+        .split(',')
+        .filter(includeDir => includeDir !== '');
+}
+exports.includeDirs = includeDirs;
+function addIncludeDir(options, includeDir) {
+    return Object.assign(Object.assign({}, options), { 'extra-include-dirs': [includeDir, includeDirs(options)].join(',') });
+}
+exports.addIncludeDir = addIncludeDir;
 exports.os = (() => {
     switch (process.platform) {
         case 'linux':
@@ -264,6 +282,7 @@ const assert_1 = __importDefault(__nccwpck_require__(9491));
 const os = __importStar(__nccwpck_require__(2037));
 const semver = __importStar(__nccwpck_require__(1383));
 const path = __importStar(__nccwpck_require__(1017));
+const opts = __importStar(__nccwpck_require__(1352));
 const exec = __importStar(__nccwpck_require__(4369));
 const agda = __importStar(__nccwpck_require__(9552));
 const hackage = __importStar(__nccwpck_require__(903));
@@ -328,13 +347,8 @@ function build(options, packageInfoOptions) {
         options = icu.resolveIcuVersion(options);
         if (options['icu-version'] !== '') {
             const { extraLibDir, extraIncludeDir } = yield icu.installICU(options['icu-version']);
-            options = Object.assign(Object.assign({}, options), { 'extra-lib-dirs': [
-                    extraLibDir,
-                    ...options['extra-lib-dirs'].split(',').filter(dir => dir !== '')
-                ].join(','), 'extra-include-dirs': [
-                    extraIncludeDir,
-                    ...options['extra-include-dirs'].split(',').filter(dir => dir !== '')
-                ].join(',') });
+            options = opts.addLibDir(options, extraLibDir);
+            options = opts.addIncludeDir(options, extraIncludeDir);
         }
         // 4. Build:
         const installDir = agda.installDir(options['agda-version']);
@@ -432,7 +446,11 @@ function uploadAsArtifact(installDir, options) {
         }
         // Copy data
         yield copyData(path.join(installDir, 'data'), bdistDir);
-        // Gather info for artifact:
+        // Test artifact
+        const agdaPath = path.join(bdistDir, 'bin', agda.agdaExe);
+        const env = { Agda_datadir: path.join(bdistDir, 'data') };
+        yield agda.testSystemAgda({ agdaPath, env });
+        // Create file list for artifact:
         const globber = yield glob.create(path.join(bdistDir, '**', '*'), {
             followSymbolicLinks: false,
             implicitDescendants: false,
@@ -529,6 +547,7 @@ const fs = __importStar(__nccwpck_require__(7147));
 const os = __importStar(__nccwpck_require__(2037));
 const path = __importStar(__nccwpck_require__(1017));
 const semver = __importStar(__nccwpck_require__(1383));
+const opts = __importStar(__nccwpck_require__(1352));
 const agda = __importStar(__nccwpck_require__(9552));
 const haskell = __importStar(__nccwpck_require__(1310));
 function build(sourceDir, installDir, options) {
@@ -591,6 +610,14 @@ function buildFlags(options) {
     // If supported, set --split-sections.
     if (haskell.supportsSplitSections(options)) {
         flags.push('--enable-split-sections');
+    }
+    // Add --extra-lib-dirs
+    for (const libDir of opts.libDirs(options)) {
+        flags.push(`--extra-lib-dirs=${libDir}`);
+    }
+    // Add --extra-include-dirs
+    for (const includeDir of opts.includeDirs(options)) {
+        flags.push(`--extra-include-dirs=${includeDir}`);
     }
     return flags;
 }

@@ -2,9 +2,13 @@ name: CodeQL
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+    paths:
+      - '**.ts'
+      - '**.js'
+      - '**.json'
   pull_request:
-    branches: [main]
   schedule:
     #        ┌───────────── minute (0 - 59)
     #        │  ┌───────────── hour (0 - 23)
