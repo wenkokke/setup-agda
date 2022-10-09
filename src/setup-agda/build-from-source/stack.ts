@@ -18,7 +18,7 @@ export async function build(
     cwd: sourceDir
   })
   // Get directory where Stack installs binaries:
-  const stackLocal = await getStackLocalDir(options)
+  const stackLocal = await getStackLocalBin(options)
   await io.mkdirP(path.join(installDir, 'bin'))
   await io.mv(
     path.join(stackLocal, agda.agdaExe),
@@ -30,7 +30,7 @@ export async function build(
   )
 }
 
-async function getStackLocalDir(
+async function getStackLocalBin(
   options: Readonly<opts.SetupOptions>
 ): Promise<string> {
   const flags: string[] = []
@@ -40,7 +40,8 @@ async function getStackLocalDir(
     flags.push('--system-ghc')
   }
   flags.push('--local-bin')
-  return await haskell.execSystemStack(['path', ...flags])
+  const output = await haskell.execSystemStack(['path', ...flags])
+  return output.trim()
 }
 
 function buildFlags(options: Readonly<opts.SetupOptions>): string[] {

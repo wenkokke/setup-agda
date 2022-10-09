@@ -666,14 +666,14 @@ function build(sourceDir, installDir, options) {
             cwd: sourceDir
         });
         // Get directory where Stack installs binaries:
-        const stackLocal = yield getStackLocalDir(options);
+        const stackLocal = yield getStackLocalBin(options);
         yield io.mkdirP(path.join(installDir, 'bin'));
         yield io.mv(path.join(stackLocal, agda.agdaExe), path.join(installDir, 'bin', agda.agdaExe));
         yield io.mv(path.join(stackLocal, agda.agdaModeExe), path.join(installDir, 'bin', agda.agdaModeExe));
     });
 }
 exports.build = build;
-function getStackLocalDir(options) {
+function getStackLocalBin(options) {
     return __awaiter(this, void 0, void 0, function* () {
         const flags = [];
         flags.push(`--compiler=ghc-${options['ghc-version']}`);
@@ -682,7 +682,8 @@ function getStackLocalDir(options) {
             flags.push('--system-ghc');
         }
         flags.push('--local-bin');
-        return yield haskell.execSystemStack(['path', ...flags]);
+        const output = yield haskell.execSystemStack(['path', ...flags]);
+        return output.trim();
     });
 }
 function buildFlags(options) {
