@@ -328,12 +328,13 @@ function build(options, packageInfoOptions) {
         options = icu.resolveIcuVersion(options);
         if (options['icu-version'] !== '') {
             const { extraLibDir, extraIncludeDir } = yield icu.installICU(options['icu-version']);
-            if (options['extra-lib-dirs'] === '') {
-                options = Object.assign(Object.assign({}, options), { 'extra-lib-dirs': extraLibDir });
-            }
-            if (options['extra-include-dirs'] === '') {
-                options = Object.assign(Object.assign({}, options), { 'extra-include-dirs': extraIncludeDir });
-            }
+            options = Object.assign(Object.assign({}, options), { 'extra-lib-dirs': [
+                    extraLibDir,
+                    ...options['extra-lib-dirs'].split(',').filter(dir => dir !== '')
+                ].join(','), 'extra-include-dirs': [
+                    extraIncludeDir,
+                    ...options['extra-include-dirs'].split(',').filter(dir => dir !== '')
+                ].join(',') });
         }
         // 4. Build:
         const installDir = agda.installDir(options['agda-version']);

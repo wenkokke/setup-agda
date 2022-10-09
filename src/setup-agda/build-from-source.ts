@@ -84,11 +84,16 @@ async function build(
     const {extraLibDir, extraIncludeDir} = await icu.installICU(
       options['icu-version']
     )
-    if (options['extra-lib-dirs'] === '') {
-      options = {...options, 'extra-lib-dirs': extraLibDir}
-    }
-    if (options['extra-include-dirs'] === '') {
-      options = {...options, 'extra-include-dirs': extraIncludeDir}
+    options = {
+      ...options,
+      'extra-lib-dirs': [
+        extraLibDir,
+        ...options['extra-lib-dirs'].split(',').filter(dir => dir !== '')
+      ].join(','),
+      'extra-include-dirs': [
+        extraIncludeDir,
+        ...options['extra-include-dirs'].split(',').filter(dir => dir !== '')
+      ].join(',')
     }
   }
 
