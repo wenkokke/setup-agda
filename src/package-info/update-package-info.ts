@@ -21,9 +21,10 @@ async function run(): Promise<void> {
     let failed = false
     if (oldTime < newTime) {
       // Check if old versions are still available:`
-      const versions: string[] = Object.keys(
-        oldPackageInfoCache.packageInfo
-      ).concat(Object.keys(newPackageInfoCache.packageInfo))
+      const versions: string[] = [
+        ...Object.keys(oldPackageInfoCache.packageInfo),
+        ...Object.keys(newPackageInfoCache.packageInfo)
+      ]
       for (const version of versions) {
         const oldStatus = oldPackageInfoCache.packageInfo[version]
         const newStatus = newPackageInfoCache.packageInfo[version]

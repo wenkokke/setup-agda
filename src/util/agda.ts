@@ -95,8 +95,16 @@ export async function testSystemAgda(options?: AgdaExecOptions): Promise<void> {
 
 export function supportsClusterCounting(options: opts.SetupOptions): boolean {
   // NOTE:
-  //   We only disable --cluster-counting on versions which support it,
+  //   We only enable --cluster-counting on versions which support it,
   //   i.e., versions after 2.5.3:
   //   https://github.com/agda/agda/blob/f50c14d3a4e92ed695783e26dbe11ad1ad7b73f7/doc/release-notes/2.5.3.md
   return simver.gte(options['agda-version'], '2.5.3')
+}
+
+export function supportsOptimiseHeavily(options: opts.SetupOptions): boolean {
+  // NOTE:
+  //   We only enable --optimise-heavily on versions which support it,
+  //   i.e., versions after 2.6.2:
+  //   https://github.com/agda/agda/blob/1175c41210716074340da4bd4caa09f4dfe2cc1d/doc/release-notes/2.6.2.md
+  return simver.gte(options['agda-version'], '2.6.2')
 }

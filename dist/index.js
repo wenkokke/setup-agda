@@ -86,8 +86,9 @@ exports.setupOptionKeys = [
     // The following keys are not exposed via action.yml:
     'icu-version',
     'extra-lib-dirs',
-    'extra-include-dirs'
-].concat(haskell.setupOptionKeys);
+    'extra-include-dirs',
+    ...haskell.setupOptionKeys
+];
 exports.setupOptionDefaults = yaml.load(fs.readFileSync(path.join(__dirname, '..', 'action.yml'), 'utf8')).inputs;
 function validSetupOptions(options) {
     var _a, _b;
@@ -555,7 +556,7 @@ function build(sourceDir, installDir, options) {
         const execOptions = { cwd: sourceDir };
         // Configure:
         core.info(`Configure Agda-${options['agda-version']}`);
-        yield haskell.execSystemCabal(['v2-configure'].concat(buildFlags(options)), execOptions);
+        yield haskell.execSystemCabal(['v2-configure', ...buildFlags(options)], execOptions);
         // Build:
         core.info(`Build Agda-${options['agda-version']}`);
         yield haskell.execSystemCabal(['v2-build', 'exe:agda', 'exe:agda-mode'], execOptions);
@@ -597,11 +598,16 @@ function buildFlags(options) {
     //   for all builds. See:
     //   https://github.com/agda/agda/blob/d5b5d90a3e34cf8cbae838bc20e94b74a20fea9c/src/github/workflows/deploy.yml#L37-L47
     const flags = [];
+    // Disable profiling:
     flags.push('--disable-executable-profiling');
     flags.push('--disable-library-profiling');
-    // Disable --cluster-counting
+    // If supported, pass Agda flag --cluster-counting
     if (agda.supportsClusterCounting(options)) {
-        flags.push('--flags=-enable-cluster-counting');
+        flags.push('--flags=+enable-cluster-counting');
+    }
+    // If supported, pass Agda flag --optimise-heavily
+    if (agda.supportsOptimiseHeavily(options)) {
+        flags.push('--flags=+optimise-heavily');
     }
     // If supported, build a static executable
     if (haskell.supportsExecutableStatic(options)) {
@@ -611,11 +617,11 @@ function buildFlags(options) {
     if (haskell.supportsSplitSections(options)) {
         flags.push('--enable-split-sections');
     }
-    // Add --extra-lib-dirs
+    // Pass any extra libraries:
     for (const libDir of opts.libDirs(options)) {
         flags.push(`--extra-lib-dirs=${libDir}`);
     }
-    // Add --extra-include-dirs
+    // Pass any extra headers:
     for (const includeDir of opts.includeDirs(options)) {
         flags.push(`--extra-include-dirs=${includeDir}`);
     }
@@ -712,34 +718,25 @@ const glob = __importStar(__nccwpck_require__(8090));
 const io = __importStar(__nccwpck_require__(9067));
 const path = __importStar(__nccwpck_require__(1017));
 const semver = __importStar(__nccwpck_require__(1383));
+const opts = __importStar(__nccwpck_require__(1352));
 const agda = __importStar(__nccwpck_require__(9552));
 const haskell = __importStar(__nccwpck_require__(1310));
 function build(sourceDir, installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Configure, Build, and Install:
-        yield haskell.execSystemStack(['build'].concat(buildFlags(options)), {
+        yield io.mkdirP(path.join(installDir, 'bin'));
+        yield haskell.execSystemStack(['build', ...buildFlags(options), ...installFlags(installDir)], {
             cwd: sourceDir
         });
-        // Get directory where Stack installs binaries:
-        const stackLocal = yield getStackLocalBin(options);
-        yield io.mkdirP(path.join(installDir, 'bin'));
-        yield io.mv(path.join(stackLocal, agda.agdaExe), path.join(installDir, 'bin', agda.agdaExe));
-        yield io.mv(path.join(stackLocal, agda.agdaModeExe), path.join(installDir, 'bin', agda.agdaModeExe));
     });
 }
 exports.build = build;
-function getStackLocalBin(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const flags = [];
-        flags.push(`--compiler=ghc-${options['ghc-version']}`);
-        if (options['stack-setup-ghc'] === '') {
-            flags.push('--no-install-ghc');
-            flags.push('--system-ghc');
-        }
-        flags.push('--local-bin');
-        const output = yield haskell.execSystemStack(['path', ...flags]);
-        return output.trim();
-    });
+function installFlags(installDir) {
+    const flags = [];
+    // Copy binaries to installDir:
+    flags.push('--copy-bins');
+    flags.push(`--local-bin-dir=${installDir}`);
+    return flags;
 }
 function buildFlags(options) {
     // NOTE:
@@ -748,26 +745,32 @@ function buildFlags(options) {
     //   for all builds. See:
     //   https://github.com/agda/agda/blob/d5b5d90a3e34cf8cbae838bc20e94b74a20fea9c/src/github/workflows/deploy.yml#L37-L47
     const flags = [];
-    // Start with stack-*.yaml:
+    // Load default configuration from 'stack-<agda-version>.yaml':
     flags.push(`--stack-yaml=stack-${options['ghc-version']}.yaml`);
-    // Override 'install-ghc' and 'system-ghc' based on options:
+    // Disable Stack managed GHC:
     if (options['stack-setup-ghc'] === '') {
         flags.push('--no-install-ghc');
         flags.push('--system-ghc');
     }
-    // Add Agda build flags:
+    // Disable profiling:
     flags.push('--no-executable-profiling');
     flags.push('--no-library-profiling');
-    // Disable --cluster-counting
+    // If supported, pass Agda flag --cluster-counting
     if (agda.supportsClusterCounting(options)) {
-        flags.push('--flag=Agda:-enable-cluster-counting');
+        flags.push('--flag=Agda:+enable-cluster-counting');
     }
-    // If supported, build a static executable
-    // if (haskell.supportsExecutableStatic(options))
-    // If supported, set --split-sections.
-    // if (haskell.supportsSplitSections(options))
-    // Finally, add --copy-bins to install to stack local:
-    flags.push('--copy-bins');
+    // If supported, pass Agda flag --optimise-heavily
+    if (agda.supportsOptimiseHeavily(options)) {
+        flags.push('--flag=Agda:+optimise-heavily');
+    }
+    // Pass any extra libraries:
+    for (const libDir of opts.libDirs(options)) {
+        flags.push(`--extra-lib-dirs=${libDir}`);
+    }
+    // Pass any extra headers:
+    for (const includeDir of opts.includeDirs(options)) {
+        flags.push(`--extra-include-dirs=${includeDir}`);
+    }
     return flags;
 }
 function findCompatibleGhcVersions(sourceDir) {
@@ -977,7 +980,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.supportsClusterCounting = exports.testSystemAgda = exports.execSystemAgda = exports.getSystemAgdaDataDir = exports.getSystemAgdaVersion = exports.installDir = exports.agdaDir = exports.agdaModeExe = exports.agdaExe = exports.packageInfoCache = void 0;
+exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.testSystemAgda = exports.execSystemAgda = exports.getSystemAgdaDataDir = exports.getSystemAgdaVersion = exports.installDir = exports.agdaDir = exports.agdaModeExe = exports.agdaExe = exports.packageInfoCache = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const path = __importStar(__nccwpck_require__(1017));
@@ -1068,12 +1071,20 @@ exports.testSystemAgda = testSystemAgda;
 // Helper functions to check support for build flags
 function supportsClusterCounting(options) {
     // NOTE:
-    //   We only disable --cluster-counting on versions which support it,
+    //   We only enable --cluster-counting on versions which support it,
     //   i.e., versions after 2.5.3:
     //   https://github.com/agda/agda/blob/f50c14d3a4e92ed695783e26dbe11ad1ad7b73f7/doc/release-notes/2.5.3.md
     return simver.gte(options['agda-version'], '2.5.3');
 }
 exports.supportsClusterCounting = supportsClusterCounting;
+function supportsOptimiseHeavily(options) {
+    // NOTE:
+    //   We only enable --optimise-heavily on versions which support it,
+    //   i.e., versions after 2.6.2:
+    //   https://github.com/agda/agda/blob/1175c41210716074340da4bd4caa09f4dfe2cc1d/doc/release-notes/2.6.2.md
+    return simver.gte(options['agda-version'], '2.6.2');
+}
+exports.supportsOptimiseHeavily = supportsOptimiseHeavily;
 
 
 /***/ }),

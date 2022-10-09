@@ -19,7 +19,7 @@ export async function build(
   // Configure:
   core.info(`Configure Agda-${options['agda-version']}`)
   await haskell.execSystemCabal(
-    ['v2-configure'].concat(buildFlags(options)),
+    ['v2-configure', ...buildFlags(options)],
     execOptions
   )
   // Build:
@@ -75,11 +75,16 @@ function buildFlags(options: Readonly<opts.SetupOptions>): string[] {
   //   for all builds. See:
   //   https://github.com/agda/agda/blob/d5b5d90a3e34cf8cbae838bc20e94b74a20fea9c/src/github/workflows/deploy.yml#L37-L47
   const flags: string[] = []
+  // Disable profiling:
   flags.push('--disable-executable-profiling')
   flags.push('--disable-library-profiling')
-  // Disable --cluster-counting
+  // If supported, pass Agda flag --cluster-counting
   if (agda.supportsClusterCounting(options)) {
-    flags.push('--flags=-enable-cluster-counting')
+    flags.push('--flags=+enable-cluster-counting')
+  }
+  // If supported, pass Agda flag --optimise-heavily
+  if (agda.supportsOptimiseHeavily(options)) {
+    flags.push('--flags=+optimise-heavily')
   }
   // If supported, build a static executable
   if (haskell.supportsExecutableStatic(options)) {
@@ -89,11 +94,11 @@ function buildFlags(options: Readonly<opts.SetupOptions>): string[] {
   if (haskell.supportsSplitSections(options)) {
     flags.push('--enable-split-sections')
   }
-  // Add --extra-lib-dirs
+  // Pass any extra libraries:
   for (const libDir of opts.libDirs(options)) {
     flags.push(`--extra-lib-dirs=${libDir}`)
   }
-  // Add --extra-include-dirs
+  // Pass any extra headers:
   for (const includeDir of opts.includeDirs(options)) {
     flags.push(`--extra-include-dirs=${includeDir}`)
   }

@@ -19,19 +19,18 @@ export type SetupOptionKey =
   | 'extra-include-dirs'
   | haskell.SetupOptionKey
 
-export const setupOptionKeys: SetupOptionKey[] = (
-  [
-    'agda-version',
-    'ghc-version-range',
-    'upload-bdist',
-    'upload-bdist-compress-bin',
-    'upload-bdist-target-platform',
-    // The following keys are not exposed via action.yml:
-    'icu-version',
-    'extra-lib-dirs',
-    'extra-include-dirs'
-  ] as SetupOptionKey[]
-).concat(haskell.setupOptionKeys)
+export const setupOptionKeys: SetupOptionKey[] = [
+  'agda-version',
+  'ghc-version-range',
+  'upload-bdist',
+  'upload-bdist-compress-bin',
+  'upload-bdist-target-platform',
+  // The following keys are not exposed via action.yml:
+  'icu-version',
+  'extra-lib-dirs',
+  'extra-include-dirs',
+  ...haskell.setupOptionKeys
+] as SetupOptionKey[]
 
 export type SetupOptions = Record<SetupOptionKey, string>
 
