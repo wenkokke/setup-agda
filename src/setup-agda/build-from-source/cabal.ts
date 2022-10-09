@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
-import * as io from '@actions/io'
+import * as io from '../../util/io'
 import assert from 'assert'
 import * as fs from 'fs'
 import * as os from 'os'

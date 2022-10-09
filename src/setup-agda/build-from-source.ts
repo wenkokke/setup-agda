@@ -1,7 +1,7 @@
 import * as artifact from '@actions/artifact'
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
-import * as io from '@actions/io'
+import * as io from '../util/io'
 import * as tc from '@actions/tool-cache'
 import assert from 'assert'
 import * as os from 'os'

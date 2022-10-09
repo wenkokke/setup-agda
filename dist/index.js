@@ -259,7 +259,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const artifact = __importStar(__nccwpck_require__(2605));
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
-const io = __importStar(__nccwpck_require__(7436));
+const io = __importStar(__nccwpck_require__(9067));
 const tc = __importStar(__nccwpck_require__(7784));
 const assert_1 = __importDefault(__nccwpck_require__(9491));
 const os = __importStar(__nccwpck_require__(2037));
@@ -476,7 +476,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.findCompatibleGhcVersions = exports.readPlatformTag = exports.findGhcVersionRange = exports.build = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
-const io = __importStar(__nccwpck_require__(7436));
+const io = __importStar(__nccwpck_require__(9067));
 const assert_1 = __importDefault(__nccwpck_require__(9491));
 const fs = __importStar(__nccwpck_require__(7147));
 const os = __importStar(__nccwpck_require__(2037));
@@ -653,7 +653,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.findCompatibleGhcVersions = exports.readPlatformTag = exports.build = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
-const io = __importStar(__nccwpck_require__(7436));
+const io = __importStar(__nccwpck_require__(9067));
 const os = __importStar(__nccwpck_require__(2037));
 const path = __importStar(__nccwpck_require__(1017));
 const semver = __importStar(__nccwpck_require__(1383));
@@ -801,7 +801,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
-const io = __importStar(__nccwpck_require__(7436));
+const io = __importStar(__nccwpck_require__(9067));
 const toolCache = __importStar(__nccwpck_require__(7784));
 const assert_1 = __importDefault(__nccwpck_require__(9491));
 const fs = __importStar(__nccwpck_require__(7147));
@@ -1068,6 +1068,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getVersion = exports.execOutput = void 0;
 const exec = __importStar(__nccwpck_require__(1514));
+// Helpers for system calls
 __exportStar(__nccwpck_require__(1514), exports);
 function execOutput(prog, args, execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -1500,6 +1501,74 @@ function supportsSplitSections(options) {
     return osOK && ghcVersionOK && cabalVersionOK;
 }
 exports.supportsSplitSections = supportsSplitSections;
+
+
+/***/ }),
+
+/***/ 9067:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.rmRF = exports.mkdirP = exports.mv = exports.cp = void 0;
+const io = __importStar(__nccwpck_require__(7436));
+function cp(source, dest, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield io.cp(`'${source}'`, `'${dest}'`, options);
+    });
+}
+exports.cp = cp;
+function mv(source, dest, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield io.mv(`'${source}'`, `'${dest}'`, options);
+    });
+}
+exports.mv = mv;
+function mkdirP(fsPath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield io.mkdirP(`'${fsPath}'`);
+    });
+}
+exports.mkdirP = mkdirP;
+function rmRF(inputPath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield io.rmRF(`'${inputPath}'`);
+    });
+}
+exports.rmRF = rmRF;
 
 
 /***/ }),

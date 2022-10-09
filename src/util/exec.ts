@@ -1,5 +1,7 @@
 import * as exec from '@actions/exec'
 
+// Helpers for system calls
+
 export * from '@actions/exec'
 
 export async function execOutput(
@@ -25,6 +27,8 @@ export async function execOutput(
     throw Error(progErrors)
   }
 }
+
+// Helpers for getting versions
 
 export interface VersionOptions extends exec.ExecOptions {
   versionFlag?: string

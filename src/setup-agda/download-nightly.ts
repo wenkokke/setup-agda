@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import * as io from '@actions/io'
+import * as io from '../util/io'
 import * as toolCache from '@actions/tool-cache'
 import assert from 'assert'
 import * as fs from 'fs'
