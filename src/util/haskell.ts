@@ -141,6 +141,7 @@ export async function getGhcTargetPlatform(
   const ghcInfo = await getGhcInfo(execOptions)
   if (ghcInfo['Target platform'] !== undefined) {
     const targetTriple = ghcInfo['Target platform'].split('-')
+    assert(targetTriple.length === 3, 'Ambiguous target platform')
     return `${targetTriple.at(0)}-${targetTriple.at(-1)}`
   } else {
     throw Error('Could not determine target platform')

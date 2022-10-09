@@ -1434,6 +1434,7 @@ function getGhcTargetPlatform(execOptions) {
         const ghcInfo = yield getGhcInfo(execOptions);
         if (ghcInfo['Target platform'] !== undefined) {
             const targetTriple = ghcInfo['Target platform'].split('-');
+            (0, assert_1.default)(targetTriple.length === 3, 'Ambiguous target platform');
             return `${targetTriple.at(0)}-${targetTriple.at(-1)}`;
         }
         else {
