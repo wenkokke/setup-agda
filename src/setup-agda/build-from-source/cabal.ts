@@ -117,7 +117,7 @@ export async function findCompatibleGhcVersions(
   const cabalFilePath = await findCabalFile(sourceDir)
   const cabalFileContents = fs.readFileSync(cabalFilePath).toString()
   for (const match of cabalFileContents.matchAll(
-    /GHC == (?<version>\\d+\\.\\d+\\.\\d+)/g
+    /GHC == (?<version>\d+\.\d+\.\d+)/g
   )) {
     if (match.groups !== undefined) {
       if (semver.valid(match.groups.version) !== null) {
@@ -129,7 +129,11 @@ export async function findCompatibleGhcVersions(
       }
     }
   }
-  return versions
+  if (versions.length === 0) {
+    throw Error('Could not find any compatible GHC versions')
+  } else {
+    return versions
+  }
 }
 
 async function findCabalFile(sourceDir: string): Promise<string> {

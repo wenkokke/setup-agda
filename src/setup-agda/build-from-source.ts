@@ -55,6 +55,7 @@ async function build(
 ): Promise<string> {
   // Otherwise, build Agda from source:
   core.info(`Building Agda ${options['agda-version']} from source`)
+  const buildTool = resolveBuildTool(options)
 
   // 1. Get the Agda source from Hackage:
   const sourceDir = await getAgdaSource(
@@ -64,7 +65,7 @@ async function build(
   core.debug(`Downloaded source to ${sourceDir}`)
 
   // 2. Select compatible GHC versions:
-  const ghcVersions = await cabal.findCompatibleGhcVersions(sourceDir)
+  const ghcVersions = await buildTool.findCompatibleGhcVersions(sourceDir)
   const ghcVersionRange = await findGhcVersionRange(ghcVersions, options)
   core.debug(`Compatible GHC version range is: ${ghcVersionRange}`)
 
@@ -76,7 +77,6 @@ async function build(
 
   // 4. Build:
   const installDir = opts.installDir(options['agda-version'])
-  const buildTool = resolveBuildTool(options)
   await buildTool.build(sourceDir, installDir, options)
   await installData(sourceDir, installDir)
 

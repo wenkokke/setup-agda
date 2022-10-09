@@ -313,18 +313,18 @@ function build(options, packageInfoOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         // Otherwise, build Agda from source:
         core.info(`Building Agda ${options['agda-version']} from source`);
+        const buildTool = resolveBuildTool(options);
         // 1. Get the Agda source from Hackage:
         const sourceDir = yield getAgdaSource(options['agda-version'], packageInfoOptions);
         core.debug(`Downloaded source to ${sourceDir}`);
         // 2. Select compatible GHC versions:
-        const ghcVersions = yield cabal.findCompatibleGhcVersions(sourceDir);
+        const ghcVersions = yield buildTool.findCompatibleGhcVersions(sourceDir);
         const ghcVersionRange = yield findGhcVersionRange(ghcVersions, options);
         core.debug(`Compatible GHC version range is: ${ghcVersionRange}`);
         // 3. Setup GHC via <haskell/actions/setup>:
         options = yield haskell.setup(Object.assign(Object.assign({}, options), { 'ghc-version-range': ghcVersionRange }));
         // 4. Build:
         const installDir = opts.installDir(options['agda-version']);
-        const buildTool = resolveBuildTool(options);
         yield buildTool.build(sourceDir, installDir, options);
         yield installData(sourceDir, installDir);
         // 5. Test:
@@ -575,7 +575,7 @@ function findCompatibleGhcVersions(sourceDir) {
         const versions = [];
         const cabalFilePath = yield findCabalFile(sourceDir);
         const cabalFileContents = fs.readFileSync(cabalFilePath).toString();
-        for (const match of cabalFileContents.matchAll(/GHC == (?<version>\\d+\\.\\d+\\.\\d+)/g)) {
+        for (const match of cabalFileContents.matchAll(/GHC == (?<version>\d+\.\d+\.\d+)/g)) {
             if (match.groups !== undefined) {
                 if (semver.valid(match.groups.version) !== null) {
                     versions.push(match.groups.version);
@@ -585,7 +585,12 @@ function findCompatibleGhcVersions(sourceDir) {
                 }
             }
         }
-        return versions;
+        if (versions.length === 0) {
+            throw Error('Could not find any compatible GHC versions');
+        }
+        else {
+            return versions;
+        }
     });
 }
 exports.findCompatibleGhcVersions = findCompatibleGhcVersions;
