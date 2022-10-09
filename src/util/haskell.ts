@@ -129,8 +129,9 @@ function latestSatisfyingGhcVersion(
 export async function getGhcInfo(
   execOptions?: exec.ExecOptions
 ): Promise<Partial<Record<string, string>>> {
-  const ghcInfoString = await execSystemGhc(['--info'], execOptions)
-  const ghcInfo = JSON.parse(ghcInfoString.replace('(', '[').replace(')', ']'))
+  let ghcInfoString = await execSystemGhc(['--info'], execOptions)
+  ghcInfoString = ghcInfoString.replace(/\(/g, '[').replace(/\)/g, ']')
+  const ghcInfo = JSON.parse(ghcInfoString)
   return Object.fromEntries(ghcInfo)
 }
 
@@ -138,11 +139,11 @@ export async function getGhcTargetPlatform(
   execOptions?: exec.ExecOptions
 ): Promise<string> {
   const ghcInfo = await getGhcInfo(execOptions)
-  const targetPlatform = ghcInfo['Target platform']
-  if (targetPlatform === undefined) {
-    throw Error('Could not determine GHC target platform')
+  if (ghcInfo['Target platform'] !== undefined) {
+    const targetTriple = ghcInfo['Target platform'].split('-')
+    return `${targetTriple.at(0)}-${targetTriple.at(-1)}`
   } else {
-    return targetPlatform
+    throw Error('Could not determine target platform')
   }
 }
 

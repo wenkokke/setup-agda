@@ -1422,8 +1422,9 @@ function latestSatisfyingGhcVersion(options) {
 }
 function getGhcInfo(execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
-        const ghcInfoString = yield execSystemGhc(['--info'], execOptions);
-        const ghcInfo = JSON.parse(ghcInfoString.replace('(', '[').replace(')', ']'));
+        let ghcInfoString = yield execSystemGhc(['--info'], execOptions);
+        ghcInfoString = ghcInfoString.replace(/\(/g, '[').replace(/\)/g, ']');
+        const ghcInfo = JSON.parse(ghcInfoString);
         return Object.fromEntries(ghcInfo);
     });
 }
@@ -1431,12 +1432,12 @@ exports.getGhcInfo = getGhcInfo;
 function getGhcTargetPlatform(execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         const ghcInfo = yield getGhcInfo(execOptions);
-        const targetPlatform = ghcInfo['Target platform'];
-        if (targetPlatform === undefined) {
-            throw Error('Could not determine GHC target platform');
+        if (ghcInfo['Target platform'] !== undefined) {
+            const targetTriple = ghcInfo['Target platform'].split('-');
+            return `${targetTriple.at(0)}-${targetTriple.at(-1)}`;
         }
         else {
-            return targetPlatform;
+            throw Error('Could not determine target platform');
         }
     });
 }
