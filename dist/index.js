@@ -69,19 +69,20 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installDir = exports.cacheDir = exports.os = exports.validSetupOptions = exports.setupOptionDefaults = exports.setupOptionKeys = void 0;
-const appdirsjs_1 = __importDefault(__nccwpck_require__(360));
+exports.os = exports.validSetupOptions = exports.setupOptionDefaults = exports.setupOptionKeys = void 0;
 const fs = __importStar(__nccwpck_require__(7147));
 const semver = __importStar(__nccwpck_require__(1383));
 const yaml = __importStar(__nccwpck_require__(1917));
 const path = __importStar(__nccwpck_require__(1017));
 const process = __importStar(__nccwpck_require__(7282));
 const haskell = __importStar(__nccwpck_require__(1310));
-exports.setupOptionKeys = ['agda-version', 'ghc-version-range', 'upload-artifact'].concat(haskell.setupOptionKeys);
+exports.setupOptionKeys = [
+    'agda-version',
+    'ghc-version-range',
+    'upload-bdist',
+    'upload-bdist-target-platform'
+].concat(haskell.setupOptionKeys);
 exports.setupOptionDefaults = yaml.load(fs.readFileSync(path.join(__dirname, '..', 'action.yml'), 'utf8')).inputs;
 function validSetupOptions(options) {
     var _a, _b;
@@ -123,13 +124,6 @@ exports.os = (() => {
             throw Error(`Unsupported platform ${process.platform}`);
     }
 })();
-// Helpers for determining the Agda directories across platforms:
-const agdaDirs = (0, appdirsjs_1.default)({ appName: 'agda' });
-exports.cacheDir = agdaDirs.cache;
-function installDir(version, ...paths) {
-    return path.join(agdaDirs.data, version, ...paths);
-}
-exports.installDir = installDir;
 
 
 /***/ }),
@@ -265,7 +259,6 @@ const assert_1 = __importDefault(__nccwpck_require__(9491));
 const os = __importStar(__nccwpck_require__(2037));
 const semver = __importStar(__nccwpck_require__(1383));
 const path = __importStar(__nccwpck_require__(1017));
-const opts = __importStar(__nccwpck_require__(1352));
 const agda = __importStar(__nccwpck_require__(9552));
 const hackage = __importStar(__nccwpck_require__(903));
 const haskell = __importStar(__nccwpck_require__(1310));
@@ -324,7 +317,7 @@ function build(options, packageInfoOptions) {
         // 3. Setup GHC via <haskell/actions/setup>:
         options = yield haskell.setup(Object.assign(Object.assign({}, options), { 'ghc-version-range': ghcVersionRange }));
         // 4. Build:
-        const installDir = opts.installDir(options['agda-version']);
+        const installDir = agda.installDir(options['agda-version']);
         yield buildTool.build(sourceDir, installDir, options);
         yield installData(sourceDir, installDir);
         // 5. Test:
@@ -333,10 +326,10 @@ function build(options, packageInfoOptions) {
         yield agda.testSystemAgda({ agdaPath, env });
         // 6. Cache:
         const installDirTC = yield tc.cacheDir(installDir, 'agda', options['agda-version']);
-        // 7. If 'upload-artifact' is specified, upload as a binary distribution:
-        if (options['upload-artifact'] !== '') {
-            const artifactName = yield uploadAsArtifact(installDir);
-            core.info(`Uploaded build artiface '${artifactName}'`);
+        // 7. If 'upload-bdist' is specified, upload as a binary distribution:
+        if (options['upload-bdist'] !== '') {
+            const bdistName = yield uploadAsArtifact(installDir, options);
+            core.info(`Uploaded binary distribution as '${bdistName}'`);
         }
         return installDirTC;
     });
@@ -369,7 +362,7 @@ function resolveAgdaVersion(options) {
 }
 function getAgdaSource(agdaVersion, packageInfoOptions) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { packageVersion, packageDir } = yield hackage.getPackageSource('Agda', Object.assign({ packageVersion: agdaVersion, extractToPath: opts.cacheDir }, packageInfoOptions));
+        const { packageVersion, packageDir } = yield hackage.getPackageSource('Agda', Object.assign({ packageVersion: agdaVersion }, packageInfoOptions));
         (0, assert_1.default)(agdaVersion === packageVersion, [
             `getAgdaSource: agdaVersion should be resolved`,
             `but ${agdaVersion} was further resolved to ${packageVersion}`
@@ -400,15 +393,18 @@ function findGhcVersionRange(versions, options) {
         }
     });
 }
-function uploadAsArtifact(installDir) {
+function uploadAsArtifact(installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
-        // NOTE: Requires GHC
+        // If not specified, get the target platform from `ghc --info`:
+        let targetPlatform = options['upload-bdist-target-platform'];
+        if (targetPlatform === '') {
+            targetPlatform = yield haskell.getGhcTargetPlatform();
+        }
         // Gather info for artifact:
         const agdaPath = path.join(installDir, 'bin', agda.agdaExe);
         const env = { Agda_datadir: path.join(installDir, 'data') };
         const version = yield agda.getSystemAgdaVersion({ agdaPath, env });
-        const platformTag = yield haskell.getGhcTargetPlatform();
-        const name = `Agda-${version}-${platformTag}`;
+        const name = `Agda-${version}-${targetPlatform}`;
         const globber = yield glob.create(path.join(installDir, '**', '*'), {
             followSymbolicLinks: false,
             implicitDescendants: false,
@@ -474,7 +470,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.findCompatibleGhcVersions = exports.readPlatformTag = exports.findGhcVersionRange = exports.build = void 0;
+exports.findCompatibleGhcVersions = exports.findGhcVersionRange = exports.build = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const io = __importStar(__nccwpck_require__(9067));
@@ -525,28 +521,6 @@ function findGhcVersionRange(sourceDir, options) {
     });
 }
 exports.findGhcVersionRange = findGhcVersionRange;
-function readPlatformTag(sourceDir) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Nix-style local builds were introduced in Cabal version 1.24, and are
-        // supported on all compatible GHC versions, i.e., 7.0 and later, see:
-        // https://cabal.readthedocs.io/en/3.8/nix-local-build-overview.html
-        const planPath = path.join(sourceDir, 'dist-newstyle', 'cache', 'plan.json');
-        if (!fs.existsSync(planPath)) {
-            throw Error('Run `cabal configure` first.');
-        }
-        else {
-            const planString = fs.readFileSync(planPath).toString();
-            const plan = JSON.parse(planString);
-            if ((plan === null || plan === void 0 ? void 0 : plan.os) !== undefined && (plan === null || plan === void 0 ? void 0 : plan.arch) !== undefined) {
-                return `${plan === null || plan === void 0 ? void 0 : plan.arch}-${plan === null || plan === void 0 ? void 0 : plan.os}`;
-            }
-            else {
-                throw Error([`Could not parse ${planPath}:`, planString].join(os.EOL));
-            }
-        }
-    });
-}
-exports.readPlatformTag = readPlatformTag;
 function buildFlags(options) {
     // NOTE:
     //   We set the build flags following Agda's deploy workflow, which builds
@@ -655,11 +629,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.findCompatibleGhcVersions = exports.readPlatformTag = exports.build = void 0;
+exports.findCompatibleGhcVersions = exports.build = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const io = __importStar(__nccwpck_require__(9067));
-const os = __importStar(__nccwpck_require__(2037));
 const path = __importStar(__nccwpck_require__(1017));
 const semver = __importStar(__nccwpck_require__(1383));
 const agda = __importStar(__nccwpck_require__(9552));
@@ -720,27 +693,6 @@ function buildFlags(options) {
     flags.push('--copy-bins');
     return flags;
 }
-function readPlatformTag(sourceDir) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Stack doesn't seem to provide a better way to do this...
-        const platformWorkDirGlobber = yield glob.create(path.join(sourceDir, '.stack-work', 'install', '*'), {
-            followSymbolicLinks: false,
-            implicitDescendants: false,
-            matchDirectories: true
-        });
-        const platformWorkDirs = yield platformWorkDirGlobber.glob();
-        if (platformWorkDirs.length !== 1) {
-            throw Error([
-                `Found multiple directories in .stack-work/install/:`,
-                ...platformWorkDirs.map(platformWorkDir => `- ${platformWorkDir}`)
-            ].join(os.EOL));
-        }
-        else {
-            return path.basename(platformWorkDirs[0]);
-        }
-    });
-}
-exports.readPlatformTag = readPlatformTag;
 function findCompatibleGhcVersions(sourceDir) {
     return __awaiter(this, void 0, void 0, function* () {
         const versions = [];
@@ -814,13 +766,14 @@ const fs = __importStar(__nccwpck_require__(7147));
 const os = __importStar(__nccwpck_require__(2037));
 const path = __importStar(__nccwpck_require__(1017));
 const opts = __importStar(__nccwpck_require__(1352));
+const agda = __importStar(__nccwpck_require__(9552));
 const nightlyUrlLinux = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz';
 const nightlyUrlDarwin = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz';
 const nightlyUrlWin32 = 'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip';
 function setupAgdaNightly() {
     return __awaiter(this, void 0, void 0, function* () {
         core.info(`Setup 'nightly' on ${opts.os}`);
-        const installDir = opts.installDir('nightly');
+        const installDir = agda.installDir('nightly');
         switch (opts.os) {
             case 'linux': {
                 // Download archive:
@@ -879,9 +832,8 @@ function setupAgdaNightly() {
                 const { mtime } = fs.statSync(agdaNightlyZip);
                 core.info(`Nighly build last modified at ${mtime.toUTCString()}`);
                 // Extract archive:
-                core.info(`Extract nightly build to ${opts.cacheDir}`);
-                yield io.mkdirP(opts.cacheDir);
-                const cacheDirTC = yield toolCache.extractZip(agdaNightlyZip, opts.cacheDir);
+                core.info(`Extract nightly build`);
+                const cacheDirTC = yield toolCache.extractZip(agdaNightlyZip);
                 // Copy extracted files to installDir:
                 core.info(`Move nightly build to ${installDir}`);
                 const agdaCacheDirTC = path.join(cacheDirTC, 'Agda-nightly');
@@ -948,17 +900,35 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.supportsClusterCounting = exports.testSystemAgda = exports.execSystemAgda = exports.getSystemAgdaDataDir = exports.getSystemAgdaVersion = exports.agdaModeExe = exports.agdaExe = exports.packageInfoCache = void 0;
+exports.supportsClusterCounting = exports.testSystemAgda = exports.execSystemAgda = exports.getSystemAgdaDataDir = exports.getSystemAgdaVersion = exports.installDir = exports.agdaDir = exports.agdaModeExe = exports.agdaExe = exports.packageInfoCache = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const path = __importStar(__nccwpck_require__(1017));
 const opts = __importStar(__nccwpck_require__(1352));
 const exec = __importStar(__nccwpck_require__(4369));
 const simver = __importStar(__nccwpck_require__(7609));
+const os = __importStar(__nccwpck_require__(2037));
 const Agda_json_1 = __importDefault(__nccwpck_require__(4862));
+// Package Info
 exports.packageInfoCache = Agda_json_1.default;
+// Executable names
 exports.agdaExe = opts.os === 'windows' ? 'agda.exe' : 'agda';
 exports.agdaModeExe = opts.os === 'windows' ? 'agda-mode.exe' : 'agda-mode';
+// System directories
+function agdaDir() {
+    switch (opts.os) {
+        case 'linux':
+        case 'macos':
+            return path.join(os.homedir(), '.agda');
+        case 'windows':
+            return path.join(os.homedir(), 'AppData', 'Roaming', 'agda');
+    }
+}
+exports.agdaDir = agdaDir;
+function installDir(version) {
+    return path.join(agdaDir(), 'agda', version);
+}
+exports.installDir = installDir;
 function getSystemAgdaVersion(options) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
@@ -10683,119 +10653,6 @@ function v4(options, buf, offset) {
 }
 
 module.exports = v4;
-
-
-/***/ }),
-
-/***/ 360:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const fs = __nccwpck_require__(7147);
-const os = __nccwpck_require__(2037);
-const path = __nccwpck_require__(1017);
-/**
- * Returns application-specific paths for directories.
- *
- * For Linux, it returns paths according to
- * [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html)
- *
- * For MacOS, it returns paths according to
- * [Apple Technical Q&A](https://developer.apple.com/library/archive/qa/qa1170/_index.html#//apple_ref/doc/uid/DTS10001702)
- *
- * For Windows, it returns paths according to
- * [Stackoverflow's answer](https://stackoverflow.com/questions/43853548/xdg-basedir-directories-for-windows)
- *
- * Specific information about each OS can be found
- * in corresponding functions.
- *
- * @param appName  Application name
- * @param legacyPath  Path to provide backward compability
- *                    and not to force users to move files.
- *                    Will be used if exists if filesystem.
- */
-function appDirs(options) {
-    if (process.platform === "linux") {
-        return linux(options);
-    }
-    else if (process.platform === "win32") {
-        return windows(options);
-    }
-    else if (process.platform === "darwin") {
-        return macos(options);
-    }
-    return fallback(options);
-}
-exports["default"] = appDirs;
-function fallback({ appName, legacyPath }) {
-    console.warn(`[appdirsjs]: can't get directories for "${process.platform}" platform, using fallback values`);
-    function fallbackPath() {
-        if (legacyPath) {
-            return legacyPath;
-        }
-        // Sane default for Unix-like systems
-        return path.join(os.homedir(), "." + appName);
-    }
-    return Object.freeze({
-        cache: fallbackPath(),
-        config: fallbackPath(),
-        data: fallbackPath(),
-    });
-}
-function linux({ appName, legacyPath }) {
-    const home = os.homedir();
-    const env = process.env;
-    const uid = (process.getuid !== undefined)
-        ? process.getuid()
-        : "unknown-uid";
-    function xdgPath(allowLegacy, env, defaultRoot) {
-        if (allowLegacy && legacyPath && fs.existsSync(legacyPath)) {
-            return legacyPath;
-        }
-        const root = env || defaultRoot;
-        return path.join(root, appName);
-    }
-    return Object.freeze({
-        cache: xdgPath(true, env.XDG_CACHE_HOME, path.join(home, ".cache")),
-        config: xdgPath(true, env.XDG_CONFIG_HOME, path.join(home, ".config")),
-        data: xdgPath(true, env.XDG_DATA_HOME, path.join(home, ".local", "share")),
-        runtime: xdgPath(false, env.XDG_RUNTIME_DIR, path.join("/run", "user", uid.toString())),
-    });
-}
-function windows({ appName, legacyPath }) {
-    if (legacyPath && fs.existsSync(legacyPath)) {
-        return Object.freeze({
-            cache: legacyPath,
-            config: legacyPath,
-            data: legacyPath,
-        });
-    }
-    const home = os.homedir();
-    const roamingAppData = process.env.APPDATA || path.join(home, "AppData", "Roaming");
-    const localAppData = process.env.LOCALAPPDATA || path.join(home, "AppData", "Local");
-    return Object.freeze({
-        cache: path.join(localAppData, "Temp", appName),
-        config: path.join(roamingAppData, appName),
-        data: path.join(localAppData, appName),
-    });
-}
-function macos({ appName, legacyPath }) {
-    if (legacyPath && fs.existsSync(legacyPath)) {
-        return Object.freeze({
-            cache: legacyPath,
-            config: legacyPath,
-            data: legacyPath,
-        });
-    }
-    const home = os.homedir();
-    return Object.freeze({
-        cache: path.join(home, "Library", "Caches", appName),
-        config: path.join(home, "Library", "Preferences", appName),
-        data: path.join(home, "Library", "Application Support", appName),
-    });
-}
 
 
 /***/ }),

@@ -68,24 +68,6 @@ export async function findGhcVersionRange(
   }
 }
 
-export async function readPlatformTag(sourceDir: string): Promise<string> {
-  // Nix-style local builds were introduced in Cabal version 1.24, and are
-  // supported on all compatible GHC versions, i.e., 7.0 and later, see:
-  // https://cabal.readthedocs.io/en/3.8/nix-local-build-overview.html
-  const planPath = path.join(sourceDir, 'dist-newstyle', 'cache', 'plan.json')
-  if (!fs.existsSync(planPath)) {
-    throw Error('Run `cabal configure` first.')
-  } else {
-    const planString = fs.readFileSync(planPath).toString()
-    const plan = JSON.parse(planString)
-    if (plan?.os !== undefined && plan?.arch !== undefined) {
-      return `${plan?.arch}-${plan?.os}`
-    } else {
-      throw Error([`Could not parse ${planPath}:`, planString].join(os.EOL))
-    }
-  }
-}
-
 function buildFlags(options: Readonly<opts.SetupOptions>): string[] {
   // NOTE:
   //   We set the build flags following Agda's deploy workflow, which builds

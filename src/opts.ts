@@ -1,4 +1,3 @@
-import appDirs from 'appdirsjs'
 import * as fs from 'fs'
 import * as semver from 'semver'
 import * as yaml from 'js-yaml'
@@ -11,11 +10,17 @@ import * as haskell from './util/haskell'
 export type SetupOptionKey =
   | 'agda-version'
   | 'ghc-version-range'
-  | 'upload-artifact'
+  | 'upload-bdist'
+  | 'upload-bdist-target-platform'
   | haskell.SetupOptionKey
 
 export const setupOptionKeys: SetupOptionKey[] = (
-  ['agda-version', 'ghc-version-range', 'upload-artifact'] as SetupOptionKey[]
+  [
+    'agda-version',
+    'ghc-version-range',
+    'upload-bdist',
+    'upload-bdist-target-platform'
+  ] as SetupOptionKey[]
 ).concat(haskell.setupOptionKeys)
 
 export type SetupOptions = Record<SetupOptionKey, string>
@@ -81,13 +86,3 @@ export const os: OS = (() => {
       throw Error(`Unsupported platform ${process.platform}`)
   }
 })()
-
-// Helpers for determining the Agda directories across platforms:
-
-const agdaDirs = appDirs({appName: 'agda'})
-
-export const cacheDir: string = agdaDirs.cache
-
-export function installDir(version: string, ...paths: string[]): string {
-  return path.join(agdaDirs.data, version, ...paths)
-}

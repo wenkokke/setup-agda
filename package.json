@@ -33,7 +33,6 @@
     "@actions/io": "^1.1.2",
     "@actions/tool-cache": "^2.0.1",
     "@types/semver": "^7.3.12",
-    "appdirsjs": "^1.2.7",
     "ensure-error": "^4.0.0",
     "semver": "^7.3.8",
     "setup-haskell": "file:./vendor/haskell/actions/setup"

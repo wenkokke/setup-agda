@@ -25,6 +25,7 @@ jobs:
         - [macos-latest, MacOS]
         - [windows-latest, Windows]
         agda-version: ['latest']
+        cabal-version: ['3.6']
         experimental: [true]
 
     name: Setup Agda ${{ matrix.agda-version }} with Cabal on ${{ matrix.os_with_name[1] }}
@@ -36,6 +37,7 @@ jobs:
         uses: ./
         with:
           agda-version: ${{ matrix.agda-version }}
+          cabal-version: ${{ matrix.cabal-version }}
           upload-artifact: true
 
   latest_stack:
@@ -46,6 +48,7 @@ jobs:
         - [macos-latest, MacOS]
         - [windows-latest, Windows]
         agda-version: ['latest']
+        cabal-version: ['3.4']
         experimental: [true]
 
     name: Setup Agda ${{ matrix.agda-version }} with Stack on ${{ matrix.os_with_name[1] }}
@@ -57,5 +60,6 @@ jobs:
         uses: ./
         with:
           agda-version: ${{ matrix.agda-version }}
-          upload-artifact: true
+          cabal-version: ${{ matrix.cabal-version }}
           enable-stack: true
+          upload-artifact: true

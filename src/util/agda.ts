@@ -5,14 +5,37 @@ import * as opts from '../opts'
 import * as exec from './exec'
 import * as hackage from './hackage'
 import * as simver from './simver'
+import * as os from 'os'
 import distPackageInfoCache from '../package-info/Agda.json'
 
+// Package Info
+
 export const packageInfoCache = distPackageInfoCache as hackage.PackageInfoCache
+
+// Executable names
 
 export const agdaExe: string = opts.os === 'windows' ? 'agda.exe' : 'agda'
 
 export const agdaModeExe: string =
   opts.os === 'windows' ? 'agda-mode.exe' : 'agda-mode'
+
+// System directories
+
+export function agdaDir(): string {
+  switch (opts.os) {
+    case 'linux':
+    case 'macos':
+      return path.join(os.homedir(), '.agda')
+    case 'windows':
+      return path.join(os.homedir(), 'AppData', 'Roaming', 'agda')
+  }
+}
+
+export function installDir(version: string): string {
+  return path.join(agdaDir(), 'agda', version)
+}
+
+// System calls
 
 export interface AgdaExecOptions extends exec.ExecOptions {
   agdaPath?: string

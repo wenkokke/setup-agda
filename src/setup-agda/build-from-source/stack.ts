@@ -1,7 +1,6 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as io from '../../util/io'
-import * as os from 'os'
 import * as path from 'path'
 import * as semver from 'semver'
 import * as opts from '../../opts'
@@ -72,29 +71,6 @@ function buildFlags(options: Readonly<opts.SetupOptions>): string[] {
   // Finally, add --copy-bins to install to stack local:
   flags.push('--copy-bins')
   return flags
-}
-
-export async function readPlatformTag(sourceDir: string): Promise<string> {
-  // Stack doesn't seem to provide a better way to do this...
-  const platformWorkDirGlobber = await glob.create(
-    path.join(sourceDir, '.stack-work', 'install', '*'),
-    {
-      followSymbolicLinks: false,
-      implicitDescendants: false,
-      matchDirectories: true
-    }
-  )
-  const platformWorkDirs = await platformWorkDirGlobber.glob()
-  if (platformWorkDirs.length !== 1) {
-    throw Error(
-      [
-        `Found multiple directories in .stack-work/install/:`,
-        ...platformWorkDirs.map(platformWorkDir => `- ${platformWorkDir}`)
-      ].join(os.EOL)
-    )
-  } else {
-    return path.basename(platformWorkDirs[0])
-  }
 }
 
 export async function findCompatibleGhcVersions(

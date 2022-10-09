@@ -76,7 +76,7 @@ async function build(
   })
 
   // 4. Build:
-  const installDir = opts.installDir(options['agda-version'])
+  const installDir = agda.installDir(options['agda-version'])
   await buildTool.build(sourceDir, installDir, options)
   await installData(sourceDir, installDir)
 
@@ -92,10 +92,10 @@ async function build(
     options['agda-version']
   )
 
-  // 7. If 'upload-artifact' is specified, upload as a binary distribution:
-  if (options['upload-artifact'] !== '') {
-    const artifactName = await uploadAsArtifact(installDir)
-    core.info(`Uploaded build artiface '${artifactName}'`)
+  // 7. If 'upload-bdist' is specified, upload as a binary distribution:
+  if (options['upload-bdist'] !== '') {
+    const bdistName = await uploadAsArtifact(installDir, options)
+    core.info(`Uploaded binary distribution as '${bdistName}'`)
   }
 
   return installDirTC
@@ -147,7 +147,6 @@ async function getAgdaSource(
 ): Promise<string> {
   const {packageVersion, packageDir} = await hackage.getPackageSource('Agda', {
     packageVersion: agdaVersion,
-    extractToPath: opts.cacheDir,
     ...packageInfoOptions
   })
   assert(
@@ -167,7 +166,6 @@ interface BuildTool {
     options: Readonly<opts.SetupOptions>
   ) => Promise<void>
   findCompatibleGhcVersions: (sourceDir: string) => Promise<string[]>
-  readPlatformTag: (sourceDir: string) => Promise<string>
 }
 
 function resolveBuildTool(options: Readonly<opts.SetupOptions>): BuildTool {
@@ -200,15 +198,21 @@ async function findGhcVersionRange(
   }
 }
 
-async function uploadAsArtifact(installDir: string): Promise<string> {
-  // NOTE: Requires GHC
+async function uploadAsArtifact(
+  installDir: string,
+  options: opts.SetupOptions
+): Promise<string> {
+  // If not specified, get the target platform from `ghc --info`:
+  let targetPlatform = options['upload-bdist-target-platform']
+  if (targetPlatform === '') {
+    targetPlatform = await haskell.getGhcTargetPlatform()
+  }
 
   // Gather info for artifact:
   const agdaPath = path.join(installDir, 'bin', agda.agdaExe)
   const env = {Agda_datadir: path.join(installDir, 'data')}
   const version = await agda.getSystemAgdaVersion({agdaPath, env})
-  const platformTag = await haskell.getGhcTargetPlatform()
-  const name = `Agda-${version}-${platformTag}`
+  const name = `Agda-${version}-${targetPlatform}`
   const globber = await glob.create(path.join(installDir, '**', '*'), {
     followSymbolicLinks: false,
     implicitDescendants: false,

@@ -6,6 +6,7 @@ import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
 import * as opts from '../opts'
+import * as agda from '../util/agda'
 
 const nightlyUrlLinux =
   'https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz'
@@ -16,7 +17,7 @@ const nightlyUrlWin32 =
 
 export default async function setupAgdaNightly(): Promise<string> {
   core.info(`Setup 'nightly' on ${opts.os}`)
-  const installDir = opts.installDir('nightly')
+  const installDir = agda.installDir('nightly')
   switch (opts.os) {
     case 'linux': {
       // Download archive:
@@ -94,12 +95,8 @@ export default async function setupAgdaNightly(): Promise<string> {
       core.info(`Nighly build last modified at ${mtime.toUTCString()}`)
 
       // Extract archive:
-      core.info(`Extract nightly build to ${opts.cacheDir}`)
-      await io.mkdirP(opts.cacheDir)
-      const cacheDirTC = await toolCache.extractZip(
-        agdaNightlyZip,
-        opts.cacheDir
-      )
+      core.info(`Extract nightly build`)
+      const cacheDirTC = await toolCache.extractZip(agdaNightlyZip)
 
       // Copy extracted files to installDir:
       core.info(`Move nightly build to ${installDir}`)
