@@ -12,6 +12,7 @@ import * as exec from '../util/exec'
 import * as agda from '../util/agda'
 import * as hackage from '../util/hackage'
 import * as upx from '../util/upx'
+import * as icu from '../util/icu'
 import * as haskell from '../util/haskell'
 import * as cabal from './build-from-source/cabal'
 import * as stack from './build-from-source/stack'
@@ -76,6 +77,20 @@ async function build(
     ...options,
     'ghc-version-range': ghcVersionRange
   })
+
+  // 4. Install compatible ICU version:
+  options = icu.resolveIcuVersion(options)
+  if (options['icu-version'] !== '') {
+    const {extraLibDir, extraIncludeDir} = await icu.installICU(
+      options['icu-version']
+    )
+    if (options['extra-lib-dirs'] === '') {
+      options = {...options, 'extra-lib-dirs': extraLibDir}
+    }
+    if (options['extra-include-dirs'] === '') {
+      options = {...options, 'extra-include-dirs': extraIncludeDir}
+    }
+  }
 
   // 4. Build:
   const installDir = agda.installDir(options['agda-version'])

@@ -82,7 +82,11 @@ exports.setupOptionKeys = [
     'ghc-version-range',
     'upload-bdist',
     'upload-bdist-compress-bin',
-    'upload-bdist-target-platform'
+    'upload-bdist-target-platform',
+    // The following keys are not exposed via action.yml:
+    'icu-version',
+    'extra-lib-dirs',
+    'extra-include-dirs'
 ].concat(haskell.setupOptionKeys);
 exports.setupOptionDefaults = yaml.load(fs.readFileSync(path.join(__dirname, '..', 'action.yml'), 'utf8')).inputs;
 function validSetupOptions(options) {
@@ -264,6 +268,7 @@ const exec = __importStar(__nccwpck_require__(4369));
 const agda = __importStar(__nccwpck_require__(9552));
 const hackage = __importStar(__nccwpck_require__(903));
 const upx = __importStar(__nccwpck_require__(6102));
+const icu = __importStar(__nccwpck_require__(9358));
 const haskell = __importStar(__nccwpck_require__(1310));
 const cabal = __importStar(__nccwpck_require__(8545));
 const stack = __importStar(__nccwpck_require__(5590));
@@ -319,6 +324,17 @@ function build(options, packageInfoOptions) {
         core.debug(`Compatible GHC version range is: ${ghcVersionRange}`);
         // 3. Setup GHC via <haskell/actions/setup>:
         options = yield haskell.setup(Object.assign(Object.assign({}, options), { 'ghc-version-range': ghcVersionRange }));
+        // 4. Install compatible ICU version:
+        options = icu.resolveIcuVersion(options);
+        if (options['icu-version'] !== '') {
+            const { extraLibDir, extraIncludeDir } = yield icu.installICU(options['icu-version']);
+            if (options['extra-lib-dirs'] === '') {
+                options = Object.assign(Object.assign({}, options), { 'extra-lib-dirs': extraLibDir });
+            }
+            if (options['extra-include-dirs'] === '') {
+                options = Object.assign(Object.assign({}, options), { 'extra-include-dirs': extraIncludeDir });
+            }
+        }
         // 4. Build:
         const installDir = agda.installDir(options['agda-version']);
         yield buildTool.build(sourceDir, installDir, options);
@@ -1531,6 +1547,140 @@ function supportsSplitSections(options) {
     return osOK && ghcVersionOK && cabalVersionOK;
 }
 exports.supportsSplitSections = supportsSplitSections;
+
+
+/***/ }),
+
+/***/ 9358:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.installICU = exports.resolveIcuVersion = void 0;
+const tc = __importStar(__nccwpck_require__(7784));
+const path = __importStar(__nccwpck_require__(1017));
+const opts = __importStar(__nccwpck_require__(1352));
+const exec = __importStar(__nccwpck_require__(4369));
+const simver = __importStar(__nccwpck_require__(7609));
+const agda = __importStar(__nccwpck_require__(9552));
+// System directories
+function installDir(version) {
+    return path.join(agda.agdaDir(), 'icu', version);
+}
+// Resolve ICU version
+function resolveIcuVersion(options) {
+    if (simver.gte(options['agda-version'], '2.6.2')) {
+        return Object.assign(Object.assign({}, options), { 'icu-version': '71.1' });
+    }
+    else if (simver.gte(options['agda-version'], '2.5.3')) {
+        // agda >=2.5.3, <2.6.2 depends on text-icu ^0.7, but
+        // text-icu <0.7.1.0 fails to compile with icu68+
+        return Object.assign(Object.assign({}, options), { 'icu-version': '67.1' });
+    }
+    else {
+        return options;
+    }
+}
+exports.resolveIcuVersion = resolveIcuVersion;
+// Install ICU
+const icu67UrlWindows = 'https://github.com/unicode-org/icu/releases/download/release-67-1/icu4c-67_1-Win64-MSVC2017.zip';
+const icu71UrlWindows = 'https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-Win64-MSVC2019.zip';
+const icu67UrlLinux = 'https://github.com/unicode-org/icu/releases/download/release-67-1/icu4c-67_1-Ubuntu18.04-x64.tgz';
+const icu71UrlLinux = 'https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-Ubuntu20.04-x64.tgz';
+function installICU(version) {
+    return __awaiter(this, void 0, void 0, function* () {
+        switch (opts.os) {
+            case 'windows': {
+                let icuPath = '';
+                let icuDir = '';
+                switch (version) {
+                    case '67.1':
+                        icuPath = yield tc.downloadTool(icu67UrlWindows);
+                        icuDir = 'icu4c-67_1-Win64-MSVC2017';
+                        break;
+                    case '71.1':
+                        icuPath = yield tc.downloadTool(icu71UrlWindows);
+                        icuDir = 'icu4c-71_1-Win64-MSVC2019';
+                        break;
+                }
+                const installDirTC = yield tc.extractZip(icuPath, installDir(version));
+                return {
+                    extraLibDir: path.join(installDirTC, icuDir, 'bin64'),
+                    extraIncludeDir: path.join(installDirTC, icuDir, 'include')
+                };
+            }
+            case 'linux': {
+                let icuPath = '';
+                switch (version) {
+                    case '67.1':
+                        icuPath = yield tc.downloadTool(icu67UrlLinux);
+                        break;
+                    case '71.1':
+                        icuPath = yield tc.downloadTool(icu71UrlLinux);
+                        break;
+                }
+                const installDirTC = yield tc.extractTar(icuPath, installDir(version), [
+                    '--extract',
+                    '--gzip',
+                    '--strip-components=4'
+                ]);
+                return {
+                    extraLibDir: path.join(installDirTC, 'lib'),
+                    extraIncludeDir: path.join(installDirTC, 'include')
+                };
+            }
+            case 'macos': {
+                switch (version) {
+                    case '71.1': {
+                        const brewPrefix = (yield exec.execOutput('brew', ['--prefix'])).trim();
+                        yield exec.execOutput('brew', ['install', 'icu4c']);
+                        const installPath = path.join(brewPrefix, 'opt', 'icu4c');
+                        return {
+                            extraLibDir: path.join(installPath, 'lib'),
+                            extraIncludeDir: path.join(installPath, 'include')
+                        };
+                    }
+                }
+                break;
+            }
+        }
+        throw Error(`Could not install ICU-${version} for ${opts.os}`);
+    });
+}
+exports.installICU = installICU;
 
 
 /***/ }),

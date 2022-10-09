@@ -11,21 +11,23 @@ function installDir(version: string): string {
   return path.join(agda.agdaDir(), 'icu', version)
 }
 
-// Install LibICU
+// Resolve ICU version
 
-type ICUVersion = '67.1' | '71.1'
-
-export function icuVersionRange(options: opts.SetupOptions): ICUVersion | null {
+export function resolveIcuVersion(
+  options: Readonly<opts.SetupOptions>
+): opts.SetupOptions {
   if (simver.gte(options['agda-version'], '2.6.2')) {
-    return '71.1'
+    return {...options, 'icu-version': '71.1'}
   } else if (simver.gte(options['agda-version'], '2.5.3')) {
     // agda >=2.5.3, <2.6.2 depends on text-icu ^0.7, but
     // text-icu <0.7.1.0 fails to compile with icu68+
-    return '67.1'
+    return {...options, 'icu-version': '67.1'}
   } else {
-    return null
+    return options
   }
 }
+
+// Install ICU
 
 const icu67UrlWindows =
   'https://github.com/unicode-org/icu/releases/download/release-67-1/icu4c-67_1-Win64-MSVC2017.zip'
@@ -37,8 +39,8 @@ const icu71UrlLinux =
   'https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-Ubuntu20.04-x64.tgz'
 
 export async function installICU(
-  version: ICUVersion
-): Promise<{libDir: string; includeDir: string}> {
+  version: string
+): Promise<{extraLibDir: string; extraIncludeDir: string}> {
   switch (opts.os) {
     case 'windows': {
       let icuPath = ''
@@ -55,8 +57,8 @@ export async function installICU(
       }
       const installDirTC = await tc.extractZip(icuPath, installDir(version))
       return {
-        libDir: path.join(installDirTC, icuDir, 'bin64'),
-        includeDir: path.join(installDirTC, icuDir, 'include')
+        extraLibDir: path.join(installDirTC, icuDir, 'bin64'),
+        extraIncludeDir: path.join(installDirTC, icuDir, 'include')
       }
     }
     case 'linux': {
@@ -75,8 +77,8 @@ export async function installICU(
         '--strip-components=4'
       ])
       return {
-        libDir: path.join(installDirTC, 'lib'),
-        includeDir: path.join(installDirTC, 'include')
+        extraLibDir: path.join(installDirTC, 'lib'),
+        extraIncludeDir: path.join(installDirTC, 'include')
       }
     }
     case 'macos': {
@@ -88,8 +90,8 @@ export async function installICU(
           await exec.execOutput('brew', ['install', 'icu4c'])
           const installPath = path.join(brewPrefix, 'opt', 'icu4c')
           return {
-            libDir: path.join(installPath, 'lib'),
-            includeDir: path.join(installPath, 'include')
+            extraLibDir: path.join(installPath, 'lib'),
+            extraIncludeDir: path.join(installPath, 'include')
           }
         }
       }

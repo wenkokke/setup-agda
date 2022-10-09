@@ -13,6 +13,10 @@ export type SetupOptionKey =
   | 'upload-bdist'
   | 'upload-bdist-compress-bin'
   | 'upload-bdist-target-platform'
+  // The following keys are not exposed via action.yml:
+  | 'icu-version'
+  | 'extra-lib-dirs'
+  | 'extra-include-dirs'
   | haskell.SetupOptionKey
 
 export const setupOptionKeys: SetupOptionKey[] = (
@@ -21,7 +25,11 @@ export const setupOptionKeys: SetupOptionKey[] = (
     'ghc-version-range',
     'upload-bdist',
     'upload-bdist-compress-bin',
-    'upload-bdist-target-platform'
+    'upload-bdist-target-platform',
+    // The following keys are not exposed via action.yml:
+    'icu-version',
+    'extra-lib-dirs',
+    'extra-include-dirs'
   ] as SetupOptionKey[]
 ).concat(haskell.setupOptionKeys)
 
