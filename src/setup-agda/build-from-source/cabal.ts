@@ -110,15 +110,15 @@ function buildFlags(options: Readonly<opts.SetupOptions>): string[] {
   return flags
 }
 
-const ghcVersionRegExp = RegExp('GHC == (?<version>\\d+\\.\\d+\\.\\d+)', 'g')
-
 export async function findCompatibleGhcVersions(
   sourceDir: string
 ): Promise<string[]> {
   const versions: string[] = []
   const cabalFilePath = await findCabalFile(sourceDir)
   const cabalFileContents = fs.readFileSync(cabalFilePath).toString()
-  for (const match of cabalFileContents.matchAll(ghcVersionRegExp)) {
+  for (const match of cabalFileContents.matchAll(
+    /GHC == (?<version>\\d+\\.\\d+\\.\\d+)/g
+  )) {
     if (match.groups !== undefined) {
       if (semver.valid(match.groups.version) !== null) {
         versions.push(match.groups.version)

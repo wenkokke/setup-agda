@@ -5,13 +5,11 @@ import * as opts from '../opts'
 
 export {CopyOptions, MoveOptions} from '@actions/io'
 
-const unescapedSpaceRegex = new RegExp('(?<!\\\\) ')
-
 function escape(filePath: string): string {
   switch (opts.os) {
     case 'macos':
     case 'linux':
-      return filePath.replace(unescapedSpaceRegex, '\\ ')
+      return filePath.replace(/(?<!\\) /g, '\\ ')
     case 'windows':
     default:
       return filePath

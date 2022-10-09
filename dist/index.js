@@ -570,13 +570,12 @@ function buildFlags(options) {
     }
     return flags;
 }
-const ghcVersionRegExp = RegExp('GHC == (?<version>\\d+\\.\\d+\\.\\d+)', 'g');
 function findCompatibleGhcVersions(sourceDir) {
     return __awaiter(this, void 0, void 0, function* () {
         const versions = [];
         const cabalFilePath = yield findCabalFile(sourceDir);
         const cabalFileContents = fs.readFileSync(cabalFilePath).toString();
-        for (const match of cabalFileContents.matchAll(ghcVersionRegExp)) {
+        for (const match of cabalFileContents.matchAll(/GHC == (?<version>\\d+\\.\\d+\\.\\d+)/g)) {
             if (match.groups !== undefined) {
                 if (semver.valid(match.groups.version) !== null) {
                     versions.push(match.groups.version);
@@ -1571,12 +1570,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.rmRF = exports.mkdirP = exports.mv = exports.cp = void 0;
 const io = __importStar(__nccwpck_require__(7436));
 const opts = __importStar(__nccwpck_require__(1352));
-const unescapedSpaceRegex = new RegExp('(?<!\\\\) ');
 function escape(filePath) {
     switch (opts.os) {
         case 'macos':
         case 'linux':
-            return filePath.replace(unescapedSpaceRegex, '\\ ');
+            return filePath.replace(/(?<!\\) /g, '\\ ');
         case 'windows':
         default:
             return filePath;
