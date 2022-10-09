@@ -8,8 +8,10 @@ import * as os from 'os'
 import * as semver from 'semver'
 import * as path from 'path'
 import * as opts from '../opts'
+import * as exec from '../util/exec'
 import * as agda from '../util/agda'
 import * as hackage from '../util/hackage'
+import * as upx from '../util/upx'
 import * as haskell from '../util/haskell'
 import * as cabal from './build-from-source/cabal'
 import * as stack from './build-from-source/stack'
@@ -78,7 +80,7 @@ async function build(
   // 4. Build:
   const installDir = agda.installDir(options['agda-version'])
   await buildTool.build(sourceDir, installDir, options)
-  await installData(sourceDir, installDir)
+  await copyData(path.join(sourceDir, 'src', 'data'), installDir)
 
   // 5. Test:
   const agdaPath = path.join(installDir, 'bin', agda.agdaExe)
@@ -101,13 +103,8 @@ async function build(
   return installDirTC
 }
 
-async function installData(
-  sourceDir: string,
-  installDir: string
-): Promise<void> {
-  await io.cp(path.join(sourceDir, 'src', 'data'), installDir, {
-    recursive: true
-  })
+async function copyData(dataDir: string, dest: string): Promise<void> {
+  await io.cp(dataDir, dest, {recursive: true})
 }
 
 async function resolveAgdaVersion(
@@ -200,20 +197,37 @@ async function findGhcVersionRange(
 
 async function uploadAsArtifact(
   installDir: string,
-  options: opts.SetupOptions
+  options: Readonly<opts.SetupOptions>
 ): Promise<string> {
   // If not specified, get the target platform from `ghc --info`:
-  let targetPlatform = options['upload-bdist-target-platform']
-  if (targetPlatform === '') {
-    targetPlatform = await haskell.getGhcTargetPlatform()
+  if (options['upload-bdist-target-platform'] === '') {
+    options = {
+      ...options,
+      'upload-bdist-target-platform': await haskell.getGhcTargetPlatform()
+    }
   }
 
+  // Get the name for the distribution
+  const bdistName = `agda-${options['agda-version']}-${options['upload-bdist-target-platform']}`
+  const bdistDir = path.join(agda.agdaDir(), 'bdist', bdistName)
+  io.mkdirP(bdistDir)
+
+  // Copy binaries
+  io.mkdirP(path.join(bdistDir, 'bin'))
+  const bins = [agda.agdaExe, agda.agdaModeExe].map(binName =>
+    path.join(installDir, 'bin', binName)
+  )
+  if (options['upload-bdist-compress-bin'] !== '') {
+    await compressBins(bins, path.join(bdistDir, 'bin'))
+  } else {
+    await copyBins(bins, path.join(bdistDir, 'bin'))
+  }
+
+  // Copy data
+  await copyData(path.join(installDir, 'data'), bdistDir)
+
   // Gather info for artifact:
-  const agdaPath = path.join(installDir, 'bin', agda.agdaExe)
-  const env = {Agda_datadir: path.join(installDir, 'data')}
-  const version = await agda.getSystemAgdaVersion({agdaPath, env})
-  const name = `Agda-${version}-${targetPlatform}`
-  const globber = await glob.create(path.join(installDir, '**', '*'), {
+  const globber = await glob.create(path.join(bdistDir, '**', '*'), {
     followSymbolicLinks: false,
     implicitDescendants: false,
     matchDirectories: false
@@ -223,9 +237,9 @@ async function uploadAsArtifact(
   // Upload artifact:
   const artifactClient = artifact.create()
   const uploadInfo = await artifactClient.uploadArtifact(
-    name,
+    bdistName,
     files,
-    installDir,
+    bdistDir,
     {
       continueOnError: true,
       retentionDays: 90
@@ -239,4 +253,24 @@ async function uploadAsArtifact(
 
   // Return artifact name
   return uploadInfo.artifactName
+}
+
+async function copyBins(bins: string[], dest: string): Promise<void> {
+  for (const binPath of bins) {
+    const binName = path.basename(binPath)
+    await io.cp(binPath, path.join(dest, binName))
+  }
+}
+
+async function compressBins(bins: string[], dest: string): Promise<void> {
+  const upxPath = await upx.installUPX('3.96')
+  for (const binPath of bins) {
+    const binName = path.basename(binPath)
+    await exec.exec(upxPath, [
+      '--best',
+      binPath,
+      '-o',
+      path.join(dest, binName)
+    ])
+  }
 }

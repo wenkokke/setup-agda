@@ -21,9 +21,9 @@ jobs:
     strategy:
       matrix:
         os_with_name:
-        - [ubuntu-latest, Linux]
-        - [macos-latest, MacOS]
-        - [windows-latest, Windows]
+          - [ubuntu-latest, Linux]
+          - [macos-latest, MacOS]
+          - [windows-latest, Windows]
         agda-version: ['latest']
         cabal-version: ['3.6']
         experimental: [true]
@@ -39,14 +39,15 @@ jobs:
           agda-version: ${{ matrix.agda-version }}
           cabal-version: ${{ matrix.cabal-version }}
           upload-artifact: true
+          upload-bdist-compress-bin: true
 
   latest_stack:
     strategy:
       matrix:
         os_with_name:
-        - [ubuntu-latest, Linux]
-        - [macos-latest, MacOS]
-        - [windows-latest, Windows]
+          - [ubuntu-latest, Linux]
+          - [macos-latest, MacOS]
+          - [windows-latest, Windows]
         agda-version: ['latest']
         cabal-version: ['3.4']
         experimental: [true]
@@ -63,3 +64,4 @@ jobs:
           cabal-version: ${{ matrix.cabal-version }}
           enable-stack: true
           upload-artifact: true
+          upload-bdist-compress-bin: true

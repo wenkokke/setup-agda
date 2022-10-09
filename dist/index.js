@@ -81,6 +81,7 @@ exports.setupOptionKeys = [
     'agda-version',
     'ghc-version-range',
     'upload-bdist',
+    'upload-bdist-compress-bin',
     'upload-bdist-target-platform'
 ].concat(haskell.setupOptionKeys);
 exports.setupOptionDefaults = yaml.load(fs.readFileSync(path.join(__dirname, '..', 'action.yml'), 'utf8')).inputs;
@@ -259,8 +260,10 @@ const assert_1 = __importDefault(__nccwpck_require__(9491));
 const os = __importStar(__nccwpck_require__(2037));
 const semver = __importStar(__nccwpck_require__(1383));
 const path = __importStar(__nccwpck_require__(1017));
+const exec = __importStar(__nccwpck_require__(4369));
 const agda = __importStar(__nccwpck_require__(9552));
 const hackage = __importStar(__nccwpck_require__(903));
+const upx = __importStar(__nccwpck_require__(6102));
 const haskell = __importStar(__nccwpck_require__(1310));
 const cabal = __importStar(__nccwpck_require__(8545));
 const stack = __importStar(__nccwpck_require__(5590));
@@ -319,7 +322,7 @@ function build(options, packageInfoOptions) {
         // 4. Build:
         const installDir = agda.installDir(options['agda-version']);
         yield buildTool.build(sourceDir, installDir, options);
-        yield installData(sourceDir, installDir);
+        yield copyData(path.join(sourceDir, 'src', 'data'), installDir);
         // 5. Test:
         const agdaPath = path.join(installDir, 'bin', agda.agdaExe);
         const env = { Agda_datadir: path.join(installDir, 'data') };
@@ -334,11 +337,9 @@ function build(options, packageInfoOptions) {
         return installDirTC;
     });
 }
-function installData(sourceDir, installDir) {
+function copyData(dataDir, dest) {
     return __awaiter(this, void 0, void 0, function* () {
-        yield io.cp(path.join(sourceDir, 'src', 'data'), installDir, {
-            recursive: true
-        });
+        yield io.cp(dataDir, dest, { recursive: true });
     });
 }
 function resolveAgdaVersion(options) {
@@ -396,16 +397,26 @@ function findGhcVersionRange(versions, options) {
 function uploadAsArtifact(installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         // If not specified, get the target platform from `ghc --info`:
-        let targetPlatform = options['upload-bdist-target-platform'];
-        if (targetPlatform === '') {
-            targetPlatform = yield haskell.getGhcTargetPlatform();
+        if (options['upload-bdist-target-platform'] === '') {
+            options = Object.assign(Object.assign({}, options), { 'upload-bdist-target-platform': yield haskell.getGhcTargetPlatform() });
         }
+        // Get the name for the distribution
+        const bdistName = `agda-${options['agda-version']}-${options['upload-bdist-target-platform']}`;
+        const bdistDir = path.join(agda.agdaDir(), 'bdist', bdistName);
+        io.mkdirP(bdistDir);
+        // Copy binaries
+        io.mkdirP(path.join(bdistDir, 'bin'));
+        const bins = [agda.agdaExe, agda.agdaModeExe].map(binName => path.join(installDir, 'bin', binName));
+        if (options['upload-bdist-compress-bin'] !== '') {
+            yield compressBins(bins, path.join(bdistDir, 'bin'));
+        }
+        else {
+            yield copyBins(bins, path.join(bdistDir, 'bin'));
+        }
+        // Copy data
+        yield copyData(path.join(installDir, 'data'), bdistDir);
         // Gather info for artifact:
-        const agdaPath = path.join(installDir, 'bin', agda.agdaExe);
-        const env = { Agda_datadir: path.join(installDir, 'data') };
-        const version = yield agda.getSystemAgdaVersion({ agdaPath, env });
-        const name = `Agda-${version}-${targetPlatform}`;
-        const globber = yield glob.create(path.join(installDir, '**', '*'), {
+        const globber = yield glob.create(path.join(bdistDir, '**', '*'), {
             followSymbolicLinks: false,
             implicitDescendants: false,
             matchDirectories: false
@@ -413,7 +424,7 @@ function uploadAsArtifact(installDir, options) {
         const files = yield globber.glob();
         // Upload artifact:
         const artifactClient = artifact.create();
-        const uploadInfo = yield artifactClient.uploadArtifact(name, files, installDir, {
+        const uploadInfo = yield artifactClient.uploadArtifact(bdistName, files, bdistDir, {
             continueOnError: true,
             retentionDays: 90
         });
@@ -423,6 +434,28 @@ function uploadAsArtifact(installDir, options) {
         }
         // Return artifact name
         return uploadInfo.artifactName;
+    });
+}
+function copyBins(bins, dest) {
+    return __awaiter(this, void 0, void 0, function* () {
+        for (const binPath of bins) {
+            const binName = path.basename(binPath);
+            yield io.cp(binPath, path.join(dest, binName));
+        }
+    });
+}
+function compressBins(bins, dest) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const upxPath = yield upx.installUPX('3.96');
+        for (const binPath of bins) {
+            const binName = path.basename(binPath);
+            yield exec.exec(upxPath, [
+                '--best',
+                binPath,
+                '-o',
+                path.join(dest, binName)
+            ]);
+        }
     });
 }
 
@@ -1669,6 +1702,80 @@ function max(versions) {
     return maxSimVer === null ? null : toString(maxSimVer);
 }
 exports.max = max;
+
+
+/***/ }),
+
+/***/ 6102:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.installUPX = void 0;
+const tc = __importStar(__nccwpck_require__(7784));
+const path = __importStar(__nccwpck_require__(1017));
+const opts = __importStar(__nccwpck_require__(1352));
+const agda = __importStar(__nccwpck_require__(9552));
+const exec = __importStar(__nccwpck_require__(4369));
+const upxUrlLinux = 'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz';
+const upxUrlWindows = 'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-win64.zip';
+function installDir(version) {
+    return path.join(agda.agdaDir(), 'upx', version);
+}
+function installUPX(upxVersion) {
+    return __awaiter(this, void 0, void 0, function* () {
+        switch (opts.os) {
+            case 'linux': {
+                const upxArchivePath = yield tc.downloadTool(upxUrlLinux);
+                const upxDir = yield tc.extractTar(upxArchivePath, installDir(upxVersion), ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']);
+                return path.join(upxDir, 'upx');
+            }
+            case 'macos': {
+                yield exec.execOutput('brew', ['install', 'upx']);
+                return 'upx';
+            }
+            case 'windows': {
+                const upxArchivePath = yield tc.downloadTool(upxUrlWindows);
+                const upxDir = yield tc.extractZip(upxArchivePath, installDir(upxVersion));
+                return path.join(upxDir, 'upx-3.96-win64', 'upx');
+            }
+        }
+    });
+}
+exports.installUPX = installUPX;
 
 
 /***/ }),

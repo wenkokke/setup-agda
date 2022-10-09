@@ -13,9 +13,9 @@ function installDir(version: string): string {
 
 // Install LibICU
 
-type LibICU = '67.1' | '71.1'
+type ICUVersion = '67.1' | '71.1'
 
-export function icuVersionRange(options: opts.SetupOptions): LibICU | null {
+export function icuVersionRange(options: opts.SetupOptions): ICUVersion | null {
   if (simver.gte(options['agda-version'], '2.6.2')) {
     return '71.1'
   } else if (simver.gte(options['agda-version'], '2.5.3')) {
@@ -36,8 +36,8 @@ const icu67UrlLinux =
 const icu71UrlLinux =
   'https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-Ubuntu20.04-x64.tgz'
 
-export async function installLibICU(
-  version: LibICU
+export async function installICU(
+  version: ICUVersion
 ): Promise<{libDir: string; includeDir: string}> {
   switch (opts.os) {
     case 'windows': {

@@ -11,6 +11,7 @@ export type SetupOptionKey =
   | 'agda-version'
   | 'ghc-version-range'
   | 'upload-bdist'
+  | 'upload-bdist-compress-bin'
   | 'upload-bdist-target-platform'
   | haskell.SetupOptionKey
 
@@ -19,6 +20,7 @@ export const setupOptionKeys: SetupOptionKey[] = (
     'agda-version',
     'ghc-version-range',
     'upload-bdist',
+    'upload-bdist-compress-bin',
     'upload-bdist-target-platform'
   ] as SetupOptionKey[]
 ).concat(haskell.setupOptionKeys)
