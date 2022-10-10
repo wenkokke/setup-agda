@@ -34,11 +34,11 @@ jobs:
         agda-version: [latest]
         cabal-version: ['3.6']
         upload-bdist: [true]
-        bdist-compress-bin: ['upx', '']
+        bdist-compress-bin: [upx, '']
         exclude:
           - os: macos-11
-            bdist-compress-bin: true
-    uses: ./.github/workflows/bdist.yml
+            bdist-compress-bin: upx
+    uses: ./.github/workflows/build.yml
     with:
       runs-on: ${{ matrix.os }}
       agda-version: ${{ matrix.agda-version }}
