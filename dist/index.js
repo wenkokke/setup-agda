@@ -36,7 +36,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const opts = __importStar(__nccwpck_require__(1352));
 const setup_agda_1 = __importDefault(__nccwpck_require__(8021));
-(0, setup_agda_1.default)(Object.fromEntries(opts.setupAgdaInputKeys.map(key => [key, core.getInput(key)])));
+(0, setup_agda_1.default)(opts.getOptions(core.getInput));
 
 
 /***/ }),
@@ -69,64 +69,69 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.os = exports.supportsUPX = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.toSetupHaskellInputs = exports.fromSetupAgdaInputs = exports.setupAgdaInputKeys = exports.setupHaskellInputKeys = void 0;
+exports.os = exports.supportsUPX = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.pickSetupHaskellInputs = exports.getOptions = void 0;
 const fs = __importStar(__nccwpck_require__(7147));
 const semver = __importStar(__nccwpck_require__(1383));
 const yaml = __importStar(__nccwpck_require__(1917));
 const path = __importStar(__nccwpck_require__(1017));
 const process = __importStar(__nccwpck_require__(7282));
 const simver = __importStar(__nccwpck_require__(7609));
+const object_pick_1 = __importDefault(__nccwpck_require__(9962));
 const os_1 = __nccwpck_require__(2037);
-exports.setupHaskellInputKeys = [
-    'ghc-version',
-    'cabal-version',
-    'stack-version',
-    'enable-stack',
-    'stack-no-global',
-    'stack-setup-ghc',
-    'disable-matcher'
-];
-exports.setupAgdaInputKeys = [
-    'agda-version',
-    'ghc-version-range',
-    'upload-bdist',
-    'upload-bdist-compress-bin',
-    'upload-bdist-target-platform',
-    ...exports.setupHaskellInputKeys
-];
-function setupAgdaInputDefaults() {
-    return Object.fromEntries(Object.entries(yaml.load(fs.readFileSync(path.join(__dirname, '..', 'action.yml'), 'utf8')).inputs).map(entry => { var _a; return [entry[0], (_a = entry[1].default) !== null && _a !== void 0 ? _a : '']; }));
-}
-function fromSetupAgdaInputs(options) {
-    // Set defaults:
-    const buildOptions = Object.assign(Object.assign(Object.assign({}, setupAgdaInputDefaults()), options), { 'extra-lib-dirs': [], 'extra-include-dirs': [] });
-    // Unsupported: 'agda-version' set to 'nightly'
-    if (buildOptions['agda-version'] === 'nightly') {
+function getOptions(inputs) {
+    // Get build options or their defaults
+    const inputSpec = yaml.load(fs.readFileSync(path.join(__dirname, '..', 'action.yml'), 'utf8')).inputs;
+    const getOption = (k) => {
+        const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
+        return maybeInput !== null && maybeInput !== void 0 ? maybeInput : inputSpec[k].default;
+    };
+    const getFlag = (k) => {
+        const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
+        return ![false, '', 'false', undefined].includes(maybeInput);
+    };
+    const options = {
+        'agda-version': getOption('agda-version'),
+        'ghc-version-range': getOption('ghc-version-range'),
+        'ghc-version': getOption('ghc-version'),
+        'cabal-version': getOption('cabal-version'),
+        'stack-version': getOption('stack-version'),
+        'upload-bdist': getFlag('upload-bdist'),
+        'upload-bdist-compress-bin': getFlag('upload-bdist-compress-bin'),
+        'enable-stack': getFlag('enable-stack'),
+        'stack-no-global': getFlag('stack-no-global'),
+        'stack-setup-ghc': getFlag('stack-setup-ghc'),
+        'disable-matcher': getFlag('disable-matcher'),
+        'extra-lib-dirs': [],
+        'extra-include-dirs': []
+    };
+    // Validate build options
+    if (options['agda-version'] === 'nightly')
         throw Error('Value "nightly" for input "agda-version" is unupported');
-    }
-    // Unsupported: 'agda-version' set to anything but its default
-    if (buildOptions['ghc-version'] !== 'latest') {
+    if (options['ghc-version'] !== 'latest')
         throw Error('Input "ghc-version" is unsupported. Use "ghc-version-range"');
-    }
-    // Unsupported: 'upload-bdist-compress-bin' when UPX is not supported
-    if (buildOptions['upload-bdist-compress-bin'] !== '' && !supportsUPX()) {
-        throw Error('Input "upload-bdist-compress-bin" is unsupported on MacOS <12 ');
-    }
-    // Check: 'ghc-version-range' must be a valid version range
-    if (!semver.validRange(buildOptions['ghc-version-range'])) {
+    if (options['upload-bdist-compress-bin'] && !supportsUPX())
+        throw Error('Input "upload-bdist-compress-bin" is unsupported on MacOS <12');
+    if (!semver.validRange(options['ghc-version-range']))
         throw Error('Input "ghc-version-range" is not a valid version range');
-    }
-    return buildOptions;
+    return options;
 }
-exports.fromSetupAgdaInputs = fromSetupAgdaInputs;
-function isSetupHaskellInputKey(key) {
-    return exports.setupHaskellInputKeys.includes(key);
+exports.getOptions = getOptions;
+function pickSetupHaskellInputs(options) {
+    return (0, object_pick_1.default)(options, [
+        'ghc-version',
+        'cabal-version',
+        'stack-version',
+        'enable-stack',
+        'stack-no-global',
+        'stack-setup-ghc',
+        'disable-matcher'
+    ]);
 }
-function toSetupHaskellInputs(options) {
-    return Object.fromEntries(Object.entries(options).filter(entry => isSetupHaskellInputKey(entry[0])));
-}
-exports.toSetupHaskellInputs = toSetupHaskellInputs;
+exports.pickSetupHaskellInputs = pickSetupHaskellInputs;
 // Helper functions to check support of various build options
 function supportsClusterCounting(options) {
     // NOTE:
@@ -238,16 +243,16 @@ const build_from_source_1 = __importDefault(__nccwpck_require__(7222));
 const download_nightly_1 = __importDefault(__nccwpck_require__(8850));
 const agda = __importStar(__nccwpck_require__(9552));
 const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
-function setup(options) {
+function setup(inputs) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const fullOptions = opts.fromSetupAgdaInputs(options);
+            const options = opts.getOptions(inputs);
             let installDir = null;
-            if (fullOptions['agda-version'] === 'nightly') {
+            if (options['agda-version'] === 'nightly') {
                 installDir = yield (0, download_nightly_1.default)();
             }
             else {
-                installDir = yield (0, build_from_source_1.default)(fullOptions);
+                installDir = yield (0, build_from_source_1.default)(options);
             }
             setupEnv(installDir);
             agda.testSystemAgda();
@@ -394,7 +399,7 @@ function build(options) {
         // 6. Cache:
         const installDirTC = yield tc.cacheDir(installDir, 'agda', options['agda-version']);
         // 7. If 'upload-bdist' is specified, upload as a binary distribution:
-        if (options['upload-bdist'] !== '') {
+        if (options['upload-bdist']) {
             const bdistName = yield uploadAsArtifact(installDir, options);
             core.info(`Uploaded binary distribution as '${bdistName}'`);
         }
@@ -437,7 +442,7 @@ function getAgdaSource(options) {
     });
 }
 function resolveBuildTool(options) {
-    if (options['enable-stack'] !== '') {
+    if (options['enable-stack']) {
         return stack;
     }
     else {
@@ -462,17 +467,15 @@ function findGhcVersionRange(versions, options) {
 function uploadAsArtifact(installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         // If not specified, get the target platform from `ghc --info`:
-        if (options['upload-bdist-target-platform'] === '') {
-            options = Object.assign(Object.assign({}, options), { 'upload-bdist-target-platform': yield haskell.getGhcTargetPlatform() });
-        }
+        const targetPlatform = yield haskell.getGhcTargetPlatform();
         // Get the name for the distribution
-        const bdistName = `agda-${options['agda-version']}-${options['upload-bdist-target-platform']}`;
+        const bdistName = `agda-${options['agda-version']}-${targetPlatform}`;
         const bdistDir = path.join(agda.agdaDir(), 'bdist', bdistName);
         io.mkdirP(bdistDir);
         // Copy binaries
         io.mkdirP(path.join(bdistDir, 'bin'));
         const bins = [agda.agdaExe, agda.agdaModeExe].map(binName => path.join(installDir, 'bin', binName));
-        if (options['upload-bdist-compress-bin'] !== '') {
+        if (options['upload-bdist-compress-bin']) {
             yield compressBins(bins, path.join(bdistDir, 'bin'));
         }
         else {
@@ -805,7 +808,7 @@ function buildFlags(options) {
     // Load default configuration from 'stack-<agda-version>.yaml':
     flags.push(`--stack-yaml=stack-${options['ghc-version']}.yaml`);
     // Disable Stack managed GHC:
-    if (options['stack-setup-ghc'] === '') {
+    if (!options['stack-setup-ghc']) {
         flags.push('--no-install-ghc');
         flags.push('--system-ghc');
     }
@@ -1439,17 +1442,23 @@ function setup(options) {
         const ghcVersion = latestSatisfyingGhcVersion(options);
         options = Object.assign(Object.assign({}, options), { 'ghc-version': ghcVersion });
         // 2. Run haskell/actions/setup:
-        yield (0, setup_haskell_1.default)(opts.toSetupHaskellInputs(options));
+        yield (0, setup_haskell_1.default)(Object.fromEntries(Object.entries(opts.pickSetupHaskellInputs(options)).map(e => {
+            const [k, v] = e;
+            if (typeof v === 'boolean')
+                return [k, v ? 'true' : ''];
+            else
+                return [k, v];
+        })));
         core.setOutput('haskell-setup', 'true');
         // 3. Update the Cabal version:
-        if (options['enable-stack'] !== '' && options['stack-no-global'] !== '') {
+        if (options['enable-stack'] && options['stack-no-global']) {
             options = Object.assign(Object.assign({}, options), { 'cabal-version': yield getStackCabalVersionForGhc(ghcVersion) });
         }
         else {
             options = Object.assign(Object.assign({}, options), { 'cabal-version': yield getSystemCabalVersion() });
         }
         // 3. Update the Stack version:
-        if (options['enable-stack'] !== '') {
+        if (options['enable-stack']) {
             options = Object.assign(Object.assign({}, options), { 'stack-version': yield getSystemStackVersion() });
         }
         return options;
@@ -1459,7 +1468,7 @@ exports.setup = setup;
 function tryPreInstalled(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // If we need Stack, we cannot use the pre-installed tools:
-        if (options['enable-stack'] !== '')
+        if (options['enable-stack'])
             return null;
         try {
             // Get pre-installed GHC & Cabal versions:
@@ -13296,6 +13305,26 @@ if (typeof Object.create === 'function') {
 
 /***/ }),
 
+/***/ 5509:
+/***/ ((module) => {
+
+"use strict";
+/*!
+ * isobject <https://github.com/jonschlinkert/isobject>
+ *
+ * Copyright (c) 2014-2017, Jon Schlinkert.
+ * Released under the MIT License.
+ */
+
+
+
+module.exports = function isObject(val) {
+  return val != null && typeof val === 'object' && Array.isArray(val) === false;
+};
+
+
+/***/ }),
+
 /***/ 1917:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -18696,6 +18725,49 @@ function globUnescape (s) {
 function regExpEscape (s) {
   return s.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
 }
+
+
+/***/ }),
+
+/***/ 9962:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+/*!
+ * object.pick <https://github.com/jonschlinkert/object.pick>
+ *
+ * Copyright (c) 2014-2015 Jon Schlinkert, contributors.
+ * Licensed under the MIT License
+ */
+
+
+
+var isObject = __nccwpck_require__(5509);
+
+module.exports = function pick(obj, keys) {
+  if (!isObject(obj) && typeof obj !== 'function') {
+    return {};
+  }
+
+  var res = {};
+  if (typeof keys === 'string') {
+    if (keys in obj) {
+      res[keys] = obj[keys];
+    }
+    return res;
+  }
+
+  var len = keys.length;
+  var idx = -1;
+
+  while (++idx < len) {
+    var key = keys[idx];
+    if (key in obj) {
+      res[key] = obj[key];
+    }
+  }
+  return res;
+};
 
 
 /***/ }),

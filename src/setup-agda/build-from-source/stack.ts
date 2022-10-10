@@ -39,7 +39,7 @@ function buildFlags(options: opts.BuildOptions): string[] {
   // Load default configuration from 'stack-<agda-version>.yaml':
   flags.push(`--stack-yaml=stack-${options['ghc-version']}.yaml`)
   // Disable Stack managed GHC:
-  if (options['stack-setup-ghc'] === '') {
+  if (!options['stack-setup-ghc']) {
     flags.push('--no-install-ghc')
     flags.push('--system-ghc')
   }

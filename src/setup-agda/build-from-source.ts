@@ -93,7 +93,7 @@ async function build(options: opts.BuildOptions): Promise<string> {
   )
 
   // 7. If 'upload-bdist' is specified, upload as a binary distribution:
-  if (options['upload-bdist'] !== '') {
+  if (options['upload-bdist']) {
     const bdistName = await uploadAsArtifact(installDir, options)
     core.info(`Uploaded binary distribution as '${bdistName}'`)
   }
@@ -166,7 +166,7 @@ interface BuildTool {
 }
 
 function resolveBuildTool(options: opts.BuildOptions): BuildTool {
-  if (options['enable-stack'] !== '') {
+  if (options['enable-stack']) {
     return stack
   } else {
     return cabal
@@ -200,15 +200,10 @@ async function uploadAsArtifact(
   options: opts.BuildOptions
 ): Promise<string> {
   // If not specified, get the target platform from `ghc --info`:
-  if (options['upload-bdist-target-platform'] === '') {
-    options = {
-      ...options,
-      'upload-bdist-target-platform': await haskell.getGhcTargetPlatform()
-    }
-  }
+  const targetPlatform = await haskell.getGhcTargetPlatform()
 
   // Get the name for the distribution
-  const bdistName = `agda-${options['agda-version']}-${options['upload-bdist-target-platform']}`
+  const bdistName = `agda-${options['agda-version']}-${targetPlatform}`
   const bdistDir = path.join(agda.agdaDir(), 'bdist', bdistName)
   io.mkdirP(bdistDir)
 
@@ -217,7 +212,7 @@ async function uploadAsArtifact(
   const bins = [agda.agdaExe, agda.agdaModeExe].map(binName =>
     path.join(installDir, 'bin', binName)
   )
-  if (options['upload-bdist-compress-bin'] !== '') {
+  if (options['upload-bdist-compress-bin']) {
     await compressBins(bins, path.join(bdistDir, 'bin'))
   } else {
     await copyBins(bins, path.join(bdistDir, 'bin'))

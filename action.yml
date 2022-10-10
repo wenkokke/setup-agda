@@ -13,10 +13,7 @@ inputs:
   upload-bdist:
     description: 'If specified, will upload a binary distribution for the specified Agda version'
     required: false
-  upload-bdist-target-platform:
-    description: 'If specified, will override the target platform triple used in the archive. Otherwise, this is inferred from `ghc --info`'
-    required: false
-  upload-bdist-compress-bin:
+  bdist-compress-bin:
     description: 'If specified, will compress the Agda binaries'
     required: false
 

@@ -7,15 +7,18 @@ import * as agda from './util/agda'
 import ensureError from 'ensure-error'
 
 export default async function setup(
-  options?: Partial<opts.BuildOptions>
+  inputs?:
+    | Partial<opts.SetupAgdaInputs>
+    | Partial<Record<string, string>>
+    | ((name: string) => string | undefined)
 ): Promise<void> {
   try {
-    const fullOptions = opts.fromSetupAgdaInputs(options)
+    const options = opts.getOptions(inputs)
     let installDir: string | null = null
-    if (fullOptions['agda-version'] === 'nightly') {
+    if (options['agda-version'] === 'nightly') {
       installDir = await downloadNightly()
     } else {
-      installDir = await buildFromSource(fullOptions)
+      installDir = await buildFromSource(options)
     }
     setupEnv(installDir)
     agda.testSystemAgda()

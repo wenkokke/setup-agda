@@ -20,12 +20,18 @@ export async function setup(
 
   // 2. Run haskell/actions/setup:
   await setupHaskell(
-    opts.toSetupHaskellInputs(options) as Record<string, string>
+    Object.fromEntries(
+      Object.entries(opts.pickSetupHaskellInputs(options)).map(e => {
+        const [k, v] = e
+        if (typeof v === 'boolean') return [k, v ? 'true' : '']
+        else return [k, v]
+      })
+    )
   )
   core.setOutput('haskell-setup', 'true')
 
   // 3. Update the Cabal version:
-  if (options['enable-stack'] !== '' && options['stack-no-global'] !== '') {
+  if (options['enable-stack'] && options['stack-no-global']) {
     options = {
       ...options,
       'cabal-version': await getStackCabalVersionForGhc(ghcVersion)
@@ -37,7 +43,7 @@ export async function setup(
     }
   }
   // 3. Update the Stack version:
-  if (options['enable-stack'] !== '') {
+  if (options['enable-stack']) {
     options = {
       ...options,
       'stack-version': await getSystemStackVersion()
@@ -50,7 +56,7 @@ async function tryPreInstalled(
   options: opts.BuildOptions
 ): Promise<opts.BuildOptions | null> {
   // If we need Stack, we cannot use the pre-installed tools:
-  if (options['enable-stack'] !== '') return null
+  if (options['enable-stack']) return null
   try {
     // Get pre-installed GHC & Cabal versions:
     const ghcVersion = await getSystemGhcVersion()

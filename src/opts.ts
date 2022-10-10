@@ -5,67 +5,41 @@ import * as path from 'path'
 import * as process from 'process'
 import * as simver from './util/simver'
 import * as http from 'http'
+import pick from 'object.pick'
 import {release} from 'os'
 
 // Setup options for haskell/actions/setup:
 
-export type SetupHaskellInputKey =
+export type SetupHaskellOption =
   | 'ghc-version'
   | 'cabal-version'
   | 'stack-version'
+
+export type SetupHaskellFlag =
   | 'enable-stack'
   | 'stack-no-global'
   | 'stack-setup-ghc'
   | 'disable-matcher'
 
-export const setupHaskellInputKeys: SetupHaskellInputKey[] = [
-  'ghc-version',
-  'cabal-version',
-  'stack-version',
-  'enable-stack',
-  'stack-no-global',
-  'stack-setup-ghc',
-  'disable-matcher'
-]
-
-export type SetupHaskellInputs = Partial<Record<SetupHaskellInputKey, string>>
+export interface SetupHaskellInputs
+  extends Record<SetupHaskellOption, string>,
+    Record<SetupHaskellFlag, boolean> {}
 
 // Setup options for this action:
 
-export type SetupAgdaInputKey =
+export type SetupAgdaOption =
   | 'agda-version'
   | 'ghc-version-range'
+  | SetupHaskellOption
+
+export type SetupAgdaFlag =
   | 'upload-bdist'
   | 'upload-bdist-compress-bin'
-  | 'upload-bdist-target-platform'
-  | SetupHaskellInputKey
+  | SetupHaskellFlag
 
-export const setupAgdaInputKeys: SetupAgdaInputKey[] = [
-  'agda-version',
-  'ghc-version-range',
-  'upload-bdist',
-  'upload-bdist-compress-bin',
-  'upload-bdist-target-platform',
-  ...setupHaskellInputKeys
-] as SetupAgdaInputKey[]
-
-export type SetupAgdaInputs = Readonly<Record<SetupAgdaInputKey, string>>
-
-export type SetupAgdaInputDefaults = Partial<
-  Record<SetupAgdaInputKey, {default?: string}>
->
-
-function setupAgdaInputDefaults(): SetupAgdaInputs {
-  return Object.fromEntries(
-    Object.entries(
-      (
-        yaml.load(
-          fs.readFileSync(path.join(__dirname, '..', 'action.yml'), 'utf8')
-        ) as {inputs: SetupAgdaInputDefaults}
-      ).inputs
-    ).map(entry => [entry[0], entry[1].default ?? ''])
-  ) as SetupAgdaInputs
-}
+export interface SetupAgdaInputs
+  extends Record<SetupAgdaOption, string>,
+    Record<SetupAgdaFlag, boolean> {}
 
 // Build options for this action:
 
@@ -73,7 +47,7 @@ export type ICUVersion = '67.1' | '71.1'
 
 export type UPXVersion = '3.96'
 
-export interface BuildOptions extends SetupAgdaInputs {
+export interface BuildOptions extends Readonly<SetupAgdaInputs> {
   readonly 'extra-lib-dirs': string[]
   readonly 'extra-include-dirs': string[]
   readonly 'icu-version'?: ICUVersion
@@ -81,47 +55,65 @@ export interface BuildOptions extends SetupAgdaInputs {
   readonly 'package-info-cache'?: PackageInfoCache
 }
 
-export function fromSetupAgdaInputs(
-  options?: Partial<SetupAgdaInputs>
+export function getOptions(
+  inputs?:
+    | Partial<SetupAgdaInputs>
+    | Partial<Record<string, string>>
+    | ((name: string) => string | undefined)
 ): BuildOptions {
-  // Set defaults:
-  const buildOptions = {
-    ...setupAgdaInputDefaults(),
-    ...options,
+  // Get build options or their defaults
+  const inputSpec = (
+    yaml.load(
+      fs.readFileSync(path.join(__dirname, '..', 'action.yml'), 'utf8')
+    ) as {inputs: Record<SetupAgdaOption, {default: string}>}
+  ).inputs
+  const getOption = (k: SetupAgdaOption): string => {
+    const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs?.[k]
+    return maybeInput ?? inputSpec[k].default
+  }
+  const getFlag = (k: SetupAgdaFlag): boolean => {
+    const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs?.[k]
+    return ![false, '', 'false', undefined].includes(maybeInput)
+  }
+  const options = {
+    'agda-version': getOption('agda-version'),
+    'ghc-version-range': getOption('ghc-version-range'),
+    'ghc-version': getOption('ghc-version'),
+    'cabal-version': getOption('cabal-version'),
+    'stack-version': getOption('stack-version'),
+    'upload-bdist': getFlag('upload-bdist'),
+    'upload-bdist-compress-bin': getFlag('upload-bdist-compress-bin'),
+    'enable-stack': getFlag('enable-stack'),
+    'stack-no-global': getFlag('stack-no-global'),
+    'stack-setup-ghc': getFlag('stack-setup-ghc'),
+    'disable-matcher': getFlag('disable-matcher'),
     'extra-lib-dirs': [],
     'extra-include-dirs': []
   }
-  // Unsupported: 'agda-version' set to 'nightly'
-  if (buildOptions['agda-version'] === 'nightly') {
+  // Validate build options
+  if (options['agda-version'] === 'nightly')
     throw Error('Value "nightly" for input "agda-version" is unupported')
-  }
-  // Unsupported: 'agda-version' set to anything but its default
-  if (buildOptions['ghc-version'] !== 'latest') {
+  if (options['ghc-version'] !== 'latest')
     throw Error('Input "ghc-version" is unsupported. Use "ghc-version-range"')
-  }
-  // Unsupported: 'upload-bdist-compress-bin' when UPX is not supported
-  if (buildOptions['upload-bdist-compress-bin'] !== '' && !supportsUPX()) {
-    throw Error(
-      'Input "upload-bdist-compress-bin" is unsupported on MacOS <12 '
-    )
-  }
-  // Check: 'ghc-version-range' must be a valid version range
-  if (!semver.validRange(buildOptions['ghc-version-range'])) {
+  if (options['upload-bdist-compress-bin'] && !supportsUPX())
+    throw Error('Input "upload-bdist-compress-bin" is unsupported on MacOS <12')
+  if (!semver.validRange(options['ghc-version-range']))
     throw Error('Input "ghc-version-range" is not a valid version range')
-  }
-  return buildOptions
+  return options
 }
 
-function isSetupHaskellInputKey(key: string): key is SetupHaskellInputKey {
-  return setupHaskellInputKeys.includes(key as SetupHaskellInputKey)
-}
-
-export function toSetupHaskellInputs(
+export function pickSetupHaskellInputs(
   options: BuildOptions
 ): SetupHaskellInputs {
-  return Object.fromEntries(
-    Object.entries(options).filter(entry => isSetupHaskellInputKey(entry[0]))
-  )
+  return pick(options, [
+    'ghc-version',
+    'cabal-version',
+    'stack-version',
+    'enable-stack',
+    'stack-no-global',
+    'stack-setup-ghc',
+    'disable-matcher'
+  ])
 }
 
 // Helper functions to check support of various build options
