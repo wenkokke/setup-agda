@@ -44,5 +44,5 @@ jobs:
       agda-version: ${{ matrix.agda-version }}
       cabal-version: ${{ matrix.cabal-version }}
       upload-bdist: ${{ matrix.upload-bdist }}
-      bdist-name: agda-${{ matrix.agda-version }}-${{ runner.arch }}-${{ matrix.os }}-upx=${{ matrix.bdist-compress-bin }}
+      bdist-name: agda-{{agda-version}}-{{arch}-${{ matrix.os }}-{{bdist-compress-bin}}
       bdist-compress-bin: ${{ matrix.bdist-compress-bin }}

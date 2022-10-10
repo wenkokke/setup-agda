@@ -197,12 +197,7 @@ async function uploadAsArtifact(
   options: opts.BuildOptions
 ): Promise<string> {
   // Get the name for the distribution
-  let bdistName = options['bdist-name']
-  if (bdistName === '') {
-    // If not specified, get the target platform from `ghc --info`:
-    const targetPlatform = await haskell.getGhcTargetPlatform()
-    bdistName = `agda-${options['agda-version']}-${targetPlatform}`
-  }
+  const bdistName = await renderBDistName(options)
   const bdistDir = path.join(agda.agdaDir(), 'bdist', bdistName)
   io.mkdirP(bdistDir)
 
@@ -257,6 +252,25 @@ async function uploadAsArtifact(
 }
 
 // Utilities for copying files
+
+async function renderBDistName(options: opts.BuildOptions): Promise<string> {
+  if (options['bdist-name'] === '') {
+    const targetPlatform = await haskell.getGhcTargetPlatform()
+    return `agda-${options['agda-version']}-${targetPlatform}`
+  } else {
+    return options['bdist-name']
+      .replace('{{agda-version}}', options['agda-version'])
+      .replace('{{ghc-version}}', options['agda-version'])
+      .replace('{{cabal-version}}', options['cabal-version'])
+      .replace('{{stack-version}}', options['stack-version'])
+      .replace(
+        '{{bdist-compress-bin}}',
+        options['bdist-compress-bin'] ? 'compressed' : 'normal'
+      )
+      .replace('{{os}}', opts.os)
+      .replace('{{arch}}', process.arch)
+  }
+}
 
 async function copyData(dataDir: string, dest: string): Promise<void> {
   await io.cp(dataDir, dest, {recursive: true})

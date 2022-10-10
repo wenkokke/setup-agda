@@ -474,12 +474,7 @@ function findGhcVersionRange(versions, options) {
 function uploadAsArtifact(installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Get the name for the distribution
-        let bdistName = options['bdist-name'];
-        if (bdistName === '') {
-            // If not specified, get the target platform from `ghc --info`:
-            const targetPlatform = yield haskell.getGhcTargetPlatform();
-            bdistName = `agda-${options['agda-version']}-${targetPlatform}`;
-        }
+        const bdistName = yield renderBDistName(options);
         const bdistDir = path.join(agda.agdaDir(), 'bdist', bdistName);
         io.mkdirP(bdistDir);
         // Copy executables
@@ -522,6 +517,24 @@ function uploadAsArtifact(installDir, options) {
     });
 }
 // Utilities for copying files
+function renderBDistName(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (options['bdist-name'] === '') {
+            const targetPlatform = yield haskell.getGhcTargetPlatform();
+            return `agda-${options['agda-version']}-${targetPlatform}`;
+        }
+        else {
+            return options['bdist-name']
+                .replace('{{agda-version}}', options['agda-version'])
+                .replace('{{ghc-version}}', options['agda-version'])
+                .replace('{{cabal-version}}', options['cabal-version'])
+                .replace('{{stack-version}}', options['stack-version'])
+                .replace('{{bdist-compress-bin}}', options['bdist-compress-bin'] ? 'compressed' : 'normal')
+                .replace('{{os}}', opts.os)
+                .replace('{{arch}}', process.arch);
+        }
+    });
+}
 function copyData(dataDir, dest) {
     return __awaiter(this, void 0, void 0, function* () {
         yield io.cp(dataDir, dest, { recursive: true });
