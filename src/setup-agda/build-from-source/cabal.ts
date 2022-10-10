@@ -18,6 +18,7 @@ export async function build(
   const execOptions: exec.ExecOptions = {cwd: sourceDir}
   if (options['extra-pkgconfig-dirs'].length > 0) {
     execOptions.env = {
+      ...process.env,
       PKG_CONFIG_PATH: options['extra-pkgconfig-dirs'].join(';')
     }
   }

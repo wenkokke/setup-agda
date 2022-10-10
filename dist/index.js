@@ -774,9 +774,7 @@ function build(sourceDir, installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         const execOptions = { cwd: sourceDir };
         if (options['extra-pkgconfig-dirs'].length > 0) {
-            execOptions.env = {
-                PKG_CONFIG_PATH: options['extra-pkgconfig-dirs'].join(';')
-            };
+            execOptions.env = Object.assign(Object.assign({}, process.env), { PKG_CONFIG_PATH: options['extra-pkgconfig-dirs'].join(';') });
         }
         // Configure:
         core.info(`Configure Agda-${options['agda-version']}`);
@@ -948,9 +946,7 @@ function build(sourceDir, installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         const execOptions = { cwd: sourceDir };
         if (options['extra-pkgconfig-dirs'].length > 0) {
-            execOptions.env = {
-                PKG_CONFIG_PATH: options['extra-pkgconfig-dirs'].join(';')
-            };
+            execOptions.env = Object.assign(Object.assign({}, process.env), { PKG_CONFIG_PATH: options['extra-pkgconfig-dirs'].join(';') });
         }
         // Configure, Build, and Install:
         yield io.mkdirP(path.join(installDir, 'bin'));
