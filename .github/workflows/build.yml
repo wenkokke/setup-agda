@@ -23,12 +23,12 @@ on:
         description: 'If specified, will upload a binary distribution for the specified Agda version'
         required: false
         type: string
-      upload-bdist-target-platform:
+      bdist-name:
         default: ''
-        description: 'If specified, will override the target platform triple used in the archive. Otherwise, this is inferred from `ghc --info`'
+        description: 'If specified, will be used as the name for the binary distribution'
         required: false
         type: string
-      upload-bdist-compress-bin:
+      bdist-compress-bin:
         default: ''
         description: 'If specified, will compress the Agda binaries'
         required: false
