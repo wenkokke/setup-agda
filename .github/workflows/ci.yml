@@ -9,7 +9,6 @@ on:
       - '**.js'
       - '**.json'
       - '.github/workflows/*.yml'
-  pull_request:
 
 jobs:
   check-dist:
@@ -42,4 +41,4 @@ jobs:
       cabal-version: ${{ matrix.cabal-version }}
       enable-stack: ${{ matrix.enable-stack }}
       upload-bdist: ${{ matrix.upload-bdist }}
-      upload-bdist-compress-bin: 'true'
+      # upload-bdist-compress-bin: ''

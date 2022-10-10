@@ -5,107 +5,83 @@ import * as semver from 'semver'
 import setupHaskell from 'setup-haskell'
 import assert from 'assert'
 import ensureError from 'ensure-error'
-import * as simver from './simver'
-
-export type SetupOptionKey =
-  | 'ghc-version'
-  | 'cabal-version'
-  | 'stack-version'
-  | 'enable-stack'
-  | 'stack-no-global'
-  | 'stack-setup-ghc'
-  | 'disable-matcher'
-
-export const setupOptionKeys: SetupOptionKey[] = [
-  'ghc-version',
-  'cabal-version',
-  'stack-version',
-  'enable-stack',
-  'stack-no-global',
-  'stack-setup-ghc',
-  'disable-matcher'
-]
-
-export type SetupOptions = Partial<Record<SetupOptionKey, string>>
 
 export async function setup(
-  options: Readonly<opts.SetupOptions>
-): Promise<opts.SetupOptions> {
+  options: opts.BuildOptions
+): Promise<opts.BuildOptions> {
   // Try the pre-installed software:
   const preInstalled = await tryPreInstalled(options)
   if (preInstalled !== null) return preInstalled
 
   // Otherwise, use haskell/actions/setup:
   // 1. Find the latest compatible version from 'ghc-version-range':
-  const afterSetup: Partial<opts.SetupOptions> = {}
-  afterSetup['ghc-version'] = latestSatisfyingGhcVersion(options)
+  const ghcVersion = latestSatisfyingGhcVersion(options)
+  options = {...options, 'ghc-version': ghcVersion}
+
   // 2. Run haskell/actions/setup:
-  await setupHaskell({...options, ...afterSetup} as Record<string, string>)
+  await setupHaskell(
+    opts.toSetupHaskellInputs(options) as Record<string, string>
+  )
   core.setOutput('haskell-setup', 'true')
+
   // 3. Update the Cabal version:
   if (options['enable-stack'] !== '' && options['stack-no-global'] !== '') {
-    afterSetup['cabal-version'] = await getStackCabalVersionForGhc(
-      afterSetup['ghc-version']
-    )
+    options = {
+      ...options,
+      'cabal-version': await getStackCabalVersionForGhc(ghcVersion)
+    }
   } else {
-    afterSetup['cabal-version'] = await getSystemCabalVersion()
+    options = {
+      ...options,
+      'cabal-version': await getSystemCabalVersion()
+    }
   }
   // 3. Update the Stack version:
   if (options['enable-stack'] !== '') {
-    afterSetup['stack-version'] = await getSystemStackVersion()
+    options = {
+      ...options,
+      'stack-version': await getSystemStackVersion()
+    }
   }
-  return {...options, ...afterSetup}
+  return options
 }
 
 async function tryPreInstalled(
-  options: Readonly<opts.SetupOptions>
-): Promise<opts.SetupOptions | null> {
+  options: opts.BuildOptions
+): Promise<opts.BuildOptions | null> {
   // If we need Stack, we cannot use the pre-installed tools:
   if (options['enable-stack'] !== '') return null
-
-  const preInstalled: Partial<opts.SetupOptions> = {}
-
-  // Get pre-installed GHC version:
   try {
-    preInstalled['ghc-version'] = await getSystemGhcVersion()
-  } catch (error) {
-    core.debug(`No pre-installed GHC: ${ensureError(error).message}`)
-    return null
-  }
+    // Get pre-installed GHC & Cabal versions:
+    const ghcVersion = await getSystemGhcVersion()
+    core.info(`Found pre-installed GHC version ${ghcVersion}`)
+    const cabalVersion = await getSystemCabalVersion()
+    core.info(`Found pre-installed Cabal version ${cabalVersion}`)
 
-  // Get pre-installed Cabal version:
-  try {
-    preInstalled['cabal-version'] = await getSystemCabalVersion()
+    // Check if the GHC version is compatible with the Agda version:
+    if (semver.satisfies(ghcVersion, options['ghc-version-range'])) {
+      return {
+        ...options,
+        'ghc-version': ghcVersion,
+        'cabal-version': cabalVersion
+      }
+    } else {
+      core.info(
+        `Pre-installed GHC is incompatible with ${options['agda-version']}`
+      )
+      return null
+    }
   } catch (error) {
-    core.debug(`No pre-installed Cabal: ${ensureError(error).message}`)
-    return null
-  }
-
-  // Check if the pre-installed GHC satisfies the version range:
-  if (
-    semver.satisfies(preInstalled['ghc-version'], options['ghc-version-range'])
-  ) {
-    core.info(
-      [
-        `Found GHC ${preInstalled['ghc-version']}`,
-        `which is compatible with Agda ${options['agda-version']}`
-      ].join(', ')
-    )
-    return {...options, ...preInstalled}
-  } else {
     core.debug(
-      [
-        `Found GHC ${preInstalled['ghc-version']}`,
-        `which is incompatible with Agda ${options['agda-version']}`
-      ].join(', ')
+      `Could not find pre-installed GHC and Cabal: ${
+        ensureError(error).message
+      }`
     )
     return null
   }
 }
 
-function latestSatisfyingGhcVersion(
-  options: Readonly<opts.SetupOptions>
-): string {
+function latestSatisfyingGhcVersion(options: opts.BuildOptions): string {
   const ghcVersions = options['ghc-version-range']
     .split('||')
     .map(version => version.trim())
@@ -201,31 +177,4 @@ export async function getSystemStackVersion(): Promise<string> {
     versionFlag: '--numeric-version',
     silent: true
   })
-}
-
-// Helper functions to check support for build flags
-
-export function supportsExecutableStatic(options: opts.SetupOptions): boolean {
-  // NOTE:
-  //  We only set --enable-executable-static on Linux, because the deploy workflow does it.
-  //  https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-executable-static
-  const osOK = false // os === 'linux' // Unsupported on Ubuntu 20.04
-  // NOTE:
-  //  We only set --enable-executable-static if Ghc >=8.4, when the flag was added:
-  //  https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-static
-  const ghcVersionOK = simver.gte(options['ghc-version'], '8.4')
-  return osOK && ghcVersionOK
-}
-
-export function supportsSplitSections(options: opts.SetupOptions): boolean {
-  // NOTE:
-  //   We only set --split-sections on Linux and Windows, as it does nothing on MacOS:
-  //   https://github.com/agda/agda/issues/5940
-  const osOK = opts.os === 'linux' || opts.os === 'windows'
-  // NOTE:
-  //   We only set --split-sections if Ghc >=8.0 and Cabal >=2.2, when the flag was added:
-  //   https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-split-sections
-  const ghcVersionOK = simver.gte(options['ghc-version'], '8.0')
-  const cabalVersionOK = simver.gte(options['cabal-version'], '2.2')
-  return osOK && ghcVersionOK && cabalVersionOK
 }

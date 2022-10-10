@@ -36,7 +36,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const opts = __importStar(__nccwpck_require__(1352));
 const setup_agda_1 = __importDefault(__nccwpck_require__(8021));
-(0, setup_agda_1.default)(Object.fromEntries(opts.setupOptionKeys.map(key => [key, core.getInput(key)])));
+(0, setup_agda_1.default)(Object.fromEntries(opts.setupAgdaInputKeys.map(key => [key, core.getInput(key)])));
 
 
 /***/ }),
@@ -70,72 +70,110 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.os = exports.addIncludeDir = exports.includeDirs = exports.addLibDir = exports.libDirs = exports.validSetupOptions = exports.setupOptionDefaults = exports.setupOptionKeys = void 0;
+exports.os = exports.supportsUPX = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.toSetupHaskellInputs = exports.fromSetupAgdaInputs = exports.setupAgdaInputKeys = exports.setupHaskellInputKeys = void 0;
 const fs = __importStar(__nccwpck_require__(7147));
 const semver = __importStar(__nccwpck_require__(1383));
 const yaml = __importStar(__nccwpck_require__(1917));
 const path = __importStar(__nccwpck_require__(1017));
 const process = __importStar(__nccwpck_require__(7282));
-const haskell = __importStar(__nccwpck_require__(1310));
-exports.setupOptionKeys = [
+const simver = __importStar(__nccwpck_require__(7609));
+const os_1 = __nccwpck_require__(2037);
+exports.setupHaskellInputKeys = [
+    'ghc-version',
+    'cabal-version',
+    'stack-version',
+    'enable-stack',
+    'stack-no-global',
+    'stack-setup-ghc',
+    'disable-matcher'
+];
+exports.setupAgdaInputKeys = [
     'agda-version',
     'ghc-version-range',
     'upload-bdist',
     'upload-bdist-compress-bin',
     'upload-bdist-target-platform',
-    // The following keys are not exposed via action.yml:
-    'icu-version',
-    'extra-lib-dirs',
-    'extra-include-dirs',
-    ...haskell.setupOptionKeys
+    ...exports.setupHaskellInputKeys
 ];
-exports.setupOptionDefaults = yaml.load(fs.readFileSync(path.join(__dirname, '..', 'action.yml'), 'utf8')).inputs;
-function validSetupOptions(options) {
-    var _a, _b;
+function setupAgdaInputDefaults() {
+    return Object.fromEntries(Object.entries(yaml.load(fs.readFileSync(path.join(__dirname, '..', 'action.yml'), 'utf8')).inputs).map(entry => { var _a; return [entry[0], (_a = entry[1].default) !== null && _a !== void 0 ? _a : '']; }));
+}
+function fromSetupAgdaInputs(options) {
     // Set defaults:
-    options = options !== null && options !== void 0 ? options : {};
-    for (const key of exports.setupOptionKeys) {
-        if (options[key] === undefined) {
-            (_b = (_a = exports.setupOptionDefaults[key]) === null || _a === void 0 ? void 0 : _a.default) !== null && _b !== void 0 ? _b : '';
-        }
+    const buildOptions = Object.assign(Object.assign(Object.assign({}, setupAgdaInputDefaults()), options), { 'extra-lib-dirs': [], 'extra-include-dirs': [] });
+    // Unsupported: 'agda-version' set to 'nightly'
+    if (buildOptions['agda-version'] === 'nightly') {
+        throw Error('Value "nightly" for input "agda-version" is unupported');
     }
-    // Was 'agda-version' set to 'nightly'?
-    if (options['agda-version'] === 'nightly') {
-        throw Error(`Value 'nightly' for 'agda-version' is no longer supported.`);
+    // Unsupported: 'agda-version' set to anything but its default
+    if (buildOptions['ghc-version'] !== 'latest') {
+        throw Error('Input "ghc-version" is unsupported. Use "ghc-version-range"');
     }
-    // Was 'ghc-version' set?
-    if (options['ghc-version'] !== 'latest') {
-        throw Error(`Input 'ghc-version' is unsupported, found ${options['ghc-version']}. Use 'ghc-version-range'.`);
+    // Unsupported: 'upload-bdist-compress-bin' when UPX is not supported
+    if (buildOptions['upload-bdist-compress-bin'] !== '' && !supportsUPX()) {
+        throw Error('Input "upload-bdist-compress-bin" is unsupported on MacOS <12 ');
     }
-    // Was 'stack-no-global' set?
-    if (options['stack-no-global'] !== '') {
-        throw Error(`Input 'stack-no-global' is unsupported, found ${options['stack-no-global']}.`);
+    // Check: 'ghc-version-range' must be a valid version range
+    if (!semver.validRange(buildOptions['ghc-version-range'])) {
+        throw Error('Input "ghc-version-range" is not a valid version range');
     }
-    // Is 'ghc-version-range' a valid version range?
-    if (!semver.validRange(options['ghc-version-range'])) {
-        throw Error(`Input 'ghc-version-range' is not a valid version range, found ${options['ghc-version-range']}`);
-    }
-    return options;
+    return buildOptions;
 }
-exports.validSetupOptions = validSetupOptions;
-function libDirs(options) {
-    return options['extra-lib-dirs'].split(',').filter(libDir => libDir !== '');
+exports.fromSetupAgdaInputs = fromSetupAgdaInputs;
+function isSetupHaskellInputKey(key) {
+    return exports.setupHaskellInputKeys.includes(key);
 }
-exports.libDirs = libDirs;
-function addLibDir(options, libDir) {
-    return Object.assign(Object.assign({}, options), { 'extra-lib-dirs': [libDir, libDirs(options)].join(',') });
+function toSetupHaskellInputs(options) {
+    return Object.fromEntries(Object.entries(options).filter(entry => isSetupHaskellInputKey(entry[0])));
 }
-exports.addLibDir = addLibDir;
-function includeDirs(options) {
-    return options['extra-include-dirs']
-        .split(',')
-        .filter(includeDir => includeDir !== '');
+exports.toSetupHaskellInputs = toSetupHaskellInputs;
+// Helper functions to check support of various build options
+function supportsClusterCounting(options) {
+    // NOTE:
+    //   We only enable --cluster-counting on versions which support it,
+    //   i.e., versions after 2.5.3:
+    //   https://github.com/agda/agda/blob/f50c14d3a4e92ed695783e26dbe11ad1ad7b73f7/doc/release-notes/2.5.3.md
+    return simver.gte(options['agda-version'], '2.5.3');
 }
-exports.includeDirs = includeDirs;
-function addIncludeDir(options, includeDir) {
-    return Object.assign(Object.assign({}, options), { 'extra-include-dirs': [includeDir, includeDirs(options)].join(',') });
+exports.supportsClusterCounting = supportsClusterCounting;
+function supportsOptimiseHeavily(options) {
+    // NOTE:
+    //   We only enable --optimise-heavily on versions which support it,
+    //   i.e., versions after 2.6.2:
+    //   https://github.com/agda/agda/blob/1175c41210716074340da4bd4caa09f4dfe2cc1d/doc/release-notes/2.6.2.md
+    return simver.gte(options['agda-version'], '2.6.2');
 }
-exports.addIncludeDir = addIncludeDir;
+exports.supportsOptimiseHeavily = supportsOptimiseHeavily;
+function supportsExecutableStatic(options) {
+    // NOTE:
+    //  We only set --enable-executable-static on Linux, because the deploy workflow does it.
+    //  https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-executable-static
+    const osOK = false; // os === 'linux' // Unsupported on Ubuntu 20.04
+    // NOTE:
+    //  We only set --enable-executable-static if Ghc >=8.4, when the flag was added:
+    //  https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-static
+    const ghcVersionOK = simver.gte(options['ghc-version'], '8.4');
+    return osOK && ghcVersionOK;
+}
+exports.supportsExecutableStatic = supportsExecutableStatic;
+function supportsSplitSections(options) {
+    // NOTE:
+    //   We only set --split-sections on Linux and Windows, as it does nothing on MacOS:
+    //   https://github.com/agda/agda/issues/5940
+    const osOK = exports.os === 'linux' || exports.os === 'windows';
+    // NOTE:
+    //   We only set --split-sections if Ghc >=8.0 and Cabal >=2.2, when the flag was added:
+    //   https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-split-sections
+    const ghcVersionOK = simver.gte(options['ghc-version'], '8.0');
+    const cabalVersionOK = simver.gte(options['cabal-version'], '2.2');
+    return osOK && ghcVersionOK && cabalVersionOK;
+}
+exports.supportsSplitSections = supportsSplitSections;
+function supportsUPX() {
+    // UPX does not support MacOS 11 or below, which is Darwin 20 or below:
+    return !(exports.os === 'macos' && simver.lt((0, os_1.release)(), '21'));
+}
+exports.supportsUPX = supportsUPX;
 exports.os = (() => {
     switch (process.platform) {
         case 'linux':
@@ -203,7 +241,7 @@ const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const fullOptions = opts.validSetupOptions(options);
+            const fullOptions = opts.fromSetupAgdaInputs(options);
             let installDir = null;
             if (fullOptions['agda-version'] === 'nightly') {
                 installDir = yield (0, download_nightly_1.default)();
@@ -283,7 +321,6 @@ const assert_1 = __importDefault(__nccwpck_require__(9491));
 const os = __importStar(__nccwpck_require__(2037));
 const semver = __importStar(__nccwpck_require__(1383));
 const path = __importStar(__nccwpck_require__(1017));
-const opts = __importStar(__nccwpck_require__(1352));
 const exec = __importStar(__nccwpck_require__(4369));
 const agda = __importStar(__nccwpck_require__(9552));
 const hackage = __importStar(__nccwpck_require__(903));
@@ -296,15 +333,15 @@ const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 function buildFromSource(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Resolve the Agda version:
-        const [setupOptions, packageInfoOptions] = yield resolveAgdaVersion(options);
-        core.info(`Setting up Agda ${setupOptions['agda-version']}`);
+        options = yield resolveAgdaVersion(options);
+        core.info(`Setting up Agda ${options['agda-version']}`);
         // Setup Agda:
-        const installDirTC = yield tryToolCache(setupOptions['agda-version']);
+        const installDirTC = yield tryToolCache(options['agda-version']);
         if (installDirTC !== null) {
             return installDirTC;
         }
         else {
-            return yield build(setupOptions, packageInfoOptions);
+            return yield build(options);
         }
     });
 }
@@ -330,27 +367,22 @@ function tryToolCache(agdaVersion) {
         }
     });
 }
-function build(options, packageInfoOptions) {
+function build(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Otherwise, build Agda from source:
         core.info(`Building Agda ${options['agda-version']} from source`);
         const buildTool = resolveBuildTool(options);
         // 1. Get the Agda source from Hackage:
-        const sourceDir = yield getAgdaSource(options['agda-version'], packageInfoOptions);
+        const sourceDir = yield getAgdaSource(options);
         core.debug(`Downloaded source to ${sourceDir}`);
         // 2. Select compatible GHC versions:
-        const ghcVersions = yield buildTool.findCompatibleGhcVersions(sourceDir);
+        const ghcVersions = yield buildTool.getGhcVersionCandidates(sourceDir);
         const ghcVersionRange = yield findGhcVersionRange(ghcVersions, options);
         core.debug(`Compatible GHC version range is: ${ghcVersionRange}`);
         // 3. Setup GHC via <haskell/actions/setup>:
         options = yield haskell.setup(Object.assign(Object.assign({}, options), { 'ghc-version-range': ghcVersionRange }));
         // 4. Install compatible ICU version:
-        options = icu.resolveIcuVersion(options);
-        if (options['icu-version'] !== '') {
-            const { extraLibDir, extraIncludeDir } = yield icu.installICU(options['icu-version']);
-            options = opts.addLibDir(options, extraLibDir);
-            options = opts.addIncludeDir(options, extraIncludeDir);
-        }
+        options = yield icu.setup(options);
         // 4. Build:
         const installDir = agda.installDir(options['agda-version']);
         yield buildTool.build(sourceDir, installDir, options);
@@ -378,33 +410,34 @@ function resolveAgdaVersion(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Nightly builds should be handled by 'download-nightly'
         (0, assert_1.default)(options['agda-version'] !== 'nightly', `resolveAgdaVersion: agdaVersion should not be nightly`);
-        // Save and return the packageInfo so we only query Hackage once,
-        // and reuse the cache if we need the source distribution:
-        const packageInfoCache = yield hackage.getPackageInfo('Agda', {
-            packageInfoCache: agda.packageInfoCache
-        });
-        const packageInfoOptions = { fetchPackageInfo: false, packageInfoCache };
+        // Ensure that we cache the package info:
+        options = yield cachePackageInfo(options);
         // Resolve the given version against Hackage's package versions:
-        const agdaVersion = yield hackage.resolvePackageVersion('Agda', options['agda-version'], packageInfoOptions);
+        const agdaVersion = yield hackage.resolvePackageVersion('Agda', options['agda-version'], packageInfoOptions(options));
         if (options['agda-version'] !== agdaVersion) {
             core.info(`Resolved Agda version ${options['agda-version']} to ${agdaVersion}`);
-            options = Object.assign(Object.assign({}, options), { 'agda-version': agdaVersion });
+            return Object.assign(Object.assign({}, options), { 'agda-version': agdaVersion });
         }
-        return [options, packageInfoOptions];
+        else {
+            return options;
+        }
     });
 }
-function getAgdaSource(agdaVersion, packageInfoOptions) {
+function getAgdaSource(options) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { packageVersion, packageDir } = yield hackage.getPackageSource('Agda', Object.assign({ packageVersion: agdaVersion }, packageInfoOptions));
-        (0, assert_1.default)(agdaVersion === packageVersion, [
-            `getAgdaSource: agdaVersion should be resolved`,
-            `but ${agdaVersion} was further resolved to ${packageVersion}`
-        ].join(', '));
+        // Version number should be resolved by now:
+        (0, assert_1.default)(options['agda-version'] !== 'latest' &&
+            options['agda-version'] !== 'nightly', `getAgdaSource: agdaVersion should be resolved`);
+        // Ensure that we cache the package info:
+        options = yield cachePackageInfo(options);
+        // Get the package source:
+        const { packageVersion, packageDir } = yield hackage.getPackageSource('Agda', Object.assign({ packageVersion: options['agda-version'] }, packageInfoOptions(options)));
+        (0, assert_1.default)(options['agda-version'] === packageVersion, `getAgdaSource: ${options['agda-version']} was resolved to ${packageVersion}`);
         return packageDir;
     });
 }
 function resolveBuildTool(options) {
-    if (options['enable-stack']) {
+    if (options['enable-stack'] !== '') {
         return stack;
     }
     else {
@@ -494,6 +527,32 @@ function compressBins(bins, dest) {
         }
     });
 }
+// Helpers for package info caching
+function packageInfoOptions(options) {
+    if (options['package-info-cache'] !== undefined) {
+        return {
+            fetchPackageInfo: false,
+            packageInfoCache: options['package-info-cache']
+        };
+    }
+    else {
+        return {
+            fetchPackageInfo: true
+        };
+    }
+}
+function cachePackageInfo(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (options['package-info-cache'] === undefined) {
+            return Object.assign(Object.assign({}, options), { 'package-info-cache': yield hackage.getPackageInfo('Agda', {
+                    packageInfoCache: agda.packageInfoCache
+                }) });
+        }
+        else {
+            return options;
+        }
+    });
+}
 
 
 /***/ }),
@@ -539,7 +598,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.findCompatibleGhcVersions = exports.findGhcVersionRange = exports.build = void 0;
+exports.getGhcVersionCandidates = exports.findGhcVersionRange = exports.build = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const io = __importStar(__nccwpck_require__(9067));
@@ -549,7 +608,6 @@ const os = __importStar(__nccwpck_require__(2037));
 const path = __importStar(__nccwpck_require__(1017));
 const semver = __importStar(__nccwpck_require__(1383));
 const opts = __importStar(__nccwpck_require__(1352));
-const agda = __importStar(__nccwpck_require__(9552));
 const haskell = __importStar(__nccwpck_require__(1310));
 function build(sourceDir, installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -576,7 +634,7 @@ exports.build = build;
 function findGhcVersionRange(sourceDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Get compatible versions:
-        let versions = yield findCompatibleGhcVersions(sourceDir);
+        let versions = yield getGhcVersionCandidates(sourceDir);
         // Filter using 'ghc-version-range'
         versions = versions.filter(version => semver.satisfies(version, options['ghc-version-range']));
         // Return version range:
@@ -602,32 +660,32 @@ function buildFlags(options) {
     flags.push('--disable-executable-profiling');
     flags.push('--disable-library-profiling');
     // If supported, pass Agda flag --cluster-counting
-    if (agda.supportsClusterCounting(options)) {
+    if (opts.supportsClusterCounting(options)) {
         flags.push('--flags=+enable-cluster-counting');
     }
     // If supported, pass Agda flag --optimise-heavily
-    if (agda.supportsOptimiseHeavily(options)) {
+    if (opts.supportsOptimiseHeavily(options)) {
         flags.push('--flags=+optimise-heavily');
     }
     // If supported, build a static executable
-    if (haskell.supportsExecutableStatic(options)) {
+    if (opts.supportsExecutableStatic(options)) {
         flags.push('--enable-executable-static');
     }
     // If supported, set --split-sections.
-    if (haskell.supportsSplitSections(options)) {
+    if (opts.supportsSplitSections(options)) {
         flags.push('--enable-split-sections');
     }
     // Pass any extra libraries:
-    for (const libDir of opts.libDirs(options)) {
-        flags.push(`--extra-lib-dirs=${libDir}`);
+    for (const dir of options['extra-lib-dirs']) {
+        flags.push(`--extra-lib-dirs=${dir}`);
     }
     // Pass any extra headers:
-    for (const includeDir of opts.includeDirs(options)) {
-        flags.push(`--extra-include-dirs=${includeDir}`);
+    for (const dir of options['extra-include-dirs']) {
+        flags.push(`--extra-include-dirs=${dir}`);
     }
     return flags;
 }
-function findCompatibleGhcVersions(sourceDir) {
+function getGhcVersionCandidates(sourceDir) {
     return __awaiter(this, void 0, void 0, function* () {
         const versions = [];
         const cabalFilePath = yield findCabalFile(sourceDir);
@@ -650,7 +708,7 @@ function findCompatibleGhcVersions(sourceDir) {
         }
     });
 }
-exports.findCompatibleGhcVersions = findCompatibleGhcVersions;
+exports.getGhcVersionCandidates = getGhcVersionCandidates;
 function findCabalFile(sourceDir) {
     return __awaiter(this, void 0, void 0, function* () {
         const cabalFileGlobber = yield glob.create(path.join(sourceDir, '*.cabal'), {
@@ -712,14 +770,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.findCompatibleGhcVersions = exports.build = void 0;
+exports.getGhcVersionCandidates = exports.build = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const io = __importStar(__nccwpck_require__(9067));
 const path = __importStar(__nccwpck_require__(1017));
 const semver = __importStar(__nccwpck_require__(1383));
 const opts = __importStar(__nccwpck_require__(1352));
-const agda = __importStar(__nccwpck_require__(9552));
 const haskell = __importStar(__nccwpck_require__(1310));
 function build(sourceDir, installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -756,24 +813,24 @@ function buildFlags(options) {
     flags.push('--no-executable-profiling');
     flags.push('--no-library-profiling');
     // If supported, pass Agda flag --cluster-counting
-    if (agda.supportsClusterCounting(options)) {
+    if (opts.supportsClusterCounting(options)) {
         flags.push('--flag=Agda:+enable-cluster-counting');
     }
     // If supported, pass Agda flag --optimise-heavily
-    if (agda.supportsOptimiseHeavily(options)) {
+    if (opts.supportsOptimiseHeavily(options)) {
         flags.push('--flag=Agda:+optimise-heavily');
     }
     // Pass any extra libraries:
-    for (const libDir of opts.libDirs(options)) {
-        flags.push(`--extra-lib-dirs=${libDir}`);
+    for (const dir of options['extra-lib-dirs']) {
+        flags.push(`--extra-lib-dirs=${dir}`);
     }
     // Pass any extra headers:
-    for (const includeDir of opts.includeDirs(options)) {
-        flags.push(`--extra-include-dirs=${includeDir}`);
+    for (const dir of options['extra-include-dirs']) {
+        flags.push(`--extra-include-dirs=${dir}`);
     }
     return flags;
 }
-function findCompatibleGhcVersions(sourceDir) {
+function getGhcVersionCandidates(sourceDir) {
     return __awaiter(this, void 0, void 0, function* () {
         const versions = [];
         const stackYamlGlobber = yield glob.create(path.join(sourceDir, 'stack-*.yaml'));
@@ -792,7 +849,7 @@ function findCompatibleGhcVersions(sourceDir) {
         return versions;
     });
 }
-exports.findCompatibleGhcVersions = findCompatibleGhcVersions;
+exports.getGhcVersionCandidates = getGhcVersionCandidates;
 
 
 /***/ }),
@@ -980,13 +1037,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.testSystemAgda = exports.execSystemAgda = exports.getSystemAgdaDataDir = exports.getSystemAgdaVersion = exports.installDir = exports.agdaDir = exports.agdaModeExe = exports.agdaExe = exports.packageInfoCache = void 0;
+exports.testSystemAgda = exports.execSystemAgda = exports.getSystemAgdaDataDir = exports.getSystemAgdaVersion = exports.installDir = exports.agdaDir = exports.agdaModeExe = exports.agdaExe = exports.packageInfoCache = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const path = __importStar(__nccwpck_require__(1017));
 const opts = __importStar(__nccwpck_require__(1352));
 const exec = __importStar(__nccwpck_require__(4369));
-const simver = __importStar(__nccwpck_require__(7609));
 const os = __importStar(__nccwpck_require__(2037));
 const Agda_json_1 = __importDefault(__nccwpck_require__(4862));
 // Package Info
@@ -1068,23 +1124,6 @@ function testSystemAgda(options) {
     });
 }
 exports.testSystemAgda = testSystemAgda;
-// Helper functions to check support for build flags
-function supportsClusterCounting(options) {
-    // NOTE:
-    //   We only enable --cluster-counting on versions which support it,
-    //   i.e., versions after 2.5.3:
-    //   https://github.com/agda/agda/blob/f50c14d3a4e92ed695783e26dbe11ad1ad7b73f7/doc/release-notes/2.5.3.md
-    return simver.gte(options['agda-version'], '2.5.3');
-}
-exports.supportsClusterCounting = supportsClusterCounting;
-function supportsOptimiseHeavily(options) {
-    // NOTE:
-    //   We only enable --optimise-heavily on versions which support it,
-    //   i.e., versions after 2.6.2:
-    //   https://github.com/agda/agda/blob/1175c41210716074340da4bd4caa09f4dfe2cc1d/doc/release-notes/2.6.2.md
-    return simver.gte(options['agda-version'], '2.6.2');
-}
-exports.supportsOptimiseHeavily = supportsOptimiseHeavily;
 
 
 /***/ }),
@@ -1381,7 +1420,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.supportsSplitSections = exports.supportsExecutableStatic = exports.getSystemStackVersion = exports.getStackCabalVersionForGhc = exports.getSystemCabalVersion = exports.getSystemGhcVersion = exports.execSystemStack = exports.execSystemCabal = exports.execSystemGhc = exports.getGhcTargetPlatform = exports.getGhcInfo = exports.setup = exports.setupOptionKeys = void 0;
+exports.getSystemStackVersion = exports.getStackCabalVersionForGhc = exports.getSystemCabalVersion = exports.getSystemGhcVersion = exports.execSystemStack = exports.execSystemCabal = exports.execSystemGhc = exports.getGhcTargetPlatform = exports.getGhcInfo = exports.setup = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const opts = __importStar(__nccwpck_require__(1352));
 const exec = __importStar(__nccwpck_require__(4369));
@@ -1389,16 +1428,6 @@ const semver = __importStar(__nccwpck_require__(1383));
 const setup_haskell_1 = __importDefault(__nccwpck_require__(6501));
 const assert_1 = __importDefault(__nccwpck_require__(9491));
 const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
-const simver = __importStar(__nccwpck_require__(7609));
-exports.setupOptionKeys = [
-    'ghc-version',
-    'cabal-version',
-    'stack-version',
-    'enable-stack',
-    'stack-no-global',
-    'stack-setup-ghc',
-    'disable-matcher'
-];
 function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Try the pre-installed software:
@@ -1407,23 +1436,23 @@ function setup(options) {
             return preInstalled;
         // Otherwise, use haskell/actions/setup:
         // 1. Find the latest compatible version from 'ghc-version-range':
-        const afterSetup = {};
-        afterSetup['ghc-version'] = latestSatisfyingGhcVersion(options);
+        const ghcVersion = latestSatisfyingGhcVersion(options);
+        options = Object.assign(Object.assign({}, options), { 'ghc-version': ghcVersion });
         // 2. Run haskell/actions/setup:
-        yield (0, setup_haskell_1.default)(Object.assign(Object.assign({}, options), afterSetup));
+        yield (0, setup_haskell_1.default)(opts.toSetupHaskellInputs(options));
         core.setOutput('haskell-setup', 'true');
         // 3. Update the Cabal version:
         if (options['enable-stack'] !== '' && options['stack-no-global'] !== '') {
-            afterSetup['cabal-version'] = yield getStackCabalVersionForGhc(afterSetup['ghc-version']);
+            options = Object.assign(Object.assign({}, options), { 'cabal-version': yield getStackCabalVersionForGhc(ghcVersion) });
         }
         else {
-            afterSetup['cabal-version'] = yield getSystemCabalVersion();
+            options = Object.assign(Object.assign({}, options), { 'cabal-version': yield getSystemCabalVersion() });
         }
         // 3. Update the Stack version:
         if (options['enable-stack'] !== '') {
-            afterSetup['stack-version'] = yield getSystemStackVersion();
+            options = Object.assign(Object.assign({}, options), { 'stack-version': yield getSystemStackVersion() });
         }
-        return Object.assign(Object.assign({}, options), afterSetup);
+        return options;
     });
 }
 exports.setup = setup;
@@ -1432,36 +1461,23 @@ function tryPreInstalled(options) {
         // If we need Stack, we cannot use the pre-installed tools:
         if (options['enable-stack'] !== '')
             return null;
-        const preInstalled = {};
-        // Get pre-installed GHC version:
         try {
-            preInstalled['ghc-version'] = yield getSystemGhcVersion();
+            // Get pre-installed GHC & Cabal versions:
+            const ghcVersion = yield getSystemGhcVersion();
+            core.info(`Found pre-installed GHC version ${ghcVersion}`);
+            const cabalVersion = yield getSystemCabalVersion();
+            core.info(`Found pre-installed Cabal version ${cabalVersion}`);
+            // Check if the GHC version is compatible with the Agda version:
+            if (semver.satisfies(ghcVersion, options['ghc-version-range'])) {
+                return Object.assign(Object.assign({}, options), { 'ghc-version': ghcVersion, 'cabal-version': cabalVersion });
+            }
+            else {
+                core.info(`Pre-installed GHC is incompatible with ${options['agda-version']}`);
+                return null;
+            }
         }
         catch (error) {
-            core.debug(`No pre-installed GHC: ${(0, ensure_error_1.default)(error).message}`);
-            return null;
-        }
-        // Get pre-installed Cabal version:
-        try {
-            preInstalled['cabal-version'] = yield getSystemCabalVersion();
-        }
-        catch (error) {
-            core.debug(`No pre-installed Cabal: ${(0, ensure_error_1.default)(error).message}`);
-            return null;
-        }
-        // Check if the pre-installed GHC satisfies the version range:
-        if (semver.satisfies(preInstalled['ghc-version'], options['ghc-version-range'])) {
-            core.info([
-                `Found GHC ${preInstalled['ghc-version']}`,
-                `which is compatible with Agda ${options['agda-version']}`
-            ].join(', '));
-            return Object.assign(Object.assign({}, options), preInstalled);
-        }
-        else {
-            core.debug([
-                `Found GHC ${preInstalled['ghc-version']}`,
-                `which is incompatible with Agda ${options['agda-version']}`
-            ].join(', '));
+            core.debug(`Could not find pre-installed GHC and Cabal: ${(0, ensure_error_1.default)(error).message}`);
             return null;
         }
     });
@@ -1560,32 +1576,6 @@ function getSystemStackVersion() {
     });
 }
 exports.getSystemStackVersion = getSystemStackVersion;
-// Helper functions to check support for build flags
-function supportsExecutableStatic(options) {
-    // NOTE:
-    //  We only set --enable-executable-static on Linux, because the deploy workflow does it.
-    //  https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-executable-static
-    const osOK = false; // os === 'linux' // Unsupported on Ubuntu 20.04
-    // NOTE:
-    //  We only set --enable-executable-static if Ghc >=8.4, when the flag was added:
-    //  https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-static
-    const ghcVersionOK = simver.gte(options['ghc-version'], '8.4');
-    return osOK && ghcVersionOK;
-}
-exports.supportsExecutableStatic = supportsExecutableStatic;
-function supportsSplitSections(options) {
-    // NOTE:
-    //   We only set --split-sections on Linux and Windows, as it does nothing on MacOS:
-    //   https://github.com/agda/agda/issues/5940
-    const osOK = opts.os === 'linux' || opts.os === 'windows';
-    // NOTE:
-    //   We only set --split-sections if Ghc >=8.0 and Cabal >=2.2, when the flag was added:
-    //   https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-split-sections
-    const ghcVersionOK = simver.gte(options['ghc-version'], '8.0');
-    const cabalVersionOK = simver.gte(options['cabal-version'], '2.2');
-    return osOK && ghcVersionOK && cabalVersionOK;
-}
-exports.supportsSplitSections = supportsSplitSections;
 
 
 /***/ }),
@@ -1628,7 +1618,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installICU = exports.resolveIcuVersion = void 0;
+exports.setup = void 0;
 const tc = __importStar(__nccwpck_require__(7784));
 const path = __importStar(__nccwpck_require__(1017));
 const opts = __importStar(__nccwpck_require__(1352));
@@ -1653,73 +1643,99 @@ function resolveIcuVersion(options) {
         return options;
     }
 }
-exports.resolveIcuVersion = resolveIcuVersion;
 // Install ICU
 const icu67UrlWindows = 'https://github.com/unicode-org/icu/releases/download/release-67-1/icu4c-67_1-Win64-MSVC2017.zip';
 const icu71UrlWindows = 'https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-Win64-MSVC2019.zip';
 const icu67UrlLinux = 'https://github.com/unicode-org/icu/releases/download/release-67-1/icu4c-67_1-Ubuntu18.04-x64.tgz';
 const icu71UrlLinux = 'https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-Ubuntu20.04-x64.tgz';
-function installICU(version) {
+function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
+        // Resolve the ICU version:
+        options = resolveIcuVersion(options);
+        // If there is no ICU version to setup, return:
+        if (options['icu-version'] === undefined)
+            return options;
+        // Otherwise, setup ICU:
+        const icuInstallDir = installDir(options['icu-version']);
+        let icuLibDir = null;
+        let icuIncludeDir = null;
+        let success = false;
         switch (opts.os) {
             case 'windows': {
-                let icuPath = '';
-                let icuDir = '';
-                switch (version) {
-                    case '67.1':
-                        icuPath = yield tc.downloadTool(icu67UrlWindows);
-                        icuDir = 'icu4c-67_1-Win64-MSVC2017';
+                let icuZipPath = null;
+                let icuZipName = null;
+                switch (options['icu-version']) {
+                    case '67.1': {
+                        icuZipPath = yield tc.downloadTool(icu67UrlWindows);
+                        icuZipName = 'icu4c-67_1-Win64-MSVC2017';
                         break;
-                    case '71.1':
-                        icuPath = yield tc.downloadTool(icu71UrlWindows);
-                        icuDir = 'icu4c-71_1-Win64-MSVC2019';
+                    }
+                    case '71.1': {
+                        icuZipPath = yield tc.downloadTool(icu71UrlWindows);
+                        icuZipName = 'icu4c-71_1-Win64-MSVC2019';
                         break;
+                    }
                 }
-                const installDirTC = yield tc.extractZip(icuPath, installDir(version));
-                return {
-                    extraLibDir: path.join(installDirTC, icuDir, 'bin64'),
-                    extraIncludeDir: path.join(installDirTC, icuDir, 'include')
-                };
+                const installDirTC = yield tc.extractZip(icuZipPath, icuInstallDir);
+                icuLibDir = path.join(installDirTC, icuZipName, 'bin64');
+                icuIncludeDir = path.join(installDirTC, icuZipName, 'include');
+                success = true;
+                break;
             }
             case 'linux': {
-                let icuPath = '';
-                switch (version) {
-                    case '67.1':
-                        icuPath = yield tc.downloadTool(icu67UrlLinux);
+                let icuTarPath = '';
+                switch (options['icu-version']) {
+                    case '67.1': {
+                        icuTarPath = yield tc.downloadTool(icu67UrlLinux);
                         break;
-                    case '71.1':
-                        icuPath = yield tc.downloadTool(icu71UrlLinux);
+                    }
+                    case '71.1': {
+                        icuTarPath = yield tc.downloadTool(icu71UrlLinux);
                         break;
+                    }
                 }
-                const installDirTC = yield tc.extractTar(icuPath, installDir(version), [
+                const installDirTC = yield tc.extractTar(icuTarPath, icuInstallDir, [
                     '--extract',
                     '--gzip',
                     '--strip-components=4'
                 ]);
-                return {
-                    extraLibDir: path.join(installDirTC, 'lib'),
-                    extraIncludeDir: path.join(installDirTC, 'include')
-                };
+                icuLibDir = path.join(installDirTC, 'lib');
+                icuIncludeDir = path.join(installDirTC, 'include');
+                success = true;
+                break;
             }
             case 'macos': {
-                switch (version) {
+                switch (options['icu-version']) {
                     case '71.1': {
                         const brewPrefix = (yield exec.execOutput('brew', ['--prefix'])).trim();
                         yield exec.execOutput('brew', ['install', 'icu4c']);
-                        const installPath = path.join(brewPrefix, 'opt', 'icu4c');
-                        return {
-                            extraLibDir: path.join(installPath, 'lib'),
-                            extraIncludeDir: path.join(installPath, 'include')
-                        };
+                        const installDirBrew = path.join(brewPrefix, 'opt', 'icu4c');
+                        icuLibDir = path.join(installDirBrew, 'lib');
+                        icuIncludeDir = path.join(installDirBrew, 'include');
+                        success = true;
+                        break;
                     }
                 }
                 break;
             }
         }
-        throw Error(`Could not install ICU-${version} for ${opts.os}`);
+        if (success) {
+            // Add icuLibDir to extra-lib-dirs:
+            if (icuLibDir !== null) {
+                options = Object.assign(Object.assign({}, options), { 'extra-lib-dirs': [icuLibDir, ...options['extra-lib-dirs']] });
+            }
+            // Add icuIncludeDir to extra-include-dirs:
+            if (icuIncludeDir !== null) {
+                options = Object.assign(Object.assign({}, options), { 'extra-include-dirs': [icuIncludeDir, ...options['extra-include-dirs']] });
+            }
+            return options;
+        }
+        else {
+            throw Error(`Could not install ICU-${options['icu-version']} for ${opts.os}`);
+        }
     });
 }
-exports.installICU = installICU;
+exports.setup = setup;
 
 
 /***/ }),

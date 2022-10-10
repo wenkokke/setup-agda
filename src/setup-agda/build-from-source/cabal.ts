@@ -7,13 +7,12 @@ import * as os from 'os'
 import * as path from 'path'
 import * as semver from 'semver'
 import * as opts from '../../opts'
-import * as agda from '../../util/agda'
 import * as haskell from '../../util/haskell'
 
 export async function build(
   sourceDir: string,
   installDir: string,
-  options: Readonly<opts.SetupOptions>
+  options: opts.BuildOptions
 ): Promise<void> {
   const execOptions = {cwd: sourceDir}
   // Configure:
@@ -45,10 +44,10 @@ export async function build(
 
 export async function findGhcVersionRange(
   sourceDir: string,
-  options: Readonly<opts.SetupOptions>
+  options: opts.BuildOptions
 ): Promise<string> {
   // Get compatible versions:
-  let versions = await findCompatibleGhcVersions(sourceDir)
+  let versions = await getGhcVersionCandidates(sourceDir)
 
   // Filter using 'ghc-version-range'
   versions = versions.filter(version =>
@@ -68,7 +67,7 @@ export async function findGhcVersionRange(
   }
 }
 
-function buildFlags(options: Readonly<opts.SetupOptions>): string[] {
+function buildFlags(options: opts.BuildOptions): string[] {
   // NOTE:
   //   We set the build flags following Agda's deploy workflow, which builds
   //   the nightly distributions, except that we disable --cluster-counting
@@ -79,33 +78,33 @@ function buildFlags(options: Readonly<opts.SetupOptions>): string[] {
   flags.push('--disable-executable-profiling')
   flags.push('--disable-library-profiling')
   // If supported, pass Agda flag --cluster-counting
-  if (agda.supportsClusterCounting(options)) {
+  if (opts.supportsClusterCounting(options)) {
     flags.push('--flags=+enable-cluster-counting')
   }
   // If supported, pass Agda flag --optimise-heavily
-  if (agda.supportsOptimiseHeavily(options)) {
+  if (opts.supportsOptimiseHeavily(options)) {
     flags.push('--flags=+optimise-heavily')
   }
   // If supported, build a static executable
-  if (haskell.supportsExecutableStatic(options)) {
+  if (opts.supportsExecutableStatic(options)) {
     flags.push('--enable-executable-static')
   }
   // If supported, set --split-sections.
-  if (haskell.supportsSplitSections(options)) {
+  if (opts.supportsSplitSections(options)) {
     flags.push('--enable-split-sections')
   }
   // Pass any extra libraries:
-  for (const libDir of opts.libDirs(options)) {
-    flags.push(`--extra-lib-dirs=${libDir}`)
+  for (const dir of options['extra-lib-dirs']) {
+    flags.push(`--extra-lib-dirs=${dir}`)
   }
   // Pass any extra headers:
-  for (const includeDir of opts.includeDirs(options)) {
-    flags.push(`--extra-include-dirs=${includeDir}`)
+  for (const dir of options['extra-include-dirs']) {
+    flags.push(`--extra-include-dirs=${dir}`)
   }
   return flags
 }
 
-export async function findCompatibleGhcVersions(
+export async function getGhcVersionCandidates(
   sourceDir: string
 ): Promise<string[]> {
   const versions: string[] = []

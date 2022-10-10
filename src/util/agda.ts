@@ -3,14 +3,12 @@ import * as glob from '@actions/glob'
 import * as path from 'path'
 import * as opts from '../opts'
 import * as exec from './exec'
-import * as hackage from './hackage'
-import * as simver from './simver'
 import * as os from 'os'
 import distPackageInfoCache from '../package-info/Agda.json'
 
 // Package Info
 
-export const packageInfoCache = distPackageInfoCache as hackage.PackageInfoCache
+export const packageInfoCache = distPackageInfoCache as opts.PackageInfoCache
 
 // Executable names
 
@@ -89,22 +87,4 @@ export async function testSystemAgda(options?: AgdaExecOptions): Promise<void> {
       cwd: path.join(dataDir, 'lib', 'prim')
     })
   }
-}
-
-// Helper functions to check support for build flags
-
-export function supportsClusterCounting(options: opts.SetupOptions): boolean {
-  // NOTE:
-  //   We only enable --cluster-counting on versions which support it,
-  //   i.e., versions after 2.5.3:
-  //   https://github.com/agda/agda/blob/f50c14d3a4e92ed695783e26dbe11ad1ad7b73f7/doc/release-notes/2.5.3.md
-  return simver.gte(options['agda-version'], '2.5.3')
-}
-
-export function supportsOptimiseHeavily(options: opts.SetupOptions): boolean {
-  // NOTE:
-  //   We only enable --optimise-heavily on versions which support it,
-  //   i.e., versions after 2.6.2:
-  //   https://github.com/agda/agda/blob/1175c41210716074340da4bd4caa09f4dfe2cc1d/doc/release-notes/2.6.2.md
-  return simver.gte(options['agda-version'], '2.6.2')
 }

@@ -13,9 +13,7 @@ function installDir(version: string): string {
 
 // Resolve ICU version
 
-export function resolveIcuVersion(
-  options: Readonly<opts.SetupOptions>
-): opts.SetupOptions {
+function resolveIcuVersion(options: opts.BuildOptions): opts.BuildOptions {
   if (simver.gte(options['agda-version'], '2.6.2')) {
     return {...options, 'icu-version': '71.1'}
   } else if (simver.gte(options['agda-version'], '2.5.3')) {
@@ -38,65 +36,100 @@ const icu67UrlLinux =
 const icu71UrlLinux =
   'https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-Ubuntu20.04-x64.tgz'
 
-export async function installICU(
-  version: string
-): Promise<{extraLibDir: string; extraIncludeDir: string}> {
+export async function setup(
+  options: opts.BuildOptions
+): Promise<opts.BuildOptions> {
+  // Resolve the ICU version:
+  options = resolveIcuVersion(options)
+
+  // If there is no ICU version to setup, return:
+  if (options['icu-version'] === undefined) return options
+
+  // Otherwise, setup ICU:
+  const icuInstallDir = installDir(options['icu-version'])
+  let icuLibDir = null
+  let icuIncludeDir = null
+  let success = false
   switch (opts.os) {
     case 'windows': {
-      let icuPath = ''
-      let icuDir = ''
-      switch (version) {
-        case '67.1':
-          icuPath = await tc.downloadTool(icu67UrlWindows)
-          icuDir = 'icu4c-67_1-Win64-MSVC2017'
+      let icuZipPath = null
+      let icuZipName = null
+      switch (options['icu-version']) {
+        case '67.1': {
+          icuZipPath = await tc.downloadTool(icu67UrlWindows)
+          icuZipName = 'icu4c-67_1-Win64-MSVC2017'
           break
-        case '71.1':
-          icuPath = await tc.downloadTool(icu71UrlWindows)
-          icuDir = 'icu4c-71_1-Win64-MSVC2019'
+        }
+        case '71.1': {
+          icuZipPath = await tc.downloadTool(icu71UrlWindows)
+          icuZipName = 'icu4c-71_1-Win64-MSVC2019'
           break
+        }
       }
-      const installDirTC = await tc.extractZip(icuPath, installDir(version))
-      return {
-        extraLibDir: path.join(installDirTC, icuDir, 'bin64'),
-        extraIncludeDir: path.join(installDirTC, icuDir, 'include')
-      }
+      const installDirTC = await tc.extractZip(icuZipPath, icuInstallDir)
+      icuLibDir = path.join(installDirTC, icuZipName, 'bin64')
+      icuIncludeDir = path.join(installDirTC, icuZipName, 'include')
+      success = true
+      break
     }
     case 'linux': {
-      let icuPath = ''
-      switch (version) {
-        case '67.1':
-          icuPath = await tc.downloadTool(icu67UrlLinux)
+      let icuTarPath = ''
+      switch (options['icu-version']) {
+        case '67.1': {
+          icuTarPath = await tc.downloadTool(icu67UrlLinux)
           break
-        case '71.1':
-          icuPath = await tc.downloadTool(icu71UrlLinux)
+        }
+        case '71.1': {
+          icuTarPath = await tc.downloadTool(icu71UrlLinux)
           break
+        }
       }
-      const installDirTC = await tc.extractTar(icuPath, installDir(version), [
+      const installDirTC = await tc.extractTar(icuTarPath, icuInstallDir, [
         '--extract',
         '--gzip',
         '--strip-components=4'
       ])
-      return {
-        extraLibDir: path.join(installDirTC, 'lib'),
-        extraIncludeDir: path.join(installDirTC, 'include')
-      }
+      icuLibDir = path.join(installDirTC, 'lib')
+      icuIncludeDir = path.join(installDirTC, 'include')
+      success = true
+      break
     }
     case 'macos': {
-      switch (version) {
+      switch (options['icu-version']) {
         case '71.1': {
           const brewPrefix = (
             await exec.execOutput('brew', ['--prefix'])
           ).trim()
           await exec.execOutput('brew', ['install', 'icu4c'])
-          const installPath = path.join(brewPrefix, 'opt', 'icu4c')
-          return {
-            extraLibDir: path.join(installPath, 'lib'),
-            extraIncludeDir: path.join(installPath, 'include')
-          }
+          const installDirBrew = path.join(brewPrefix, 'opt', 'icu4c')
+          icuLibDir = path.join(installDirBrew, 'lib')
+          icuIncludeDir = path.join(installDirBrew, 'include')
+          success = true
+          break
         }
       }
       break
     }
   }
-  throw Error(`Could not install ICU-${version} for ${opts.os}`)
+  if (success) {
+    // Add icuLibDir to extra-lib-dirs:
+    if (icuLibDir !== null) {
+      options = {
+        ...options,
+        'extra-lib-dirs': [icuLibDir, ...options['extra-lib-dirs']]
+      }
+    }
+    // Add icuIncludeDir to extra-include-dirs:
+    if (icuIncludeDir !== null) {
+      options = {
+        ...options,
+        'extra-include-dirs': [icuIncludeDir, ...options['extra-include-dirs']]
+      }
+    }
+    return options
+  } else {
+    throw Error(
+      `Could not install ICU-${options['icu-version']} for ${opts.os}`
+    )
+  }
 }

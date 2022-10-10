@@ -4,13 +4,12 @@ import * as io from '../../util/io'
 import * as path from 'path'
 import * as semver from 'semver'
 import * as opts from '../../opts'
-import * as agda from '../../util/agda'
 import * as haskell from '../../util/haskell'
 
 export async function build(
   sourceDir: string,
   installDir: string,
-  options: Readonly<opts.SetupOptions>
+  options: opts.BuildOptions
 ): Promise<void> {
   // Configure, Build, and Install:
   await io.mkdirP(path.join(installDir, 'bin'))
@@ -30,7 +29,7 @@ function installFlags(installDir: string): string[] {
   return flags
 }
 
-function buildFlags(options: Readonly<opts.SetupOptions>): string[] {
+function buildFlags(options: opts.BuildOptions): string[] {
   // NOTE:
   //   We set the build flags following Agda's deploy workflow, which builds
   //   the nightly distributions, except that we disable --cluster-counting
@@ -48,25 +47,25 @@ function buildFlags(options: Readonly<opts.SetupOptions>): string[] {
   flags.push('--no-executable-profiling')
   flags.push('--no-library-profiling')
   // If supported, pass Agda flag --cluster-counting
-  if (agda.supportsClusterCounting(options)) {
+  if (opts.supportsClusterCounting(options)) {
     flags.push('--flag=Agda:+enable-cluster-counting')
   }
   // If supported, pass Agda flag --optimise-heavily
-  if (agda.supportsOptimiseHeavily(options)) {
+  if (opts.supportsOptimiseHeavily(options)) {
     flags.push('--flag=Agda:+optimise-heavily')
   }
   // Pass any extra libraries:
-  for (const libDir of opts.libDirs(options)) {
-    flags.push(`--extra-lib-dirs=${libDir}`)
+  for (const dir of options['extra-lib-dirs']) {
+    flags.push(`--extra-lib-dirs=${dir}`)
   }
   // Pass any extra headers:
-  for (const includeDir of opts.includeDirs(options)) {
-    flags.push(`--extra-include-dirs=${includeDir}`)
+  for (const dir of options['extra-include-dirs']) {
+    flags.push(`--extra-include-dirs=${dir}`)
   }
   return flags
 }
 
-export async function findCompatibleGhcVersions(
+export async function getGhcVersionCandidates(
   sourceDir: string
 ): Promise<string[]> {
   const versions: string[] = []

@@ -19,18 +19,18 @@ import * as stack from './build-from-source/stack'
 import ensureError from 'ensure-error'
 
 export default async function buildFromSource(
-  options: Readonly<opts.SetupOptions>
+  options: opts.BuildOptions
 ): Promise<string> {
   // Resolve the Agda version:
-  const [setupOptions, packageInfoOptions] = await resolveAgdaVersion(options)
-  core.info(`Setting up Agda ${setupOptions['agda-version']}`)
+  options = await resolveAgdaVersion(options)
+  core.info(`Setting up Agda ${options['agda-version']}`)
 
   // Setup Agda:
-  const installDirTC = await tryToolCache(setupOptions['agda-version'])
+  const installDirTC = await tryToolCache(options['agda-version'])
   if (installDirTC !== null) {
     return installDirTC
   } else {
-    return await build(setupOptions, packageInfoOptions)
+    return await build(options)
   }
 }
 
@@ -52,23 +52,17 @@ async function tryToolCache(agdaVersion: string): Promise<string | null> {
   }
 }
 
-async function build(
-  options: Readonly<opts.SetupOptions>,
-  packageInfoOptions?: hackage.PackageInfoOptions
-): Promise<string> {
+async function build(options: opts.BuildOptions): Promise<string> {
   // Otherwise, build Agda from source:
   core.info(`Building Agda ${options['agda-version']} from source`)
   const buildTool = resolveBuildTool(options)
 
   // 1. Get the Agda source from Hackage:
-  const sourceDir = await getAgdaSource(
-    options['agda-version'],
-    packageInfoOptions
-  )
+  const sourceDir = await getAgdaSource(options)
   core.debug(`Downloaded source to ${sourceDir}`)
 
   // 2. Select compatible GHC versions:
-  const ghcVersions = await buildTool.findCompatibleGhcVersions(sourceDir)
+  const ghcVersions = await buildTool.getGhcVersionCandidates(sourceDir)
   const ghcVersionRange = await findGhcVersionRange(ghcVersions, options)
   core.debug(`Compatible GHC version range is: ${ghcVersionRange}`)
 
@@ -79,14 +73,7 @@ async function build(
   })
 
   // 4. Install compatible ICU version:
-  options = icu.resolveIcuVersion(options)
-  if (options['icu-version'] !== '') {
-    const {extraLibDir, extraIncludeDir} = await icu.installICU(
-      options['icu-version']
-    )
-    options = opts.addLibDir(options, extraLibDir)
-    options = opts.addIncludeDir(options, extraIncludeDir)
-  }
+  options = await icu.setup(options)
 
   // 4. Build:
   const installDir = agda.installDir(options['agda-version'])
@@ -119,50 +106,52 @@ async function copyData(dataDir: string, dest: string): Promise<void> {
 }
 
 async function resolveAgdaVersion(
-  options: Readonly<opts.SetupOptions>
-): Promise<
-  [Readonly<opts.SetupOptions>, Readonly<hackage.PackageInfoOptions>]
-> {
+  options: opts.BuildOptions
+): Promise<opts.BuildOptions> {
   // Nightly builds should be handled by 'download-nightly'
   assert(
     options['agda-version'] !== 'nightly',
     `resolveAgdaVersion: agdaVersion should not be nightly`
   )
-  // Save and return the packageInfo so we only query Hackage once,
-  // and reuse the cache if we need the source distribution:
-  const packageInfoCache = await hackage.getPackageInfo('Agda', {
-    packageInfoCache: agda.packageInfoCache
-  })
-  const packageInfoOptions = {fetchPackageInfo: false, packageInfoCache}
+
+  // Ensure that we cache the package info:
+  options = await cachePackageInfo(options)
+
   // Resolve the given version against Hackage's package versions:
   const agdaVersion = await hackage.resolvePackageVersion(
     'Agda',
     options['agda-version'],
-    packageInfoOptions
+    packageInfoOptions(options)
   )
   if (options['agda-version'] !== agdaVersion) {
     core.info(
       `Resolved Agda version ${options['agda-version']} to ${agdaVersion}`
     )
-    options = {...options, 'agda-version': agdaVersion}
+    return {...options, 'agda-version': agdaVersion}
+  } else {
+    return options
   }
-  return [options, packageInfoOptions]
 }
 
-async function getAgdaSource(
-  agdaVersion: string,
-  packageInfoOptions?: hackage.PackageInfoOptions
-): Promise<string> {
+async function getAgdaSource(options: opts.BuildOptions): Promise<string> {
+  // Version number should be resolved by now:
+  assert(
+    options['agda-version'] !== 'latest' &&
+      options['agda-version'] !== 'nightly',
+    `getAgdaSource: agdaVersion should be resolved`
+  )
+
+  // Ensure that we cache the package info:
+  options = await cachePackageInfo(options)
+
+  // Get the package source:
   const {packageVersion, packageDir} = await hackage.getPackageSource('Agda', {
-    packageVersion: agdaVersion,
-    ...packageInfoOptions
+    packageVersion: options['agda-version'],
+    ...packageInfoOptions(options)
   })
   assert(
-    agdaVersion === packageVersion,
-    [
-      `getAgdaSource: agdaVersion should be resolved`,
-      `but ${agdaVersion} was further resolved to ${packageVersion}`
-    ].join(', ')
+    options['agda-version'] === packageVersion,
+    `getAgdaSource: ${options['agda-version']} was resolved to ${packageVersion}`
   )
   return packageDir
 }
@@ -171,13 +160,13 @@ interface BuildTool {
   build: (
     sourceDir: string,
     installDir: string,
-    options: Readonly<opts.SetupOptions>
+    options: opts.BuildOptions
   ) => Promise<void>
-  findCompatibleGhcVersions: (sourceDir: string) => Promise<string[]>
+  getGhcVersionCandidates: (sourceDir: string) => Promise<string[]>
 }
 
-function resolveBuildTool(options: Readonly<opts.SetupOptions>): BuildTool {
-  if (options['enable-stack']) {
+function resolveBuildTool(options: opts.BuildOptions): BuildTool {
+  if (options['enable-stack'] !== '') {
     return stack
   } else {
     return cabal
@@ -186,7 +175,7 @@ function resolveBuildTool(options: Readonly<opts.SetupOptions>): BuildTool {
 
 async function findGhcVersionRange(
   versions: string[],
-  options: Readonly<opts.SetupOptions>
+  options: opts.BuildOptions
 ): Promise<string> {
   // Filter using 'ghc-version-range'
   versions = versions.filter(version =>
@@ -208,7 +197,7 @@ async function findGhcVersionRange(
 
 async function uploadAsArtifact(
   installDir: string,
-  options: Readonly<opts.SetupOptions>
+  options: opts.BuildOptions
 ): Promise<string> {
   // If not specified, get the target platform from `ghc --info`:
   if (options['upload-bdist-target-platform'] === '') {
@@ -288,5 +277,37 @@ async function compressBins(bins: string[], dest: string): Promise<void> {
       '-o',
       path.join(dest, binName)
     ])
+  }
+}
+
+// Helpers for package info caching
+
+function packageInfoOptions(
+  options: opts.BuildOptions
+): opts.PackageInfoOptions {
+  if (options['package-info-cache'] !== undefined) {
+    return {
+      fetchPackageInfo: false,
+      packageInfoCache: options['package-info-cache']
+    }
+  } else {
+    return {
+      fetchPackageInfo: true
+    }
+  }
+}
+
+async function cachePackageInfo(
+  options: opts.BuildOptions
+): Promise<opts.BuildOptions> {
+  if (options['package-info-cache'] === undefined) {
+    return {
+      ...options,
+      'package-info-cache': await hackage.getPackageInfo('Agda', {
+        packageInfoCache: agda.packageInfoCache
+      })
+    }
+  } else {
+    return options
   }
 }

@@ -5,16 +5,8 @@ import * as simver from './simver'
 import * as tc from '@actions/tool-cache'
 import * as path from 'path'
 import * as http from 'http'
+import * as opts from '../opts'
 import assert from 'assert'
-
-export type PackageStatus = 'normal' | 'deprecated'
-
-export type PackageInfo = Record<string, PackageStatus | undefined>
-
-export interface PackageInfoCache {
-  packageInfo: PackageInfo
-  lastModified: string
-}
 
 function packageInfoUrl(packageName: string): string {
   return `https://hackage.haskell.org/package/${packageName}.json`
@@ -24,17 +16,10 @@ function packageUrl(packageName: string, packageVersion: string): string {
   return `https://hackage.haskell.org/package/${packageName}-${packageVersion}/${packageName}-${packageVersion}.tar.gz`
 }
 
-export interface PackageInfoOptions {
-  fetchPackageInfo?: boolean
-  packageInfoCache?: PackageInfoCache
-  packageInfoHeaders?: http.OutgoingHttpHeaders
-  returnCacheOnError?: boolean
-}
-
 export async function getPackageInfo(
   packageName: string,
-  options?: Readonly<PackageInfoOptions>
-): Promise<PackageInfoCache> {
+  options?: Readonly<opts.PackageInfoOptions>
+): Promise<opts.PackageInfoCache> {
   const fetchPackageInfo = options?.fetchPackageInfo ?? true
   const returnCacheOnError = options?.returnCacheOnError ?? true
   const packageInfoCache = options?.packageInfoCache
@@ -60,7 +45,7 @@ export async function getPackageInfo(
     )
     if (resp.message.statusCode === 200) {
       const respBody = await resp.readBody()
-      const packageInfo = JSON.parse(respBody) as PackageInfo
+      const packageInfo = JSON.parse(respBody) as opts.PackageInfo
       return {
         packageInfo,
         lastModified: new Date(Date.now()).toUTCString()
@@ -87,7 +72,7 @@ export async function getPackageInfo(
 
 async function getPackageLatestVersion(
   packageName: string,
-  options?: Readonly<PackageInfoOptions>
+  options?: Readonly<opts.PackageInfoOptions>
 ): Promise<string> {
   const updatedPackageInfo = await getPackageInfo(packageName, options)
   const versions = Object.keys(updatedPackageInfo.packageInfo)
@@ -103,20 +88,10 @@ async function getPackageLatestVersion(
   }
 }
 
-export interface PackageSourceOptions extends PackageInfoOptions {
-  packageVersion?: 'latest' | string
-  archivePath?: string
-  downloadAuth?: string
-  downloadHeaders?: http.OutgoingHttpHeaders
-  extractToPath?: string
-  tarFlags?: string[]
-  validateVersion?: boolean
-}
-
 async function validatePackageVersion(
   packageName: string,
   packageVersion: string,
-  options?: Readonly<PackageInfoOptions>
+  options?: Readonly<opts.PackageInfoOptions>
 ): Promise<string> {
   const packageInfo = await getPackageInfo(packageName, options)
   const packageVersionStatus = packageInfo.packageInfo[packageVersion]
@@ -136,7 +111,7 @@ async function validatePackageVersion(
 export async function resolvePackageVersion(
   packageName: string,
   packageVersion: string,
-  options?: Readonly<PackageInfoOptions>
+  options?: Readonly<opts.PackageInfoOptions>
 ): Promise<string> {
   if (packageVersion === 'latest') {
     return await getPackageLatestVersion(packageName, options)
@@ -147,7 +122,7 @@ export async function resolvePackageVersion(
 
 export async function getPackageSource(
   packageName: string,
-  options?: Readonly<PackageSourceOptions>
+  options?: Readonly<opts.PackageSourceOptions>
 ): Promise<{packageVersion: string; packageDir: string}> {
   let packageVersion = options?.packageVersion ?? 'latest'
   const validateVersion = options?.validateVersion ?? true
