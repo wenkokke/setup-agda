@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as io from '../../util/io'
+import * as exec from '../../util/exec'
 import * as path from 'path'
 import * as semver from 'semver'
 import * as opts from '../../opts'
@@ -11,13 +12,17 @@ export async function build(
   installDir: string,
   options: opts.BuildOptions
 ): Promise<void> {
+  const execOptions: exec.ExecOptions = {cwd: sourceDir}
+  if (options['extra-pkg-config-dirs'].length > 0) {
+    execOptions.env = {
+      PKG_CONFIG_PATH: options['extra-pkg-config-dirs'].join(';')
+    }
+  }
   // Configure, Build, and Install:
   await io.mkdirP(path.join(installDir, 'bin'))
   await haskell.execSystemStack(
     ['build', ...buildFlags(options), ...installFlags(installDir)],
-    {
-      cwd: sourceDir
-    }
+    execOptions
   )
 }
 

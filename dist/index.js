@@ -773,6 +773,11 @@ const haskell = __importStar(__nccwpck_require__(1310));
 function build(sourceDir, installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         const execOptions = { cwd: sourceDir };
+        if (options['extra-pkg-config-dirs'].length > 0) {
+            execOptions.env = {
+                PKG_CONFIG_PATH: options['extra-pkg-config-dirs'].join(';')
+            };
+        }
         // Configure:
         core.info(`Configure Agda-${options['agda-version']}`);
         yield haskell.execSystemCabal(['v2-configure', ...buildFlags(options)], execOptions);
@@ -941,11 +946,15 @@ const opts = __importStar(__nccwpck_require__(1352));
 const haskell = __importStar(__nccwpck_require__(1310));
 function build(sourceDir, installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
+        const execOptions = { cwd: sourceDir };
+        if (options['extra-pkg-config-dirs'].length > 0) {
+            execOptions.env = {
+                PKG_CONFIG_PATH: options['extra-pkg-config-dirs'].join(';')
+            };
+        }
         // Configure, Build, and Install:
         yield io.mkdirP(path.join(installDir, 'bin'));
-        yield haskell.execSystemStack(['build', ...buildFlags(options), ...installFlags(installDir)], {
-            cwd: sourceDir
-        });
+        yield haskell.execSystemStack(['build', ...buildFlags(options), ...installFlags(installDir)], execOptions);
     });
 }
 exports.build = build;

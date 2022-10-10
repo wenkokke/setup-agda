@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as io from '../../util/io'
+import * as exec from '../../util/exec'
 import assert from 'assert'
 import * as fs from 'fs'
 import * as os from 'os'
@@ -14,7 +15,12 @@ export async function build(
   installDir: string,
   options: opts.BuildOptions
 ): Promise<void> {
-  const execOptions = {cwd: sourceDir}
+  const execOptions: exec.ExecOptions = {cwd: sourceDir}
+  if (options['extra-pkg-config-dirs'].length > 0) {
+    execOptions.env = {
+      PKG_CONFIG_PATH: options['extra-pkg-config-dirs'].join(';')
+    }
+  }
   // Configure:
   core.info(`Configure Agda-${options['agda-version']}`)
   await haskell.execSystemCabal(

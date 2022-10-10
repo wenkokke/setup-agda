@@ -20,6 +20,7 @@ jobs:
     needs: [check-dist]
 
     strategy:
+      fail-fast: false
       matrix:
         os:
           [
@@ -37,6 +38,7 @@ jobs:
         exclude:
           - os: macos-11
             bdist-compress-bin: true
+
     uses: ./.github/workflows/build.yml
     with:
       runs-on: ${{ matrix.os }}
