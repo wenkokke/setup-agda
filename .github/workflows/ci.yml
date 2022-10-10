@@ -12,7 +12,7 @@ on:
 
 jobs:
   check-dist:
-    name: Check dist/
+    name: Check dist
     uses: ./.github/workflows/check-dist.yml
 
   setup-agda:
