@@ -109,7 +109,7 @@ function getOptions(inputs) {
         'disable-matcher': getFlag('disable-matcher'),
         'extra-lib-dirs': [],
         'extra-include-dirs': [],
-        'extra-pkg-config-dirs': []
+        'extra-pkgconfig-dirs': []
     };
     // Validate build options
     if (options['agda-version'] === 'nightly')
@@ -773,9 +773,9 @@ const haskell = __importStar(__nccwpck_require__(1310));
 function build(sourceDir, installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         const execOptions = { cwd: sourceDir };
-        if (options['extra-pkg-config-dirs'].length > 0) {
+        if (options['extra-pkgconfig-dirs'].length > 0) {
             execOptions.env = {
-                PKG_CONFIG_PATH: options['extra-pkg-config-dirs'].join(';')
+                PKG_CONFIG_PATH: options['extra-pkgconfig-dirs'].join(';')
             };
         }
         // Configure:
@@ -947,9 +947,9 @@ const haskell = __importStar(__nccwpck_require__(1310));
 function build(sourceDir, installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         const execOptions = { cwd: sourceDir };
-        if (options['extra-pkg-config-dirs'].length > 0) {
+        if (options['extra-pkgconfig-dirs'].length > 0) {
             execOptions.env = {
-                PKG_CONFIG_PATH: options['extra-pkg-config-dirs'].join(';')
+                PKG_CONFIG_PATH: options['extra-pkgconfig-dirs'].join(';')
             };
         }
         // Configure, Build, and Install:
@@ -1877,6 +1877,9 @@ function setup(options) {
                     ], 'extra-include-dirs': [
                         ...options['extra-include-dirs'],
                         path.join(installDirTC, 'include')
+                    ], 'extra-pkgconfig-dirs': [
+                        ...options['extra-pkgconfig-dirs'],
+                        path.join(installDirTC, 'lib', 'pkgconfig')
                     ] });
             }
             case 'macos': {
@@ -1891,6 +1894,9 @@ function setup(options) {
                             ], 'extra-include-dirs': [
                                 ...options['extra-include-dirs'],
                                 path.join(installDirBrew, 'include')
+                            ], 'extra-pkgconfig-dirs': [
+                                ...options['extra-pkgconfig-dirs'],
+                                path.join(installDirBrew, 'lib', 'pkgconfig')
                             ] });
                     }
                 }

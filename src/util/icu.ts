@@ -104,6 +104,10 @@ export async function setup(
         'extra-include-dirs': [
           ...options['extra-include-dirs'],
           path.join(installDirTC, 'include')
+        ],
+        'extra-pkgconfig-dirs': [
+          ...options['extra-pkgconfig-dirs'],
+          path.join(installDirTC, 'lib', 'pkgconfig')
         ]
       }
     }
@@ -124,6 +128,10 @@ export async function setup(
             'extra-include-dirs': [
               ...options['extra-include-dirs'],
               path.join(installDirBrew, 'include')
+            ],
+            'extra-pkgconfig-dirs': [
+              ...options['extra-pkgconfig-dirs'],
+              path.join(installDirBrew, 'lib', 'pkgconfig')
             ]
           }
         }

@@ -13,9 +13,9 @@ export async function build(
   options: opts.BuildOptions
 ): Promise<void> {
   const execOptions: exec.ExecOptions = {cwd: sourceDir}
-  if (options['extra-pkg-config-dirs'].length > 0) {
+  if (options['extra-pkgconfig-dirs'].length > 0) {
     execOptions.env = {
-      PKG_CONFIG_PATH: options['extra-pkg-config-dirs'].join(';')
+      PKG_CONFIG_PATH: options['extra-pkgconfig-dirs'].join(';')
     }
   }
   // Configure, Build, and Install:

@@ -137,8 +137,8 @@ jobs:
           agda-version: ${{ inputs.agda-version }}
           ghc-version-range: ${{ inputs.ghc-version-range }}
           upload-bdist: ${{ inputs.upload-bdist }}
-          upload-bdist-target-platform: ${{ inputs.upload-bdist-target-platform }}
-          upload-bdist-compress-bin: ${{ inputs.upload-bdist-compress-bin }}
+          bdist-name: ${{ inputs.bdist-name }}
+          bdist-compress-bin: ${{ inputs.bdist-compress-bin }}
           cabal-version: ${{ inputs.cabal-version }}
           stack-version: ${{ inputs.stack-version }}
           enable-stack: ${{ inputs.enable-stack }}
