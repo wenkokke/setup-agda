@@ -86,8 +86,9 @@ function getOptions(inputs) {
     // Get build options or their defaults
     const inputSpec = yaml.load(fs.readFileSync(path.join(__dirname, '..', 'action.yml'), 'utf8')).inputs;
     const getOption = (k) => {
+        var _a, _b;
         const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
-        return maybeInput !== null && maybeInput !== void 0 ? maybeInput : inputSpec[k].default;
+        return (_b = maybeInput !== null && maybeInput !== void 0 ? maybeInput : (_a = inputSpec[k]) === null || _a === void 0 ? void 0 : _a.default) !== null && _b !== void 0 ? _b : '';
     };
     const getFlag = (k) => {
         const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
@@ -100,7 +101,8 @@ function getOptions(inputs) {
         'cabal-version': getOption('cabal-version'),
         'stack-version': getOption('stack-version'),
         'upload-bdist': getFlag('upload-bdist'),
-        'upload-bdist-compress-bin': getFlag('upload-bdist-compress-bin'),
+        'bdist-name': getOption('bdist-name'),
+        'bdist-compress-bin': getFlag('bdist-compress-bin'),
         'enable-stack': getFlag('enable-stack'),
         'stack-no-global': getFlag('stack-no-global'),
         'stack-setup-ghc': getFlag('stack-setup-ghc'),
@@ -114,8 +116,8 @@ function getOptions(inputs) {
         throw Error('Value "nightly" for input "agda-version" is unupported');
     if (options['ghc-version'] !== 'latest')
         throw Error('Input "ghc-version" is unsupported. Use "ghc-version-range"');
-    if (options['upload-bdist-compress-bin'] && !supportsUPX())
-        throw Error('Input "upload-bdist-compress-bin" is unsupported on MacOS <12');
+    if (options['bdist-compress-bin'] && !supportsUPX())
+        throw Error('Input "bdist-compress-bin" is unsupported on MacOS <12');
     if (!semver.validRange(options['ghc-version-range']))
         throw Error('Input "ghc-version-range" is not a valid version range');
     return options;
@@ -471,17 +473,20 @@ function findGhcVersionRange(versions, options) {
 }
 function uploadAsArtifact(installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
-        // If not specified, get the target platform from `ghc --info`:
-        const targetPlatform = yield haskell.getGhcTargetPlatform();
         // Get the name for the distribution
-        const bdistName = `agda-${options['agda-version']}-${targetPlatform}`;
+        let bdistName = options['bdist-name'];
+        if (bdistName === '') {
+            // If not specified, get the target platform from `ghc --info`:
+            const targetPlatform = yield haskell.getGhcTargetPlatform();
+            bdistName = `agda-${options['agda-version']}-${targetPlatform}`;
+        }
         const bdistDir = path.join(agda.agdaDir(), 'bdist', bdistName);
         io.mkdirP(bdistDir);
         // Copy executables
         const installedBins = agda.exes.map(exe => path.join(installDir, 'bin', exe));
         const bdistBinDir = path.join(bdistDir, 'bin');
         io.mkdirP(bdistBinDir);
-        if (options['upload-bdist-compress-bin']) {
+        if (options['bdist-compress-bin']) {
             yield compressBins(installedBins, bdistBinDir);
         }
         else {

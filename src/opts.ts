@@ -30,11 +30,12 @@ export interface SetupHaskellInputs
 export type SetupAgdaOption =
   | 'agda-version'
   | 'ghc-version-range'
+  | 'bdist-name'
   | SetupHaskellOption
 
 export type SetupAgdaFlag =
   | 'upload-bdist'
-  | 'upload-bdist-compress-bin'
+  | 'bdist-compress-bin'
   | SetupHaskellFlag
 
 export interface SetupAgdaInputs
@@ -66,11 +67,11 @@ export function getOptions(
   const inputSpec = (
     yaml.load(
       fs.readFileSync(path.join(__dirname, '..', 'action.yml'), 'utf8')
-    ) as {inputs: Record<SetupAgdaOption, {default: string}>}
+    ) as {inputs: Record<SetupAgdaOption, {default?: string}>}
   ).inputs
   const getOption = (k: SetupAgdaOption): string => {
     const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs?.[k]
-    return maybeInput ?? inputSpec[k].default
+    return maybeInput ?? inputSpec[k]?.default ?? ''
   }
   const getFlag = (k: SetupAgdaFlag): boolean => {
     const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs?.[k]
@@ -83,7 +84,8 @@ export function getOptions(
     'cabal-version': getOption('cabal-version'),
     'stack-version': getOption('stack-version'),
     'upload-bdist': getFlag('upload-bdist'),
-    'upload-bdist-compress-bin': getFlag('upload-bdist-compress-bin'),
+    'bdist-name': getOption('bdist-name'),
+    'bdist-compress-bin': getFlag('bdist-compress-bin'),
     'enable-stack': getFlag('enable-stack'),
     'stack-no-global': getFlag('stack-no-global'),
     'stack-setup-ghc': getFlag('stack-setup-ghc'),
@@ -97,8 +99,8 @@ export function getOptions(
     throw Error('Value "nightly" for input "agda-version" is unupported')
   if (options['ghc-version'] !== 'latest')
     throw Error('Input "ghc-version" is unsupported. Use "ghc-version-range"')
-  if (options['upload-bdist-compress-bin'] && !supportsUPX())
-    throw Error('Input "upload-bdist-compress-bin" is unsupported on MacOS <12')
+  if (options['bdist-compress-bin'] && !supportsUPX())
+    throw Error('Input "bdist-compress-bin" is unsupported on MacOS <12')
   if (!semver.validRange(options['ghc-version-range']))
     throw Error('Input "ghc-version-range" is not a valid version range')
   return options

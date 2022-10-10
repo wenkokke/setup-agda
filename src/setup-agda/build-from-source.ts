@@ -196,11 +196,13 @@ async function uploadAsArtifact(
   installDir: string,
   options: opts.BuildOptions
 ): Promise<string> {
-  // If not specified, get the target platform from `ghc --info`:
-  const targetPlatform = await haskell.getGhcTargetPlatform()
-
   // Get the name for the distribution
-  const bdistName = `agda-${options['agda-version']}-${targetPlatform}`
+  let bdistName = options['bdist-name']
+  if (bdistName === '') {
+    // If not specified, get the target platform from `ghc --info`:
+    const targetPlatform = await haskell.getGhcTargetPlatform()
+    bdistName = `agda-${options['agda-version']}-${targetPlatform}`
+  }
   const bdistDir = path.join(agda.agdaDir(), 'bdist', bdistName)
   io.mkdirP(bdistDir)
 
@@ -208,7 +210,7 @@ async function uploadAsArtifact(
   const installedBins = agda.exes.map(exe => path.join(installDir, 'bin', exe))
   const bdistBinDir = path.join(bdistDir, 'bin')
   io.mkdirP(bdistBinDir)
-  if (options['upload-bdist-compress-bin']) {
+  if (options['bdist-compress-bin']) {
     await compressBins(installedBins, bdistBinDir)
   } else {
     await copyBins(installedBins, bdistBinDir)

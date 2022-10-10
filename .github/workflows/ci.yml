@@ -22,23 +22,27 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        agda-version: ['latest']
-        include:
-          - # Build with Cabal
-            cabal-version: '3.6'
-            enable-stack: ''
-            upload-bdist: 'true'
-          - # Build with Stack
-            cabal-version: '3.4'
-            enable-stack: 'true'
-            upload-bdist: ''
-
+        os:
+          [
+            ubuntu-22.04,
+            ubuntu-20.04,
+            macos-11,
+            macos-12,
+            windows-2019,
+            windows-2022
+          ]
+        agda-version: [latest]
+        cabal-version: ['3.6']
+        upload-bdist: [true]
+        bdist-compress-bin: ['upx', '']
+        exclude:
+          - os: macos-11
+            bdist-compress-bin: true
     uses: ./.github/workflows/bdist.yml
     with:
       runs-on: ${{ matrix.os }}
       agda-version: ${{ matrix.agda-version }}
       cabal-version: ${{ matrix.cabal-version }}
-      enable-stack: ${{ matrix.enable-stack }}
       upload-bdist: ${{ matrix.upload-bdist }}
-      # upload-bdist-compress-bin: ''
+      bdist-name: ${{ join(['agda', matrix.agda-version, runner.arch, matrix.os, matrix.bdist-compress-bin], '-') }}
+      bdist-compress-bin: ${{ matrix.bdist-compress-bin }}
