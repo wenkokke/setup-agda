@@ -50,6 +50,7 @@ export type UPXVersion = '3.96'
 export interface BuildOptions extends Readonly<SetupAgdaInputs> {
   readonly 'extra-lib-dirs': string[]
   readonly 'extra-include-dirs': string[]
+  readonly 'extra-pkg-config-dirs': string[]
   readonly 'icu-version'?: ICUVersion
   readonly 'upx-version'?: UPXVersion
   readonly 'package-info-cache'?: PackageInfoCache
@@ -88,7 +89,8 @@ export function getOptions(
     'stack-setup-ghc': getFlag('stack-setup-ghc'),
     'disable-matcher': getFlag('disable-matcher'),
     'extra-lib-dirs': [],
-    'extra-include-dirs': []
+    'extra-include-dirs': [],
+    'extra-pkg-config-dirs': []
   }
   // Validate build options
   if (options['agda-version'] === 'nightly')

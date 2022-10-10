@@ -106,7 +106,8 @@ function getOptions(inputs) {
         'stack-setup-ghc': getFlag('stack-setup-ghc'),
         'disable-matcher': getFlag('disable-matcher'),
         'extra-lib-dirs': [],
-        'extra-include-dirs': []
+        'extra-include-dirs': [],
+        'extra-pkg-config-dirs': []
     };
     // Validate build options
     if (options['agda-version'] === 'nightly')
@@ -313,6 +314,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -323,9 +331,11 @@ const glob = __importStar(__nccwpck_require__(8090));
 const io = __importStar(__nccwpck_require__(9067));
 const tc = __importStar(__nccwpck_require__(7784));
 const assert_1 = __importDefault(__nccwpck_require__(9491));
+const fs = __importStar(__nccwpck_require__(7147));
 const os = __importStar(__nccwpck_require__(2037));
 const semver = __importStar(__nccwpck_require__(1383));
 const path = __importStar(__nccwpck_require__(1017));
+const opts = __importStar(__nccwpck_require__(1352));
 const exec = __importStar(__nccwpck_require__(4369));
 const agda = __importStar(__nccwpck_require__(9552));
 const hackage = __importStar(__nccwpck_require__(903));
@@ -406,11 +416,6 @@ function build(options) {
         return installDirTC;
     });
 }
-function copyData(dataDir, dest) {
-    return __awaiter(this, void 0, void 0, function* () {
-        yield io.cp(dataDir, dest, { recursive: true });
-    });
-}
 function resolveAgdaVersion(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Nightly builds should be handled by 'download-nightly'
@@ -472,15 +477,18 @@ function uploadAsArtifact(installDir, options) {
         const bdistName = `agda-${options['agda-version']}-${targetPlatform}`;
         const bdistDir = path.join(agda.agdaDir(), 'bdist', bdistName);
         io.mkdirP(bdistDir);
-        // Copy binaries
-        io.mkdirP(path.join(bdistDir, 'bin'));
-        const bins = [agda.agdaExe, agda.agdaModeExe].map(binName => path.join(installDir, 'bin', binName));
+        // Copy executables
+        const installedBins = agda.exes.map(exe => path.join(installDir, 'bin', exe));
+        const bdistBinDir = path.join(bdistDir, 'bin');
+        io.mkdirP(bdistBinDir);
         if (options['upload-bdist-compress-bin']) {
-            yield compressBins(bins, path.join(bdistDir, 'bin'));
+            yield compressBins(installedBins, bdistBinDir);
         }
         else {
-            yield copyBins(bins, path.join(bdistDir, 'bin'));
+            yield copyBins(installedBins, bdistBinDir);
         }
+        // Copy libraries
+        bundleLibs(bdistDir, options);
         // Copy data
         yield copyData(path.join(installDir, 'data'), bdistDir);
         // Test artifact
@@ -506,6 +514,138 @@ function uploadAsArtifact(installDir, options) {
         }
         // Return artifact name
         return uploadInfo.artifactName;
+    });
+}
+// Utilities for copying files
+function copyData(dataDir, dest) {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield io.cp(dataDir, dest, { recursive: true });
+    });
+}
+function bundleLibs(bdistDir, options) {
+    var e_1, _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        const bdistBinDir = path.join(bdistDir, 'bin');
+        // On Windows, we simply copy all DLLs:
+        if (opts.os === 'windows') {
+            const globber = yield glob.create(options['extra-lib-dirs']
+                .map(libDir => path.join(libDir, '*.dll'))
+                .join(os.EOL));
+            try {
+                for (var _b = __asyncValues(globber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
+                    const bundleLibPath = _c.value;
+                    io.cp(bundleLibPath, bdistBinDir);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+        }
+        else {
+            // Create library directory:
+            const bdistLibDir = path.join(bdistDir, 'lib');
+            yield io.mkdirP(bdistLibDir);
+            // For each binary, for each of its needed libraries:
+            for (const binPath of agda.exes.map(exe => path.join(bdistBinDir, exe))) {
+                let bundledLib = false;
+                for (const libPath of yield findNeededLibs(binPath)) {
+                    // Find if the library is on the extra-lib-path:
+                    const extraLibPath = yield findExtraLib(libPath, options);
+                    // If so, bundle the library:
+                    if (extraLibPath !== null) {
+                        // Copy the library, unless it already exists:
+                        const bdistLibPath = path.join(bdistLibDir, path.basename(extraLibPath));
+                        if (!fs.existsSync(bdistLibPath))
+                            yield io.cp(extraLibPath, bdistLibDir);
+                        // Update the run path:
+                        yield changeRunPath(binPath, extraLibPath, path.relative(bdistBinDir, bdistLibPath));
+                        bundledLib = true;
+                    }
+                }
+                // Add a relative run path:
+                if (bundledLib)
+                    addRunPath(binPath, path.relative(bdistBinDir, bdistLibDir));
+            }
+        }
+    });
+}
+function addRunPath(bin, loadPath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        switch (opts.os) {
+            case 'linux': {
+                if (!path.isAbsolute(loadPath))
+                    loadPath = `$ORIGIN/${loadPath}`;
+                yield exec.execOutput('patchelf', ['-add-rpath', loadPath, bin]);
+                return;
+            }
+            case 'macos': {
+                if (!path.isAbsolute(loadPath))
+                    loadPath = `@executable_path/${loadPath}`;
+                yield exec.execOutput('install_name_tool', ['-add_rpath', loadPath, bin]);
+                return;
+            }
+            case 'windows':
+                return;
+        }
+    });
+}
+function findNeededLibs(bin) {
+    return __awaiter(this, void 0, void 0, function* () {
+        switch (opts.os) {
+            case 'linux': {
+                const output = yield exec.execOutput('patchelf', ['--print-needed', bin]);
+                return output.split(os.EOL).filter(libPath => libPath !== '');
+            }
+            case 'macos': {
+                const output = yield exec.execOutput('otool', ['-L', bin]);
+                return [...output.matchAll(/[A-Za-z0-9./]+\.dylib/g)].map(m => m[0]);
+            }
+        }
+        return [];
+    });
+}
+function findExtraLib(libPath, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const libName = path.basename(libPath);
+        for (const libDir of options['extra-lib-dirs']) {
+            const globber = yield glob.create(path.join(libDir, libName), {
+                followSymbolicLinks: true,
+                implicitDescendants: false,
+                matchDirectories: false,
+                omitBrokenSymbolicLinks: true
+            });
+            const [match, ...rest] = yield globber.glob();
+            (0, assert_1.default)(rest.length === 0, `Found multiple candidates for ${libName}`);
+            if (match !== undefined) {
+                (0, assert_1.default)(libPath === libName || libPath === match, `Library with relative run path: ${libPath}`);
+                return match;
+            }
+        }
+        return null;
+    });
+}
+function changeRunPath(bin, libFrom, libTo) {
+    return __awaiter(this, void 0, void 0, function* () {
+        switch (opts.os) {
+            case 'linux': {
+                return;
+            }
+            case 'macos': {
+                yield exec.execOutput('install_name_tool', [
+                    '-change',
+                    libFrom,
+                    `@rpath/${libTo}`,
+                    bin
+                ]);
+                return;
+            }
+            case 'windows':
+                return;
+        }
     });
 }
 function copyBins(bins, dest) {
@@ -1040,7 +1180,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.testSystemAgda = exports.execSystemAgda = exports.getSystemAgdaDataDir = exports.getSystemAgdaVersion = exports.installDir = exports.agdaDir = exports.agdaModeExe = exports.agdaExe = exports.packageInfoCache = void 0;
+exports.testSystemAgda = exports.execSystemAgda = exports.getSystemAgdaDataDir = exports.getSystemAgdaVersion = exports.installDir = exports.agdaDir = exports.exes = exports.agdaModeExe = exports.agdaExe = exports.packageInfoCache = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const path = __importStar(__nccwpck_require__(1017));
@@ -1053,6 +1193,7 @@ exports.packageInfoCache = Agda_json_1.default;
 // Executable names
 exports.agdaExe = opts.os === 'windows' ? 'agda.exe' : 'agda';
 exports.agdaModeExe = opts.os === 'windows' ? 'agda-mode.exe' : 'agda-mode';
+exports.exes = [exports.agdaExe, exports.agdaModeExe];
 // System directories
 function agdaDir() {
     switch (opts.os) {
@@ -1665,10 +1806,6 @@ function setup(options) {
         if (options['icu-version'] === undefined)
             return options;
         // Otherwise, setup ICU:
-        const icuInstallDir = installDir(options['icu-version']);
-        let icuLibDir = null;
-        let icuIncludeDir = null;
-        let success = false;
         switch (opts.os) {
             case 'windows': {
                 let icuZipPath = null;
@@ -1685,11 +1822,14 @@ function setup(options) {
                         break;
                     }
                 }
-                const installDirTC = yield tc.extractZip(icuZipPath, icuInstallDir);
-                icuLibDir = path.join(installDirTC, icuZipName, 'bin64');
-                icuIncludeDir = path.join(installDirTC, icuZipName, 'include');
-                success = true;
-                break;
+                const installDirTC = yield tc.extractZip(icuZipPath, installDir(options['icu-version']));
+                return Object.assign(Object.assign({}, options), { 'extra-lib-dirs': [
+                        ...options['extra-lib-dirs'],
+                        path.join(installDirTC, icuZipName, 'bin64')
+                    ], 'extra-include-dirs': [
+                        ...options['extra-include-dirs'],
+                        path.join(installDirTC, icuZipName, 'include')
+                    ] });
             }
             case 'linux': {
                 let icuTarPath = '';
@@ -1703,15 +1843,14 @@ function setup(options) {
                         break;
                     }
                 }
-                const installDirTC = yield tc.extractTar(icuTarPath, icuInstallDir, [
-                    '--extract',
-                    '--gzip',
-                    '--strip-components=4'
-                ]);
-                icuLibDir = path.join(installDirTC, 'lib');
-                icuIncludeDir = path.join(installDirTC, 'include');
-                success = true;
-                break;
+                const installDirTC = yield tc.extractTar(icuTarPath, installDir(options['icu-version']), ['--extract', '--gzip', '--strip-components=4']);
+                return Object.assign(Object.assign({}, options), { 'extra-lib-dirs': [
+                        ...options['extra-lib-dirs'],
+                        path.join(installDirTC, 'lib')
+                    ], 'extra-include-dirs': [
+                        ...options['extra-include-dirs'],
+                        path.join(installDirTC, 'include')
+                    ] });
             }
             case 'macos': {
                 switch (options['icu-version']) {
@@ -1719,29 +1858,18 @@ function setup(options) {
                         const brewPrefix = (yield exec.execOutput('brew', ['--prefix'])).trim();
                         yield exec.execOutput('brew', ['install', 'icu4c']);
                         const installDirBrew = path.join(brewPrefix, 'opt', 'icu4c');
-                        icuLibDir = path.join(installDirBrew, 'lib');
-                        icuIncludeDir = path.join(installDirBrew, 'include');
-                        success = true;
-                        break;
+                        return Object.assign(Object.assign({}, options), { 'extra-lib-dirs': [
+                                ...options['extra-lib-dirs'],
+                                path.join(installDirBrew, 'lib')
+                            ], 'extra-include-dirs': [
+                                ...options['extra-include-dirs'],
+                                path.join(installDirBrew, 'include')
+                            ] });
                     }
                 }
-                break;
             }
         }
-        if (success) {
-            // Add icuLibDir to extra-lib-dirs:
-            if (icuLibDir !== null) {
-                options = Object.assign(Object.assign({}, options), { 'extra-lib-dirs': [icuLibDir, ...options['extra-lib-dirs']] });
-            }
-            // Add icuIncludeDir to extra-include-dirs:
-            if (icuIncludeDir !== null) {
-                options = Object.assign(Object.assign({}, options), { 'extra-include-dirs': [icuIncludeDir, ...options['extra-include-dirs']] });
-            }
-            return options;
-        }
-        else {
-            throw Error(`Could not install ICU-${options['icu-version']} for ${opts.os}`);
-        }
+        throw Error(`Could not install ICU-${options['icu-version']} for ${opts.os}`);
     });
 }
 exports.setup = setup;

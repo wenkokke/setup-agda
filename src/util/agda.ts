@@ -17,6 +17,8 @@ export const agdaExe: string = opts.os === 'windows' ? 'agda.exe' : 'agda'
 export const agdaModeExe: string =
   opts.os === 'windows' ? 'agda-mode.exe' : 'agda-mode'
 
+export const exes: string[] = [agdaExe, agdaModeExe]
+
 // System directories
 
 export function agdaDir(): string {

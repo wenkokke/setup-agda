@@ -4,6 +4,7 @@ import * as glob from '@actions/glob'
 import * as io from '../util/io'
 import * as tc from '@actions/tool-cache'
 import assert from 'assert'
+import * as fs from 'fs'
 import * as os from 'os'
 import * as semver from 'semver'
 import * as path from 'path'
@@ -99,10 +100,6 @@ async function build(options: opts.BuildOptions): Promise<string> {
   }
 
   return installDirTC
-}
-
-async function copyData(dataDir: string, dest: string): Promise<void> {
-  await io.cp(dataDir, dest, {recursive: true})
 }
 
 async function resolveAgdaVersion(
@@ -207,16 +204,18 @@ async function uploadAsArtifact(
   const bdistDir = path.join(agda.agdaDir(), 'bdist', bdistName)
   io.mkdirP(bdistDir)
 
-  // Copy binaries
-  io.mkdirP(path.join(bdistDir, 'bin'))
-  const bins = [agda.agdaExe, agda.agdaModeExe].map(binName =>
-    path.join(installDir, 'bin', binName)
-  )
+  // Copy executables
+  const installedBins = agda.exes.map(exe => path.join(installDir, 'bin', exe))
+  const bdistBinDir = path.join(bdistDir, 'bin')
+  io.mkdirP(bdistBinDir)
   if (options['upload-bdist-compress-bin']) {
-    await compressBins(bins, path.join(bdistDir, 'bin'))
+    await compressBins(installedBins, bdistBinDir)
   } else {
-    await copyBins(bins, path.join(bdistDir, 'bin'))
+    await copyBins(installedBins, bdistBinDir)
   }
+
+  // Copy libraries
+  bundleLibs(bdistDir, options)
 
   // Copy data
   await copyData(path.join(installDir, 'data'), bdistDir)
@@ -253,6 +252,141 @@ async function uploadAsArtifact(
 
   // Return artifact name
   return uploadInfo.artifactName
+}
+
+// Utilities for copying files
+
+async function copyData(dataDir: string, dest: string): Promise<void> {
+  await io.cp(dataDir, dest, {recursive: true})
+}
+
+async function bundleLibs(
+  bdistDir: string,
+  options: opts.BuildOptions
+): Promise<void> {
+  const bdistBinDir = path.join(bdistDir, 'bin')
+  // On Windows, we simply copy all DLLs:
+  if (opts.os === 'windows') {
+    const globber = await glob.create(
+      options['extra-lib-dirs']
+        .map(libDir => path.join(libDir, '*.dll'))
+        .join(os.EOL)
+    )
+    for await (const bundleLibPath of globber.globGenerator()) {
+      io.cp(bundleLibPath, bdistBinDir)
+    }
+  } else {
+    // Create library directory:
+    const bdistLibDir = path.join(bdistDir, 'lib')
+    await io.mkdirP(bdistLibDir)
+    // For each binary, for each of its needed libraries:
+    for (const binPath of agda.exes.map(exe => path.join(bdistBinDir, exe))) {
+      let bundledLib = false
+      for (const libPath of await findNeededLibs(binPath)) {
+        // Find if the library is on the extra-lib-path:
+        const extraLibPath = await findExtraLib(libPath, options)
+        // If so, bundle the library:
+        if (extraLibPath !== null) {
+          // Copy the library, unless it already exists:
+          const bdistLibPath = path.join(
+            bdistLibDir,
+            path.basename(extraLibPath)
+          )
+          if (!fs.existsSync(bdistLibPath))
+            await io.cp(extraLibPath, bdistLibDir)
+          // Update the run path:
+          await changeRunPath(
+            binPath,
+            extraLibPath,
+            path.relative(bdistBinDir, bdistLibPath)
+          )
+          bundledLib = true
+        }
+      }
+      // Add a relative run path:
+      if (bundledLib)
+        addRunPath(binPath, path.relative(bdistBinDir, bdistLibDir))
+    }
+  }
+}
+
+async function addRunPath(bin: string, loadPath: string): Promise<void> {
+  switch (opts.os) {
+    case 'linux': {
+      if (!path.isAbsolute(loadPath)) loadPath = `$ORIGIN/${loadPath}`
+      await exec.execOutput('patchelf', ['-add-rpath', loadPath, bin])
+      return
+    }
+    case 'macos': {
+      if (!path.isAbsolute(loadPath)) loadPath = `@executable_path/${loadPath}`
+      await exec.execOutput('install_name_tool', ['-add_rpath', loadPath, bin])
+      return
+    }
+    case 'windows':
+      return
+  }
+}
+
+async function findNeededLibs(bin: string): Promise<string[]> {
+  switch (opts.os) {
+    case 'linux': {
+      const output = await exec.execOutput('patchelf', ['--print-needed', bin])
+      return output.split(os.EOL).filter(libPath => libPath !== '')
+    }
+    case 'macos': {
+      const output = await exec.execOutput('otool', ['-L', bin])
+      return [...output.matchAll(/[A-Za-z0-9./]+\.dylib/g)].map(m => m[0])
+    }
+  }
+  return []
+}
+
+async function findExtraLib(
+  libPath: string,
+  options: opts.BuildOptions
+): Promise<string | null> {
+  const libName = path.basename(libPath)
+  for (const libDir of options['extra-lib-dirs']) {
+    const globber = await glob.create(path.join(libDir, libName), {
+      followSymbolicLinks: true,
+      implicitDescendants: false,
+      matchDirectories: false,
+      omitBrokenSymbolicLinks: true
+    })
+    const [match, ...rest] = await globber.glob()
+    assert(rest.length === 0, `Found multiple candidates for ${libName}`)
+    if (match !== undefined) {
+      assert(
+        libPath === libName || libPath === match,
+        `Library with relative run path: ${libPath}`
+      )
+      return match
+    }
+  }
+  return null
+}
+
+async function changeRunPath(
+  bin: string,
+  libFrom: string,
+  libTo: string
+): Promise<void> {
+  switch (opts.os) {
+    case 'linux': {
+      return
+    }
+    case 'macos': {
+      await exec.execOutput('install_name_tool', [
+        '-change',
+        libFrom,
+        `@rpath/${libTo}`,
+        bin
+      ])
+      return
+    }
+    case 'windows':
+      return
+  }
 }
 
 async function copyBins(bins: string[], dest: string): Promise<void> {
