@@ -13,7 +13,6 @@ on:
 jobs:
   check-dist:
     name: Check dist/
-    needs: [build]
     uses: ./.github/workflows/check-dist.yml
 
   setup-agda:
