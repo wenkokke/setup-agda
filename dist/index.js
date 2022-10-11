@@ -1279,8 +1279,8 @@ function setup(options) {
                 yield exec.execOutput('pacman', [
                     '--noconfirm',
                     '-S',
-                    'mingw-w64-pkgconf',
-                    'mingw-w64-icu'
+                    'mingw-w64-x86_64-pkgconf',
+                    'mingw-w64-x86_64-icu'
                 ]);
                 // Get the icu-i18n version via pkgconf:
                 core.exportVariable('PKG_CONFIG', 'pkgconf');
