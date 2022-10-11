@@ -15,7 +15,7 @@ jobs:
     name: Check dist
     uses: ./.github/workflows/check-dist.yml
 
-  setup-agda:
+  test-setup-agda:
     name: Setup Agda ${{ matrix.agda-version }}
     needs: [check-dist]
 
@@ -42,3 +42,8 @@ jobs:
       cabal-version: ${{ matrix.cabal-version }}
       upload-bdist: ${{ matrix.upload-bdist }}
       bdist-name: agda-{{agda-version}}-{{arch}-${{ matrix.os }}-icu{{icu-version}}
+
+  update-latest:
+    name: Update latest
+    needs: [check-dist, test-setup-agda]
+    uses: ./.github/workflows/update-latest.yml
