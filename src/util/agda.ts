@@ -12,12 +12,12 @@ export const packageInfoCache = distPackageInfoCache as opts.PackageInfoCache
 
 // Executable names
 
-export const agdaExe: string = opts.os === 'windows' ? 'agda.exe' : 'agda'
+export const agdaBinName: string = opts.os === 'windows' ? 'agda.exe' : 'agda'
 
-export const agdaModeExe: string =
+export const agdaModeBinName: string =
   opts.os === 'windows' ? 'agda-mode.exe' : 'agda-mode'
 
-export const exes: string[] = [agdaExe, agdaModeExe]
+export const agdaBinNames: string[] = [agdaBinName, agdaModeBinName]
 
 // System directories
 
@@ -44,7 +44,7 @@ export interface AgdaExecOptions extends exec.ExecOptions {
 export async function getSystemAgdaVersion(
   options?: AgdaExecOptions
 ): Promise<string> {
-  return await exec.getVersion(options?.agdaPath ?? agdaExe, {
+  return await exec.getVersion(options?.agdaPath ?? agdaBinName, {
     parseOutput: output => {
       if (output.startsWith('Agda version ')) {
         return output.substring('Agda version '.length).trim()
@@ -66,7 +66,7 @@ export async function execSystemAgda(
   args: string[],
   options?: AgdaExecOptions
 ): Promise<string> {
-  return await exec.execOutput(options?.agdaPath ?? agdaExe, args, options)
+  return await exec.execOutput(options?.agdaPath ?? agdaBinName, args, options)
 }
 
 export async function testSystemAgda(options?: AgdaExecOptions): Promise<void> {

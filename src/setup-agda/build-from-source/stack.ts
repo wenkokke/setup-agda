@@ -13,12 +13,6 @@ export async function build(
   options: opts.BuildOptions
 ): Promise<void> {
   const execOptions: exec.ExecOptions = {cwd: sourceDir}
-  if (options['extra-pkgconfig-dirs'].length > 0) {
-    execOptions.env = {
-      ...process.env,
-      PKG_CONFIG_PATH: options['extra-pkgconfig-dirs'].join(';')
-    }
-  }
   // Configure, Build, and Install:
   await io.mkdirP(path.join(installDir, 'bin'))
   await haskell.execSystemStack(

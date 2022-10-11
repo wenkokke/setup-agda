@@ -108,8 +108,7 @@ function getOptions(inputs) {
         'stack-setup-ghc': getFlag('stack-setup-ghc'),
         'disable-matcher': getFlag('disable-matcher'),
         'extra-lib-dirs': [],
-        'extra-include-dirs': [],
-        'extra-pkgconfig-dirs': []
+        'extra-include-dirs': []
     };
     // Validate build options
     if (options['agda-version'] === 'nightly')
@@ -316,37 +315,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __asyncValues = (this && this.__asyncValues) || function (o) {
-    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-    var m = o[Symbol.asyncIterator], i;
-    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
-    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
-    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const artifact = __importStar(__nccwpck_require__(2605));
 const core = __importStar(__nccwpck_require__(2186));
-const glob = __importStar(__nccwpck_require__(8090));
-const io = __importStar(__nccwpck_require__(9067));
 const tc = __importStar(__nccwpck_require__(7784));
 const assert_1 = __importDefault(__nccwpck_require__(9491));
-const fs = __importStar(__nccwpck_require__(7147));
-const os = __importStar(__nccwpck_require__(2037));
-const semver = __importStar(__nccwpck_require__(1383));
+const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 const path = __importStar(__nccwpck_require__(1017));
-const opts = __importStar(__nccwpck_require__(1352));
-const exec = __importStar(__nccwpck_require__(4369));
+const semver = __importStar(__nccwpck_require__(1383));
+const setup_haskell_1 = __importDefault(__nccwpck_require__(6933));
+const setup_icu_1 = __importDefault(__nccwpck_require__(4173));
+const io = __importStar(__nccwpck_require__(9067));
 const agda = __importStar(__nccwpck_require__(9552));
 const hackage = __importStar(__nccwpck_require__(903));
-const upx = __importStar(__nccwpck_require__(6102));
-const icu = __importStar(__nccwpck_require__(9358));
-const haskell = __importStar(__nccwpck_require__(1310));
 const cabal = __importStar(__nccwpck_require__(8545));
 const stack = __importStar(__nccwpck_require__(5590));
-const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
+const bdist_1 = __importDefault(__nccwpck_require__(352));
 function buildFromSource(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Resolve the Agda version:
@@ -372,7 +358,7 @@ function tryToolCache(agdaVersion) {
         else {
             try {
                 core.info(`Found Agda ${agdaVersion} in cache`);
-                const agdaPath = path.join(installDirTC, 'bin', agda.agdaExe);
+                const agdaPath = path.join(installDirTC, 'bin', agda.agdaBinName);
                 const env = { Agda_datadir: path.join(installDirTC, 'data') };
                 agda.testSystemAgda({ agdaPath, env });
                 return installDirTC;
@@ -397,22 +383,24 @@ function build(options) {
         const ghcVersionRange = yield findGhcVersionRange(ghcVersions, options);
         core.debug(`Compatible GHC version range is: ${ghcVersionRange}`);
         // 3. Setup GHC via <haskell/actions/setup>:
-        options = yield haskell.setup(Object.assign(Object.assign({}, options), { 'ghc-version-range': ghcVersionRange }));
-        // 4. Install compatible ICU version:
-        options = yield icu.setup(options);
-        // 4. Build:
+        options = yield (0, setup_haskell_1.default)(Object.assign(Object.assign({}, options), { 'ghc-version-range': ghcVersionRange }));
+        // 4. Install ICU:
+        options = yield (0, setup_icu_1.default)(options);
+        // 5. Build:
         const installDir = agda.installDir(options['agda-version']);
         yield buildTool.build(sourceDir, installDir, options);
-        yield copyData(path.join(sourceDir, 'src', 'data'), installDir);
-        // 5. Test:
-        const agdaPath = path.join(installDir, 'bin', agda.agdaExe);
+        yield io.cp(path.join(sourceDir, 'src', 'data'), installDir, {
+            recursive: true
+        });
+        // 6. Test:
+        const agdaPath = path.join(installDir, 'bin', agda.agdaBinName);
         const env = { Agda_datadir: path.join(installDir, 'data') };
         yield agda.testSystemAgda({ agdaPath, env });
-        // 6. Cache:
+        // 7. Cache:
         const installDirTC = yield tc.cacheDir(installDir, 'agda', options['agda-version']);
-        // 7. If 'upload-bdist' is specified, upload as a binary distribution:
+        // 8. If 'upload-bdist' is specified, upload as a binary distribution:
         if (options['upload-bdist']) {
-            const bdistName = yield uploadAsArtifact(installDir, options);
+            const bdistName = yield (0, bdist_1.default)(installDir, options);
             core.info(`Uploaded binary distribution as '${bdistName}'`);
         }
         return installDirTC;
@@ -471,223 +459,6 @@ function findGhcVersionRange(versions, options) {
         }
     });
 }
-function uploadAsArtifact(installDir, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Get the name for the distribution
-        const bdistName = yield renderBDistName(options);
-        const bdistDir = path.join(agda.agdaDir(), 'bdist', bdistName);
-        io.mkdirP(bdistDir);
-        // Copy executables
-        const installedBins = agda.exes.map(exe => path.join(installDir, 'bin', exe));
-        const bdistBinDir = path.join(bdistDir, 'bin');
-        io.mkdirP(bdistBinDir);
-        if (options['bdist-compress-bin']) {
-            yield compressBins(installedBins, bdistBinDir);
-        }
-        else {
-            yield copyBins(installedBins, bdistBinDir);
-        }
-        // Copy libraries
-        bundleLibs(bdistDir, options);
-        // Copy data
-        yield copyData(path.join(installDir, 'data'), bdistDir);
-        // Test artifact
-        const agdaPath = path.join(bdistDir, 'bin', agda.agdaExe);
-        const env = { Agda_datadir: path.join(bdistDir, 'data') };
-        yield agda.testSystemAgda({ agdaPath, env });
-        // Create file list for artifact:
-        const globber = yield glob.create(path.join(bdistDir, '**', '*'), {
-            followSymbolicLinks: false,
-            implicitDescendants: false,
-            matchDirectories: false
-        });
-        const files = yield globber.glob();
-        // Upload artifact:
-        const artifactClient = artifact.create();
-        const uploadInfo = yield artifactClient.uploadArtifact(bdistName, files, bdistDir, {
-            continueOnError: true,
-            retentionDays: 90
-        });
-        // Report any errors:
-        if (uploadInfo.failedItems.length > 0) {
-            core.error(['Failed to upload:', ...uploadInfo.failedItems].join(os.EOL));
-        }
-        // Return artifact name
-        return uploadInfo.artifactName;
-    });
-}
-// Utilities for copying files
-function renderBDistName(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (options['bdist-name'] === '') {
-            const targetPlatform = yield haskell.getGhcTargetPlatform();
-            return `agda-${options['agda-version']}-${targetPlatform}`;
-        }
-        else {
-            return options['bdist-name']
-                .replace('{{agda-version}}', options['agda-version'])
-                .replace('{{ghc-version}}', options['agda-version'])
-                .replace('{{cabal-version}}', options['cabal-version'])
-                .replace('{{stack-version}}', options['stack-version'])
-                .replace('{{bdist-compress-bin}}', options['bdist-compress-bin'] ? 'compressed' : 'normal')
-                .replace('{{os}}', opts.os)
-                .replace('{{arch}}', process.arch);
-        }
-    });
-}
-function copyData(dataDir, dest) {
-    return __awaiter(this, void 0, void 0, function* () {
-        yield io.cp(dataDir, dest, { recursive: true });
-    });
-}
-function bundleLibs(bdistDir, options) {
-    var e_1, _a;
-    return __awaiter(this, void 0, void 0, function* () {
-        const bdistBinDir = path.join(bdistDir, 'bin');
-        // On Windows, we simply copy all DLLs:
-        if (opts.os === 'windows') {
-            const globber = yield glob.create(options['extra-lib-dirs']
-                .map(libDir => path.join(libDir, '*.dll'))
-                .join(os.EOL));
-            try {
-                for (var _b = __asyncValues(globber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
-                    const bundleLibPath = _c.value;
-                    io.cp(bundleLibPath, bdistBinDir);
-                }
-            }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
-            finally {
-                try {
-                    if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
-                }
-                finally { if (e_1) throw e_1.error; }
-            }
-        }
-        else {
-            // Create library directory:
-            const bdistLibDir = path.join(bdistDir, 'lib');
-            yield io.mkdirP(bdistLibDir);
-            // For each binary, for each of its needed libraries:
-            for (const binPath of agda.exes.map(exe => path.join(bdistBinDir, exe))) {
-                let bundledLib = false;
-                for (const libPath of yield findNeededLibs(binPath)) {
-                    // Find if the library is on the extra-lib-path:
-                    const extraLibPath = yield findExtraLib(libPath, options);
-                    // If so, bundle the library:
-                    if (extraLibPath !== null) {
-                        // Copy the library, unless it already exists:
-                        const bdistLibPath = path.join(bdistLibDir, path.basename(extraLibPath));
-                        if (!fs.existsSync(bdistLibPath))
-                            yield io.cp(extraLibPath, bdistLibDir);
-                        // Update the run path:
-                        yield changeRunPath(binPath, extraLibPath, path.relative(bdistBinDir, bdistLibPath));
-                        bundledLib = true;
-                    }
-                }
-                // Add a relative run path:
-                if (bundledLib)
-                    addRunPath(binPath, path.relative(bdistBinDir, bdistLibDir));
-            }
-        }
-    });
-}
-function addRunPath(bin, loadPath) {
-    return __awaiter(this, void 0, void 0, function* () {
-        switch (opts.os) {
-            case 'linux': {
-                if (!path.isAbsolute(loadPath))
-                    loadPath = `$ORIGIN/${loadPath}`;
-                yield exec.execOutput('patchelf', ['-add-rpath', loadPath, bin]);
-                return;
-            }
-            case 'macos': {
-                if (!path.isAbsolute(loadPath))
-                    loadPath = `@executable_path/${loadPath}`;
-                yield exec.execOutput('install_name_tool', ['-add_rpath', loadPath, bin]);
-                return;
-            }
-            case 'windows':
-                return;
-        }
-    });
-}
-function findNeededLibs(bin) {
-    return __awaiter(this, void 0, void 0, function* () {
-        switch (opts.os) {
-            case 'linux': {
-                const output = yield exec.execOutput('patchelf', ['--print-needed', bin]);
-                return output.split(os.EOL).filter(libPath => libPath !== '');
-            }
-            case 'macos': {
-                const output = yield exec.execOutput('otool', ['-L', bin]);
-                return [...output.matchAll(/[A-Za-z0-9./]+\.dylib/g)].map(m => m[0]);
-            }
-        }
-        return [];
-    });
-}
-function findExtraLib(libPath, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const libName = path.basename(libPath);
-        for (const libDir of options['extra-lib-dirs']) {
-            const globber = yield glob.create(path.join(libDir, libName), {
-                followSymbolicLinks: true,
-                implicitDescendants: false,
-                matchDirectories: false,
-                omitBrokenSymbolicLinks: true
-            });
-            const [match, ...rest] = yield globber.glob();
-            (0, assert_1.default)(rest.length === 0, `Found multiple candidates for ${libName}`);
-            if (match !== undefined) {
-                (0, assert_1.default)(libPath === libName || libPath === match, `Library with relative run path: ${libPath}`);
-                return match;
-            }
-        }
-        return null;
-    });
-}
-function changeRunPath(bin, libFrom, libTo) {
-    return __awaiter(this, void 0, void 0, function* () {
-        switch (opts.os) {
-            case 'linux': {
-                return;
-            }
-            case 'macos': {
-                yield exec.execOutput('install_name_tool', [
-                    '-change',
-                    libFrom,
-                    `@rpath/${libTo}`,
-                    bin
-                ]);
-                return;
-            }
-            case 'windows':
-                return;
-        }
-    });
-}
-function copyBins(bins, dest) {
-    return __awaiter(this, void 0, void 0, function* () {
-        for (const binPath of bins) {
-            const binName = path.basename(binPath);
-            yield io.cp(binPath, path.join(dest, binName));
-        }
-    });
-}
-function compressBins(bins, dest) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const upxPath = yield upx.installUPX('3.96');
-        for (const binPath of bins) {
-            const binName = path.basename(binPath);
-            yield exec.exec(upxPath, [
-                '--best',
-                binPath,
-                '-o',
-                path.join(dest, binName)
-            ]);
-        }
-    });
-}
 // Helpers for package info caching
 function packageInfoOptions(options) {
     if (options['package-info-cache'] !== undefined) {
@@ -712,6 +483,188 @@ function cachePackageInfo(options) {
         else {
             return options;
         }
+    });
+}
+
+
+/***/ }),
+
+/***/ 352:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const artifact = __importStar(__nccwpck_require__(2605));
+const core = __importStar(__nccwpck_require__(2186));
+const glob = __importStar(__nccwpck_require__(8090));
+const os = __importStar(__nccwpck_require__(2037));
+const path = __importStar(__nccwpck_require__(1017));
+const opts = __importStar(__nccwpck_require__(1352));
+const setup_upx_1 = __importDefault(__nccwpck_require__(4245));
+const agda = __importStar(__nccwpck_require__(9552));
+const exec = __importStar(__nccwpck_require__(4369));
+const haskell = __importStar(__nccwpck_require__(1310));
+const io = __importStar(__nccwpck_require__(9067));
+const mustache = __importStar(__nccwpck_require__(8272));
+const object_pick_1 = __importDefault(__nccwpck_require__(9962));
+function uploadBdist(installDir, options) {
+    var e_1, _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        // Get the name for the distribution
+        const bdistName = yield renderBdistName(options);
+        const bdistDir = path.join(agda.agdaDir(), 'bdist', bdistName);
+        io.mkdirP(bdistDir);
+        // Copy binaries:
+        io.mkdirP(path.join(bdistDir, 'bin'));
+        for (const binName of agda.agdaBinNames)
+            yield io.cp(path.join(installDir, 'bin', binName), path.join(bdistDir, 'bin', binName));
+        // Copy data:
+        yield io.cp(path.join(installDir, 'data'), bdistDir, {
+            recursive: true
+        });
+        // Bundle libraries:
+        switch (opts.os) {
+            case 'linux': {
+                const upx = yield (0, setup_upx_1.default)('3.96');
+                for (const binName of agda.agdaBinNames)
+                    yield exec.exec(upx, ['--best', path.join(bdistDir, 'bin', binName)]);
+                break;
+            }
+            case 'macos': {
+                yield io.mkdirP(path.join(bdistDir, 'lib'));
+                const icuDir = '/usr/local/opt/icu4c/lib';
+                const libNames = [
+                    `libicuuc.${options['icu-version']}.dylib`,
+                    `libicui18n.${options['icu-version']}.dylib`,
+                    `libicudata.${options['icu-version']}.dylib`
+                ];
+                for (const libName of libNames) {
+                    yield io.cp(path.join(icuDir, libName), path.join(bdistDir, 'lib', libName));
+                }
+                for (const binName of agda.agdaBinNames) {
+                    for (const libName of libNames) {
+                        yield exec.execOutput('install_name_tool', [
+                            '-change',
+                            path.join('/usr/local/opt/icu4c/lib', libName),
+                            `@rpath/${libName}`,
+                            path.join(bdistDir, 'bin', binName)
+                        ]);
+                        yield exec.execOutput('install_name_tool', [
+                            '-add_rpath',
+                            '@executable_path',
+                            '-add_rpath',
+                            '@executable_path/../lib',
+                            '-add_rpath',
+                            icuDir,
+                            path.join(bdistDir, 'bin', binName)
+                        ]);
+                    }
+                }
+                break;
+            }
+            case 'windows': {
+                const icuDir = 'C:\\msys64\\mingw64\\bin';
+                const libGlobber = yield glob.create(path.join(icuDir, 'libicu*.dll'));
+                try {
+                    for (var _b = __asyncValues(libGlobber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
+                        const libPath = _c.value;
+                        yield io.cp(libPath, path.join(bdistDir, 'bin', path.basename(libPath)));
+                    }
+                }
+                catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                finally {
+                    try {
+                        if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
+                    }
+                    finally { if (e_1) throw e_1.error; }
+                }
+                break;
+            }
+        }
+        // Test artifact:
+        const agdaPath = path.join(bdistDir, 'bin', agda.agdaBinName);
+        const env = { Agda_datadir: path.join(bdistDir, 'data') };
+        yield agda.testSystemAgda({ agdaPath, env });
+        // Create file list for artifact:
+        const globber = yield glob.create(path.join(bdistDir, '**', '*'), {
+            followSymbolicLinks: false,
+            implicitDescendants: false,
+            matchDirectories: false
+        });
+        const files = yield globber.glob();
+        // Upload artifact:
+        const artifactClient = artifact.create();
+        const uploadInfo = yield artifactClient.uploadArtifact(bdistName, files, bdistDir, {
+            continueOnError: true,
+            retentionDays: 90
+        });
+        // Report any errors:
+        if (uploadInfo.failedItems.length > 0) {
+            core.error(['Failed to upload:', ...uploadInfo.failedItems].join(os.EOL));
+        }
+        // Return artifact name
+        return uploadInfo.artifactName;
+    });
+}
+exports["default"] = uploadBdist;
+// Utilities for copying files
+function renderBdistName(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let template = options['bdist-name'];
+        if (template !== '')
+            template = 'agda-{{agda-version}}-{{ghc-info-target-platform}}';
+        const ghcInfo = yield haskell.getGhcInfo();
+        return mustache.render(template, Object.assign(Object.assign(Object.assign({}, (0, object_pick_1.default)(options, [
+            'agda-version',
+            'ghc-version',
+            'cabal-version',
+            'stack-version',
+            'icu-version',
+            'upx-version'
+        ])), (0, object_pick_1.default)(process, ['platform', 'arch'])), ghcInfo));
     });
 }
 
@@ -773,9 +726,6 @@ const haskell = __importStar(__nccwpck_require__(1310));
 function build(sourceDir, installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         const execOptions = { cwd: sourceDir };
-        if (options['extra-pkgconfig-dirs'].length > 0) {
-            execOptions.env = Object.assign(Object.assign({}, process.env), { PKG_CONFIG_PATH: options['extra-pkgconfig-dirs'].join(';') });
-        }
         // Configure:
         core.info(`Configure Agda-${options['agda-version']}`);
         yield haskell.execSystemCabal(['v2-configure', ...buildFlags(options)], execOptions);
@@ -945,9 +895,6 @@ const haskell = __importStar(__nccwpck_require__(1310));
 function build(sourceDir, installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         const execOptions = { cwd: sourceDir };
-        if (options['extra-pkgconfig-dirs'].length > 0) {
-            execOptions.env = Object.assign(Object.assign({}, process.env), { PKG_CONFIG_PATH: options['extra-pkgconfig-dirs'].join(';') });
-        }
         // Configure, Build, and Install:
         yield io.mkdirP(path.join(installDir, 'bin'));
         yield haskell.execSystemStack(['build', ...buildFlags(options), ...installFlags(installDir)], execOptions);
@@ -1155,6 +1102,290 @@ exports["default"] = setupAgdaNightly;
 
 /***/ }),
 
+/***/ 6933:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
+const opts = __importStar(__nccwpck_require__(1352));
+const semver = __importStar(__nccwpck_require__(1383));
+const setup_haskell_1 = __importDefault(__nccwpck_require__(6501));
+const assert_1 = __importDefault(__nccwpck_require__(9491));
+const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
+const haskell = __importStar(__nccwpck_require__(1310));
+function setup(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Try the pre-installed software:
+        const preInstalled = yield tryPreInstalled(options);
+        if (preInstalled !== null)
+            return preInstalled;
+        // Otherwise, use haskell/actions/setup:
+        // 1. Find the latest compatible version from 'ghc-version-range':
+        const ghcVersion = latestSatisfyingGhcVersion(options);
+        options = Object.assign(Object.assign({}, options), { 'ghc-version': ghcVersion });
+        // 2. Run haskell/actions/setup:
+        yield (0, setup_haskell_1.default)(Object.fromEntries(Object.entries(opts.pickSetupHaskellInputs(options)).map(e => {
+            const [k, v] = e;
+            if (typeof v === 'boolean')
+                return [k, v ? 'true' : ''];
+            else
+                return [k, v];
+        })));
+        core.setOutput('haskell-setup', 'true');
+        // 3. Update the Cabal version:
+        if (options['enable-stack'] && options['stack-no-global']) {
+            options = Object.assign(Object.assign({}, options), { 'cabal-version': yield haskell.getStackCabalVersionForGhc(ghcVersion) });
+        }
+        else {
+            options = Object.assign(Object.assign({}, options), { 'cabal-version': yield haskell.getSystemCabalVersion() });
+        }
+        // 3. Update the Stack version:
+        if (options['enable-stack']) {
+            options = Object.assign(Object.assign({}, options), { 'stack-version': yield haskell.getSystemStackVersion() });
+        }
+        return options;
+    });
+}
+exports["default"] = setup;
+function tryPreInstalled(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // If we need Stack, we cannot use the pre-installed tools:
+        if (options['enable-stack'])
+            return null;
+        try {
+            // Get pre-installed GHC & Cabal versions:
+            const ghcVersion = yield haskell.getSystemGhcVersion();
+            core.info(`Found pre-installed GHC version ${ghcVersion}`);
+            const cabalVersion = yield haskell.getSystemCabalVersion();
+            core.info(`Found pre-installed Cabal version ${cabalVersion}`);
+            // Check if the GHC version is compatible with the Agda version:
+            if (semver.satisfies(ghcVersion, options['ghc-version-range'])) {
+                return Object.assign(Object.assign({}, options), { 'ghc-version': ghcVersion, 'cabal-version': cabalVersion });
+            }
+            else {
+                core.info(`Pre-installed GHC is incompatible with ${options['agda-version']}`);
+                return null;
+            }
+        }
+        catch (error) {
+            core.debug(`Could not find pre-installed GHC and Cabal: ${(0, ensure_error_1.default)(error).message}`);
+            return null;
+        }
+    });
+}
+function latestSatisfyingGhcVersion(options) {
+    const ghcVersions = options['ghc-version-range']
+        .split('||')
+        .map(version => version.trim());
+    (0, assert_1.default)(ghcVersions.every(version => semver.valid(version)), [
+        `Input 'ghc-version-range' should be resolved to list of concrete versions separated by '||'`,
+        `found '${options['ghc-version-range']}'`
+    ].join(', '));
+    const ghcVersion = semver.maxSatisfying(ghcVersions, '*');
+    if (ghcVersion === null) {
+        throw Error(`No compatible GHC versions found: ${options['ghc-version-range']}`);
+    }
+    else {
+        return ghcVersion;
+    }
+}
+
+
+/***/ }),
+
+/***/ 4173:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
+const opts = __importStar(__nccwpck_require__(1352));
+const exec = __importStar(__nccwpck_require__(4369));
+function setup(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Otherwise, setup ICU:
+        switch (opts.os) {
+            case 'windows': {
+                // Install pkg-config and icu
+                core.addPath('C:\\msys64\\mingw64\\bin');
+                core.addPath('C:\\msys64\\usr\\bin');
+                yield exec.execOutput('pacman', [
+                    '--noconfirm',
+                    '-S',
+                    'mingw-w64-x86_64-pkg-config',
+                    'mingw-w64-x86_64-icu'
+                ]);
+                break;
+            }
+            case 'linux': {
+                // Ubuntu 20.04 ships with a recent version of ICU
+                break;
+            }
+            case 'macos': {
+                // The GitHub runner for MacOS 11+ has ICU version 69.1,
+                // which is recent enough for 'text-icu' to compile:
+                core.exportVariable('PKG_CONFIG_PATH', '/usr/local/opt/icu4c/lib/pkgconfig');
+                break;
+            }
+        }
+        // Get the icu-i18n version via pkg-config:
+        return Object.assign(Object.assign({}, options), { 'icu-version': yield exec.execOutput('pkg-config', [
+                '--modversion',
+                'icu-i18n'
+            ]) });
+    });
+}
+exports["default"] = setup;
+
+
+/***/ }),
+
+/***/ 4245:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const tc = __importStar(__nccwpck_require__(7784));
+const path = __importStar(__nccwpck_require__(1017));
+const opts = __importStar(__nccwpck_require__(1352));
+const agda = __importStar(__nccwpck_require__(9552));
+const exec = __importStar(__nccwpck_require__(4369));
+const upxUrlLinux = 'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz';
+const upxUrlWindows = 'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-win64.zip';
+function setup(upxVersion) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const upxInstallDir = path.join(agda.agdaDir(), 'upx', upxVersion);
+        switch (opts.os) {
+            case 'linux': {
+                const upxArchivePath = yield tc.downloadTool(upxUrlLinux);
+                const upxDir = yield tc.extractTar(upxArchivePath, upxInstallDir, [
+                    '--extract',
+                    '--xz',
+                    '--preserve-permissions',
+                    '--strip-components=1'
+                ]);
+                return path.join(upxDir, 'upx');
+            }
+            case 'macos': {
+                yield exec.execOutput('brew', ['install', 'upx']);
+                return 'upx';
+            }
+            case 'windows': {
+                const upxArchivePath = yield tc.downloadTool(upxUrlWindows);
+                const upxDir = yield tc.extractZip(upxArchivePath, upxInstallDir);
+                return path.join(upxDir, 'upx-3.96-win64', 'upx');
+            }
+        }
+    });
+}
+exports["default"] = setup;
+
+
+/***/ }),
+
 /***/ 9552:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -1203,7 +1434,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.testSystemAgda = exports.execSystemAgda = exports.getSystemAgdaDataDir = exports.getSystemAgdaVersion = exports.installDir = exports.agdaDir = exports.exes = exports.agdaModeExe = exports.agdaExe = exports.packageInfoCache = void 0;
+exports.testSystemAgda = exports.execSystemAgda = exports.getSystemAgdaDataDir = exports.getSystemAgdaVersion = exports.installDir = exports.agdaDir = exports.agdaBinNames = exports.agdaModeBinName = exports.agdaBinName = exports.packageInfoCache = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const path = __importStar(__nccwpck_require__(1017));
@@ -1214,9 +1445,9 @@ const Agda_json_1 = __importDefault(__nccwpck_require__(4862));
 // Package Info
 exports.packageInfoCache = Agda_json_1.default;
 // Executable names
-exports.agdaExe = opts.os === 'windows' ? 'agda.exe' : 'agda';
-exports.agdaModeExe = opts.os === 'windows' ? 'agda-mode.exe' : 'agda-mode';
-exports.exes = [exports.agdaExe, exports.agdaModeExe];
+exports.agdaBinName = opts.os === 'windows' ? 'agda.exe' : 'agda';
+exports.agdaModeBinName = opts.os === 'windows' ? 'agda-mode.exe' : 'agda-mode';
+exports.agdaBinNames = [exports.agdaBinName, exports.agdaModeBinName];
 // System directories
 function agdaDir() {
     switch (opts.os) {
@@ -1235,7 +1466,7 @@ exports.installDir = installDir;
 function getSystemAgdaVersion(options) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
-        return yield exec.getVersion((_a = options === null || options === void 0 ? void 0 : options.agdaPath) !== null && _a !== void 0 ? _a : exports.agdaExe, {
+        return yield exec.getVersion((_a = options === null || options === void 0 ? void 0 : options.agdaPath) !== null && _a !== void 0 ? _a : exports.agdaBinName, {
             parseOutput: output => {
                 if (output.startsWith('Agda version ')) {
                     return output.substring('Agda version '.length).trim();
@@ -1258,7 +1489,7 @@ exports.getSystemAgdaDataDir = getSystemAgdaDataDir;
 function execSystemAgda(args, options) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
-        return yield exec.execOutput((_a = options === null || options === void 0 ? void 0 : options.agdaPath) !== null && _a !== void 0 ? _a : exports.agdaExe, args, options);
+        return yield exec.execOutput((_a = options === null || options === void 0 ? void 0 : options.agdaPath) !== null && _a !== void 0 ? _a : exports.agdaBinName, args, options);
     });
 }
 exports.execSystemAgda = execSystemAgda;
@@ -1583,115 +1814,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getSystemStackVersion = exports.getStackCabalVersionForGhc = exports.getSystemCabalVersion = exports.getSystemGhcVersion = exports.execSystemStack = exports.execSystemCabal = exports.execSystemGhc = exports.getGhcTargetPlatform = exports.getGhcInfo = exports.setup = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const opts = __importStar(__nccwpck_require__(1352));
+exports.getSystemStackVersion = exports.getStackCabalVersionForGhc = exports.getSystemCabalVersion = exports.getSystemGhcVersion = exports.execSystemStack = exports.execSystemCabal = exports.execSystemGhc = exports.getGhcInfo = void 0;
 const exec = __importStar(__nccwpck_require__(4369));
-const semver = __importStar(__nccwpck_require__(1383));
-const setup_haskell_1 = __importDefault(__nccwpck_require__(6501));
-const assert_1 = __importDefault(__nccwpck_require__(9491));
-const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
-function setup(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Try the pre-installed software:
-        const preInstalled = yield tryPreInstalled(options);
-        if (preInstalled !== null)
-            return preInstalled;
-        // Otherwise, use haskell/actions/setup:
-        // 1. Find the latest compatible version from 'ghc-version-range':
-        const ghcVersion = latestSatisfyingGhcVersion(options);
-        options = Object.assign(Object.assign({}, options), { 'ghc-version': ghcVersion });
-        // 2. Run haskell/actions/setup:
-        yield (0, setup_haskell_1.default)(Object.fromEntries(Object.entries(opts.pickSetupHaskellInputs(options)).map(e => {
-            const [k, v] = e;
-            if (typeof v === 'boolean')
-                return [k, v ? 'true' : ''];
-            else
-                return [k, v];
-        })));
-        core.setOutput('haskell-setup', 'true');
-        // 3. Update the Cabal version:
-        if (options['enable-stack'] && options['stack-no-global']) {
-            options = Object.assign(Object.assign({}, options), { 'cabal-version': yield getStackCabalVersionForGhc(ghcVersion) });
-        }
-        else {
-            options = Object.assign(Object.assign({}, options), { 'cabal-version': yield getSystemCabalVersion() });
-        }
-        // 3. Update the Stack version:
-        if (options['enable-stack']) {
-            options = Object.assign(Object.assign({}, options), { 'stack-version': yield getSystemStackVersion() });
-        }
-        return options;
-    });
-}
-exports.setup = setup;
-function tryPreInstalled(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // If we need Stack, we cannot use the pre-installed tools:
-        if (options['enable-stack'])
-            return null;
-        try {
-            // Get pre-installed GHC & Cabal versions:
-            const ghcVersion = yield getSystemGhcVersion();
-            core.info(`Found pre-installed GHC version ${ghcVersion}`);
-            const cabalVersion = yield getSystemCabalVersion();
-            core.info(`Found pre-installed Cabal version ${cabalVersion}`);
-            // Check if the GHC version is compatible with the Agda version:
-            if (semver.satisfies(ghcVersion, options['ghc-version-range'])) {
-                return Object.assign(Object.assign({}, options), { 'ghc-version': ghcVersion, 'cabal-version': cabalVersion });
-            }
-            else {
-                core.info(`Pre-installed GHC is incompatible with ${options['agda-version']}`);
-                return null;
-            }
-        }
-        catch (error) {
-            core.debug(`Could not find pre-installed GHC and Cabal: ${(0, ensure_error_1.default)(error).message}`);
-            return null;
-        }
-    });
-}
-function latestSatisfyingGhcVersion(options) {
-    const ghcVersions = options['ghc-version-range']
-        .split('||')
-        .map(version => version.trim());
-    (0, assert_1.default)(ghcVersions.every(version => semver.valid(version)), [
-        `Input 'ghc-version-range' should be resolved to list of concrete versions separated by '||'`,
-        `found '${options['ghc-version-range']}'`
-    ].join(', '));
-    const ghcVersion = semver.maxSatisfying(ghcVersions, '*');
-    if (ghcVersion === null) {
-        throw Error(`No compatible GHC versions found: ${options['ghc-version-range']}`);
-    }
-    else {
-        return ghcVersion;
-    }
-}
 function getGhcInfo(execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         let ghcInfoString = yield execSystemGhc(['--info'], execOptions);
         ghcInfoString = ghcInfoString.replace(/\(/g, '[').replace(/\)/g, ']');
         const ghcInfo = JSON.parse(ghcInfoString);
-        return Object.fromEntries(ghcInfo);
+        return Object.fromEntries(ghcInfo.map(entry => [
+            // "Target platform" -> 'ghc-info-target-platform'
+            `ghc-info-${entry[0].toLowerCase().replace(/ /g, '-')}`,
+            entry[1]
+        ]));
     });
 }
 exports.getGhcInfo = getGhcInfo;
-function getGhcTargetPlatform(execOptions) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const ghcInfo = yield getGhcInfo(execOptions);
-        if (ghcInfo['Target platform'] !== undefined) {
-            return ghcInfo['Target platform'];
-        }
-        else {
-            throw Error('Could not determine target platform');
-        }
-    });
-}
-exports.getGhcTargetPlatform = getGhcTargetPlatform;
 function execSystemGhc(args, execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield exec.execOutput('ghc', args, execOptions);
@@ -1749,159 +1887,6 @@ function getSystemStackVersion() {
     });
 }
 exports.getSystemStackVersion = getSystemStackVersion;
-
-
-/***/ }),
-
-/***/ 9358:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setup = void 0;
-const tc = __importStar(__nccwpck_require__(7784));
-const path = __importStar(__nccwpck_require__(1017));
-const opts = __importStar(__nccwpck_require__(1352));
-const exec = __importStar(__nccwpck_require__(4369));
-const simver = __importStar(__nccwpck_require__(7609));
-const agda = __importStar(__nccwpck_require__(9552));
-// System directories
-function installDir(version) {
-    return path.join(agda.agdaDir(), 'icu', version);
-}
-// Resolve ICU version
-function resolveIcuVersion(options) {
-    if (simver.gte(options['agda-version'], '2.6.2')) {
-        return Object.assign(Object.assign({}, options), { 'icu-version': '71.1' });
-    }
-    else if (simver.gte(options['agda-version'], '2.5.3')) {
-        // agda >=2.5.3, <2.6.2 depends on text-icu ^0.7, but
-        // text-icu <0.7.1.0 fails to compile with icu68+
-        return Object.assign(Object.assign({}, options), { 'icu-version': '67.1' });
-    }
-    else {
-        return options;
-    }
-}
-// Install ICU
-const icu67UrlWindows = 'https://github.com/unicode-org/icu/releases/download/release-67-1/icu4c-67_1-Win64-MSVC2017.zip';
-const icu71UrlWindows = 'https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-Win64-MSVC2019.zip';
-const icu67UrlLinux = 'https://github.com/unicode-org/icu/releases/download/release-67-1/icu4c-67_1-Ubuntu18.04-x64.tgz';
-const icu71UrlLinux = 'https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-Ubuntu20.04-x64.tgz';
-function setup(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Resolve the ICU version:
-        options = resolveIcuVersion(options);
-        // If there is no ICU version to setup, return:
-        if (options['icu-version'] === undefined)
-            return options;
-        // Otherwise, setup ICU:
-        switch (opts.os) {
-            case 'windows': {
-                let icuZipPath = null;
-                let icuZipName = null;
-                switch (options['icu-version']) {
-                    case '67.1': {
-                        icuZipPath = yield tc.downloadTool(icu67UrlWindows);
-                        icuZipName = 'icu4c-67_1-Win64-MSVC2017';
-                        break;
-                    }
-                    case '71.1': {
-                        icuZipPath = yield tc.downloadTool(icu71UrlWindows);
-                        icuZipName = 'icu4c-71_1-Win64-MSVC2019';
-                        break;
-                    }
-                }
-                const installDirTC = yield tc.extractZip(icuZipPath, installDir(options['icu-version']));
-                return Object.assign(Object.assign({}, options), { 'extra-lib-dirs': [
-                        ...options['extra-lib-dirs'],
-                        path.join(installDirTC, icuZipName, 'bin64')
-                    ], 'extra-include-dirs': [
-                        ...options['extra-include-dirs'],
-                        path.join(installDirTC, icuZipName, 'include')
-                    ] });
-            }
-            case 'linux': {
-                let icuTarPath = '';
-                switch (options['icu-version']) {
-                    case '67.1': {
-                        icuTarPath = yield tc.downloadTool(icu67UrlLinux);
-                        break;
-                    }
-                    case '71.1': {
-                        icuTarPath = yield tc.downloadTool(icu71UrlLinux);
-                        break;
-                    }
-                }
-                const installDirTC = yield tc.extractTar(icuTarPath, installDir(options['icu-version']), ['--extract', '--gzip', '--strip-components=4']);
-                return Object.assign(Object.assign({}, options), { 'extra-lib-dirs': [
-                        ...options['extra-lib-dirs'],
-                        path.join(installDirTC, 'lib')
-                    ], 'extra-include-dirs': [
-                        ...options['extra-include-dirs'],
-                        path.join(installDirTC, 'include')
-                    ], 'extra-pkgconfig-dirs': [
-                        ...options['extra-pkgconfig-dirs'],
-                        path.join(installDirTC, 'lib', 'pkgconfig')
-                    ] });
-            }
-            case 'macos': {
-                switch (options['icu-version']) {
-                    case '71.1': {
-                        const brewPrefix = (yield exec.execOutput('brew', ['--prefix'])).trim();
-                        yield exec.execOutput('brew', ['install', 'icu4c']);
-                        const installDirBrew = path.join(brewPrefix, 'opt', 'icu4c');
-                        return Object.assign(Object.assign({}, options), { 'extra-lib-dirs': [
-                                ...options['extra-lib-dirs'],
-                                path.join(installDirBrew, 'lib')
-                            ], 'extra-include-dirs': [
-                                ...options['extra-include-dirs'],
-                                path.join(installDirBrew, 'include')
-                            ], 'extra-pkgconfig-dirs': [
-                                ...options['extra-pkgconfig-dirs'],
-                                path.join(installDirBrew, 'lib', 'pkgconfig')
-                            ] });
-                    }
-                }
-            }
-        }
-        throw Error(`Could not install ICU-${options['icu-version']} for ${opts.os}`);
-    });
-}
-exports.setup = setup;
 
 
 /***/ }),
@@ -2073,80 +2058,6 @@ function max(versions) {
     return maxSimVer === null ? null : toString(maxSimVer);
 }
 exports.max = max;
-
-
-/***/ }),
-
-/***/ 6102:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installUPX = void 0;
-const tc = __importStar(__nccwpck_require__(7784));
-const path = __importStar(__nccwpck_require__(1017));
-const opts = __importStar(__nccwpck_require__(1352));
-const agda = __importStar(__nccwpck_require__(9552));
-const exec = __importStar(__nccwpck_require__(4369));
-const upxUrlLinux = 'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz';
-const upxUrlWindows = 'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-win64.zip';
-function installDir(version) {
-    return path.join(agda.agdaDir(), 'upx', version);
-}
-function installUPX(upxVersion) {
-    return __awaiter(this, void 0, void 0, function* () {
-        switch (opts.os) {
-            case 'linux': {
-                const upxArchivePath = yield tc.downloadTool(upxUrlLinux);
-                const upxDir = yield tc.extractTar(upxArchivePath, installDir(upxVersion), ['--extract', '--xz', '--preserve-permissions', '--strip-components=1']);
-                return path.join(upxDir, 'upx');
-            }
-            case 'macos': {
-                yield exec.execOutput('brew', ['install', 'upx']);
-                return 'upx';
-            }
-            case 'windows': {
-                const upxArchivePath = yield tc.downloadTool(upxUrlWindows);
-                const upxDir = yield tc.extractZip(upxArchivePath, installDir(upxVersion));
-                return path.join(upxDir, 'upx-3.96-win64', 'upx');
-            }
-        }
-    });
-}
-exports.installUPX = installUPX;
 
 
 /***/ }),
@@ -18882,6 +18793,784 @@ function globUnescape (s) {
 function regExpEscape (s) {
   return s.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
 }
+
+
+/***/ }),
+
+/***/ 8272:
+/***/ (function(module) {
+
+(function (global, factory) {
+   true ? module.exports = factory() :
+  0;
+}(this, (function () { 'use strict';
+
+  /*!
+   * mustache.js - Logic-less {{mustache}} templates with JavaScript
+   * http://github.com/janl/mustache.js
+   */
+
+  var objectToString = Object.prototype.toString;
+  var isArray = Array.isArray || function isArrayPolyfill (object) {
+    return objectToString.call(object) === '[object Array]';
+  };
+
+  function isFunction (object) {
+    return typeof object === 'function';
+  }
+
+  /**
+   * More correct typeof string handling array
+   * which normally returns typeof 'object'
+   */
+  function typeStr (obj) {
+    return isArray(obj) ? 'array' : typeof obj;
+  }
+
+  function escapeRegExp (string) {
+    return string.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
+  }
+
+  /**
+   * Null safe way of checking whether or not an object,
+   * including its prototype, has a given property
+   */
+  function hasProperty (obj, propName) {
+    return obj != null && typeof obj === 'object' && (propName in obj);
+  }
+
+  /**
+   * Safe way of detecting whether or not the given thing is a primitive and
+   * whether it has the given property
+   */
+  function primitiveHasOwnProperty (primitive, propName) {
+    return (
+      primitive != null
+      && typeof primitive !== 'object'
+      && primitive.hasOwnProperty
+      && primitive.hasOwnProperty(propName)
+    );
+  }
+
+  // Workaround for https://issues.apache.org/jira/browse/COUCHDB-577
+  // See https://github.com/janl/mustache.js/issues/189
+  var regExpTest = RegExp.prototype.test;
+  function testRegExp (re, string) {
+    return regExpTest.call(re, string);
+  }
+
+  var nonSpaceRe = /\S/;
+  function isWhitespace (string) {
+    return !testRegExp(nonSpaceRe, string);
+  }
+
+  var entityMap = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+    '/': '&#x2F;',
+    '`': '&#x60;',
+    '=': '&#x3D;'
+  };
+
+  function escapeHtml (string) {
+    return String(string).replace(/[&<>"'`=\/]/g, function fromEntityMap (s) {
+      return entityMap[s];
+    });
+  }
+
+  var whiteRe = /\s*/;
+  var spaceRe = /\s+/;
+  var equalsRe = /\s*=/;
+  var curlyRe = /\s*\}/;
+  var tagRe = /#|\^|\/|>|\{|&|=|!/;
+
+  /**
+   * Breaks up the given `template` string into a tree of tokens. If the `tags`
+   * argument is given here it must be an array with two string values: the
+   * opening and closing tags used in the template (e.g. [ "<%", "%>" ]). Of
+   * course, the default is to use mustaches (i.e. mustache.tags).
+   *
+   * A token is an array with at least 4 elements. The first element is the
+   * mustache symbol that was used inside the tag, e.g. "#" or "&". If the tag
+   * did not contain a symbol (i.e. {{myValue}}) this element is "name". For
+   * all text that appears outside a symbol this element is "text".
+   *
+   * The second element of a token is its "value". For mustache tags this is
+   * whatever else was inside the tag besides the opening symbol. For text tokens
+   * this is the text itself.
+   *
+   * The third and fourth elements of the token are the start and end indices,
+   * respectively, of the token in the original template.
+   *
+   * Tokens that are the root node of a subtree contain two more elements: 1) an
+   * array of tokens in the subtree and 2) the index in the original template at
+   * which the closing tag for that section begins.
+   *
+   * Tokens for partials also contain two more elements: 1) a string value of
+   * indendation prior to that tag and 2) the index of that tag on that line -
+   * eg a value of 2 indicates the partial is the third tag on this line.
+   */
+  function parseTemplate (template, tags) {
+    if (!template)
+      return [];
+    var lineHasNonSpace = false;
+    var sections = [];     // Stack to hold section tokens
+    var tokens = [];       // Buffer to hold the tokens
+    var spaces = [];       // Indices of whitespace tokens on the current line
+    var hasTag = false;    // Is there a {{tag}} on the current line?
+    var nonSpace = false;  // Is there a non-space char on the current line?
+    var indentation = '';  // Tracks indentation for tags that use it
+    var tagIndex = 0;      // Stores a count of number of tags encountered on a line
+
+    // Strips all whitespace tokens array for the current line
+    // if there was a {{#tag}} on it and otherwise only space.
+    function stripSpace () {
+      if (hasTag && !nonSpace) {
+        while (spaces.length)
+          delete tokens[spaces.pop()];
+      } else {
+        spaces = [];
+      }
+
+      hasTag = false;
+      nonSpace = false;
+    }
+
+    var openingTagRe, closingTagRe, closingCurlyRe;
+    function compileTags (tagsToCompile) {
+      if (typeof tagsToCompile === 'string')
+        tagsToCompile = tagsToCompile.split(spaceRe, 2);
+
+      if (!isArray(tagsToCompile) || tagsToCompile.length !== 2)
+        throw new Error('Invalid tags: ' + tagsToCompile);
+
+      openingTagRe = new RegExp(escapeRegExp(tagsToCompile[0]) + '\\s*');
+      closingTagRe = new RegExp('\\s*' + escapeRegExp(tagsToCompile[1]));
+      closingCurlyRe = new RegExp('\\s*' + escapeRegExp('}' + tagsToCompile[1]));
+    }
+
+    compileTags(tags || mustache.tags);
+
+    var scanner = new Scanner(template);
+
+    var start, type, value, chr, token, openSection;
+    while (!scanner.eos()) {
+      start = scanner.pos;
+
+      // Match any text between tags.
+      value = scanner.scanUntil(openingTagRe);
+
+      if (value) {
+        for (var i = 0, valueLength = value.length; i < valueLength; ++i) {
+          chr = value.charAt(i);
+
+          if (isWhitespace(chr)) {
+            spaces.push(tokens.length);
+            indentation += chr;
+          } else {
+            nonSpace = true;
+            lineHasNonSpace = true;
+            indentation += ' ';
+          }
+
+          tokens.push([ 'text', chr, start, start + 1 ]);
+          start += 1;
+
+          // Check for whitespace on the current line.
+          if (chr === '\n') {
+            stripSpace();
+            indentation = '';
+            tagIndex = 0;
+            lineHasNonSpace = false;
+          }
+        }
+      }
+
+      // Match the opening tag.
+      if (!scanner.scan(openingTagRe))
+        break;
+
+      hasTag = true;
+
+      // Get the tag type.
+      type = scanner.scan(tagRe) || 'name';
+      scanner.scan(whiteRe);
+
+      // Get the tag value.
+      if (type === '=') {
+        value = scanner.scanUntil(equalsRe);
+        scanner.scan(equalsRe);
+        scanner.scanUntil(closingTagRe);
+      } else if (type === '{') {
+        value = scanner.scanUntil(closingCurlyRe);
+        scanner.scan(curlyRe);
+        scanner.scanUntil(closingTagRe);
+        type = '&';
+      } else {
+        value = scanner.scanUntil(closingTagRe);
+      }
+
+      // Match the closing tag.
+      if (!scanner.scan(closingTagRe))
+        throw new Error('Unclosed tag at ' + scanner.pos);
+
+      if (type == '>') {
+        token = [ type, value, start, scanner.pos, indentation, tagIndex, lineHasNonSpace ];
+      } else {
+        token = [ type, value, start, scanner.pos ];
+      }
+      tagIndex++;
+      tokens.push(token);
+
+      if (type === '#' || type === '^') {
+        sections.push(token);
+      } else if (type === '/') {
+        // Check section nesting.
+        openSection = sections.pop();
+
+        if (!openSection)
+          throw new Error('Unopened section "' + value + '" at ' + start);
+
+        if (openSection[1] !== value)
+          throw new Error('Unclosed section "' + openSection[1] + '" at ' + start);
+      } else if (type === 'name' || type === '{' || type === '&') {
+        nonSpace = true;
+      } else if (type === '=') {
+        // Set the tags for the next time around.
+        compileTags(value);
+      }
+    }
+
+    stripSpace();
+
+    // Make sure there are no open sections when we're done.
+    openSection = sections.pop();
+
+    if (openSection)
+      throw new Error('Unclosed section "' + openSection[1] + '" at ' + scanner.pos);
+
+    return nestTokens(squashTokens(tokens));
+  }
+
+  /**
+   * Combines the values of consecutive text tokens in the given `tokens` array
+   * to a single token.
+   */
+  function squashTokens (tokens) {
+    var squashedTokens = [];
+
+    var token, lastToken;
+    for (var i = 0, numTokens = tokens.length; i < numTokens; ++i) {
+      token = tokens[i];
+
+      if (token) {
+        if (token[0] === 'text' && lastToken && lastToken[0] === 'text') {
+          lastToken[1] += token[1];
+          lastToken[3] = token[3];
+        } else {
+          squashedTokens.push(token);
+          lastToken = token;
+        }
+      }
+    }
+
+    return squashedTokens;
+  }
+
+  /**
+   * Forms the given array of `tokens` into a nested tree structure where
+   * tokens that represent a section have two additional items: 1) an array of
+   * all tokens that appear in that section and 2) the index in the original
+   * template that represents the end of that section.
+   */
+  function nestTokens (tokens) {
+    var nestedTokens = [];
+    var collector = nestedTokens;
+    var sections = [];
+
+    var token, section;
+    for (var i = 0, numTokens = tokens.length; i < numTokens; ++i) {
+      token = tokens[i];
+
+      switch (token[0]) {
+        case '#':
+        case '^':
+          collector.push(token);
+          sections.push(token);
+          collector = token[4] = [];
+          break;
+        case '/':
+          section = sections.pop();
+          section[5] = token[2];
+          collector = sections.length > 0 ? sections[sections.length - 1][4] : nestedTokens;
+          break;
+        default:
+          collector.push(token);
+      }
+    }
+
+    return nestedTokens;
+  }
+
+  /**
+   * A simple string scanner that is used by the template parser to find
+   * tokens in template strings.
+   */
+  function Scanner (string) {
+    this.string = string;
+    this.tail = string;
+    this.pos = 0;
+  }
+
+  /**
+   * Returns `true` if the tail is empty (end of string).
+   */
+  Scanner.prototype.eos = function eos () {
+    return this.tail === '';
+  };
+
+  /**
+   * Tries to match the given regular expression at the current position.
+   * Returns the matched text if it can match, the empty string otherwise.
+   */
+  Scanner.prototype.scan = function scan (re) {
+    var match = this.tail.match(re);
+
+    if (!match || match.index !== 0)
+      return '';
+
+    var string = match[0];
+
+    this.tail = this.tail.substring(string.length);
+    this.pos += string.length;
+
+    return string;
+  };
+
+  /**
+   * Skips all text until the given regular expression can be matched. Returns
+   * the skipped string, which is the entire tail if no match can be made.
+   */
+  Scanner.prototype.scanUntil = function scanUntil (re) {
+    var index = this.tail.search(re), match;
+
+    switch (index) {
+      case -1:
+        match = this.tail;
+        this.tail = '';
+        break;
+      case 0:
+        match = '';
+        break;
+      default:
+        match = this.tail.substring(0, index);
+        this.tail = this.tail.substring(index);
+    }
+
+    this.pos += match.length;
+
+    return match;
+  };
+
+  /**
+   * Represents a rendering context by wrapping a view object and
+   * maintaining a reference to the parent context.
+   */
+  function Context (view, parentContext) {
+    this.view = view;
+    this.cache = { '.': this.view };
+    this.parent = parentContext;
+  }
+
+  /**
+   * Creates a new context using the given view with this context
+   * as the parent.
+   */
+  Context.prototype.push = function push (view) {
+    return new Context(view, this);
+  };
+
+  /**
+   * Returns the value of the given name in this context, traversing
+   * up the context hierarchy if the value is absent in this context's view.
+   */
+  Context.prototype.lookup = function lookup (name) {
+    var cache = this.cache;
+
+    var value;
+    if (cache.hasOwnProperty(name)) {
+      value = cache[name];
+    } else {
+      var context = this, intermediateValue, names, index, lookupHit = false;
+
+      while (context) {
+        if (name.indexOf('.') > 0) {
+          intermediateValue = context.view;
+          names = name.split('.');
+          index = 0;
+
+          /**
+           * Using the dot notion path in `name`, we descend through the
+           * nested objects.
+           *
+           * To be certain that the lookup has been successful, we have to
+           * check if the last object in the path actually has the property
+           * we are looking for. We store the result in `lookupHit`.
+           *
+           * This is specially necessary for when the value has been set to
+           * `undefined` and we want to avoid looking up parent contexts.
+           *
+           * In the case where dot notation is used, we consider the lookup
+           * to be successful even if the last "object" in the path is
+           * not actually an object but a primitive (e.g., a string, or an
+           * integer), because it is sometimes useful to access a property
+           * of an autoboxed primitive, such as the length of a string.
+           **/
+          while (intermediateValue != null && index < names.length) {
+            if (index === names.length - 1)
+              lookupHit = (
+                hasProperty(intermediateValue, names[index])
+                || primitiveHasOwnProperty(intermediateValue, names[index])
+              );
+
+            intermediateValue = intermediateValue[names[index++]];
+          }
+        } else {
+          intermediateValue = context.view[name];
+
+          /**
+           * Only checking against `hasProperty`, which always returns `false` if
+           * `context.view` is not an object. Deliberately omitting the check
+           * against `primitiveHasOwnProperty` if dot notation is not used.
+           *
+           * Consider this example:
+           * ```
+           * Mustache.render("The length of a football field is {{#length}}{{length}}{{/length}}.", {length: "100 yards"})
+           * ```
+           *
+           * If we were to check also against `primitiveHasOwnProperty`, as we do
+           * in the dot notation case, then render call would return:
+           *
+           * "The length of a football field is 9."
+           *
+           * rather than the expected:
+           *
+           * "The length of a football field is 100 yards."
+           **/
+          lookupHit = hasProperty(context.view, name);
+        }
+
+        if (lookupHit) {
+          value = intermediateValue;
+          break;
+        }
+
+        context = context.parent;
+      }
+
+      cache[name] = value;
+    }
+
+    if (isFunction(value))
+      value = value.call(this.view);
+
+    return value;
+  };
+
+  /**
+   * A Writer knows how to take a stream of tokens and render them to a
+   * string, given a context. It also maintains a cache of templates to
+   * avoid the need to parse the same template twice.
+   */
+  function Writer () {
+    this.templateCache = {
+      _cache: {},
+      set: function set (key, value) {
+        this._cache[key] = value;
+      },
+      get: function get (key) {
+        return this._cache[key];
+      },
+      clear: function clear () {
+        this._cache = {};
+      }
+    };
+  }
+
+  /**
+   * Clears all cached templates in this writer.
+   */
+  Writer.prototype.clearCache = function clearCache () {
+    if (typeof this.templateCache !== 'undefined') {
+      this.templateCache.clear();
+    }
+  };
+
+  /**
+   * Parses and caches the given `template` according to the given `tags` or
+   * `mustache.tags` if `tags` is omitted,  and returns the array of tokens
+   * that is generated from the parse.
+   */
+  Writer.prototype.parse = function parse (template, tags) {
+    var cache = this.templateCache;
+    var cacheKey = template + ':' + (tags || mustache.tags).join(':');
+    var isCacheEnabled = typeof cache !== 'undefined';
+    var tokens = isCacheEnabled ? cache.get(cacheKey) : undefined;
+
+    if (tokens == undefined) {
+      tokens = parseTemplate(template, tags);
+      isCacheEnabled && cache.set(cacheKey, tokens);
+    }
+    return tokens;
+  };
+
+  /**
+   * High-level method that is used to render the given `template` with
+   * the given `view`.
+   *
+   * The optional `partials` argument may be an object that contains the
+   * names and templates of partials that are used in the template. It may
+   * also be a function that is used to load partial templates on the fly
+   * that takes a single argument: the name of the partial.
+   *
+   * If the optional `config` argument is given here, then it should be an
+   * object with a `tags` attribute or an `escape` attribute or both.
+   * If an array is passed, then it will be interpreted the same way as
+   * a `tags` attribute on a `config` object.
+   *
+   * The `tags` attribute of a `config` object must be an array with two
+   * string values: the opening and closing tags used in the template (e.g.
+   * [ "<%", "%>" ]). The default is to mustache.tags.
+   *
+   * The `escape` attribute of a `config` object must be a function which
+   * accepts a string as input and outputs a safely escaped string.
+   * If an `escape` function is not provided, then an HTML-safe string
+   * escaping function is used as the default.
+   */
+  Writer.prototype.render = function render (template, view, partials, config) {
+    var tags = this.getConfigTags(config);
+    var tokens = this.parse(template, tags);
+    var context = (view instanceof Context) ? view : new Context(view, undefined);
+    return this.renderTokens(tokens, context, partials, template, config);
+  };
+
+  /**
+   * Low-level method that renders the given array of `tokens` using
+   * the given `context` and `partials`.
+   *
+   * Note: The `originalTemplate` is only ever used to extract the portion
+   * of the original template that was contained in a higher-order section.
+   * If the template doesn't use higher-order sections, this argument may
+   * be omitted.
+   */
+  Writer.prototype.renderTokens = function renderTokens (tokens, context, partials, originalTemplate, config) {
+    var buffer = '';
+
+    var token, symbol, value;
+    for (var i = 0, numTokens = tokens.length; i < numTokens; ++i) {
+      value = undefined;
+      token = tokens[i];
+      symbol = token[0];
+
+      if (symbol === '#') value = this.renderSection(token, context, partials, originalTemplate, config);
+      else if (symbol === '^') value = this.renderInverted(token, context, partials, originalTemplate, config);
+      else if (symbol === '>') value = this.renderPartial(token, context, partials, config);
+      else if (symbol === '&') value = this.unescapedValue(token, context);
+      else if (symbol === 'name') value = this.escapedValue(token, context, config);
+      else if (symbol === 'text') value = this.rawValue(token);
+
+      if (value !== undefined)
+        buffer += value;
+    }
+
+    return buffer;
+  };
+
+  Writer.prototype.renderSection = function renderSection (token, context, partials, originalTemplate, config) {
+    var self = this;
+    var buffer = '';
+    var value = context.lookup(token[1]);
+
+    // This function is used to render an arbitrary template
+    // in the current context by higher-order sections.
+    function subRender (template) {
+      return self.render(template, context, partials, config);
+    }
+
+    if (!value) return;
+
+    if (isArray(value)) {
+      for (var j = 0, valueLength = value.length; j < valueLength; ++j) {
+        buffer += this.renderTokens(token[4], context.push(value[j]), partials, originalTemplate, config);
+      }
+    } else if (typeof value === 'object' || typeof value === 'string' || typeof value === 'number') {
+      buffer += this.renderTokens(token[4], context.push(value), partials, originalTemplate, config);
+    } else if (isFunction(value)) {
+      if (typeof originalTemplate !== 'string')
+        throw new Error('Cannot use higher-order sections without the original template');
+
+      // Extract the portion of the original template that the section contains.
+      value = value.call(context.view, originalTemplate.slice(token[3], token[5]), subRender);
+
+      if (value != null)
+        buffer += value;
+    } else {
+      buffer += this.renderTokens(token[4], context, partials, originalTemplate, config);
+    }
+    return buffer;
+  };
+
+  Writer.prototype.renderInverted = function renderInverted (token, context, partials, originalTemplate, config) {
+    var value = context.lookup(token[1]);
+
+    // Use JavaScript's definition of falsy. Include empty arrays.
+    // See https://github.com/janl/mustache.js/issues/186
+    if (!value || (isArray(value) && value.length === 0))
+      return this.renderTokens(token[4], context, partials, originalTemplate, config);
+  };
+
+  Writer.prototype.indentPartial = function indentPartial (partial, indentation, lineHasNonSpace) {
+    var filteredIndentation = indentation.replace(/[^ \t]/g, '');
+    var partialByNl = partial.split('\n');
+    for (var i = 0; i < partialByNl.length; i++) {
+      if (partialByNl[i].length && (i > 0 || !lineHasNonSpace)) {
+        partialByNl[i] = filteredIndentation + partialByNl[i];
+      }
+    }
+    return partialByNl.join('\n');
+  };
+
+  Writer.prototype.renderPartial = function renderPartial (token, context, partials, config) {
+    if (!partials) return;
+    var tags = this.getConfigTags(config);
+
+    var value = isFunction(partials) ? partials(token[1]) : partials[token[1]];
+    if (value != null) {
+      var lineHasNonSpace = token[6];
+      var tagIndex = token[5];
+      var indentation = token[4];
+      var indentedValue = value;
+      if (tagIndex == 0 && indentation) {
+        indentedValue = this.indentPartial(value, indentation, lineHasNonSpace);
+      }
+      var tokens = this.parse(indentedValue, tags);
+      return this.renderTokens(tokens, context, partials, indentedValue, config);
+    }
+  };
+
+  Writer.prototype.unescapedValue = function unescapedValue (token, context) {
+    var value = context.lookup(token[1]);
+    if (value != null)
+      return value;
+  };
+
+  Writer.prototype.escapedValue = function escapedValue (token, context, config) {
+    var escape = this.getConfigEscape(config) || mustache.escape;
+    var value = context.lookup(token[1]);
+    if (value != null)
+      return (typeof value === 'number' && escape === mustache.escape) ? String(value) : escape(value);
+  };
+
+  Writer.prototype.rawValue = function rawValue (token) {
+    return token[1];
+  };
+
+  Writer.prototype.getConfigTags = function getConfigTags (config) {
+    if (isArray(config)) {
+      return config;
+    }
+    else if (config && typeof config === 'object') {
+      return config.tags;
+    }
+    else {
+      return undefined;
+    }
+  };
+
+  Writer.prototype.getConfigEscape = function getConfigEscape (config) {
+    if (config && typeof config === 'object' && !isArray(config)) {
+      return config.escape;
+    }
+    else {
+      return undefined;
+    }
+  };
+
+  var mustache = {
+    name: 'mustache.js',
+    version: '4.2.0',
+    tags: [ '{{', '}}' ],
+    clearCache: undefined,
+    escape: undefined,
+    parse: undefined,
+    render: undefined,
+    Scanner: undefined,
+    Context: undefined,
+    Writer: undefined,
+    /**
+     * Allows a user to override the default caching strategy, by providing an
+     * object with set, get and clear methods. This can also be used to disable
+     * the cache by setting it to the literal `undefined`.
+     */
+    set templateCache (cache) {
+      defaultWriter.templateCache = cache;
+    },
+    /**
+     * Gets the default or overridden caching object from the default writer.
+     */
+    get templateCache () {
+      return defaultWriter.templateCache;
+    }
+  };
+
+  // All high-level mustache.* functions use this writer.
+  var defaultWriter = new Writer();
+
+  /**
+   * Clears all cached templates in the default writer.
+   */
+  mustache.clearCache = function clearCache () {
+    return defaultWriter.clearCache();
+  };
+
+  /**
+   * Parses and caches the given template in the default writer and returns the
+   * array of tokens it contains. Doing this ahead of time avoids the need to
+   * parse templates on the fly as they are rendered.
+   */
+  mustache.parse = function parse (template, tags) {
+    return defaultWriter.parse(template, tags);
+  };
+
+  /**
+   * Renders the `template` with the given `view`, `partials`, and `config`
+   * using the default writer.
+   */
+  mustache.render = function render (template, view, partials, config) {
+    if (typeof template !== 'string') {
+      throw new TypeError('Invalid template! Template should be a "string" ' +
+                          'but "' + typeStr(template) + '" was given as the first ' +
+                          'argument for mustache#render(template, view, partials)');
+    }
+
+    return defaultWriter.render(template, view, partials, config);
+  };
+
+  // Export the escaping function so that the user may override it.
+  // See https://github.com/janl/mustache.js/issues/244
+  mustache.escape = escapeHtml;
+
+  // Export these mainly for testing, but also for advanced usage.
+  mustache.Scanner = Scanner;
+  mustache.Context = Context;
+  mustache.Writer = Writer;
+
+  return mustache;
+
+})));
 
 
 /***/ }),

@@ -1,23 +1,18 @@
-import * as artifact from '@actions/artifact'
 import * as core from '@actions/core'
-import * as glob from '@actions/glob'
-import * as io from '../util/io'
 import * as tc from '@actions/tool-cache'
 import assert from 'assert'
-import * as fs from 'fs'
-import * as os from 'os'
-import * as semver from 'semver'
+import ensureError from 'ensure-error'
 import * as path from 'path'
+import * as semver from 'semver'
 import * as opts from '../opts'
-import * as exec from '../util/exec'
+import setupHaskell from '../setup-haskell'
+import setupIcu from '../setup-icu'
+import * as io from '../util/io'
 import * as agda from '../util/agda'
 import * as hackage from '../util/hackage'
-import * as upx from '../util/upx'
-import * as icu from '../util/icu'
-import * as haskell from '../util/haskell'
 import * as cabal from './build-from-source/cabal'
 import * as stack from './build-from-source/stack'
-import ensureError from 'ensure-error'
+import uploadBdist from './build-from-source/bdist'
 
 export default async function buildFromSource(
   options: opts.BuildOptions
@@ -42,7 +37,7 @@ async function tryToolCache(agdaVersion: string): Promise<string | null> {
   } else {
     try {
       core.info(`Found Agda ${agdaVersion} in cache`)
-      const agdaPath = path.join(installDirTC, 'bin', agda.agdaExe)
+      const agdaPath = path.join(installDirTC, 'bin', agda.agdaBinName)
       const env = {Agda_datadir: path.join(installDirTC, 'data')}
       agda.testSystemAgda({agdaPath, env})
       return installDirTC
@@ -68,37 +63,38 @@ async function build(options: opts.BuildOptions): Promise<string> {
   core.debug(`Compatible GHC version range is: ${ghcVersionRange}`)
 
   // 3. Setup GHC via <haskell/actions/setup>:
-  options = await haskell.setup({
+  options = await setupHaskell({
     ...options,
     'ghc-version-range': ghcVersionRange
   })
 
-  // 4. Install compatible ICU version:
-  options = await icu.setup(options)
+  // 4. Install ICU:
+  options = await setupIcu(options)
 
-  // 4. Build:
+  // 5. Build:
   const installDir = agda.installDir(options['agda-version'])
   await buildTool.build(sourceDir, installDir, options)
-  await copyData(path.join(sourceDir, 'src', 'data'), installDir)
+  await io.cp(path.join(sourceDir, 'src', 'data'), installDir, {
+    recursive: true
+  })
 
-  // 5. Test:
-  const agdaPath = path.join(installDir, 'bin', agda.agdaExe)
+  // 6. Test:
+  const agdaPath = path.join(installDir, 'bin', agda.agdaBinName)
   const env = {Agda_datadir: path.join(installDir, 'data')}
   await agda.testSystemAgda({agdaPath, env})
 
-  // 6. Cache:
+  // 7. Cache:
   const installDirTC = await tc.cacheDir(
     installDir,
     'agda',
     options['agda-version']
   )
 
-  // 7. If 'upload-bdist' is specified, upload as a binary distribution:
+  // 8. If 'upload-bdist' is specified, upload as a binary distribution:
   if (options['upload-bdist']) {
-    const bdistName = await uploadAsArtifact(installDir, options)
+    const bdistName = await uploadBdist(installDir, options)
     core.info(`Uploaded binary distribution as '${bdistName}'`)
   }
-
   return installDirTC
 }
 
@@ -189,239 +185,6 @@ async function findGhcVersionRange(
       `Invalid GHC version range ${range}`
     )
     return range
-  }
-}
-
-async function uploadAsArtifact(
-  installDir: string,
-  options: opts.BuildOptions
-): Promise<string> {
-  // Get the name for the distribution
-  const bdistName = await renderBDistName(options)
-  const bdistDir = path.join(agda.agdaDir(), 'bdist', bdistName)
-  io.mkdirP(bdistDir)
-
-  // Copy executables
-  const installedBins = agda.exes.map(exe => path.join(installDir, 'bin', exe))
-  const bdistBinDir = path.join(bdistDir, 'bin')
-  io.mkdirP(bdistBinDir)
-  if (options['bdist-compress-bin']) {
-    await compressBins(installedBins, bdistBinDir)
-  } else {
-    await copyBins(installedBins, bdistBinDir)
-  }
-
-  // Copy libraries
-  bundleLibs(bdistDir, options)
-
-  // Copy data
-  await copyData(path.join(installDir, 'data'), bdistDir)
-
-  // Test artifact
-  const agdaPath = path.join(bdistDir, 'bin', agda.agdaExe)
-  const env = {Agda_datadir: path.join(bdistDir, 'data')}
-  await agda.testSystemAgda({agdaPath, env})
-
-  // Create file list for artifact:
-  const globber = await glob.create(path.join(bdistDir, '**', '*'), {
-    followSymbolicLinks: false,
-    implicitDescendants: false,
-    matchDirectories: false
-  })
-  const files = await globber.glob()
-
-  // Upload artifact:
-  const artifactClient = artifact.create()
-  const uploadInfo = await artifactClient.uploadArtifact(
-    bdistName,
-    files,
-    bdistDir,
-    {
-      continueOnError: true,
-      retentionDays: 90
-    }
-  )
-
-  // Report any errors:
-  if (uploadInfo.failedItems.length > 0) {
-    core.error(['Failed to upload:', ...uploadInfo.failedItems].join(os.EOL))
-  }
-
-  // Return artifact name
-  return uploadInfo.artifactName
-}
-
-// Utilities for copying files
-
-async function renderBDistName(options: opts.BuildOptions): Promise<string> {
-  if (options['bdist-name'] === '') {
-    const targetPlatform = await haskell.getGhcTargetPlatform()
-    return `agda-${options['agda-version']}-${targetPlatform}`
-  } else {
-    return options['bdist-name']
-      .replace('{{agda-version}}', options['agda-version'])
-      .replace('{{ghc-version}}', options['agda-version'])
-      .replace('{{cabal-version}}', options['cabal-version'])
-      .replace('{{stack-version}}', options['stack-version'])
-      .replace(
-        '{{bdist-compress-bin}}',
-        options['bdist-compress-bin'] ? 'compressed' : 'normal'
-      )
-      .replace('{{os}}', opts.os)
-      .replace('{{arch}}', process.arch)
-  }
-}
-
-async function copyData(dataDir: string, dest: string): Promise<void> {
-  await io.cp(dataDir, dest, {recursive: true})
-}
-
-async function bundleLibs(
-  bdistDir: string,
-  options: opts.BuildOptions
-): Promise<void> {
-  const bdistBinDir = path.join(bdistDir, 'bin')
-  // On Windows, we simply copy all DLLs:
-  if (opts.os === 'windows') {
-    const globber = await glob.create(
-      options['extra-lib-dirs']
-        .map(libDir => path.join(libDir, '*.dll'))
-        .join(os.EOL)
-    )
-    for await (const bundleLibPath of globber.globGenerator()) {
-      io.cp(bundleLibPath, bdistBinDir)
-    }
-  } else {
-    // Create library directory:
-    const bdistLibDir = path.join(bdistDir, 'lib')
-    await io.mkdirP(bdistLibDir)
-    // For each binary, for each of its needed libraries:
-    for (const binPath of agda.exes.map(exe => path.join(bdistBinDir, exe))) {
-      let bundledLib = false
-      for (const libPath of await findNeededLibs(binPath)) {
-        // Find if the library is on the extra-lib-path:
-        const extraLibPath = await findExtraLib(libPath, options)
-        // If so, bundle the library:
-        if (extraLibPath !== null) {
-          // Copy the library, unless it already exists:
-          const bdistLibPath = path.join(
-            bdistLibDir,
-            path.basename(extraLibPath)
-          )
-          if (!fs.existsSync(bdistLibPath))
-            await io.cp(extraLibPath, bdistLibDir)
-          // Update the run path:
-          await changeRunPath(
-            binPath,
-            extraLibPath,
-            path.relative(bdistBinDir, bdistLibPath)
-          )
-          bundledLib = true
-        }
-      }
-      // Add a relative run path:
-      if (bundledLib)
-        addRunPath(binPath, path.relative(bdistBinDir, bdistLibDir))
-    }
-  }
-}
-
-async function addRunPath(bin: string, loadPath: string): Promise<void> {
-  switch (opts.os) {
-    case 'linux': {
-      if (!path.isAbsolute(loadPath)) loadPath = `$ORIGIN/${loadPath}`
-      await exec.execOutput('patchelf', ['-add-rpath', loadPath, bin])
-      return
-    }
-    case 'macos': {
-      if (!path.isAbsolute(loadPath)) loadPath = `@executable_path/${loadPath}`
-      await exec.execOutput('install_name_tool', ['-add_rpath', loadPath, bin])
-      return
-    }
-    case 'windows':
-      return
-  }
-}
-
-async function findNeededLibs(bin: string): Promise<string[]> {
-  switch (opts.os) {
-    case 'linux': {
-      const output = await exec.execOutput('patchelf', ['--print-needed', bin])
-      return output.split(os.EOL).filter(libPath => libPath !== '')
-    }
-    case 'macos': {
-      const output = await exec.execOutput('otool', ['-L', bin])
-      return [...output.matchAll(/[A-Za-z0-9./]+\.dylib/g)].map(m => m[0])
-    }
-  }
-  return []
-}
-
-async function findExtraLib(
-  libPath: string,
-  options: opts.BuildOptions
-): Promise<string | null> {
-  const libName = path.basename(libPath)
-  for (const libDir of options['extra-lib-dirs']) {
-    const globber = await glob.create(path.join(libDir, libName), {
-      followSymbolicLinks: true,
-      implicitDescendants: false,
-      matchDirectories: false,
-      omitBrokenSymbolicLinks: true
-    })
-    const [match, ...rest] = await globber.glob()
-    assert(rest.length === 0, `Found multiple candidates for ${libName}`)
-    if (match !== undefined) {
-      assert(
-        libPath === libName || libPath === match,
-        `Library with relative run path: ${libPath}`
-      )
-      return match
-    }
-  }
-  return null
-}
-
-async function changeRunPath(
-  bin: string,
-  libFrom: string,
-  libTo: string
-): Promise<void> {
-  switch (opts.os) {
-    case 'linux': {
-      return
-    }
-    case 'macos': {
-      await exec.execOutput('install_name_tool', [
-        '-change',
-        libFrom,
-        `@rpath/${libTo}`,
-        bin
-      ])
-      return
-    }
-    case 'windows':
-      return
-  }
-}
-
-async function copyBins(bins: string[], dest: string): Promise<void> {
-  for (const binPath of bins) {
-    const binName = path.basename(binPath)
-    await io.cp(binPath, path.join(dest, binName))
-  }
-}
-
-async function compressBins(bins: string[], dest: string): Promise<void> {
-  const upxPath = await upx.installUPX('3.96')
-  for (const binPath of bins) {
-    const binName = path.basename(binPath)
-    await exec.exec(upxPath, [
-      '--best',
-      binPath,
-      '-o',
-      path.join(dest, binName)
-    ])
   }
 }
 
