@@ -52,7 +52,7 @@ export default async function uploadBdist(
       break
     }
     case 'macos': {
-      // Bundle icu-i18n:
+      // If we compiled with --enable-cluster-counting, bundle ICU:
       if (opts.supportsClusterCounting(options)) {
         await io.mkdirP(path.join(bdistDir, 'lib'))
         const icuDir = '/usr/local/opt/icu4c/lib'
@@ -94,25 +94,45 @@ export default async function uploadBdist(
             ])
           }
         }
-        // Print needed libraries:
-        try {
-          for (const binName of agda.agdaBinNames) {
-            const binPath = path.join(bdistDir, 'bin', binName)
-            await exec.execOutput('otool', ['-L', binPath])
-          }
-        } catch (error) {
-          core.debug(ensureError(error).message)
+      }
+      // Print needed libraries:
+      try {
+        for (const binName of agda.agdaBinNames) {
+          const binPath = path.join(bdistDir, 'bin', binName)
+          await exec.execOutput('otool', ['-L', binPath])
         }
+      } catch (error) {
+        core.debug(ensureError(error).message)
       }
       break
     }
     case 'windows': {
-      const icuDir = 'C:\\msys64\\mingw64\\bin'
-      const libGlobber = await glob.create(path.join(icuDir, 'libicu*.dll'))
-      for await (const libPath of libGlobber.globGenerator()) {
-        await io.cp(libPath, path.join(bdistDir, 'bin', path.basename(libPath)))
+      // If we compiled with --enable-cluster-counting, bundle ICU:
+      if (opts.supportsClusterCounting(options)) {
+        const icuDir = 'C:\\msys64\\mingw64\\bin'
+        const libGlobber = await glob.create(path.join(icuDir, 'libicu*.dll'))
+        for await (const libPath of libGlobber.globGenerator()) {
+          await io.cp(
+            libPath,
+            path.join(bdistDir, 'bin', path.basename(libPath))
+          )
+        }
       }
       // Print needed libraries:
+      try {
+        for (const binName of agda.agdaBinNames) {
+          const binPath = path.join(bdistDir, 'bin', binName)
+          await exec.execOutput('dumpbin', ['/imports', binPath])
+        }
+      } catch (error) {
+        core.debug(ensureError(error).message)
+      }
+      // Compress with UPX:
+      const upx = await setupUpx('3.96')
+      for (const binName of agda.agdaBinNames) {
+        await exec.exec(upx, ['--best', path.join(bdistDir, 'bin', binName)])
+      }
+      // Print needed libraries (after UPX):
       try {
         for (const binName of agda.agdaBinNames) {
           const binPath = path.join(bdistDir, 'bin', binName)

@@ -596,7 +596,7 @@ function uploadBdist(installDir, options) {
                 break;
             }
             case 'macos': {
-                // Bundle icu-i18n:
+                // If we compiled with --enable-cluster-counting, bundle ICU:
                 if (opts.supportsClusterCounting(options)) {
                     yield io.mkdirP(path.join(bdistDir, 'lib'));
                     const icuDir = '/usr/local/opt/icu4c/lib';
@@ -635,36 +635,54 @@ function uploadBdist(installDir, options) {
                             ]);
                         }
                     }
-                    // Print needed libraries:
-                    try {
-                        for (const binName of agda.agdaBinNames) {
-                            const binPath = path.join(bdistDir, 'bin', binName);
-                            yield exec.execOutput('otool', ['-L', binPath]);
-                        }
+                }
+                // Print needed libraries:
+                try {
+                    for (const binName of agda.agdaBinNames) {
+                        const binPath = path.join(bdistDir, 'bin', binName);
+                        yield exec.execOutput('otool', ['-L', binPath]);
                     }
-                    catch (error) {
-                        core.debug((0, ensure_error_1.default)(error).message);
-                    }
+                }
+                catch (error) {
+                    core.debug((0, ensure_error_1.default)(error).message);
                 }
                 break;
             }
             case 'windows': {
-                const icuDir = 'C:\\msys64\\mingw64\\bin';
-                const libGlobber = yield glob.create(path.join(icuDir, 'libicu*.dll'));
-                try {
-                    for (var _b = __asyncValues(libGlobber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
-                        const libPath = _c.value;
-                        yield io.cp(libPath, path.join(bdistDir, 'bin', path.basename(libPath)));
-                    }
-                }
-                catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                finally {
+                // If we compiled with --enable-cluster-counting, bundle ICU:
+                if (opts.supportsClusterCounting(options)) {
+                    const icuDir = 'C:\\msys64\\mingw64\\bin';
+                    const libGlobber = yield glob.create(path.join(icuDir, 'libicu*.dll'));
                     try {
-                        if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
+                        for (var _b = __asyncValues(libGlobber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
+                            const libPath = _c.value;
+                            yield io.cp(libPath, path.join(bdistDir, 'bin', path.basename(libPath)));
+                        }
                     }
-                    finally { if (e_1) throw e_1.error; }
+                    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                    finally {
+                        try {
+                            if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
+                        }
+                        finally { if (e_1) throw e_1.error; }
+                    }
                 }
                 // Print needed libraries:
+                try {
+                    for (const binName of agda.agdaBinNames) {
+                        const binPath = path.join(bdistDir, 'bin', binName);
+                        yield exec.execOutput('dumpbin', ['/imports', binPath]);
+                    }
+                }
+                catch (error) {
+                    core.debug((0, ensure_error_1.default)(error).message);
+                }
+                // Compress with UPX:
+                const upx = yield (0, setup_upx_1.default)('3.96');
+                for (const binName of agda.agdaBinNames) {
+                    yield exec.exec(upx, ['--best', path.join(bdistDir, 'bin', binName)]);
+                }
+                // Print needed libraries (after UPX):
                 try {
                     for (const binName of agda.agdaBinNames) {
                         const binPath = path.join(bdistDir, 'bin', binName);
