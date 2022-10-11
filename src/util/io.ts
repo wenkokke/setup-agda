@@ -1,3 +1,4 @@
+import * as core from '@actions/core'
 import * as io from '@actions/io'
 import * as opts from '../opts'
 
@@ -21,7 +22,10 @@ export async function cp(
   dest: string,
   options?: io.CopyOptions
 ): Promise<void> {
-  return await io.cp(escape(source), escape(dest), options)
+  source = escape(source)
+  dest = escape(dest)
+  core.debug(`cp ${source} ${dest}`)
+  return await io.cp(source, dest, options)
 }
 
 export async function cpR(
@@ -29,24 +33,20 @@ export async function cpR(
   dest: string,
   options?: io.CopyOptions
 ): Promise<void> {
-  return await io.cp(escape(source), escape(dest), {
+  return await cp(source, dest, {
     ...options,
     recursive: true
   })
 }
 
-export async function mv(
-  source: string,
-  dest: string,
-  options?: io.MoveOptions
-): Promise<void> {
-  return await io.mv(escape(source), escape(dest), options)
+export async function mkdirP(dir: string): Promise<void> {
+  dir = escape(dir)
+  core.debug(`mkdir -p ${dir}`)
+  return await io.mkdirP(dir)
 }
 
-export async function mkdirP(fsPath: string): Promise<void> {
-  return await io.mkdirP(escape(fsPath))
-}
-
-export async function rmRF(inputPath: string): Promise<void> {
-  return await io.rmRF(escape(inputPath))
+export async function rmRF(path: string): Promise<void> {
+  path = escape(path)
+  core.debug(`rm -rf ${path}`)
+  return await io.rmRF(path)
 }

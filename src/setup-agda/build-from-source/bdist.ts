@@ -27,18 +27,59 @@ export default async function uploadBdist(
   for (const binName of agda.agdaBinNames)
     await io.cp(
       path.join(installDir, 'bin', binName),
-      path.join(bdistDir, 'bin')
+      path.join(bdistDir, 'bin', binName)
     )
 
   // Copy data:
   await io.cpR(path.join(installDir, 'data'), bdistDir)
 
   // Bundle libraries:
+  await bundleLibs(bdistDir, options)
+
+  // Test artifact:
+  const agdaPath = path.join(bdistDir, 'bin', agda.agdaBinName)
+  const env = {Agda_datadir: path.join(bdistDir, 'data')}
+  await agda.testSystemAgda({agdaPath, env})
+
+  // Create file list for artifact:
+  const globber = await glob.create(path.join(bdistDir, '**', '*'), {
+    followSymbolicLinks: false,
+    implicitDescendants: false,
+    matchDirectories: false
+  })
+  const files = await globber.glob()
+
+  // Upload artifact:
+  const artifactClient = artifact.create()
+  const uploadInfo = await artifactClient.uploadArtifact(
+    bdistName,
+    files,
+    bdistDir,
+    {
+      continueOnError: true,
+      retentionDays: 90
+    }
+  )
+
+  // Report any errors:
+  if (uploadInfo.failedItems.length > 0) {
+    core.error(['Failed to upload:', ...uploadInfo.failedItems].join(os.EOL))
+  }
+
+  // Return artifact name
+  return uploadInfo.artifactName
+}
+
+async function bundleLibs(
+  bdistDir: string,
+  options: opts.BuildOptions
+): Promise<void> {
   switch (opts.os) {
     case 'linux': {
       const upx = await setupUpx('3.96')
       for (const binName of agda.agdaBinNames) {
-        await exec.exec(upx, ['--best', path.join(bdistDir, 'bin', binName)])
+        const binPath = path.join(bdistDir, 'bin', binName)
+        await exec.exec(upx, ['--best', binPath])
       }
       // Print needed libraries:
       try {
@@ -144,39 +185,6 @@ export default async function uploadBdist(
       break
     }
   }
-
-  // Test artifact:
-  const agdaPath = path.join(bdistDir, 'bin', agda.agdaBinName)
-  const env = {Agda_datadir: path.join(bdistDir, 'data')}
-  await agda.testSystemAgda({agdaPath, env})
-
-  // Create file list for artifact:
-  const globber = await glob.create(path.join(bdistDir, '**', '*'), {
-    followSymbolicLinks: false,
-    implicitDescendants: false,
-    matchDirectories: false
-  })
-  const files = await globber.glob()
-
-  // Upload artifact:
-  const artifactClient = artifact.create()
-  const uploadInfo = await artifactClient.uploadArtifact(
-    bdistName,
-    files,
-    bdistDir,
-    {
-      continueOnError: true,
-      retentionDays: 90
-    }
-  )
-
-  // Report any errors:
-  if (uploadInfo.failedItems.length > 0) {
-    core.error(['Failed to upload:', ...uploadInfo.failedItems].join(os.EOL))
-  }
-
-  // Return artifact name
-  return uploadInfo.artifactName
 }
 
 // Utilities for copying files

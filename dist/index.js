@@ -564,7 +564,6 @@ const mustache = __importStar(__nccwpck_require__(8272));
 const object_pick_1 = __importDefault(__nccwpck_require__(9962));
 const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 function uploadBdist(installDir, options) {
-    var e_1, _a;
     return __awaiter(this, void 0, void 0, function* () {
         // Get the name for the distribution:
         const bdistName = yield renderBdistName(options);
@@ -573,15 +572,46 @@ function uploadBdist(installDir, options) {
         // Copy binaries:
         io.mkdirP(path.join(bdistDir, 'bin'));
         for (const binName of agda.agdaBinNames)
-            yield io.cp(path.join(installDir, 'bin', binName), path.join(bdistDir, 'bin'));
+            yield io.cp(path.join(installDir, 'bin', binName), path.join(bdistDir, 'bin', binName));
         // Copy data:
         yield io.cpR(path.join(installDir, 'data'), bdistDir);
         // Bundle libraries:
+        yield bundleLibs(bdistDir, options);
+        // Test artifact:
+        const agdaPath = path.join(bdistDir, 'bin', agda.agdaBinName);
+        const env = { Agda_datadir: path.join(bdistDir, 'data') };
+        yield agda.testSystemAgda({ agdaPath, env });
+        // Create file list for artifact:
+        const globber = yield glob.create(path.join(bdistDir, '**', '*'), {
+            followSymbolicLinks: false,
+            implicitDescendants: false,
+            matchDirectories: false
+        });
+        const files = yield globber.glob();
+        // Upload artifact:
+        const artifactClient = artifact.create();
+        const uploadInfo = yield artifactClient.uploadArtifact(bdistName, files, bdistDir, {
+            continueOnError: true,
+            retentionDays: 90
+        });
+        // Report any errors:
+        if (uploadInfo.failedItems.length > 0) {
+            core.error(['Failed to upload:', ...uploadInfo.failedItems].join(os.EOL));
+        }
+        // Return artifact name
+        return uploadInfo.artifactName;
+    });
+}
+exports["default"] = uploadBdist;
+function bundleLibs(bdistDir, options) {
+    var e_1, _a;
+    return __awaiter(this, void 0, void 0, function* () {
         switch (opts.os) {
             case 'linux': {
                 const upx = yield (0, setup_upx_1.default)('3.96');
                 for (const binName of agda.agdaBinNames) {
-                    yield exec.exec(upx, ['--best', path.join(bdistDir, 'bin', binName)]);
+                    const binPath = path.join(bdistDir, 'bin', binName);
+                    yield exec.exec(upx, ['--best', binPath]);
                 }
                 // Print needed libraries:
                 try {
@@ -695,32 +725,8 @@ function uploadBdist(installDir, options) {
                 break;
             }
         }
-        // Test artifact:
-        const agdaPath = path.join(bdistDir, 'bin', agda.agdaBinName);
-        const env = { Agda_datadir: path.join(bdistDir, 'data') };
-        yield agda.testSystemAgda({ agdaPath, env });
-        // Create file list for artifact:
-        const globber = yield glob.create(path.join(bdistDir, '**', '*'), {
-            followSymbolicLinks: false,
-            implicitDescendants: false,
-            matchDirectories: false
-        });
-        const files = yield globber.glob();
-        // Upload artifact:
-        const artifactClient = artifact.create();
-        const uploadInfo = yield artifactClient.uploadArtifact(bdistName, files, bdistDir, {
-            continueOnError: true,
-            retentionDays: 90
-        });
-        // Report any errors:
-        if (uploadInfo.failedItems.length > 0) {
-            core.error(['Failed to upload:', ...uploadInfo.failedItems].join(os.EOL));
-        }
-        // Return artifact name
-        return uploadInfo.artifactName;
     });
 }
-exports["default"] = uploadBdist;
 // Utilities for copying files
 function renderBdistName(options) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -2018,6 +2024,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.rmRF = exports.mkdirP = exports.mv = exports.cpR = exports.cp = void 0;
+const core = __importStar(__nccwpck_require__(2186));
 const io = __importStar(__nccwpck_require__(7436));
 const opts = __importStar(__nccwpck_require__(1352));
 function escape(filePath) {
@@ -2032,31 +2039,41 @@ function escape(filePath) {
 }
 function cp(source, dest, options) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield io.cp(escape(source), escape(dest), options);
+        source = escape(source);
+        dest = escape(dest);
+        core.debug(`cp ${source} ${dest}`);
+        return yield io.cp(source, dest, options);
     });
 }
 exports.cp = cp;
 function cpR(source, dest, options) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield io.cp(escape(source), escape(dest), Object.assign(Object.assign({}, options), { recursive: true }));
+        return yield cp(source, dest, Object.assign(Object.assign({}, options), { recursive: true }));
     });
 }
 exports.cpR = cpR;
 function mv(source, dest, options) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield io.mv(escape(source), escape(dest), options);
+        source = escape(source);
+        dest = escape(dest);
+        core.debug(`mv ${source} ${dest}`);
+        return yield io.mv(source, dest, options);
     });
 }
 exports.mv = mv;
-function mkdirP(fsPath) {
+function mkdirP(dir) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield io.mkdirP(escape(fsPath));
+        dir = escape(dir);
+        core.debug(`mkdir -p ${dir}`);
+        return yield io.mkdirP(dir);
     });
 }
 exports.mkdirP = mkdirP;
-function rmRF(inputPath) {
+function rmRF(path) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield io.rmRF(escape(inputPath));
+        path = escape(path);
+        core.debug(`rm -rf ${path}`);
+        return yield io.rmRF(path);
     });
 }
 exports.rmRF = rmRF;
