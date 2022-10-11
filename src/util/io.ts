@@ -39,6 +39,17 @@ export async function cpR(
   })
 }
 
+export async function mv(
+  source: string,
+  dest: string,
+  options?: io.CopyOptions
+): Promise<void> {
+  source = escape(source)
+  dest = escape(dest)
+  core.debug(`mv ${source} ${dest}`)
+  return await io.mv(source, dest, options)
+}
+
 export async function mkdirP(dir: string): Promise<void> {
   dir = escape(dir)
   core.debug(`mkdir -p ${dir}`)
