@@ -6,6 +6,7 @@ export default async function setup(
   options: opts.BuildOptions
 ): Promise<opts.BuildOptions> {
   // Otherwise, setup ICU:
+  let icuVersion = undefined
   switch (opts.os) {
     case 'windows': {
       // Install pkg-config and icu
@@ -17,10 +18,20 @@ export default async function setup(
         'mingw-w64-x86_64-pkgconfig',
         'mingw-w64-x86_64-icu'
       ])
+      // Get the icu-i18n version via pkg-config:
+      icuVersion = await exec.execOutput('pkgconfig', [
+        '--modversion',
+        'icu-i18n'
+      ])
       break
     }
     case 'linux': {
       // Ubuntu 20.04 ships with a recent version of ICU
+      // Get the icu-i18n version via pkg-config:
+      icuVersion = await exec.execOutput('pkg-config', [
+        '--modversion',
+        'icu-i18n'
+      ])
       break
     }
     case 'macos': {
@@ -30,15 +41,13 @@ export default async function setup(
         'PKG_CONFIG_PATH',
         '/usr/local/opt/icu4c/lib/pkgconfig'
       )
+      // Get the icu-i18n version via pkg-config:
+      icuVersion = await exec.execOutput('pkg-config', [
+        '--modversion',
+        'icu-i18n'
+      ])
       break
     }
   }
-  // Get the icu-i18n version via pkg-config:
-  return {
-    ...options,
-    'icu-version': await exec.execOutput('pkg-config', [
-      '--modversion',
-      'icu-i18n'
-    ])
-  }
+  return {...options, 'icu-version': icuVersion}
 }

@@ -1274,6 +1274,7 @@ const exec = __importStar(__nccwpck_require__(4369));
 function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Otherwise, setup ICU:
+        let icuVersion = undefined;
         switch (opts.os) {
             case 'windows': {
                 // Install pkg-config and icu
@@ -1285,24 +1286,35 @@ function setup(options) {
                     'mingw-w64-x86_64-pkgconfig',
                     'mingw-w64-x86_64-icu'
                 ]);
+                // Get the icu-i18n version via pkg-config:
+                icuVersion = yield exec.execOutput('pkgconfig', [
+                    '--modversion',
+                    'icu-i18n'
+                ]);
                 break;
             }
             case 'linux': {
                 // Ubuntu 20.04 ships with a recent version of ICU
+                // Get the icu-i18n version via pkg-config:
+                icuVersion = yield exec.execOutput('pkg-config', [
+                    '--modversion',
+                    'icu-i18n'
+                ]);
                 break;
             }
             case 'macos': {
                 // The GitHub runner for MacOS 11+ has ICU version 69.1,
                 // which is recent enough for 'text-icu' to compile:
                 core.exportVariable('PKG_CONFIG_PATH', '/usr/local/opt/icu4c/lib/pkgconfig');
+                // Get the icu-i18n version via pkg-config:
+                icuVersion = yield exec.execOutput('pkg-config', [
+                    '--modversion',
+                    'icu-i18n'
+                ]);
                 break;
             }
         }
-        // Get the icu-i18n version via pkg-config:
-        return Object.assign(Object.assign({}, options), { 'icu-version': yield exec.execOutput('pkg-config', [
-                '--modversion',
-                'icu-i18n'
-            ]) });
+        return Object.assign(Object.assign({}, options), { 'icu-version': icuVersion });
     });
 }
 exports["default"] = setup;
