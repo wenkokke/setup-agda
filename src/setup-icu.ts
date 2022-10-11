@@ -20,7 +20,14 @@ export default async function setup(
       ])
       // Get the icu-i18n version via pkgconf:
       core.exportVariable('PKG_CONFIG', 'pkgconf')
-      icuVersion = await exec.execOutput('pkgconf', ['--modversion', 'icu'])
+      icuVersion = await exec.execOutput('pacman', [
+        '--noconfirm',
+        '-Qs',
+        'mingw-w64-x86_64-icu'
+      ])
+      icuVersion =
+        icuVersion.match(/(?<version>\d[\d.]+\d)/)?.groups?.version ??
+        icuVersion
       break
     }
     case 'linux': {

@@ -1268,6 +1268,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const opts = __importStar(__nccwpck_require__(1352));
 const exec = __importStar(__nccwpck_require__(4369));
 function setup(options) {
+    var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
         // Otherwise, setup ICU:
         let icuVersion = undefined;
@@ -1284,7 +1285,13 @@ function setup(options) {
                 ]);
                 // Get the icu-i18n version via pkgconf:
                 core.exportVariable('PKG_CONFIG', 'pkgconf');
-                icuVersion = yield exec.execOutput('pkgconf', ['--modversion', 'icu']);
+                icuVersion = yield exec.execOutput('pacman', [
+                    '--noconfirm',
+                    '-Qs',
+                    'mingw-w64-x86_64-icu'
+                ]);
+                icuVersion =
+                    (_c = (_b = (_a = icuVersion.match(/(?<version>\d[\d.]+\d)/)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version) !== null && _c !== void 0 ? _c : icuVersion;
                 break;
             }
             case 'linux': {
