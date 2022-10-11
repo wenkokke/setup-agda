@@ -137,10 +137,21 @@ exports.pickSetupHaskellInputs = pickSetupHaskellInputs;
 // Helper functions to check support of various build options
 function supportsClusterCounting(options) {
     // NOTE:
-    //   We only enable --cluster-counting on versions which support it,
-    //   i.e., versions after 2.5.3:
+    //   Agda only supports --cluster-counting on versions after 2.5.3:
     //   https://github.com/agda/agda/blob/f50c14d3a4e92ed695783e26dbe11ad1ad7b73f7/doc/release-notes/2.5.3.md
-    return simver.gte(options['agda-version'], '2.5.3');
+    //   const agdaOK = simver.gte(options['agda-version'], '2.5.3')
+    // NOTE:
+    //   But we only enable --cluster-counting on versions after 2.6.2,
+    //   since Agda version 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
+    //   text-icu versions <0.7.1.0 fail to compile with icu68+
+    const agdaOK = simver.gte(options['agda-version'], '2.6.2');
+    // NOTE:
+    //   We also don't support cluster counting on Windows Server 2019
+    //   and earlier, as the latest versions of GHC and Cabal are
+    //   incompatible with its MSYS2 version:
+    //   https://github.com/msys2/MINGW-packages/issues/10837#issue-1145843972
+    const osOK = exports.os !== 'windows' || simver.gt((0, os_1.release)(), '10.0.17763');
+    return agdaOK && osOK;
 }
 exports.supportsClusterCounting = supportsClusterCounting;
 function supportsOptimiseHeavily(options) {
@@ -325,6 +336,7 @@ const assert_1 = __importDefault(__nccwpck_require__(9491));
 const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 const path = __importStar(__nccwpck_require__(1017));
 const semver = __importStar(__nccwpck_require__(1383));
+const opts = __importStar(__nccwpck_require__(1352));
 const setup_haskell_1 = __importDefault(__nccwpck_require__(6933));
 const setup_icu_1 = __importDefault(__nccwpck_require__(4173));
 const io = __importStar(__nccwpck_require__(9067));
@@ -385,7 +397,9 @@ function build(options) {
         // 3. Setup GHC via <haskell/actions/setup>:
         options = yield (0, setup_haskell_1.default)(Object.assign(Object.assign({}, options), { 'ghc-version-range': ghcVersionRange }));
         // 4. Install ICU:
-        options = yield (0, setup_icu_1.default)(options);
+        if (opts.supportsClusterCounting(options)) {
+            options = yield (0, setup_icu_1.default)(options);
+        }
         // 5. Build:
         const installDir = agda.installDir(options['agda-version']);
         yield buildTool.build(sourceDir, installDir, options);
@@ -548,6 +562,7 @@ const haskell = __importStar(__nccwpck_require__(1310));
 const io = __importStar(__nccwpck_require__(9067));
 const mustache = __importStar(__nccwpck_require__(8272));
 const object_pick_1 = __importDefault(__nccwpck_require__(9962));
+const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 function uploadBdist(installDir, options) {
     var e_1, _a;
     return __awaiter(this, void 0, void 0, function* () {
@@ -565,38 +580,70 @@ function uploadBdist(installDir, options) {
         switch (opts.os) {
             case 'linux': {
                 const upx = yield (0, setup_upx_1.default)('3.96');
-                for (const binName of agda.agdaBinNames)
+                for (const binName of agda.agdaBinNames) {
                     yield exec.exec(upx, ['--best', path.join(bdistDir, 'bin', binName)]);
+                }
+                // Print needed libraries:
+                try {
+                    for (const binName of agda.agdaBinNames) {
+                        const binPath = path.join(bdistDir, 'bin', binName);
+                        yield exec.execOutput('patchelf', ['--print-needed', binPath]);
+                    }
+                }
+                catch (error) {
+                    core.debug((0, ensure_error_1.default)(error).message);
+                }
                 break;
             }
             case 'macos': {
-                yield io.mkdirP(path.join(bdistDir, 'lib'));
-                const icuDir = '/usr/local/opt/icu4c/lib';
-                const libNames = [
-                    `libicuuc.${options['icu-version']}.dylib`,
-                    `libicui18n.${options['icu-version']}.dylib`,
-                    `libicudata.${options['icu-version']}.dylib`
-                ];
-                for (const libName of libNames) {
-                    yield io.cp(path.join(icuDir, libName), path.join(bdistDir, 'lib', libName));
-                }
-                for (const binName of agda.agdaBinNames) {
-                    for (const libName of libNames) {
-                        yield exec.execOutput('install_name_tool', [
-                            '-change',
-                            path.join('/usr/local/opt/icu4c/lib', libName),
-                            `@rpath/${libName}`,
-                            path.join(bdistDir, 'bin', binName)
-                        ]);
-                        yield exec.execOutput('install_name_tool', [
-                            '-add_rpath',
-                            '@executable_path',
-                            '-add_rpath',
-                            '@executable_path/../lib',
-                            '-add_rpath',
-                            icuDir,
-                            path.join(bdistDir, 'bin', binName)
-                        ]);
+                // Bundle icu-i18n:
+                if (opts.supportsClusterCounting(options)) {
+                    yield io.mkdirP(path.join(bdistDir, 'lib'));
+                    const icuDir = '/usr/local/opt/icu4c/lib';
+                    // Libraries directly loaded by Agda:
+                    const libsLoaded = [
+                        `libicuuc.${options['icu-version']}.dylib`,
+                        `libicui18n.${options['icu-version']}.dylib`
+                    ];
+                    // Libraries needed transitively:
+                    const libsNeeded = [
+                        ...libsLoaded,
+                        `libicudata.${options['icu-version']}.dylib`
+                    ];
+                    // Copy needed libraries:
+                    for (const libName of libsNeeded) {
+                        yield io.cp(path.join(icuDir, libName), path.join(bdistDir, 'lib', libName));
+                    }
+                    // Patch run paths for loaded libraries:
+                    for (const binName of agda.agdaBinNames) {
+                        const binPath = path.join(bdistDir, 'bin', binName);
+                        for (const libName of libsLoaded) {
+                            yield exec.execOutput('install_name_tool', [
+                                '-change',
+                                path.join('/usr/local/opt/icu4c/lib', libName),
+                                `@rpath/${libName}`,
+                                binPath
+                            ]);
+                            yield exec.execOutput('install_name_tool', [
+                                '-add_rpath',
+                                '@executable_path',
+                                '-add_rpath',
+                                '@executable_path/../lib',
+                                '-add_rpath',
+                                icuDir,
+                                binPath
+                            ]);
+                        }
+                    }
+                    // Print needed libraries:
+                    try {
+                        for (const binName of agda.agdaBinNames) {
+                            const binPath = path.join(bdistDir, 'bin', binName);
+                            yield exec.execOutput('otool', ['-L', binPath]);
+                        }
+                    }
+                    catch (error) {
+                        core.debug((0, ensure_error_1.default)(error).message);
                     }
                 }
                 break;
@@ -616,6 +663,16 @@ function uploadBdist(installDir, options) {
                         if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
                     }
                     finally { if (e_1) throw e_1.error; }
+                }
+                // Print needed libraries:
+                try {
+                    for (const binName of agda.agdaBinNames) {
+                        const binPath = path.join(bdistDir, 'bin', binName);
+                        yield exec.execOutput('dumpbin', ['/imports', binPath]);
+                    }
+                }
+                catch (error) {
+                    core.debug((0, ensure_error_1.default)(error).message);
                 }
                 break;
             }

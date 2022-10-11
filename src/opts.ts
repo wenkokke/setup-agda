@@ -120,10 +120,21 @@ export function pickSetupHaskellInputs(
 
 export function supportsClusterCounting(options: BuildOptions): boolean {
   // NOTE:
-  //   We only enable --cluster-counting on versions which support it,
-  //   i.e., versions after 2.5.3:
+  //   Agda only supports --cluster-counting on versions after 2.5.3:
   //   https://github.com/agda/agda/blob/f50c14d3a4e92ed695783e26dbe11ad1ad7b73f7/doc/release-notes/2.5.3.md
-  return simver.gte(options['agda-version'], '2.5.3')
+  //   const agdaOK = simver.gte(options['agda-version'], '2.5.3')
+  // NOTE:
+  //   But we only enable --cluster-counting on versions after 2.6.2,
+  //   since Agda version 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
+  //   text-icu versions <0.7.1.0 fail to compile with icu68+
+  const agdaOK = simver.gte(options['agda-version'], '2.6.2')
+  // NOTE:
+  //   We also don't support cluster counting on Windows Server 2019
+  //   and earlier, as the latest versions of GHC and Cabal are
+  //   incompatible with its MSYS2 version:
+  //   https://github.com/msys2/MINGW-packages/issues/10837#issue-1145843972
+  const osOK = os !== 'windows' || simver.gt(release(), '10.0.17763')
+  return agdaOK && osOK
 }
 
 export function supportsOptimiseHeavily(options: BuildOptions): boolean {

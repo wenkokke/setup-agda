@@ -69,7 +69,9 @@ async function build(options: opts.BuildOptions): Promise<string> {
   })
 
   // 4. Install ICU:
-  options = await setupIcu(options)
+  if (opts.supportsClusterCounting(options)) {
+    options = await setupIcu(options)
+  }
 
   // 5. Build:
   const installDir = agda.installDir(options['agda-version'])
