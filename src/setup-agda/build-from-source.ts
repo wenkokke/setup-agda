@@ -74,9 +74,7 @@ async function build(options: opts.BuildOptions): Promise<string> {
   // 5. Build:
   const installDir = agda.installDir(options['agda-version'])
   await buildTool.build(sourceDir, installDir, options)
-  await io.cp(path.join(sourceDir, 'src', 'data'), installDir, {
-    recursive: true
-  })
+  await io.cpR(path.join(sourceDir, 'src', 'data'), installDir)
 
   // 6. Test:
   const agdaPath = path.join(installDir, 'bin', agda.agdaBinName)

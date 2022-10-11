@@ -389,9 +389,7 @@ function build(options) {
         // 5. Build:
         const installDir = agda.installDir(options['agda-version']);
         yield buildTool.build(sourceDir, installDir, options);
-        yield io.cp(path.join(sourceDir, 'src', 'data'), installDir, {
-            recursive: true
-        });
+        yield io.cpR(path.join(sourceDir, 'src', 'data'), installDir);
         // 6. Test:
         const agdaPath = path.join(installDir, 'bin', agda.agdaBinName);
         const env = { Agda_datadir: path.join(installDir, 'data') };
@@ -553,18 +551,16 @@ const object_pick_1 = __importDefault(__nccwpck_require__(9962));
 function uploadBdist(installDir, options) {
     var e_1, _a;
     return __awaiter(this, void 0, void 0, function* () {
-        // Get the name for the distribution
+        // Get the name for the distribution:
         const bdistName = yield renderBdistName(options);
         const bdistDir = path.join(agda.agdaDir(), 'bdist', bdistName);
         io.mkdirP(bdistDir);
         // Copy binaries:
         io.mkdirP(path.join(bdistDir, 'bin'));
         for (const binName of agda.agdaBinNames)
-            yield io.cp(path.join(installDir, 'bin', binName), path.join(bdistDir, 'bin', binName));
+            yield io.cp(path.join(installDir, 'bin', binName), path.join(bdistDir, 'bin'));
         // Copy data:
-        yield io.cp(path.join(installDir, 'data'), bdistDir, {
-            recursive: true
-        });
+        yield io.cpR(path.join(installDir, 'data'), bdistDir);
         // Bundle libraries:
         switch (opts.os) {
             case 'linux': {
@@ -1277,7 +1273,7 @@ function setup(options) {
         let icuVersion = undefined;
         switch (opts.os) {
             case 'windows': {
-                // Install pkg-config and icu
+                // Install pkg-config and ICU
                 core.addPath('C:\\msys64\\mingw64\\bin');
                 core.addPath('C:\\msys64\\usr\\bin');
                 yield exec.execOutput('pacman', [
@@ -1939,7 +1935,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.rmRF = exports.mkdirP = exports.mv = exports.cp = void 0;
+exports.rmRF = exports.mkdirP = exports.mv = exports.cpR = exports.cp = void 0;
 const io = __importStar(__nccwpck_require__(7436));
 const opts = __importStar(__nccwpck_require__(1352));
 function escape(filePath) {
@@ -1958,6 +1954,12 @@ function cp(source, dest, options) {
     });
 }
 exports.cp = cp;
+function cpR(source, dest, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield io.cp(escape(source), escape(dest), Object.assign(Object.assign({}, options), { recursive: true }));
+    });
+}
+exports.cpR = cpR;
 function mv(source, dest, options) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield io.mv(escape(source), escape(dest), options);

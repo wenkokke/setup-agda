@@ -9,7 +9,7 @@ export default async function setup(
   let icuVersion = undefined
   switch (opts.os) {
     case 'windows': {
-      // Install pkg-config and icu
+      // Install pkg-config and ICU
       core.addPath('C:\\msys64\\mingw64\\bin')
       core.addPath('C:\\msys64\\usr\\bin')
       await exec.execOutput('pacman', [

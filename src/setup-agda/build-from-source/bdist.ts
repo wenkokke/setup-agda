@@ -16,7 +16,7 @@ export default async function uploadBdist(
   installDir: string,
   options: opts.BuildOptions
 ): Promise<string> {
-  // Get the name for the distribution
+  // Get the name for the distribution:
   const bdistName = await renderBdistName(options)
   const bdistDir = path.join(agda.agdaDir(), 'bdist', bdistName)
   io.mkdirP(bdistDir)
@@ -26,13 +26,11 @@ export default async function uploadBdist(
   for (const binName of agda.agdaBinNames)
     await io.cp(
       path.join(installDir, 'bin', binName),
-      path.join(bdistDir, 'bin', binName)
+      path.join(bdistDir, 'bin')
     )
 
   // Copy data:
-  await io.cp(path.join(installDir, 'data'), bdistDir, {
-    recursive: true
-  })
+  await io.cpR(path.join(installDir, 'data'), bdistDir)
 
   // Bundle libraries:
   switch (opts.os) {

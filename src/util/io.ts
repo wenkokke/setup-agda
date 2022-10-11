@@ -24,6 +24,17 @@ export async function cp(
   return await io.cp(escape(source), escape(dest), options)
 }
 
+export async function cpR(
+  source: string,
+  dest: string,
+  options?: io.CopyOptions
+): Promise<void> {
+  return await io.cp(escape(source), escape(dest), {
+    ...options,
+    recursive: true
+  })
+}
+
 export async function mv(
   source: string,
   dest: string,
