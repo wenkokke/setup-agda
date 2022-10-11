@@ -1278,13 +1278,13 @@ function setup(options) {
                 core.addPath('C:\\msys64\\mingw64\\bin');
                 core.addPath('C:\\msys64\\usr\\bin');
                 yield exec.execOutput('pacman', [
+                    '-v',
                     '--noconfirm',
-                    '-S',
-                    'mingw-w64-x86_64-pkgconf',
+                    '-Sy',
+                    'mingw-w64-x86_64-pkg-config',
                     'mingw-w64-x86_64-icu'
                 ]);
-                // Get the icu-i18n version via pkgconf:
-                core.exportVariable('PKG_CONFIG', 'pkgconf');
+                // Get the icu-i18n version via pacman:
                 icuVersion = yield exec.execOutput('pacman', [
                     '--noconfirm',
                     '-Qs',

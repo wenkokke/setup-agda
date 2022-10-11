@@ -13,13 +13,13 @@ export default async function setup(
       core.addPath('C:\\msys64\\mingw64\\bin')
       core.addPath('C:\\msys64\\usr\\bin')
       await exec.execOutput('pacman', [
+        '-v',
         '--noconfirm',
-        '-S',
-        'mingw-w64-x86_64-pkgconf',
+        '-Sy',
+        'mingw-w64-x86_64-pkg-config',
         'mingw-w64-x86_64-icu'
       ])
-      // Get the icu-i18n version via pkgconf:
-      core.exportVariable('PKG_CONFIG', 'pkgconf')
+      // Get the icu-i18n version via pacman:
       icuVersion = await exec.execOutput('pacman', [
         '--noconfirm',
         '-Qs',
