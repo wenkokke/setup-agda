@@ -1282,7 +1282,7 @@ function setup(options) {
                 yield exec.execOutput('pacman', [
                     '--noconfirm',
                     '-S',
-                    'mingw-w64-x86_64-pkg-config',
+                    'mingw-w64-x86_64-pkgconfig',
                     'mingw-w64-x86_64-icu'
                 ]);
                 break;
