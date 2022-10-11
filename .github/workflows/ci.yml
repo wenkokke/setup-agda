@@ -34,7 +34,6 @@ jobs:
         agda-version: [latest]
         cabal-version: ['3.6']
         upload-bdist: [true]
-        bdist-compress-bin: [true, false]
         exclude:
           - os: macos-11
             bdist-compress-bin: true
@@ -45,5 +44,4 @@ jobs:
       agda-version: ${{ matrix.agda-version }}
       cabal-version: ${{ matrix.cabal-version }}
       upload-bdist: ${{ matrix.upload-bdist }}
-      bdist-name: agda-{{agda-version}}-{{arch}-${{ matrix.os }}-{{bdist-compress-bin}}
-      bdist-compress-bin: ${{ matrix.bdist-compress-bin }}
+      bdist-name: agda-{{agda-version}}-{{arch}-${{ matrix.os }}-icu{{icu-version}}

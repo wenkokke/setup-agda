@@ -128,7 +128,6 @@ jobs:
           ghc-version-range: ${{ inputs.ghc-version-range }}
           upload-bdist: ${{ inputs.upload-bdist }}
           bdist-name: ${{ inputs.bdist-name }}
-          bdist-compress-bin: ${{ inputs.bdist-compress-bin }}
           cabal-version: ${{ inputs.cabal-version }}
           stack-version: ${{ inputs.stack-version }}
           enable-stack: ${{ inputs.enable-stack }}
