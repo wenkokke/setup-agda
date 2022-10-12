@@ -49,12 +49,14 @@ export default async function setup(
     }
     case 'macos': {
       // The GitHub runner for MacOS 11+ has ICU version 69.1,
-      // which is recent enough for 'text-icu' to compile.
+      // which is recent enough for 'text-icu' to compile:
+      await exec.execOutput('brew', ['install', 'icu4c'])
 
       // Get the icu prefix
       const icuPrefix = await exec.execOutput('brew', ['--prefix', 'icu4c'])
-      const icuLibDir = path.join(icuPrefix, 'lib')
+      const icuLibDir = path.join(icuPrefix.trim(), 'lib')
       const icuPkgConfigDir = path.join(icuLibDir, 'pkgconfig')
+      core.info(`export PKG_CONFIG_PATH=${icuPkgConfigDir}`)
       core.exportVariable('PKG_CONFIG_PATH', icuPkgConfigDir)
 
       // Get the icu-i18n version via pkg-config:
