@@ -70,6 +70,37 @@ export default async function uploadBdist(
   return uploadInfo.artifactName
 }
 
+async function printNeededLibs(binPath: string): Promise<void> {
+  try {
+    let output = ''
+    switch (opts.os) {
+      case 'linux': {
+        output = await exec.execOutput(
+          'patchelf',
+          ['--print-needed', binPath],
+          {silent: true}
+        )
+        break
+      }
+      case 'macos': {
+        output = await exec.execOutput('otool', ['-L', binPath], {silent: true})
+        break
+      }
+      case 'windows': {
+        output = await exec.execOutput('dumpbin', ['/imports', binPath], {
+          silent: true
+        })
+        break
+      }
+    }
+    core.info(`Needed libraries:${os.EOL}${output}`)
+  } catch (error) {
+    core.debug(
+      `Could not print needed dynamic libraries: ${ensureError(error).message}`
+    )
+  }
+}
+
 async function bundleLibs(
   bdistDir: string,
   options: opts.BuildOptions
@@ -79,16 +110,12 @@ async function bundleLibs(
       const upx = await setupUpx('3.96')
       for (const binName of agda.agdaBinNames) {
         const binPath = path.join(bdistDir, 'bin', binName)
+        // Print the needed libraries before compressing:
+        printNeededLibs(binPath)
+        // Compress with UPX:
         await exec.exec(upx, ['--best', binPath])
-      }
-      // Print needed libraries:
-      try {
-        for (const binName of agda.agdaBinNames) {
-          const binPath = path.join(bdistDir, 'bin', binName)
-          await exec.execOutput('patchelf', ['--print-needed', binPath])
-        }
-      } catch (error) {
-        core.debug(ensureError(error).message)
+        // Print the needed libraries after compressing:
+        printNeededLibs(binPath)
       }
       break
     }
@@ -96,91 +123,67 @@ async function bundleLibs(
       // If we compiled with --enable-cluster-counting, bundle ICU:
       if (opts.supportsClusterCounting(options)) {
         await io.mkdirP(path.join(bdistDir, 'lib'))
-        const icuDir = '/usr/local/opt/icu4c/lib'
-        // Libraries directly loaded by Agda:
-        const libsLoaded = [
-          `libicuuc.${options['icu-version']}.dylib`,
-          `libicui18n.${options['icu-version']}.dylib`
-        ]
-        // Libraries needed transitively:
-        const libsNeeded = [
-          ...libsLoaded,
-          `libicudata.${options['icu-version']}.dylib`
-        ]
         // Copy needed libraries:
-        for (const libName of libsNeeded) {
+        for (const libPath of options['libs-to-bundle']) {
           await io.cp(
-            path.join(icuDir, libName),
-            path.join(bdistDir, 'lib', libName)
+            path.join(libPath),
+            path.join(bdistDir, 'lib', path.basename(libPath))
           )
         }
         // Patch run paths for loaded libraries:
         for (const binName of agda.agdaBinNames) {
           const binPath = path.join(bdistDir, 'bin', binName)
-          for (const libName of libsLoaded) {
+          const libDirs = new Set<string>()
+          // Update run paths for libraries:
+          for (const libPath of options['libs-to-bundle']) {
+            const libName = path.basename(libPath)
+            libDirs.add(path.dirname(libPath))
             await exec.execOutput('install_name_tool', [
               '-change',
-              path.join('/usr/local/opt/icu4c/lib', libName),
+              libPath,
               `@rpath/${libName}`,
               binPath
             ])
+          }
+          // Add load paths for libraries:
+          for (const libDir of libDirs) {
             await exec.execOutput('install_name_tool', [
               '-add_rpath',
               '@executable_path',
               '-add_rpath',
               '@executable_path/../lib',
               '-add_rpath',
-              icuDir,
+              libDir,
               binPath
             ])
           }
+          // Print the needed libraries:
+          printNeededLibs(binPath)
         }
-      }
-      // Print needed libraries:
-      try {
-        for (const binName of agda.agdaBinNames) {
-          const binPath = path.join(bdistDir, 'bin', binName)
-          await exec.execOutput('otool', ['-L', binPath])
-        }
-      } catch (error) {
-        core.debug(ensureError(error).message)
       }
       break
     }
     case 'windows': {
       // If we compiled with --enable-cluster-counting, bundle ICU:
       if (opts.supportsClusterCounting(options)) {
-        const icuDir = 'C:\\msys64\\mingw64\\bin'
-        const libGlobber = await glob.create(path.join(icuDir, 'libicu*.dll'))
-        for await (const libPath of libGlobber.globGenerator()) {
+        // Copy needed libraries:
+        for (const libPath of options['libs-to-bundle']) {
           await io.cp(
-            libPath,
+            path.join(libPath),
             path.join(bdistDir, 'bin', path.basename(libPath))
           )
         }
       }
-      // Print needed libraries:
-      try {
-        for (const binName of agda.agdaBinNames) {
-          const binPath = path.join(bdistDir, 'bin', binName)
-          await exec.execOutput('dumpbin', ['/imports', binPath])
-        }
-      } catch (error) {
-        core.debug(ensureError(error).message)
-      }
       // Compress with UPX:
       const upx = await setupUpx('3.96')
       for (const binName of agda.agdaBinNames) {
-        await exec.exec(upx, ['--best', path.join(bdistDir, 'bin', binName)])
-      }
-      // Print needed libraries (after UPX):
-      try {
-        for (const binName of agda.agdaBinNames) {
-          const binPath = path.join(bdistDir, 'bin', binName)
-          await exec.execOutput('dumpbin', ['/imports', binPath])
-        }
-      } catch (error) {
-        core.debug(ensureError(error).message)
+        const binPath = path.join(bdistDir, 'bin', binName)
+        // Print the needed libraries before compressing:
+        printNeededLibs(binPath)
+        // Compress with UPX:
+        await exec.exec(upx, ['--best', binPath])
+        // Print the needed libraries after compressing:
+        printNeededLibs(binPath)
       }
       break
     }

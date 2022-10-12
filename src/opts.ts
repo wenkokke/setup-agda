@@ -52,6 +52,7 @@ export interface BuildOptions extends Readonly<SetupAgdaInputs> {
   readonly 'icu-version'?: string
   readonly 'upx-version'?: UPXVersion
   readonly 'package-info-cache'?: PackageInfoCache
+  readonly 'libs-to-bundle': string[]
 }
 
 export function getOptions(
@@ -88,7 +89,8 @@ export function getOptions(
     'stack-setup-ghc': getFlag('stack-setup-ghc'),
     'disable-matcher': getFlag('disable-matcher'),
     'extra-lib-dirs': [],
-    'extra-include-dirs': []
+    'extra-include-dirs': [],
+    'libs-to-bundle': []
   }
   // Validate build options
   if (options['agda-version'] === 'nightly')

@@ -108,7 +108,8 @@ function getOptions(inputs) {
         'stack-setup-ghc': getFlag('stack-setup-ghc'),
         'disable-matcher': getFlag('disable-matcher'),
         'extra-lib-dirs': [],
-        'extra-include-dirs': []
+        'extra-include-dirs': [],
+        'libs-to-bundle': []
     };
     // Validate build options
     if (options['agda-version'] === 'nightly')
@@ -538,13 +539,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __asyncValues = (this && this.__asyncValues) || function (o) {
-    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-    var m = o[Symbol.asyncIterator], i;
-    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
-    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
-    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -603,25 +597,46 @@ function uploadBdist(installDir, options) {
     });
 }
 exports["default"] = uploadBdist;
+function printNeededLibs(binPath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            let output = '';
+            switch (opts.os) {
+                case 'linux': {
+                    output = yield exec.execOutput('patchelf', ['--print-needed', binPath], { silent: true });
+                    break;
+                }
+                case 'macos': {
+                    output = yield exec.execOutput('otool', ['-L', binPath], { silent: true });
+                    break;
+                }
+                case 'windows': {
+                    output = yield exec.execOutput('dumpbin', ['/imports', binPath], {
+                        silent: true
+                    });
+                    break;
+                }
+            }
+            core.info(`Needed libraries:${os.EOL}${output}`);
+        }
+        catch (error) {
+            core.debug(`Could not print needed dynamic libraries: ${(0, ensure_error_1.default)(error).message}`);
+        }
+    });
+}
 function bundleLibs(bdistDir, options) {
-    var e_1, _a;
     return __awaiter(this, void 0, void 0, function* () {
         switch (opts.os) {
             case 'linux': {
                 const upx = yield (0, setup_upx_1.default)('3.96');
                 for (const binName of agda.agdaBinNames) {
                     const binPath = path.join(bdistDir, 'bin', binName);
+                    // Print the needed libraries before compressing:
+                    printNeededLibs(binPath);
+                    // Compress with UPX:
                     yield exec.exec(upx, ['--best', binPath]);
-                }
-                // Print needed libraries:
-                try {
-                    for (const binName of agda.agdaBinNames) {
-                        const binPath = path.join(bdistDir, 'bin', binName);
-                        yield exec.execOutput('patchelf', ['--print-needed', binPath]);
-                    }
-                }
-                catch (error) {
-                    core.debug((0, ensure_error_1.default)(error).message);
+                    // Print the needed libraries after compressing:
+                    printNeededLibs(binPath);
                 }
                 break;
             }
@@ -629,98 +644,61 @@ function bundleLibs(bdistDir, options) {
                 // If we compiled with --enable-cluster-counting, bundle ICU:
                 if (opts.supportsClusterCounting(options)) {
                     yield io.mkdirP(path.join(bdistDir, 'lib'));
-                    const icuDir = '/usr/local/opt/icu4c/lib';
-                    // Libraries directly loaded by Agda:
-                    const libsLoaded = [
-                        `libicuuc.${options['icu-version']}.dylib`,
-                        `libicui18n.${options['icu-version']}.dylib`
-                    ];
-                    // Libraries needed transitively:
-                    const libsNeeded = [
-                        ...libsLoaded,
-                        `libicudata.${options['icu-version']}.dylib`
-                    ];
                     // Copy needed libraries:
-                    for (const libName of libsNeeded) {
-                        yield io.cp(path.join(icuDir, libName), path.join(bdistDir, 'lib', libName));
+                    for (const libPath of options['libs-to-bundle']) {
+                        yield io.cp(path.join(libPath), path.join(bdistDir, 'lib', path.basename(libPath)));
                     }
                     // Patch run paths for loaded libraries:
                     for (const binName of agda.agdaBinNames) {
                         const binPath = path.join(bdistDir, 'bin', binName);
-                        for (const libName of libsLoaded) {
+                        const libDirs = new Set();
+                        // Update run paths for libraries:
+                        for (const libPath of options['libs-to-bundle']) {
+                            const libName = path.basename(libPath);
+                            libDirs.add(path.dirname(libPath));
                             yield exec.execOutput('install_name_tool', [
                                 '-change',
-                                path.join('/usr/local/opt/icu4c/lib', libName),
+                                libPath,
                                 `@rpath/${libName}`,
                                 binPath
                             ]);
+                        }
+                        // Add load paths for libraries:
+                        for (const libDir of libDirs) {
                             yield exec.execOutput('install_name_tool', [
                                 '-add_rpath',
                                 '@executable_path',
                                 '-add_rpath',
                                 '@executable_path/../lib',
                                 '-add_rpath',
-                                icuDir,
+                                libDir,
                                 binPath
                             ]);
                         }
+                        // Print the needed libraries:
+                        printNeededLibs(binPath);
                     }
-                }
-                // Print needed libraries:
-                try {
-                    for (const binName of agda.agdaBinNames) {
-                        const binPath = path.join(bdistDir, 'bin', binName);
-                        yield exec.execOutput('otool', ['-L', binPath]);
-                    }
-                }
-                catch (error) {
-                    core.debug((0, ensure_error_1.default)(error).message);
                 }
                 break;
             }
             case 'windows': {
                 // If we compiled with --enable-cluster-counting, bundle ICU:
                 if (opts.supportsClusterCounting(options)) {
-                    const icuDir = 'C:\\msys64\\mingw64\\bin';
-                    const libGlobber = yield glob.create(path.join(icuDir, 'libicu*.dll'));
-                    try {
-                        for (var _b = __asyncValues(libGlobber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
-                            const libPath = _c.value;
-                            yield io.cp(libPath, path.join(bdistDir, 'bin', path.basename(libPath)));
-                        }
+                    // Copy needed libraries:
+                    for (const libPath of options['libs-to-bundle']) {
+                        yield io.cp(path.join(libPath), path.join(bdistDir, 'bin', path.basename(libPath)));
                     }
-                    catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                    finally {
-                        try {
-                            if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
-                        }
-                        finally { if (e_1) throw e_1.error; }
-                    }
-                }
-                // Print needed libraries:
-                try {
-                    for (const binName of agda.agdaBinNames) {
-                        const binPath = path.join(bdistDir, 'bin', binName);
-                        yield exec.execOutput('dumpbin', ['/imports', binPath]);
-                    }
-                }
-                catch (error) {
-                    core.debug((0, ensure_error_1.default)(error).message);
                 }
                 // Compress with UPX:
                 const upx = yield (0, setup_upx_1.default)('3.96');
                 for (const binName of agda.agdaBinNames) {
-                    yield exec.exec(upx, ['--best', path.join(bdistDir, 'bin', binName)]);
-                }
-                // Print needed libraries (after UPX):
-                try {
-                    for (const binName of agda.agdaBinNames) {
-                        const binPath = path.join(bdistDir, 'bin', binName);
-                        yield exec.execOutput('dumpbin', ['/imports', binPath]);
-                    }
-                }
-                catch (error) {
-                    core.debug((0, ensure_error_1.default)(error).message);
+                    const binPath = path.join(bdistDir, 'bin', binName);
+                    // Print the needed libraries before compressing:
+                    printNeededLibs(binPath);
+                    // Compress with UPX:
+                    yield exec.exec(upx, ['--best', binPath]);
+                    // Print the needed libraries after compressing:
+                    printNeededLibs(binPath);
                 }
                 break;
             }
@@ -1346,13 +1324,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
+const glob = __importStar(__nccwpck_require__(8090));
 const opts = __importStar(__nccwpck_require__(1352));
 const exec = __importStar(__nccwpck_require__(4369));
+const path = __importStar(__nccwpck_require__(1017));
 function setup(options) {
     var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
         // Otherwise, setup ICU:
         let icuVersion = undefined;
+        let icuLibsToBundle = [];
         switch (opts.os) {
             case 'windows': {
                 // Install pkg-config and ICU
@@ -1373,6 +1354,10 @@ function setup(options) {
                 ]);
                 icuVersion =
                     (_c = (_b = (_a = icuVersion.match(/(?<version>\d[\d.]+\d)/)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version) !== null && _c !== void 0 ? _c : icuVersion;
+                // Get the ICU libraries to bundle:
+                const icuLibDir = 'C:\\msys64\\mingw64\\bin';
+                const icuLibGlobber = yield glob.create(path.join(icuLibDir, 'icu*.dll'));
+                icuLibsToBundle = yield icuLibGlobber.glob();
                 break;
             }
             case 'linux': {
@@ -1386,17 +1371,24 @@ function setup(options) {
             }
             case 'macos': {
                 // The GitHub runner for MacOS 11+ has ICU version 69.1,
-                // which is recent enough for 'text-icu' to compile:
-                core.exportVariable('PKG_CONFIG_PATH', '/usr/local/opt/icu4c/lib/pkgconfig');
+                // which is recent enough for 'text-icu' to compile.
+                // Get the icu prefix
+                const icuPrefix = yield exec.execOutput('brew', ['--prefix', 'icu4c']);
+                const icuLibDir = path.join(icuPrefix, 'lib');
+                const icuPkgConfigDir = path.join(icuLibDir, 'pkgconfig');
+                core.exportVariable('PKG_CONFIG_PATH', icuPkgConfigDir);
                 // Get the icu-i18n version via pkg-config:
                 icuVersion = yield exec.execOutput('pkg-config', [
                     '--modversion',
                     'icu-i18n'
                 ]);
+                // Get the ICU libraries to bundle:
+                const icuLibGlobber = yield glob.create(path.join(icuLibDir, '*.dylib'));
+                icuLibsToBundle = yield icuLibGlobber.glob();
                 break;
             }
         }
-        return Object.assign(Object.assign({}, options), { 'icu-version': icuVersion });
+        return Object.assign(Object.assign({}, options), { 'icu-version': icuVersion, 'libs-to-bundle': [...options['libs-to-bundle'], ...icuLibsToBundle] });
     });
 }
 exports["default"] = setup;
