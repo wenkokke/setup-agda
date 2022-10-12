@@ -75,7 +75,7 @@ export function getOptions(
     const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs?.[k]
     return ![false, '', 'false', undefined].includes(maybeInput)
   }
-  const options = {
+  let options: BuildOptions = {
     'agda-version': getOption('agda-version'),
     'ghc-version-range': getOption('ghc-version-range'),
     'ghc-version': getOption('ghc-version'),
@@ -101,6 +101,8 @@ export function getOptions(
     throw Error('Input "bdist-compress-bin" is unsupported on MacOS <12')
   if (!semver.validRange(options['ghc-version-range']))
     throw Error('Input "ghc-version-range" is not a valid version range')
+  // Refine build options:
+  options = setGhcVersionRange(options)
   return options
 }
 
@@ -120,6 +122,22 @@ export function pickSetupHaskellInputs(
 
 // Helper functions to check support of various build options
 
+export function setGhcVersionRange(options: BuildOptions): BuildOptions {
+  // NOTE:
+  //   Windows Server 2019 adds an extra restriction to the GHC
+  //   version, the latest versions of GHC ship with their own,
+  //   internal and incompatible copy of MSYS2:
+  //   https://github.com/msys2/MINGW-packages/issues/10837#issue-1145843972
+  if (os === 'windows' && simver.lte(release(), '10.0.17763')) {
+    return {
+      ...options,
+      'ghc-version-range': `${options['ghc-version-range']} <9.2`
+    }
+  } else {
+    return options
+  }
+}
+
 export function supportsClusterCounting(options: BuildOptions): boolean {
   // NOTE:
   //   Agda only supports --cluster-counting on versions after 2.5.3:
@@ -129,14 +147,7 @@ export function supportsClusterCounting(options: BuildOptions): boolean {
   //   But we only enable --cluster-counting on versions after 2.6.2,
   //   since Agda version 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
   //   text-icu versions <0.7.1.0 fail to compile with icu68+
-  const agdaOK = simver.gte(options['agda-version'], '2.6.2')
-  // NOTE:
-  //   We also don't support cluster counting on Windows Server 2019
-  //   and earlier, as the latest versions of GHC and Cabal are
-  //   incompatible with its MSYS2 version:
-  //   https://github.com/msys2/MINGW-packages/issues/10837#issue-1145843972
-  const osOK = os !== 'windows' || simver.gt(release(), '10.0.17763')
-  return agdaOK && osOK
+  return simver.gte(options['agda-version'], '2.6.2')
 }
 
 export function supportsOptimiseHeavily(options: BuildOptions): boolean {

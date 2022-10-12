@@ -73,7 +73,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.os = exports.supportsUPX = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.pickSetupHaskellInputs = exports.getOptions = void 0;
+exports.os = exports.supportsUPX = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.setGhcVersionRange = exports.pickSetupHaskellInputs = exports.getOptions = void 0;
 const fs = __importStar(__nccwpck_require__(7147));
 const semver = __importStar(__nccwpck_require__(1383));
 const yaml = __importStar(__nccwpck_require__(1917));
@@ -94,7 +94,7 @@ function getOptions(inputs) {
         const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
         return ![false, '', 'false', undefined].includes(maybeInput);
     };
-    const options = {
+    let options = {
         'agda-version': getOption('agda-version'),
         'ghc-version-range': getOption('ghc-version-range'),
         'ghc-version': getOption('ghc-version'),
@@ -120,6 +120,8 @@ function getOptions(inputs) {
         throw Error('Input "bdist-compress-bin" is unsupported on MacOS <12');
     if (!semver.validRange(options['ghc-version-range']))
         throw Error('Input "ghc-version-range" is not a valid version range');
+    // Refine build options:
+    options = setGhcVersionRange(options);
     return options;
 }
 exports.getOptions = getOptions;
@@ -136,6 +138,20 @@ function pickSetupHaskellInputs(options) {
 }
 exports.pickSetupHaskellInputs = pickSetupHaskellInputs;
 // Helper functions to check support of various build options
+function setGhcVersionRange(options) {
+    // NOTE:
+    //   Windows Server 2019 adds an extra restriction to the GHC
+    //   version, the latest versions of GHC ship with their own,
+    //   internal and incompatible copy of MSYS2:
+    //   https://github.com/msys2/MINGW-packages/issues/10837#issue-1145843972
+    if (exports.os === 'windows' && simver.lte((0, os_1.release)(), '10.0.17763')) {
+        return Object.assign(Object.assign({}, options), { 'ghc-version-range': `${options['ghc-version-range']} <9.2` });
+    }
+    else {
+        return options;
+    }
+}
+exports.setGhcVersionRange = setGhcVersionRange;
 function supportsClusterCounting(options) {
     // NOTE:
     //   Agda only supports --cluster-counting on versions after 2.5.3:
@@ -145,14 +161,7 @@ function supportsClusterCounting(options) {
     //   But we only enable --cluster-counting on versions after 2.6.2,
     //   since Agda version 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
     //   text-icu versions <0.7.1.0 fail to compile with icu68+
-    const agdaOK = simver.gte(options['agda-version'], '2.6.2');
-    // NOTE:
-    //   We also don't support cluster counting on Windows Server 2019
-    //   and earlier, as the latest versions of GHC and Cabal are
-    //   incompatible with its MSYS2 version:
-    //   https://github.com/msys2/MINGW-packages/issues/10837#issue-1145843972
-    const osOK = exports.os !== 'windows' || simver.gt((0, os_1.release)(), '10.0.17763');
-    return agdaOK && osOK;
+    return simver.gte(options['agda-version'], '2.6.2');
 }
 exports.supportsClusterCounting = supportsClusterCounting;
 function supportsOptimiseHeavily(options) {
