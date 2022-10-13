@@ -20,7 +20,9 @@ export async function resolveAgdaVersion(
     packageInfoOptions(options)
   )
   if (options['agda-version'] !== agdaVersion) {
-    core.info(`Resolved ${options['agda-version']} to ${agdaVersion}`)
+    core.info(
+      `Resolved Agda version ${options['agda-version']} to ${agdaVersion}`
+    )
     return {...options, 'agda-version': agdaVersion}
   } else {
     return options

@@ -20,16 +20,16 @@ export default async function buildFromSource(
   const {sourceDir, buildTool, requireSetup} = await core.group(
     '🛠 Preparing to build Agda from source',
     async (): Promise<Readonly<BuildInfo>> => {
-      const result: Partial<BuildInfo> = {}
+      const ret: Partial<BuildInfo> = {}
       // Download the source:
       core.info('Download source distribution from Hackage')
-      result.sourceDir = await util.getAgdaSource(options)
-      core.debug(`Downloaded source distribution to ${result.sourceDir}`)
+      ret.sourceDir = await util.getAgdaSource(options)
+      core.debug(`Downloaded source distribution to ${ret.sourceDir}`)
       // Determine the build tool:
-      result.buildTool = options['enable-stack'] ? stack : cabal
-      core.info(`Set build tool to ${result.buildTool.name}`)
+      ret.buildTool = options['enable-stack'] ? stack : cabal
+      core.info(`Set build tool to ${ret.buildTool.name}`)
       // Determine the compatible GHC versions:
-      const versions = await buildTool.compatibleGhcVersions(result.sourceDir)
+      const versions = await ret.buildTool.compatibleGhcVersions(ret.sourceDir)
       assert(
         options['compatible-ghc-versions'].length === 0,
         `Option 'compatible-ghc-versions' is not empty: ${options['compatible-ghc-versions']}`
@@ -41,14 +41,14 @@ export default async function buildFromSource(
       const maybeOptions = await tryInstalledBuildTools(options)
       if (maybeOptions !== null) {
         core.info('Found compatible versions of GHC and Cabal')
-        result.requireSetup = false
+        ret.requireSetup = false
         options = maybeOptions
-        return result as Readonly<BuildInfo>
+        return ret as Readonly<BuildInfo>
       } else {
         core.info('Could not find compatible versions of GHC and Cabal')
-        result.requireSetup = true
+        ret.requireSetup = true
         options = selectGhcVersion(options)
-        return result as Readonly<BuildInfo>
+        return ret as Readonly<BuildInfo>
       }
     }
   )

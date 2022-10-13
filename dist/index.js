@@ -327,10 +327,7 @@ function setup(inputs) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             // 1. Parse inputs & validate inputs:
-            const buildOptions = yield core.group('🛠 Preparing to setup an Agda environment', () => __awaiter(this, void 0, void 0, function* () {
-                const options = opts.getOptions(inputs);
-                return yield util.resolveAgdaVersion(options);
-            }));
+            const buildOptions = yield util.resolveAgdaVersion(opts.getOptions(inputs));
             // 3. Build from source:
             // NOTE: As output groups cannot be nested, we defer to individual functions.
             let maybeAgdaDir = null;
@@ -454,16 +451,16 @@ const stack = __importStar(__nccwpck_require__(5590));
 function buildFromSource(options) {
     return __awaiter(this, void 0, void 0, function* () {
         const { sourceDir, buildTool, requireSetup } = yield core.group('🛠 Preparing to build Agda from source', () => __awaiter(this, void 0, void 0, function* () {
-            const result = {};
+            const ret = {};
             // Download the source:
             core.info('Download source distribution from Hackage');
-            result.sourceDir = yield util.getAgdaSource(options);
-            core.debug(`Downloaded source distribution to ${result.sourceDir}`);
+            ret.sourceDir = yield util.getAgdaSource(options);
+            core.debug(`Downloaded source distribution to ${ret.sourceDir}`);
             // Determine the build tool:
-            result.buildTool = options['enable-stack'] ? stack : cabal;
-            core.info(`Set build tool to ${result.buildTool.name}`);
+            ret.buildTool = options['enable-stack'] ? stack : cabal;
+            core.info(`Set build tool to ${ret.buildTool.name}`);
             // Determine the compatible GHC versions:
-            const versions = yield buildTool.compatibleGhcVersions(result.sourceDir);
+            const versions = yield ret.buildTool.compatibleGhcVersions(ret.sourceDir);
             (0, node_assert_1.default)(options['compatible-ghc-versions'].length === 0, `Option 'compatible-ghc-versions' is not empty: ${options['compatible-ghc-versions']}`);
             options = Object.assign(Object.assign({}, options), { 'compatible-ghc-versions': versions });
             core.info(`Found compatible GHC versions: [${versions.join(', ')}]`);
@@ -472,15 +469,15 @@ function buildFromSource(options) {
             const maybeOptions = yield tryInstalledBuildTools(options);
             if (maybeOptions !== null) {
                 core.info('Found compatible versions of GHC and Cabal');
-                result.requireSetup = false;
+                ret.requireSetup = false;
                 options = maybeOptions;
-                return result;
+                return ret;
             }
             else {
                 core.info('Could not find compatible versions of GHC and Cabal');
-                result.requireSetup = true;
+                ret.requireSetup = true;
                 options = selectGhcVersion(options);
-                return result;
+                return ret;
             }
         }));
         // 3. Setup GHC via <haskell/actions/setup>:
@@ -1411,7 +1408,7 @@ function resolveAgdaVersion(options) {
         // Resolve the given version against Hackage's package versions:
         const agdaVersion = yield hackage.resolvePackageVersion('Agda', options['agda-version'], packageInfoOptions(options));
         if (options['agda-version'] !== agdaVersion) {
-            core.info(`Resolved ${options['agda-version']} to ${agdaVersion}`);
+            core.info(`Resolved Agda version ${options['agda-version']} to ${agdaVersion}`);
             return Object.assign(Object.assign({}, options), { 'agda-version': agdaVersion });
         }
         else {

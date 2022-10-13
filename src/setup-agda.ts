@@ -14,13 +14,7 @@ export default async function setup(
 ): Promise<void> {
   try {
     // 1. Parse inputs & validate inputs:
-    const buildOptions = await core.group(
-      '🛠 Preparing to setup an Agda environment',
-      async () => {
-        const options = opts.getOptions(inputs)
-        return await util.resolveAgdaVersion(options)
-      }
-    )
+    const buildOptions = await util.resolveAgdaVersion(opts.getOptions(inputs))
 
     // 3. Build from source:
     // NOTE: As output groups cannot be nested, we defer to individual functions.
