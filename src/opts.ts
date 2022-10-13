@@ -10,7 +10,6 @@ import pick from 'object.pick'
 import {homedir, release} from 'node:os'
 import distPackageInfoCache from './package-info/Agda.json'
 import distBdistIndex from './package-info/Agda.bdist.json'
-import assert from 'node:assert'
 
 // Setup options for haskell/actions/setup:
 
@@ -64,55 +63,24 @@ export interface BuildOptions extends Readonly<SetupAgdaInputs> {
 
 // Helper functions to check support of various build options
 
-export function addGhcVersionRestriction(options: BuildOptions): BuildOptions {
-  // NOTE:
-  //   Windows Server 2019 adds an extra restriction to the GHC
-  //   version, the latest versions of GHC ship with their own,
-  //   internal and incompatible copy of MSYS2:
-  //   https://github.com/msys2/MINGW-packages/issues/10837#issue-1145843972
-  if (isWindowsServerOlderThan2022()) {
-    core.info('Add GHC version restriction "<9"')
-    const ghcVersionRange = semver.validRange(
-      `${options['ghc-version-range']} <9`
-    )
-    assert(
-      ghcVersionRange !== null,
-      `Invalid GHC version range "${options['ghc-version-range']} <9.2"`
-    )
-    return {...options, 'ghc-version-range': ghcVersionRange}
-  } else {
-    return options
-  }
-}
-
 export function enableClusterCounting(options: BuildOptions): boolean {
+  // NOTE:
+  //   We only enable --cluster-counting on versions after 2.6.2,
+  //   since Agda version 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
+  //   text-icu versions <0.7.1.0 fail to compile with icu68+, and we
+  //   do not currently support building with outdated versions of ICU:
   return (
     !options['disable-cluster-counting'] &&
     supportsClusterCounting(options) &&
-    !isWindowsServerOlderThan2022()
+    simver.gte(options['agda-version'], '2.6.2')
   )
-}
-
-export function isWindowsServerOlderThan2022(): boolean {
-  return os === 'windows' && simver.lte(release(), '10.0.17763')
 }
 
 export function supportsClusterCounting(options: BuildOptions): boolean {
   // NOTE:
   //   Agda only supports --cluster-counting on versions after 2.5.3:
   //   https://github.com/agda/agda/blob/f50c14d3a4e92ed695783e26dbe11ad1ad7b73f7/doc/release-notes/2.5.3.md
-  //   const agdaOK = simver.gte(options['agda-version'], '2.5.3')
-  const flagSupported = simver.gte(options['agda-version'], '2.5.3')
-  // NOTE:
-  //   We only enable --cluster-counting on versions after 2.6.2,
-  //   since Agda version 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
-  //   text-icu versions <0.7.1.0 fail to compile with icu68+, and we
-  //   do not currently support building with outdated versions of ICU:
-  const icuVersionOK = simver.gte(options['agda-version'], '2.6.2')
-  // NOTE:
-  //   We only enable --cluster-counting on recent versions of Windows:
-  // const osOK = os === 'linux' || os === 'macos' || osVersion === 'windows-2022'
-  return flagSupported && icuVersionOK // && osOK
+  return simver.gte(options['agda-version'], '2.5.3')
 }
 
 export function supportsOptimiseHeavily(options: BuildOptions): boolean {
@@ -226,7 +194,7 @@ export function getOptions(
     const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs?.[k]
     return ![false, '', 'false', undefined].includes(maybeInput)
   }
-  let options: BuildOptions = {
+  const options: BuildOptions = {
     'agda-version': getOption('agda-version'),
     'ghc-version-range': getOption('ghc-version-range'),
     'compatible-ghc-versions': [],
@@ -257,8 +225,6 @@ export function getOptions(
   if (!semver.validRange(options['ghc-version-range']))
     throw Error('Input "ghc-version-range" is not a valid version range')
 
-  // Refine build options:
-  options = addGhcVersionRestriction(options)
   return options
 }
 

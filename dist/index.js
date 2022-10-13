@@ -73,7 +73,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.pickSetupHaskellInputs = exports.getOptions = exports.os = exports.bdistIndex = exports.packageInfoCache = exports.supportsUPX = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.isWindowsServerOlderThan2022 = exports.enableClusterCounting = exports.addGhcVersionRestriction = void 0;
+exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.pickSetupHaskellInputs = exports.getOptions = exports.os = exports.bdistIndex = exports.packageInfoCache = exports.supportsUPX = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.enableClusterCounting = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const fs = __importStar(__nccwpck_require__(7561));
 const semver = __importStar(__nccwpck_require__(1383));
@@ -85,51 +85,23 @@ const object_pick_1 = __importDefault(__nccwpck_require__(9962));
 const node_os_1 = __nccwpck_require__(612);
 const Agda_json_1 = __importDefault(__nccwpck_require__(4862));
 const Agda_bdist_json_1 = __importDefault(__nccwpck_require__(3475));
-const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 // Helper functions to check support of various build options
-function addGhcVersionRestriction(options) {
-    // NOTE:
-    //   Windows Server 2019 adds an extra restriction to the GHC
-    //   version, the latest versions of GHC ship with their own,
-    //   internal and incompatible copy of MSYS2:
-    //   https://github.com/msys2/MINGW-packages/issues/10837#issue-1145843972
-    if (isWindowsServerOlderThan2022()) {
-        core.info('Add GHC version restriction "<9"');
-        const ghcVersionRange = semver.validRange(`${options['ghc-version-range']} <9`);
-        (0, node_assert_1.default)(ghcVersionRange !== null, `Invalid GHC version range "${options['ghc-version-range']} <9.2"`);
-        return Object.assign(Object.assign({}, options), { 'ghc-version-range': ghcVersionRange });
-    }
-    else {
-        return options;
-    }
-}
-exports.addGhcVersionRestriction = addGhcVersionRestriction;
 function enableClusterCounting(options) {
-    return (!options['disable-cluster-counting'] &&
-        supportsClusterCounting(options) &&
-        !isWindowsServerOlderThan2022());
-}
-exports.enableClusterCounting = enableClusterCounting;
-function isWindowsServerOlderThan2022() {
-    return exports.os === 'windows' && simver.lte((0, node_os_1.release)(), '10.0.17763');
-}
-exports.isWindowsServerOlderThan2022 = isWindowsServerOlderThan2022;
-function supportsClusterCounting(options) {
-    // NOTE:
-    //   Agda only supports --cluster-counting on versions after 2.5.3:
-    //   https://github.com/agda/agda/blob/f50c14d3a4e92ed695783e26dbe11ad1ad7b73f7/doc/release-notes/2.5.3.md
-    //   const agdaOK = simver.gte(options['agda-version'], '2.5.3')
-    const flagSupported = simver.gte(options['agda-version'], '2.5.3');
     // NOTE:
     //   We only enable --cluster-counting on versions after 2.6.2,
     //   since Agda version 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
     //   text-icu versions <0.7.1.0 fail to compile with icu68+, and we
     //   do not currently support building with outdated versions of ICU:
-    const icuVersionOK = simver.gte(options['agda-version'], '2.6.2');
+    return (!options['disable-cluster-counting'] &&
+        supportsClusterCounting(options) &&
+        simver.gte(options['agda-version'], '2.6.2'));
+}
+exports.enableClusterCounting = enableClusterCounting;
+function supportsClusterCounting(options) {
     // NOTE:
-    //   We only enable --cluster-counting on recent versions of Windows:
-    // const osOK = os === 'linux' || os === 'macos' || osVersion === 'windows-2022'
-    return flagSupported && icuVersionOK; // && osOK
+    //   Agda only supports --cluster-counting on versions after 2.5.3:
+    //   https://github.com/agda/agda/blob/f50c14d3a4e92ed695783e26dbe11ad1ad7b73f7/doc/release-notes/2.5.3.md
+    return simver.gte(options['agda-version'], '2.5.3');
 }
 exports.supportsClusterCounting = supportsClusterCounting;
 function supportsOptimiseHeavily(options) {
@@ -198,7 +170,7 @@ function getOptions(inputs) {
         const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
         return ![false, '', 'false', undefined].includes(maybeInput);
     };
-    let options = {
+    const options = {
         'agda-version': getOption('agda-version'),
         'ghc-version-range': getOption('ghc-version-range'),
         'compatible-ghc-versions': [],
@@ -227,8 +199,6 @@ function getOptions(inputs) {
         throw Error('Input "bdist-compress-bin" is unsupported on MacOS <12');
     if (!semver.validRange(options['ghc-version-range']))
         throw Error('Input "ghc-version-range" is not a valid version range');
-    // Refine build options:
-    options = addGhcVersionRestriction(options);
     return options;
 }
 exports.getOptions = getOptions;
