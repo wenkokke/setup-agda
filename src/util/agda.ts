@@ -1,14 +1,6 @@
-import * as core from '@actions/core'
-import * as glob from '@actions/glob'
-import * as path from 'path'
+import * as path from 'node:path'
 import * as opts from '../opts'
 import * as exec from './exec'
-import * as os from 'os'
-import distPackageInfoCache from '../package-info/Agda.json'
-
-// Package Info
-
-export const packageInfoCache = distPackageInfoCache as opts.PackageInfoCache
 
 // Executable names
 
@@ -19,74 +11,69 @@ export const agdaModeBinName: string =
 
 export const agdaBinNames: string[] = [agdaBinName, agdaModeBinName]
 
-// System directories
+// System calls
 
-export function agdaDir(): string {
-  switch (opts.os) {
-    case 'linux':
-    case 'macos':
-      return path.join(os.homedir(), '.agda')
-    case 'windows':
-      return path.join(os.homedir(), 'AppData', 'Roaming', 'agda')
+export interface AgdaOptions {
+  readonly agdaBin: string
+  readonly agdaDataDir: string
+}
+
+function resolveAgdaOptions(
+  agdaOptions?: Partial<AgdaOptions>,
+  options?: exec.ExecOptions
+): [string, exec.ExecOptions | undefined] {
+  const agdaBin = agdaOptions?.agdaBin ?? agdaBinName
+  // Set 'Agda_datadir' if it is explicitly passed:
+  const agdaDataDirUnset =
+    options?.env?.Agda_datadir === undefined &&
+    process.env.Agda_datadir !== undefined
+  if (agdaOptions?.agdaDataDir !== undefined || agdaDataDirUnset) {
+    const agdaDataDirDefault = path.normalize(
+      path.join(path.dirname(path.resolve(agdaBin)), '..', 'data')
+    )
+    options = {
+      ...options,
+      env: {
+        ...(options?.env ?? process.env),
+        Agda_datadir: agdaOptions?.agdaDataDir ?? agdaDataDirDefault
+      }
+    }
+  }
+  return [agdaBin, options]
+}
+
+function parseAgdaVersionOutput(progOutput: string): string {
+  if (progOutput.startsWith('Agda version ')) {
+    return progOutput.substring('Agda version '.length).trim()
+  } else {
+    throw Error(`Could not parse Agda version: '${progOutput}'`)
   }
 }
 
-export function installDir(version: string): string {
-  return path.join(agdaDir(), 'agda', version)
-}
-
-// System calls
-
-export interface AgdaExecOptions extends exec.ExecOptions {
-  agdaPath?: string
-}
-
 export async function getSystemAgdaVersion(
-  options?: AgdaExecOptions
+  agdaOptions?: Partial<AgdaOptions>,
+  options?: exec.ExecOptions
 ): Promise<string> {
-  return await exec.getVersion(options?.agdaPath ?? agdaBinName, {
-    parseOutput: output => {
-      if (output.startsWith('Agda version ')) {
-        return output.substring('Agda version '.length).trim()
-      } else {
-        throw Error(`Could not parse Agda version: '${output}'`)
-      }
-    },
-    silent: true
-  })
+  const [agdaBin, optionsWithDataDir] = resolveAgdaOptions(agdaOptions, options)
+  const versionOptions = {
+    ...optionsWithDataDir,
+    parseOutput: parseAgdaVersionOutput
+  }
+  return await exec.getVersion(agdaBin, versionOptions)
 }
 
 export async function getSystemAgdaDataDir(
-  options?: AgdaExecOptions
+  agdaOptions?: Partial<AgdaOptions>,
+  options?: exec.ExecOptions
 ): Promise<string> {
-  return await execSystemAgda(['--print-agda-dir'], options)
+  return await execSystemAgda(['--print-agda-dir'], agdaOptions, options)
 }
 
 export async function execSystemAgda(
   args: string[],
-  options?: AgdaExecOptions
+  agdaOptions?: Partial<AgdaOptions>,
+  options?: exec.ExecOptions
 ): Promise<string> {
-  return await exec.execOutput(options?.agdaPath ?? agdaBinName, args, options)
-}
-
-export async function testSystemAgda(options?: AgdaExecOptions): Promise<void> {
-  const versionString = await getSystemAgdaVersion(options)
-  core.info(`Found Agda version ${versionString}`)
-  const dataDir = await getSystemAgdaDataDir(options)
-  core.info(`Found Agda data directory at ${dataDir}`)
-  const globber = await glob.create(
-    path.join(dataDir, 'lib', 'prim', '**', '*.agda'),
-    {
-      followSymbolicLinks: false,
-      implicitDescendants: false,
-      matchDirectories: false
-    }
-  )
-  for await (const agdaFile of globber.globGenerator()) {
-    core.info(`Compile ${agdaFile}`)
-    await execSystemAgda(['-v2', agdaFile], {
-      ...options,
-      cwd: path.join(dataDir, 'lib', 'prim')
-    })
-  }
+  const [agdaBin, optionsWithDataDir] = resolveAgdaOptions(agdaOptions, options)
+  return await exec.getoutput(agdaBin, args, optionsWithDataDir)
 }

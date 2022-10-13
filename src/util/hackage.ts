@@ -1,12 +1,12 @@
-import * as httpm from '@actions/http-client'
 import * as core from '@actions/core'
-import * as os from 'os'
-import * as simver from './simver'
+import * as httpm from '@actions/http-client'
 import * as tc from '@actions/tool-cache'
-import * as path from 'path'
-import * as http from 'http'
+import assert from 'node:assert'
+import * as http from 'node:http'
+import * as os from 'node:os'
+import * as path from 'node:path'
 import * as opts from '../opts'
-import assert from 'assert'
+import * as simver from './simver'
 
 function packageInfoUrl(packageName: string): string {
   return `https://hackage.haskell.org/package/${packageName}.json`

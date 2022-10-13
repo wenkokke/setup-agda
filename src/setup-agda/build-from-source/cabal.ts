@@ -2,13 +2,14 @@ import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as io from '../../util/io'
 import * as exec from '../../util/exec'
-import assert from 'assert'
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
 import * as semver from 'semver'
 import * as opts from '../../opts'
 import * as haskell from '../../util/haskell'
+
+export const name = 'cabal'
 
 export async function build(
   sourceDir: string,
@@ -41,31 +42,6 @@ export async function build(
     ],
     execOptions
   )
-}
-
-export async function findGhcVersionRange(
-  sourceDir: string,
-  options: opts.BuildOptions
-): Promise<string> {
-  // Get compatible versions:
-  let versions = await getGhcVersionCandidates(sourceDir)
-
-  // Filter using 'ghc-version-range'
-  versions = versions.filter(version =>
-    semver.satisfies(version, options['ghc-version-range'])
-  )
-
-  // Return version range:
-  if (versions.length === null) {
-    throw Error(`No compatible GHC versions found`)
-  } else {
-    const range = versions.join(' || ')
-    assert(
-      semver.validRange(range) !== null,
-      `Invalid GHC version range ${range}`
-    )
-    return range
-  }
 }
 
 function buildFlags(options: opts.BuildOptions): string[] {
@@ -105,7 +81,7 @@ function buildFlags(options: opts.BuildOptions): string[] {
   return flags
 }
 
-export async function getGhcVersionCandidates(
+export async function compatibleGhcVersions(
   sourceDir: string
 ): Promise<string[]> {
   const versions: string[] = []

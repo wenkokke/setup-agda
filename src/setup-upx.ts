@@ -1,7 +1,6 @@
 import * as tc from '@actions/tool-cache'
 import * as path from 'path'
 import * as opts from './opts'
-import * as agda from './util/agda'
 import * as exec from './util/exec'
 
 export type UPXVersion = '3.96'
@@ -12,7 +11,7 @@ const upxUrlWindows =
   'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-win64.zip'
 
 export default async function setup(upxVersion: UPXVersion): Promise<string> {
-  const upxInstallDir = path.join(agda.agdaDir(), 'upx', upxVersion)
+  const upxInstallDir = path.join(opts.agdaDir(), 'upx', upxVersion)
   switch (opts.os) {
     case 'linux': {
       const upxArchivePath = await tc.downloadTool(upxUrlLinux)
@@ -25,7 +24,7 @@ export default async function setup(upxVersion: UPXVersion): Promise<string> {
       return path.join(upxDir, 'upx')
     }
     case 'macos': {
-      await exec.execOutput('brew', ['install', 'upx'])
+      await exec.getoutput('brew', ['install', 'upx'])
       return 'upx'
     }
     case 'windows': {

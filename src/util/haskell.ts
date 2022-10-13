@@ -19,21 +19,21 @@ export async function execSystemGhc(
   args: string[],
   execOptions?: exec.ExecOptions
 ): Promise<string> {
-  return await exec.execOutput('ghc', args, execOptions)
+  return await exec.getoutput('ghc', args, execOptions)
 }
 
 export async function execSystemCabal(
   args: string[],
   execOptions?: exec.ExecOptions
 ): Promise<string> {
-  return await exec.execOutput('cabal', args, execOptions)
+  return await exec.getoutput('cabal', args, execOptions)
 }
 
 export async function execSystemStack(
   args: string[],
   execOptions?: exec.ExecOptions
 ): Promise<string> {
-  return await exec.execOutput('stack', args, execOptions)
+  return await exec.getoutput('stack', args, execOptions)
 }
 
 export async function getSystemGhcVersion(): Promise<string> {

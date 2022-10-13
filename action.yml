@@ -10,6 +10,9 @@ inputs:
     default: '*'
     description: 'Range of GHC versions to use. It will be used to restrict the set of GHC versions compatible with the specified Agda version'
     required: false
+  disable-cluster-counting:
+    description: 'If specified, build without cluster counting.'
+    required: false
   upload-bdist:
     description: 'If specified, will upload a binary distribution for the specified Agda version'
     required: false

@@ -4,7 +4,7 @@ import * as exec from '@actions/exec'
 
 export * from '@actions/exec'
 
-export async function execOutput(
+export async function getoutput(
   prog: string,
   args: string[],
   execOptions?: exec.ExecOptions
@@ -32,7 +32,7 @@ export async function execOutput(
 
 export interface VersionOptions extends exec.ExecOptions {
   versionFlag?: string
-  parseOutput?: (output: string) => string
+  parseOutput?: (progOutput: string) => string
 }
 
 export async function getVersion(
@@ -40,8 +40,9 @@ export async function getVersion(
   options?: VersionOptions
 ): Promise<string> {
   const versionFlag = options?.versionFlag ?? '--version'
-  const output = await execOutput(prog, [versionFlag], options)
+  let progOutput = await getoutput(prog, [versionFlag], options)
+  progOutput = progOutput.trim()
   return options?.parseOutput !== undefined
-    ? options?.parseOutput(output)
-    : output
+    ? options?.parseOutput(progOutput)
+    : progOutput
 }

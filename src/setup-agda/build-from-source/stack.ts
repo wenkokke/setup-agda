@@ -7,6 +7,8 @@ import * as semver from 'semver'
 import * as opts from '../../opts'
 import * as haskell from '../../util/haskell'
 
+export const name = 'stack'
+
 export async function build(
   sourceDir: string,
   installDir: string,
@@ -65,7 +67,7 @@ function buildFlags(options: opts.BuildOptions): string[] {
   return flags
 }
 
-export async function getGhcVersionCandidates(
+export async function compatibleGhcVersions(
   sourceDir: string
 ): Promise<string[]> {
   const versions: string[] = []

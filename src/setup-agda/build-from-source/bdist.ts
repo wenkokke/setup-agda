@@ -1,17 +1,18 @@
 import * as artifact from '@actions/artifact'
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
-import * as os from 'os'
-import * as path from 'path'
+import * as os from 'node:os'
+import * as path from 'node:path'
 import * as opts from '../../opts'
 import setupUpx from '../../setup-upx'
-import * as agda from '../../util/agda'
+import * as util from '../../util'
 import * as exec from '../../util/exec'
 import * as haskell from '../../util/haskell'
 import * as io from '../../util/io'
 import * as mustache from 'mustache'
 import pick from 'object.pick'
 import ensureError from 'ensure-error'
+import assert from 'node:assert'
 
 export default async function uploadBdist(
   installDir: string,
@@ -19,12 +20,12 @@ export default async function uploadBdist(
 ): Promise<string> {
   // Get the name for the distribution:
   const bdistName = await renderBdistName(options)
-  const bdistDir = path.join(agda.agdaDir(), 'bdist', bdistName)
+  const bdistDir = path.join(opts.agdaDir(), 'bdist', bdistName)
   io.mkdirP(bdistDir)
 
   // Copy binaries:
   io.mkdirP(path.join(bdistDir, 'bin'))
-  for (const binName of agda.agdaBinNames)
+  for (const binName of util.agdaBinNames)
     await io.cp(
       path.join(installDir, 'bin', binName),
       path.join(bdistDir, 'bin', binName)
@@ -37,9 +38,10 @@ export default async function uploadBdist(
   await bundleLibs(bdistDir, options)
 
   // Test artifact:
-  const agdaPath = path.join(bdistDir, 'bin', agda.agdaBinName)
-  const env = {Agda_datadir: path.join(bdistDir, 'data')}
-  await agda.testSystemAgda({agdaPath, env})
+  await util.testAgda({
+    agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
+    agdaDataDir: path.join(bdistDir, 'data')
+  })
 
   // Create file list for artifact:
   const globber = await glob.create(path.join(bdistDir, '**', '*'), {
@@ -70,37 +72,6 @@ export default async function uploadBdist(
   return uploadInfo.artifactName
 }
 
-async function printNeededLibs(binPath: string): Promise<void> {
-  try {
-    let output = ''
-    switch (opts.os) {
-      case 'linux': {
-        output = await exec.execOutput(
-          'patchelf',
-          ['--print-needed', binPath],
-          {silent: true}
-        )
-        break
-      }
-      case 'macos': {
-        output = await exec.execOutput('otool', ['-L', binPath], {silent: true})
-        break
-      }
-      case 'windows': {
-        output = await exec.execOutput('dumpbin', ['/imports', binPath], {
-          silent: true
-        })
-        break
-      }
-    }
-    core.info(`Needed libraries:${os.EOL}${output}`)
-  } catch (error) {
-    core.debug(
-      `Could not print needed dynamic libraries: ${ensureError(error).message}`
-    )
-  }
-}
-
 async function bundleLibs(
   bdistDir: string,
   options: opts.BuildOptions
@@ -108,7 +79,7 @@ async function bundleLibs(
   switch (opts.os) {
     case 'linux': {
       const upx = await setupUpx('3.96')
-      for (const binName of agda.agdaBinNames) {
+      for (const binName of util.agdaBinNames) {
         const binPath = path.join(bdistDir, 'bin', binName)
         // Print the needed libraries before compressing:
         printNeededLibs(binPath)
@@ -121,7 +92,7 @@ async function bundleLibs(
     }
     case 'macos': {
       // If we compiled with --enable-cluster-counting, bundle ICU:
-      if (opts.supportsClusterCounting(options)) {
+      if (opts.enableClusterCounting(options)) {
         await io.mkdirP(path.join(bdistDir, 'lib'))
         // Copy needed libraries:
         for (const libPath of options['libs-to-bundle']) {
@@ -131,32 +102,24 @@ async function bundleLibs(
           )
         }
         // Patch run paths for loaded libraries:
-        for (const binName of agda.agdaBinNames) {
+        for (const binName of util.agdaBinNames) {
           const binPath = path.join(bdistDir, 'bin', binName)
           const libDirs = new Set<string>()
+          // Print the needed libraries:
+          printNeededLibs(binPath)
           // Update run paths for libraries:
           for (const libPath of options['libs-to-bundle']) {
             const libName = path.basename(libPath)
             libDirs.add(path.dirname(libPath))
-            await exec.execOutput('install_name_tool', [
-              '-change',
-              libPath,
-              `@rpath/${libName}`,
-              binPath
-            ])
+            changeDependency(binPath, libPath, `@rpath/${libName}`)
           }
           // Add load paths for libraries:
-          for (const libDir of libDirs) {
-            await exec.execOutput('install_name_tool', [
-              '-add_rpath',
-              '@executable_path',
-              '-add_rpath',
-              '@executable_path/../lib',
-              '-add_rpath',
-              libDir,
-              binPath
-            ])
-          }
+          addRunPaths(
+            binPath,
+            '@executable_path',
+            '@executable_path/../lib',
+            ...libDirs
+          )
           // Print the needed libraries:
           printNeededLibs(binPath)
         }
@@ -176,7 +139,7 @@ async function bundleLibs(
       }
       // Compress with UPX:
       const upx = await setupUpx('3.96')
-      for (const binName of agda.agdaBinNames) {
+      for (const binName of util.agdaBinNames) {
         const binPath = path.join(bdistDir, 'bin', binName)
         // Print the needed libraries before compressing:
         printNeededLibs(binPath)
@@ -190,12 +153,53 @@ async function bundleLibs(
   }
 }
 
-// Utilities for copying files
+async function printNeededLibs(binPath: string): Promise<void> {
+  try {
+    let output = ''
+    switch (opts.os) {
+      case 'linux': {
+        output = await exec.getoutput('patchelf', ['--print-needed', binPath], {
+          silent: true
+        })
+        break
+      }
+      case 'macos': {
+        output = await exec.getoutput('otool', ['-L', binPath], {silent: true})
+        break
+      }
+      case 'windows': {
+        output = await exec.getoutput('dumpbin', ['/imports', binPath], {
+          silent: true
+        })
+        break
+      }
+    }
+    core.info(`Needed libraries:${os.EOL}${output}`)
+  } catch (error) {
+    core.debug(
+      `Could not print needed dynamic libraries: ${ensureError(error).message}`
+    )
+  }
+}
+
+async function changeDependency(
+  bin: string,
+  from: string,
+  to: string
+): Promise<void> {
+  assert(opts.os === 'macos', `Cannot run "install_name_tool" on ${opts.os}`)
+  await exec.getoutput('install_name_tool', ['-change', from, to, bin])
+}
+
+async function addRunPaths(bin: string, ...rpaths: string[]): Promise<void> {
+  assert(opts.os === 'macos', `Cannot run "install_name_tool" on ${opts.os}`)
+  const args = rpaths.flatMap<string>(rpath => ['-add_rpath', rpath])
+  await exec.getoutput('install_name_tool', [...args, bin])
+}
 
 async function renderBdistName(options: opts.BuildOptions): Promise<string> {
   let template = options['bdist-name']
-  if (template !== '')
-    template = 'agda-{{agda-version}}-{{ghc-info-target-platform}}'
+  if (template !== '') template = 'agda-{{agda-version}}-{{arch}}-{{platform}}'
   const ghcInfo = await haskell.getGhcInfo()
   return mustache.render(template, {
     ...pick(options, [
@@ -206,7 +210,8 @@ async function renderBdistName(options: opts.BuildOptions): Promise<string> {
       'icu-version',
       'upx-version'
     ]),
-    ...pick(process, ['platform', 'arch']),
+    ...pick(process, ['arch', 'platform']),
+    ...{release: os.release()},
     ...ghcInfo
   })
 }
