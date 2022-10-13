@@ -1,7 +1,7 @@
-import * as fs from 'fs'
-import * as os from 'os'
-import * as path from 'path'
-import * as agda from '../util/agda'
+import * as fs from 'node:fs'
+import * as os from 'node:os'
+import * as path from 'node:path'
+import * as opts from '../opts'
 import * as hackage from '../util/hackage'
 import ensureError from 'ensure-error'
 
@@ -14,7 +14,7 @@ async function run(): Promise<void> {
       'package-info',
       'Agda.json'
     )
-    const oldPackageInfoCache = agda.packageInfoCache
+    const oldPackageInfoCache = opts.packageInfoCache
     const newPackageInfoCache = await hackage.getPackageInfo('Agda')
     const oldTime = new Date(oldPackageInfoCache.lastModified).getTime()
     const newTime = new Date(newPackageInfoCache.lastModified).getTime()
