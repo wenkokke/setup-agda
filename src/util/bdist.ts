@@ -1,20 +1,44 @@
 import * as artifact from '@actions/artifact'
+import * as tc from '@actions/tool-cache'
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as os from 'node:os'
 import * as path from 'node:path'
-import * as opts from '../../opts'
-import setupUpx from '../../setup-upx'
-import * as util from '../../util'
-import * as exec from '../../util/exec'
-import * as haskell from '../../util/haskell'
-import * as io from '../../util/io'
+import * as opts from '../opts'
+import setupUpx from '../setup-upx'
+import * as util from '../util'
+import * as exec from './exec'
+import * as haskell from './haskell'
+import * as io from './io'
 import * as mustache from 'mustache'
 import pick from 'object.pick'
 import ensureError from 'ensure-error'
 import assert from 'node:assert'
 
-export default async function uploadBdist(
+export async function download(
+  options: opts.BuildOptions
+): Promise<string | null> {
+  // Get the name for the distribution:
+  options = {...options, 'bdist-name': ''}
+  const bdistName = await renderBdistName(options)
+  const bdistUrl = opts.bdistIndex[bdistName]
+  if (bdistUrl !== undefined) {
+    try {
+      core.info(`Download package ${bdistName} from ${bdistUrl}`)
+      return await tc.downloadTool(bdistUrl)
+    } catch (error) {
+      core.warning(
+        `Failed to download package ${bdistName}: ${ensureError(error).message}`
+      )
+      return null
+    }
+  } else {
+    core.info(`Could not find package ${bdistName}`)
+    return null
+  }
+}
+
+export async function upload(
   installDir: string,
   options: opts.BuildOptions
 ): Promise<string> {

@@ -9,6 +9,7 @@ import * as http from 'node:http'
 import pick from 'object.pick'
 import {homedir, release} from 'node:os'
 import distPackageInfoCache from './package-info/Agda.json'
+import distBdistIndex from './setup-agda/download-bdist/index.json'
 import assert from 'node:assert'
 
 // Setup options for haskell/actions/setup:
@@ -69,7 +70,7 @@ export function restrictGhcVersionRange(options: BuildOptions): BuildOptions {
   //   version, the latest versions of GHC ship with their own,
   //   internal and incompatible copy of MSYS2:
   //   https://github.com/msys2/MINGW-packages/issues/10837#issue-1145843972
-  if (os === 'windows' && simver.lte(release(), '10.0.17763')) {
+  if (isWindowsServerOlderThan2022()) {
     core.info('Add GHC version restriction "<9.2"')
     const ghcVersionRange = semver.validRange(
       `${options['ghc-version-range']} <9.2`
@@ -86,8 +87,14 @@ export function restrictGhcVersionRange(options: BuildOptions): BuildOptions {
 
 export function enableClusterCounting(options: BuildOptions): boolean {
   return (
-    !options['disable-cluster-counting'] && supportsClusterCounting(options)
+    !options['disable-cluster-counting'] &&
+    supportsClusterCounting(options) &&
+    !isWindowsServerOlderThan2022()
   )
+}
+
+export function isWindowsServerOlderThan2022(): boolean {
+  return os === 'windows' && simver.lte(release(), '10.0.17763')
 }
 
 export function supportsClusterCounting(options: BuildOptions): boolean {
@@ -175,6 +182,10 @@ export interface PackageSourceOptions extends PackageInfoOptions {
 }
 
 export const packageInfoCache = distPackageInfoCache as PackageInfoCache
+
+// Helpers for finding binary distributions:
+
+export const bdistIndex = distBdistIndex as Partial<Record<string, string>>
 
 // Helpers for matching the OS:
 

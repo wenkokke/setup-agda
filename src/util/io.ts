@@ -42,7 +42,7 @@ export async function cpR(
 export async function mv(
   source: string,
   dest: string,
-  options?: io.CopyOptions
+  options?: io.MoveOptions
 ): Promise<void> {
   source = escape(source)
   dest = escape(dest)

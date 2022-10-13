@@ -5,6 +5,8 @@ import * as path from 'node:path'
 import * as opts from './opts'
 import buildFromSource from './setup-agda/build-from-source'
 import * as util from './util'
+import * as bdist from './util/bdist'
+import * as io from './util/io'
 
 export default async function setup(
   inputs?:
@@ -21,6 +23,8 @@ export default async function setup(
     let maybeAgdaDir: string | null = null
     if (maybeAgdaDir === null)
       maybeAgdaDir = await installFromToolCache(buildOptions)
+    if (maybeAgdaDir === null)
+      maybeAgdaDir = await installFromBdist(buildOptions)
     if (maybeAgdaDir === null)
       maybeAgdaDir = await buildFromSource(buildOptions)
     const agdaDir: string = maybeAgdaDir
@@ -40,11 +44,11 @@ export default async function setup(
   }
 }
 
-// Helper to check GitHub Runner tool cache
+// Helper to install from GitHub Runner tool cache
 
 // NOTE: We can hope, can't we?
 
-export async function installFromToolCache(
+async function installFromToolCache(
   options: opts.BuildOptions
 ): Promise<string | null> {
   const maybeAgdaDir = await core.group(
@@ -81,4 +85,54 @@ export async function installFromToolCache(
       }
     })
   }
+}
+
+// Helper to install from binary distributions
+
+async function installFromBdist(
+  options: opts.BuildOptions
+): Promise<string | null> {
+  // 1. Download:
+  const bdistDir = await core.group(
+    `🔍 Searching for distribution for Agda ${options['agda-version']}`,
+    async () => {
+      const tmpBdistZip = await bdist.download(options)
+      if (tmpBdistZip === null) return null
+      const tmpBdistDir = await tc.extractZip(tmpBdistZip)
+      io.rmRF(tmpBdistZip)
+      return tmpBdistDir
+    }
+  )
+  if (bdistDir === null) return null
+
+  // 2. Test:
+  const bdistOK = await core.group(
+    `👩🏾‍🔬 Testing Agda ${options['agda-version']} distribution`,
+    async () => {
+      try {
+        await util.testAgda({
+          agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
+          agdaDataDir: path.join(bdistDir, 'data')
+        })
+        return true
+      } catch (error) {
+        const warning = ensureError(error)
+        warning.message = `Rejecting Agda ${options['agda-version']} distribution: ${warning.message}`
+        core.warning(warning)
+        return false
+      }
+    }
+  )
+  if (!bdistOK) return null
+
+  // 3. Install:
+  const installDir = opts.installDir(options['agda-version'])
+  await core.group(
+    `🔍 Installing Agda ${options['agda-version']} distribution`,
+    async () => {
+      await io.mkdirP(path.dirname(installDir))
+      await io.mv(bdistDir, installDir)
+    }
+  )
+  return installDir
 }
