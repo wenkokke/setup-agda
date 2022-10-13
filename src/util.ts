@@ -64,7 +64,10 @@ export async function setupAgdaEnv(installDir: string): Promise<void> {
 }
 
 export {
-  agdaBinName, agdaBinNames, agdaModeBinName, AgdaOptions
+  agdaBinName,
+  agdaBinNames,
+  agdaModeBinName,
+  AgdaOptions
 } from './util/agda'
 
 export async function testAgda(
