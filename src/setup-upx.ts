@@ -1,5 +1,5 @@
 import * as tc from '@actions/tool-cache'
-import * as path from 'path'
+import * as path from 'node:path'
 import * as opts from './opts'
 import * as exec from './util/exec'
 

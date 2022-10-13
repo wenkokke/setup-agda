@@ -319,7 +319,7 @@ exports.installFromToolCache = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const tc = __importStar(__nccwpck_require__(7784));
 const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
-const path = __importStar(__nccwpck_require__(1017));
+const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const build_from_source_1 = __importDefault(__nccwpck_require__(7222));
 const util = __importStar(__nccwpck_require__(4024));
@@ -438,9 +438,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const tc = __importStar(__nccwpck_require__(7784));
-const assert_1 = __importDefault(__nccwpck_require__(9491));
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
-const path = __importStar(__nccwpck_require__(1017));
+const path = __importStar(__nccwpck_require__(9411));
 const semver = __importStar(__nccwpck_require__(1383));
 const opts = __importStar(__nccwpck_require__(1352));
 const setup_haskell_1 = __importDefault(__nccwpck_require__(6933));
@@ -464,7 +464,7 @@ function buildFromSource(options) {
             core.info(`Set build tool to ${result.buildTool.name}`);
             // Determine the compatible GHC versions:
             const versions = yield buildTool.compatibleGhcVersions(result.sourceDir);
-            (0, assert_1.default)(options['compatible-ghc-versions'].length === 0, `Option 'compatible-ghc-versions' is not empty: ${options['compatible-ghc-versions']}`);
+            (0, node_assert_1.default)(options['compatible-ghc-versions'].length === 0, `Option 'compatible-ghc-versions' is not empty: ${options['compatible-ghc-versions']}`);
             options = Object.assign(Object.assign({}, options), { 'compatible-ghc-versions': versions });
             core.info(`Found compatible GHC versions: [${versions.join(', ')}]`);
             // Determine whether or not we can use the pre-installed build tools:
@@ -845,9 +845,9 @@ exports.compatibleGhcVersions = exports.build = exports.name = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const io = __importStar(__nccwpck_require__(9067));
-const fs = __importStar(__nccwpck_require__(7147));
-const os = __importStar(__nccwpck_require__(2037));
-const path = __importStar(__nccwpck_require__(1017));
+const fs = __importStar(__nccwpck_require__(7561));
+const os = __importStar(__nccwpck_require__(612));
+const path = __importStar(__nccwpck_require__(9411));
 const semver = __importStar(__nccwpck_require__(1383));
 const opts = __importStar(__nccwpck_require__(1352));
 const haskell = __importStar(__nccwpck_require__(1310));
@@ -999,7 +999,7 @@ exports.compatibleGhcVersions = exports.build = exports.name = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const io = __importStar(__nccwpck_require__(9067));
-const path = __importStar(__nccwpck_require__(1017));
+const path = __importStar(__nccwpck_require__(9411));
 const semver = __importStar(__nccwpck_require__(1383));
 const opts = __importStar(__nccwpck_require__(1352));
 const haskell = __importStar(__nccwpck_require__(1310));
@@ -1195,7 +1195,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const opts = __importStar(__nccwpck_require__(1352));
 const exec = __importStar(__nccwpck_require__(4369));
-const path = __importStar(__nccwpck_require__(1017));
+const path = __importStar(__nccwpck_require__(9411));
 function setup(options) {
     var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
@@ -1312,7 +1312,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const tc = __importStar(__nccwpck_require__(7784));
-const path = __importStar(__nccwpck_require__(1017));
+const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const exec = __importStar(__nccwpck_require__(4369));
 const upxUrlLinux = 'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz';
@@ -1396,11 +1396,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.testAgda = exports.agdaBinNames = exports.agdaModeBinName = exports.agdaBinName = exports.setupAgdaEnv = exports.getAgdaSource = exports.resolveAgdaVersion = void 0;
+exports.testAgda = exports.agdaModeBinName = exports.agdaBinNames = exports.agdaBinName = exports.setupAgdaEnv = exports.getAgdaSource = exports.resolveAgdaVersion = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
-const assert_1 = __importDefault(__nccwpck_require__(9491));
-const path = __importStar(__nccwpck_require__(1017));
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
+const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const agda = __importStar(__nccwpck_require__(9552));
 const hackage = __importStar(__nccwpck_require__(903));
@@ -1423,13 +1423,13 @@ exports.resolveAgdaVersion = resolveAgdaVersion;
 function getAgdaSource(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Version number should be resolved by now:
-        (0, assert_1.default)(options['agda-version'] !== 'latest' &&
+        (0, node_assert_1.default)(options['agda-version'] !== 'latest' &&
             options['agda-version'] !== 'nightly', `getAgdaSource: agdaVersion should be resolved`);
         // Ensure that we cache the package info:
         options = yield cachePackageInfo(options);
         // Get the package source:
         const { packageVersion, packageDir } = yield hackage.getPackageSource('Agda', Object.assign({ packageVersion: options['agda-version'] }, packageInfoOptions(options)));
-        (0, assert_1.default)(options['agda-version'] === packageVersion, `getAgdaSource: ${options['agda-version']} was resolved to ${packageVersion}`);
+        (0, node_assert_1.default)(options['agda-version'] === packageVersion, `getAgdaSource: ${options['agda-version']} was resolved to ${packageVersion}`);
         return packageDir;
     });
 }
@@ -1449,8 +1449,8 @@ function setupAgdaEnv(installDir) {
 exports.setupAgdaEnv = setupAgdaEnv;
 var agda_1 = __nccwpck_require__(9552);
 Object.defineProperty(exports, "agdaBinName", ({ enumerable: true, get: function () { return agda_1.agdaBinName; } }));
-Object.defineProperty(exports, "agdaModeBinName", ({ enumerable: true, get: function () { return agda_1.agdaModeBinName; } }));
 Object.defineProperty(exports, "agdaBinNames", ({ enumerable: true, get: function () { return agda_1.agdaBinNames; } }));
+Object.defineProperty(exports, "agdaModeBinName", ({ enumerable: true, get: function () { return agda_1.agdaModeBinName; } }));
 function testAgda(agdaOptions, options) {
     var e_1, _a;
     return __awaiter(this, void 0, void 0, function* () {

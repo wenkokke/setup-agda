@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as tc from '@actions/tool-cache'
 import ensureError from 'ensure-error'
-import * as path from 'path'
+import * as path from 'node:path'
 import * as opts from './opts'
 import buildFromSource from './setup-agda/build-from-source'
 import * as util from './util'

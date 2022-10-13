@@ -2,7 +2,7 @@ import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as opts from './opts'
 import * as exec from './util/exec'
-import * as path from 'path'
+import * as path from 'node:path'
 
 export default async function setup(
   options: opts.BuildOptions

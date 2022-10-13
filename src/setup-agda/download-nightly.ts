@@ -1,10 +1,10 @@
 import * as core from '@actions/core'
 import * as io from '../util/io'
 import * as toolCache from '@actions/tool-cache'
-import assert from 'assert'
-import * as fs from 'fs'
-import * as os from 'os'
-import * as path from 'path'
+import assert from 'node:assert'
+import * as fs from 'node:fs'
+import * as os from 'node:os'
+import * as path from 'node:path'
 import * as opts from '../opts'
 
 const nightlyUrlLinux =

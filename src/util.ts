@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
-import assert from 'assert'
-import * as path from 'path'
+import assert from 'node:assert'
+import * as path from 'node:path'
 import * as opts from './opts'
 import * as agda from './util/agda'
 import * as exec from './util/exec'
@@ -64,10 +64,7 @@ export async function setupAgdaEnv(installDir: string): Promise<void> {
 }
 
 export {
-  AgdaOptions,
-  agdaBinName,
-  agdaModeBinName,
-  agdaBinNames
+  agdaBinName, agdaBinNames, agdaModeBinName, AgdaOptions
 } from './util/agda'
 
 export async function testAgda(
