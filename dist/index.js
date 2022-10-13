@@ -373,7 +373,7 @@ function installFromToolCache(options) {
 function installFromBdist(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // 1. Download:
-        const bdistDir = yield core.group(`🔍 Searching for distribution for Agda ${options['agda-version']}`, () => __awaiter(this, void 0, void 0, function* () {
+        const bdistDir = yield core.group(`🔍 Searching for Agda ${options['agda-version']} in package index`, () => __awaiter(this, void 0, void 0, function* () {
             const tmpBdistZip = yield bdist.download(options);
             if (tmpBdistZip === null)
                 return null;
@@ -384,7 +384,7 @@ function installFromBdist(options) {
         if (bdistDir === null)
             return null;
         // 2. Test:
-        const bdistOK = yield core.group(`👩🏾‍🔬 Testing Agda ${options['agda-version']} distribution`, () => __awaiter(this, void 0, void 0, function* () {
+        const bdistOK = yield core.group(`👩🏾‍🔬 Testing Agda ${options['agda-version']} package`, () => __awaiter(this, void 0, void 0, function* () {
             try {
                 yield util.testAgda({
                     agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
@@ -394,7 +394,7 @@ function installFromBdist(options) {
             }
             catch (error) {
                 const warning = (0, ensure_error_1.default)(error);
-                warning.message = `Rejecting Agda ${options['agda-version']} distribution: ${warning.message}`;
+                warning.message = `Rejecting Agda ${options['agda-version']} package: ${warning.message}`;
                 core.warning(warning);
                 return false;
             }
@@ -403,7 +403,7 @@ function installFromBdist(options) {
             return null;
         // 3. Install:
         const installDir = opts.installDir(options['agda-version']);
-        yield core.group(`🔍 Installing Agda ${options['agda-version']} distribution`, () => __awaiter(this, void 0, void 0, function* () {
+        yield core.group(`🔍 Installing Agda ${options['agda-version']} package`, () => __awaiter(this, void 0, void 0, function* () {
             yield io.mkdirP(path.dirname(installDir));
             yield io.mv(bdistDir, installDir);
         }));

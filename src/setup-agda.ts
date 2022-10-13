@@ -94,7 +94,7 @@ async function installFromBdist(
 ): Promise<string | null> {
   // 1. Download:
   const bdistDir = await core.group(
-    `🔍 Searching for distribution for Agda ${options['agda-version']}`,
+    `🔍 Searching for Agda ${options['agda-version']} in package index`,
     async () => {
       const tmpBdistZip = await bdist.download(options)
       if (tmpBdistZip === null) return null
@@ -107,7 +107,7 @@ async function installFromBdist(
 
   // 2. Test:
   const bdistOK = await core.group(
-    `👩🏾‍🔬 Testing Agda ${options['agda-version']} distribution`,
+    `👩🏾‍🔬 Testing Agda ${options['agda-version']} package`,
     async () => {
       try {
         await util.testAgda({
@@ -117,7 +117,7 @@ async function installFromBdist(
         return true
       } catch (error) {
         const warning = ensureError(error)
-        warning.message = `Rejecting Agda ${options['agda-version']} distribution: ${warning.message}`
+        warning.message = `Rejecting Agda ${options['agda-version']} package: ${warning.message}`
         core.warning(warning)
         return false
       }
@@ -128,7 +128,7 @@ async function installFromBdist(
   // 3. Install:
   const installDir = opts.installDir(options['agda-version'])
   await core.group(
-    `🔍 Installing Agda ${options['agda-version']} distribution`,
+    `🔍 Installing Agda ${options['agda-version']} package`,
     async () => {
       await io.mkdirP(path.dirname(installDir))
       await io.mv(bdistDir, installDir)
