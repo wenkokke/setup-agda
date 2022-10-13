@@ -73,7 +73,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.pickSetupHaskellInputs = exports.getOptions = exports.os = exports.bdistIndex = exports.packageInfoCache = exports.supportsUPX = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.isWindowsServerOlderThan2022 = exports.enableClusterCounting = exports.restrictGhcVersionRange = void 0;
+exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.pickSetupHaskellInputs = exports.getOptions = exports.os = exports.bdistIndex = exports.packageInfoCache = exports.supportsUPX = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.isWindowsServerOlderThan2022 = exports.enableClusterCounting = exports.addGhcVersionRestriction = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const fs = __importStar(__nccwpck_require__(7561));
 const semver = __importStar(__nccwpck_require__(1383));
@@ -87,15 +87,15 @@ const Agda_json_1 = __importDefault(__nccwpck_require__(4862));
 const Agda_bdist_json_1 = __importDefault(__nccwpck_require__(3475));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 // Helper functions to check support of various build options
-function restrictGhcVersionRange(options) {
+function addGhcVersionRestriction(options) {
     // NOTE:
     //   Windows Server 2019 adds an extra restriction to the GHC
     //   version, the latest versions of GHC ship with their own,
     //   internal and incompatible copy of MSYS2:
     //   https://github.com/msys2/MINGW-packages/issues/10837#issue-1145843972
     if (isWindowsServerOlderThan2022()) {
-        core.info('Add GHC version restriction "<9.2"');
-        const ghcVersionRange = semver.validRange(`${options['ghc-version-range']} <9.2`);
+        core.info('Add GHC version restriction "<9"');
+        const ghcVersionRange = semver.validRange(`${options['ghc-version-range']} <9`);
         (0, node_assert_1.default)(ghcVersionRange !== null, `Invalid GHC version range "${options['ghc-version-range']} <9.2"`);
         return Object.assign(Object.assign({}, options), { 'ghc-version-range': ghcVersionRange });
     }
@@ -103,7 +103,7 @@ function restrictGhcVersionRange(options) {
         return options;
     }
 }
-exports.restrictGhcVersionRange = restrictGhcVersionRange;
+exports.addGhcVersionRestriction = addGhcVersionRestriction;
 function enableClusterCounting(options) {
     return (!options['disable-cluster-counting'] &&
         supportsClusterCounting(options) &&
@@ -228,7 +228,7 @@ function getOptions(inputs) {
     if (!semver.validRange(options['ghc-version-range']))
         throw Error('Input "ghc-version-range" is not a valid version range');
     // Refine build options:
-    options = restrictGhcVersionRange(options);
+    options = addGhcVersionRestriction(options);
     return options;
 }
 exports.getOptions = getOptions;

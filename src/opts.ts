@@ -64,16 +64,16 @@ export interface BuildOptions extends Readonly<SetupAgdaInputs> {
 
 // Helper functions to check support of various build options
 
-export function restrictGhcVersionRange(options: BuildOptions): BuildOptions {
+export function addGhcVersionRestriction(options: BuildOptions): BuildOptions {
   // NOTE:
   //   Windows Server 2019 adds an extra restriction to the GHC
   //   version, the latest versions of GHC ship with their own,
   //   internal and incompatible copy of MSYS2:
   //   https://github.com/msys2/MINGW-packages/issues/10837#issue-1145843972
   if (isWindowsServerOlderThan2022()) {
-    core.info('Add GHC version restriction "<9.2"')
+    core.info('Add GHC version restriction "<9"')
     const ghcVersionRange = semver.validRange(
-      `${options['ghc-version-range']} <9.2`
+      `${options['ghc-version-range']} <9`
     )
     assert(
       ghcVersionRange !== null,
@@ -258,7 +258,7 @@ export function getOptions(
     throw Error('Input "ghc-version-range" is not a valid version range')
 
   // Refine build options:
-  options = restrictGhcVersionRange(options)
+  options = addGhcVersionRestriction(options)
   return options
 }
 
