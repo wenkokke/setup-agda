@@ -9,7 +9,7 @@ import * as http from 'node:http'
 import pick from 'object.pick'
 import {homedir, release} from 'node:os'
 import distPackageInfoCache from './package-info/Agda.json'
-import distBdistIndex from './setup-agda/download-bdist/index.json'
+import distBdistIndex from './package-info/Agda.bdist.json'
 import assert from 'node:assert'
 
 // Setup options for haskell/actions/setup:

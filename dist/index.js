@@ -84,7 +84,7 @@ const simver = __importStar(__nccwpck_require__(7609));
 const object_pick_1 = __importDefault(__nccwpck_require__(9962));
 const node_os_1 = __nccwpck_require__(612);
 const Agda_json_1 = __importDefault(__nccwpck_require__(4862));
-const index_json_1 = __importDefault(__nccwpck_require__(6210));
+const Agda_bdist_json_1 = __importDefault(__nccwpck_require__(3475));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 // Helper functions to check support of various build options
 function restrictGhcVersionRange(options) {
@@ -172,7 +172,7 @@ function supportsUPX() {
 exports.supportsUPX = supportsUPX;
 exports.packageInfoCache = Agda_json_1.default;
 // Helpers for finding binary distributions:
-exports.bdistIndex = index_json_1.default;
+exports.bdistIndex = Agda_bdist_json_1.default;
 exports.os = (() => {
     switch (process.platform) {
         case 'linux':
@@ -29996,19 +29996,19 @@ function ensureError(input) {
 
 /***/ }),
 
+/***/ 3475:
+/***/ ((module) => {
+
+"use strict";
+module.exports = JSON.parse('{"agda-2.6.2.2-x64-darwin":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x86_64-apple-darwin.zip","agda-2.6.2.2-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x86_64-unknown-linux.zip","agda-2.6.2.2-x64-win32":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x86_64-unknown-mingw32.zip"}');
+
+/***/ }),
+
 /***/ 4862:
 /***/ ((module) => {
 
 "use strict";
 module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4":"deprecated","2.5.4.1":"deprecated","2.5.4.2":"normal","2.6.0":"deprecated","2.6.0.1":"normal","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Sat, 08 Oct 2022 14:35:51 GMT"}');
-
-/***/ }),
-
-/***/ 6210:
-/***/ ((module) => {
-
-"use strict";
-module.exports = JSON.parse('{"agda-2.6.2.2-x64-darwin":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x86_64-apple-darwin.zip","agda-2.6.2.2-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x86_64-unknown-linux.zip","agda-2.6.2.2-x64-win32":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x86_64-unknown-mingw32.zip"}');
 
 /***/ }),
 
