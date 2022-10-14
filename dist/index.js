@@ -30076,7 +30076,7 @@ function ensureError(input) {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"agda-2.6.2.2-x64-darwin":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-darwin.zip","agda-2.6.2.2-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-linux.zip"}');
+module.exports = JSON.parse('{"agda-2.6.2.2-x64-darwin":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-darwin.zip"}');
 
 /***/ }),
 
