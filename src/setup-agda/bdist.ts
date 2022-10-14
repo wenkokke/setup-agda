@@ -105,16 +105,12 @@ export async function upload(
 }
 
 async function compressBin(upxExe: string, binPath: string): Promise<void> {
-  switch (opts.os) {
-    case 'linux': {
-      // Print the needed libraries before compressing:
-      await printNeededLibs(binPath)
-      // Compress with UPX:
-      await util.getOutput(upxExe, ['--best', binPath])
-      // Print the needed libraries after compressing:
-      await printNeededLibs(binPath)
-    }
-  }
+  // Print the needed libraries before compressing:
+  await printNeededLibs(binPath)
+  // Compress with UPX:
+  await util.getOutput(upxExe, ['--best', binPath])
+  // Print the needed libraries after compressing:
+  await printNeededLibs(binPath)
 }
 
 async function bundleLibs(

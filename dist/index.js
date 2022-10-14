@@ -607,16 +607,12 @@ function upload(installDir, options) {
 exports.upload = upload;
 function compressBin(upxExe, binPath) {
     return __awaiter(this, void 0, void 0, function* () {
-        switch (opts.os) {
-            case 'linux': {
-                // Print the needed libraries before compressing:
-                yield printNeededLibs(binPath);
-                // Compress with UPX:
-                yield util.getOutput(upxExe, ['--best', binPath]);
-                // Print the needed libraries after compressing:
-                yield printNeededLibs(binPath);
-            }
-        }
+        // Print the needed libraries before compressing:
+        yield printNeededLibs(binPath);
+        // Compress with UPX:
+        yield util.getOutput(upxExe, ['--best', binPath]);
+        // Print the needed libraries after compressing:
+        yield printNeededLibs(binPath);
     });
 }
 function bundleLibs(bdistDir, options) {
