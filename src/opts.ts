@@ -84,7 +84,7 @@ export function supportsClusterCounting(options: BuildOptions): boolean {
   //   Agda versions 2.5.3 - 2.6.2 depend on text-icu ^0.7, but text-icu
   //   versions 0.7.0.0 - 0.7.1.0 do not compile with icu68+. This could be
   //   solved by explicitly installing different version of icu depending on
-  //   the text-icu version (the Agda version, as a proxy).
+  //   the text-icu version (or the Agda version, as a proxy).
   const depr = simver.gte(options['agda-version'], '2.6.2')
   return agda && user && todo && depr
 }
