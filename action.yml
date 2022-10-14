@@ -1,41 +1,25 @@
 name: 'Setup Agda'
 author: 'Wen Kokke'
-description: 'Set up a specific version of Agda'
+description: 'Set up a specific version of Agda.'
 inputs:
   agda-version:
     default: 'latest'
-    description: 'The Agda version. Can be "nightly", "latest", a specific version number (e.g., 2.6.2.2), a partial version number (e.g., 2.6), or a git commit hash'
+    description: 'The Agda version. Can be "nightly", "latest", a specific version number (e.g., 2.6.2.2), a partial version number (e.g., 2.6), or a git commit hash.'
     required: true
   ghc-version-range:
     default: '*'
-    description: 'Range of GHC versions to use. It will be used to restrict the set of GHC versions compatible with the specified Agda version'
+    description: 'Range of GHC versions to use. It will be used to restrict the set of GHC versions compatible with the specified Agda version.'
     required: false
   disable-cluster-counting:
     description: 'If specified, build without cluster counting.'
     required: false
   upload-bdist:
-    description: 'If specified, will upload a binary distribution for the specified Agda version'
+    description: 'If specified, will upload a binary distribution for the specified Agda version.'
     required: false
   bdist-name:
-    description: 'If specified, will be used as the name for the binary distribution'
+    description: 'If specified, will be used as the name for the binary distribution.'
     required: false
-
-  # The following inputs are used exclusively by actions/haskell/setup:
-  #
-  # NOTE: All inputs for actions/haskell/setup are reproduced here, even the unsupported ones,
-  #       because actions/haskell/setup reads its default values from `__dirname/../actions.yml`,
-  #       which resolves to this file when using actions/haskell/setup as a library.
-  #
-  #       The implementation for actions/haskell/setup does not account for the default values not
-  #       being present, and ALWAYS reads the defaults, even if the inputs are specified, this always
-  #       fails with:
-  #
-  #         Error: Cannot read properties of undefined (reading 'default')
-  #
-  ghc-version:
-    default: 'latest'
-    description: 'Unsupported. Use "ghc-version-range"'
-    required: false
+  # NOTE: If it is called, following inputs are passed to haskell/actions/setup.
   cabal-version:
     default: 'latest'
     description: 'Version of Cabal to use. If set to "latest", it will always get the latest stable version'
@@ -55,6 +39,12 @@ inputs:
     required: false
   disable-matcher:
     description: 'If specified, disables match messages from GHC as GitHub CI annotations'
+    required: false
+  # The input 'ghc-version' is unsupported, and here as a workaround for:
+  # https://github.com/haskell/actions/issues/122
+  ghc-version:
+    default: 'latest'
+    description: 'Unsupported. Use "ghc-version-range"'
     required: false
 
 outputs:
