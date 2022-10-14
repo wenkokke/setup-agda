@@ -57,9 +57,6 @@ jobs:
         agda-{{{agda-version}}}
             -{{{arch}}
             -${{ matrix.os }}
-        {{#icu-version}}
-            -icu{{{.}}}
-        {{/icu-version}}
       bdist-upload: true
 
   test-build-with-stack:
@@ -82,12 +79,7 @@ jobs:
         agda-{{{agda-version}}}
             -{{{arch}}
             -${{ matrix.os }}
-        {{#icu-version}}
-            -icu{{{icu-version}}}
-        {{/icu-version}}
-        {{#stack-version}}
-            -stack{{{.}}}
-        {{/stack-version}}
+            -stack{{{stack-version}}}
       bdist-upload: true
 
 
