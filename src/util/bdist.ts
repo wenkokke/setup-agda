@@ -1,18 +1,17 @@
 import * as artifact from '@actions/artifact'
-import * as tc from '@actions/tool-cache'
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
+import * as tc from '@actions/tool-cache'
+import ensureError from 'ensure-error'
+import * as mustache from 'mustache'
 import * as os from 'node:os'
 import * as path from 'node:path'
+import pick from 'object.pick'
 import * as opts from '../opts'
 import setupUpx from '../setup-upx'
-import * as util from '../util'
-import * as exec from './exec'
+import * as agda from './agda'
+import {getoutput, dumpbin, installNameTool, otool, patchelf} from './exec'
 import * as io from './io'
-import * as mustache from 'mustache'
-import pick from 'object.pick'
-import ensureError from 'ensure-error'
-import {installNameTool, patchelf, otool, dumpbin} from '../util'
 
 export async function download(
   options: opts.BuildOptions
@@ -47,7 +46,7 @@ export async function upload(
 
   // Copy binaries:
   io.mkdirP(path.join(bdistDir, 'bin'))
-  for (const binName of util.agdaBinNames)
+  for (const binName of agda.agdaBinNames)
     await io.cp(
       path.join(installDir, 'bin', binName),
       path.join(bdistDir, 'bin', binName)
@@ -60,7 +59,7 @@ export async function upload(
   if (!options['bdist-no-compress-exe']) {
     try {
       const upxExe = await setupUpx(options)
-      for (const binName of util.agdaBinNames)
+      for (const binName of agda.agdaBinNames)
         await compressBin(upxExe, path.join(bdistDir, 'bin', binName))
     } catch (error) {
       core.debug(ensureError(error).message)
@@ -71,8 +70,8 @@ export async function upload(
   await bundleLibs(bdistDir, options)
 
   // Test artifact:
-  await util.testAgda({
-    agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
+  await agda.testAgda({
+    agdaBin: path.join(bdistDir, 'bin', agda.agdaBinName),
     agdaDataDir: path.join(bdistDir, 'data')
   })
 
@@ -109,7 +108,7 @@ async function compressBin(upxExe: string, binPath: string): Promise<void> {
   // Print the needed libraries before compressing:
   printNeededLibs(binPath)
   // Compress with UPX:
-  await exec.exec(upxExe, ['--best', binPath])
+  await getoutput(upxExe, ['--best', binPath])
   // Print the needed libraries after compressing:
   printNeededLibs(binPath)
 }
@@ -135,7 +134,7 @@ async function bundleLibs(
           )
         }
         // Patch run paths for loaded libraries:
-        for (const binName of util.agdaBinNames) {
+        for (const binName of agda.agdaBinNames) {
           const binPath = path.join(bdistDir, 'bin', binName)
           const libDirs = new Set<string>()
           // Update run paths for libraries:

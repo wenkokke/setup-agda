@@ -2,7 +2,7 @@ import * as exec from '@actions/exec'
 
 // Helpers for system calls
 
-export * from '@actions/exec'
+export {ExecOptions} from '@actions/exec'
 
 export async function getoutput(
   prog: string,
@@ -46,3 +46,50 @@ export async function getVersion(
     ? options?.parseOutput(progOutput)
     : progOutput
 }
+
+// System utilities
+
+export const brew = async (...args: string[]): Promise<string> =>
+  await getoutput('brew', args)
+
+export const brewGetVersion = async (
+  formula: string
+): Promise<string | undefined> => {
+  const formulaVersionRegExp = new RegExp(`${formula} (?<version>[\\d._]+)`)
+  const formulaVersions = await brew('list', '--formula', '--versions')
+  return formulaVersions.match(formulaVersionRegExp)?.groups?.version
+}
+
+export const chmod = async (...args: string[]): Promise<string> =>
+  await getoutput('chmod', args)
+
+export const dumpbin = async (...args: string[]): Promise<string> =>
+  await getoutput('dumpbin', args)
+
+export const installNameTool = async (...args: string[]): Promise<string> =>
+  await getoutput('install_name_tool', args)
+
+export const otool = async (...args: string[]): Promise<string> =>
+  await getoutput('otool', args)
+
+export const pacman = async (...args: string[]): Promise<string> =>
+  await getoutput('pacman', args)
+
+export const pacmanGetVersion = async (
+  pkg: string
+): Promise<string | undefined> => {
+  const pkgInfo = await pacman('--noconfirm', '-Qs', pkg)
+  const pkgVersionRegExp = /(?<version>\d[\d.]+\d)/
+  const pkgVersion = pkgInfo.match(pkgVersionRegExp)?.groups?.version
+  if (pkgVersion !== undefined) return pkgVersion
+  else throw Error(`Could not determine version of ${pkg}`)
+}
+
+export const patchelf = async (...args: string[]): Promise<string> =>
+  await getoutput('patchelf', args)
+
+export const pkgConfig = async (...args: string[]): Promise<string> =>
+  await getoutput('pkg-config', args)
+
+export const xattr = async (...args: string[]): Promise<string> =>
+  await getoutput('xattr', args)

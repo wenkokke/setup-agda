@@ -2,8 +2,14 @@ import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as path from 'node:path'
 import * as opts from './opts'
-import {brew, brewGetVersion, pacman, pacmanGetVersion, pkgConfig} from './util'
-import * as simver from './util/simver'
+import {
+  brew,
+  brewGetVersion,
+  pacman,
+  pacmanGetVersion,
+  pkgConfig,
+  simver
+} from './util'
 
 export default async function setup(options: opts.BuildOptions): Promise<void> {
   switch (opts.os) {

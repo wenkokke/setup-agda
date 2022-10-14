@@ -6,9 +6,6 @@ import * as path from 'node:path'
 import * as opts from './opts'
 import buildFromSource from './setup-agda/build-from-source'
 import * as util from './util'
-import * as agda from './util/agda'
-import * as bdist from './util/bdist'
-import * as io from './util/io'
 
 export default async function setup(
   inputs?:
@@ -101,10 +98,10 @@ async function installFromBdist(
     `🔍 Searching for Agda ${options['agda-version']} in package index`,
     async () => {
       const ret: Partial<{bdistDir: string}> = {}
-      const bdistZip = await bdist.download(options)
+      const bdistZip = await util.bdistDownload(options)
       if (bdistZip === null) return ret
       ret.bdistDir = await tc.extractZip(bdistZip)
-      io.rmRF(bdistZip)
+      util.rmRF(bdistZip)
       return ret
     }
   )
@@ -141,8 +138,8 @@ async function installFromBdist(
   await core.group(
     `🔍 Installing Agda ${options['agda-version']} package`,
     async () => {
-      await io.mkdirP(path.dirname(installDir))
-      await io.mv(bdistDir, installDir)
+      await util.mkdirP(path.dirname(installDir))
+      await util.mv(bdistDir, installDir)
     }
   )
   return installDir
@@ -151,7 +148,7 @@ async function installFromBdist(
 async function repairPermissions(bdistDir: string): Promise<void> {
   if (opts.os === 'macos') {
     // Fix permissions on binaries
-    for (const binName of agda.agdaBinNames) {
+    for (const binName of util.agdaBinNames) {
       await util.chmod('+x', path.join(bdistDir, 'bin', binName))
       await util.xattr('-c', path.join(bdistDir, 'bin', binName))
     }

@@ -6,7 +6,6 @@ import * as path from 'node:path'
 import * as semver from 'semver'
 import * as opts from '../../opts'
 import * as util from '../../util'
-import * as haskell from '../../util/haskell'
 import pick from 'object.pick'
 
 export const name = 'stack'
@@ -19,12 +18,12 @@ export async function build(
   const execOptions: exec.ExecOptions = {cwd: sourceDir}
   // Configure, Build, and Install:
   await io.mkdirP(path.join(installDir, 'bin'))
-  await haskell.stack(
+  await util.stack(
     ['build', ...buildFlags(options), '--copy-bins'],
     execOptions
   )
   // Copy binaries from local bin
-  const localBinDir = await haskell.stackGetLocalBin(
+  const localBinDir = await util.stackGetLocalBin(
     pick(options, ['ghc-version'])
   )
   const installBinDir = path.join(installDir, 'bin')

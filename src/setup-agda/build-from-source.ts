@@ -8,9 +8,6 @@ import * as opts from '../opts'
 import setupHaskell from '../setup-haskell'
 import setupIcu from '../setup-icu'
 import * as util from '../util'
-import * as haskell from '../util/haskell'
-import * as io from '../util/io'
-import * as bdist from '../util/bdist'
 import * as cabal from './build-from-source/cabal'
 import * as stack from './build-from-source/stack'
 
@@ -74,7 +71,7 @@ export default async function buildFromSource(
   await core.group('👷🏾‍♀️ Building Agda', async () => {
     const {buildTool, sourceDir} = buildInfo
     await buildTool.build(sourceDir, agdaDir, options)
-    await io.cpR(path.join(sourceDir, 'src', 'data'), agdaDir)
+    await util.cpR(path.join(sourceDir, 'src', 'data'), agdaDir)
   })
 
   // 6. Test:
@@ -98,7 +95,7 @@ export default async function buildFromSource(
   // 8. If 'bdist-upload' is specified, upload as a binary distribution:
   if (options['bdist-upload']) {
     await core.group('📦 Upload binary distribution', async () => {
-      const bdistName = await bdist.upload(agdaDir, options)
+      const bdistName = await util.bdistUpload(agdaDir, options)
       core.info(`Uploaded binary distribution as '${bdistName}'`)
     })
   }
@@ -129,9 +126,9 @@ async function requireSetup(options: opts.BuildOptions): Promise<boolean> {
   }
   try {
     // Search for pre-installed GHC & Cabal versions:
-    const ghcVersion = await haskell.ghcGetVersion()
+    const ghcVersion = await util.ghcGetVersion()
     core.info(`Found pre-installed GHC version ${ghcVersion}`)
-    const cabalVersion = await haskell.cabalGetVersion()
+    const cabalVersion = await util.cabalGetVersion()
     core.info(`Found pre-installed Cabal version ${cabalVersion}`)
 
     // Filter compatible GHC versions to those matching pre-installed version:

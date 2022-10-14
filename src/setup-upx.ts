@@ -1,8 +1,7 @@
 import * as tc from '@actions/tool-cache'
 import * as path from 'node:path'
 import * as opts from './opts'
-import * as simver from './util/simver'
-import {brew, brewGetVersion} from './util'
+import {brew, brewGetVersion, simver} from './util'
 
 const upxUrlLinux =
   'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz'

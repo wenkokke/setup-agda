@@ -1,3 +1,5 @@
+import * as core from '@actions/core'
+import * as glob from '@actions/glob'
 import * as path from 'node:path'
 import * as opts from '../opts'
 import * as exec from './exec'
@@ -50,7 +52,7 @@ function parseAgdaVersionOutput(progOutput: string): string {
   }
 }
 
-export async function getSystemAgdaVersion(
+export async function agdaGetVersion(
   agdaOptions?: Partial<AgdaOptions>,
   options?: exec.ExecOptions
 ): Promise<string> {
@@ -62,18 +64,43 @@ export async function getSystemAgdaVersion(
   return await exec.getVersion(agdaBin, versionOptions)
 }
 
-export async function getSystemAgdaDataDir(
+export async function agdaGetDataDir(
   agdaOptions?: Partial<AgdaOptions>,
   options?: exec.ExecOptions
 ): Promise<string> {
-  return await execSystemAgda(['--print-agda-dir'], agdaOptions, options)
+  return await agda(['--print-agda-dir'], agdaOptions, options)
 }
 
-export async function execSystemAgda(
+export async function agda(
   args: string[],
   agdaOptions?: Partial<AgdaOptions>,
   options?: exec.ExecOptions
 ): Promise<string> {
   const [agdaBin, optionsWithDataDir] = resolveAgdaOptions(agdaOptions, options)
   return await exec.getoutput(agdaBin, args, optionsWithDataDir)
+}
+
+export async function testAgda(
+  agdaOptions?: Partial<AgdaOptions>,
+  options?: exec.ExecOptions
+): Promise<void> {
+  const versionString = await agdaGetVersion(agdaOptions)
+  core.info(`Found Agda version ${versionString} on PATH`)
+  const dataDir = await agdaGetDataDir(agdaOptions)
+  core.info(`Found Agda data directory at ${dataDir}`)
+  const globber = await glob.create(
+    path.join(dataDir, 'lib', 'prim', '**', '*.agda'),
+    {
+      followSymbolicLinks: false,
+      implicitDescendants: false,
+      matchDirectories: false
+    }
+  )
+  for await (const agdaFile of globber.globGenerator()) {
+    core.info(`Compiling ${agdaFile}`)
+    await agda(['-v0', agdaFile], agdaOptions, {
+      ...options,
+      cwd: path.join(dataDir, 'lib', 'prim')
+    })
+  }
 }

@@ -1,13 +1,11 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
-import * as io from '../../util/io'
-import * as exec from '../../util/exec'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import * as semver from 'semver'
 import * as opts from '../../opts'
-import * as haskell from '../../util/haskell'
+import * as util from '../../util'
 
 export const name = 'cabal'
 
@@ -16,17 +14,17 @@ export async function build(
   installDir: string,
   options: opts.BuildOptions
 ): Promise<void> {
-  const execOptions: exec.ExecOptions = {cwd: sourceDir}
+  const execOptions: util.ExecOptions = {cwd: sourceDir}
   // Configure:
   core.info(`Configure Agda-${options['agda-version']}`)
-  await haskell.cabal(['v2-configure', ...buildFlags(options)], execOptions)
+  await util.cabal(['v2-configure', ...buildFlags(options)], execOptions)
   // Build:
   core.info(`Build Agda-${options['agda-version']}`)
-  await haskell.cabal(['v2-build', 'exe:agda', 'exe:agda-mode'], execOptions)
+  await util.cabal(['v2-build', 'exe:agda', 'exe:agda-mode'], execOptions)
   // Install:
   core.info(`Install Agda-${options['agda-version']} to ${installDir}`)
-  await io.mkdirP(path.join(installDir, 'bin'))
-  await haskell.cabal(
+  await util.mkdirP(path.join(installDir, 'bin'))
+  await util.cabal(
     [
       'v2-install',
       'exe:agda',

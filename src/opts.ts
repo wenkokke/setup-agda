@@ -1,15 +1,15 @@
 import * as core from '@actions/core'
-import * as fs from 'node:fs'
-import * as semver from 'semver'
 import * as yaml from 'js-yaml'
+import * as fs from 'node:fs'
+import * as http from 'node:http'
+import {homedir, release} from 'node:os'
 import * as path from 'node:path'
 import * as process from 'node:process'
-import * as simver from './util/simver'
-import * as http from 'node:http'
 import pick from 'object.pick'
-import {homedir, release} from 'node:os'
-import distPackageInfoCache from './package-info/Agda.json'
+import * as semver from 'semver'
 import distBdistIndex from './package-info/Agda.bdist.json'
+import distPackageInfoCache from './package-info/Agda.json'
+import * as simver from './util/simver'
 
 // Setup options for haskell/actions/setup:
 

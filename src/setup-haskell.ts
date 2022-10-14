@@ -1,10 +1,10 @@
 import * as core from '@actions/core'
-import * as opts from './opts'
-import setupHaskell from 'setup-haskell'
-import * as haskell from './util/haskell'
 import assert from 'node:assert'
-import * as semver from 'semver'
 import pick from 'object.pick'
+import * as semver from 'semver'
+import setupHaskell from 'setup-haskell'
+import * as opts from './opts'
+import * as util from './util'
 
 export default async function setup(options: opts.BuildOptions): Promise<void> {
   // Select GHC version:
@@ -23,13 +23,13 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
   core.setOutput('haskell-setup', 'true')
 
   // Update the Cabal version:
-  options['cabal-version'] = await haskell.cabalGetVersion(
+  options['cabal-version'] = await util.cabalGetVersion(
     pick(options, ['enable-stack', 'ghc-version', 'stack-no-global'])
   )
 
   // Update the Stack version:
   if (options['enable-stack'])
-    options['stack-version'] = await haskell.stackGetVersion()
+    options['stack-version'] = await util.stackGetVersion()
 }
 
 function maxSatisfyingGhcVersion(options: opts.BuildOptions): string {
