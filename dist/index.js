@@ -1260,13 +1260,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
-const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const util_1 = __nccwpck_require__(4024);
@@ -1293,10 +1289,7 @@ function setup(options) {
                 // Get the icu-i18n information via pkg-config:
                 options['icu-version'] = yield (0, util_1.pkgConfig)('--modversion', 'icu-i18n');
                 core.info(`Found ICU version ${options['icu-version']}`);
-                const icuLinkerFlag = yield (0, util_1.pkgConfig)('--libs-only-L', 'icu-i18n');
-                (0, node_assert_1.default)(icuLinkerFlag.startsWith('-L'));
-                const icuLibDir = icuLinkerFlag.trim().substring('-L'.length);
-                const icuLibGlobber = yield glob.create(path.join(icuLibDir, 'libicu*.so.*'));
+                const icuLibGlobber = yield glob.create('/usr/lib/libicu*.so.*');
                 options['bdist-libs'] = yield icuLibGlobber.glob();
                 core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`);
                 break;
