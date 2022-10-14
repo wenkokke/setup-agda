@@ -18,7 +18,7 @@ function packageUrl(packageName: string, packageVersion: string): string {
 
 export async function getPackageInfo(
   packageName: string,
-  options?: Readonly<opts.PackageInfoOptions>
+  options?: opts.PackageInfoOptions
 ): Promise<opts.PackageInfoCache> {
   const fetchPackageInfo = options?.fetchPackageInfo ?? true
   const returnCacheOnError = options?.returnCacheOnError ?? true
@@ -72,7 +72,7 @@ export async function getPackageInfo(
 
 async function getPackageLatestVersion(
   packageName: string,
-  options?: Readonly<opts.PackageInfoOptions>
+  options?: opts.PackageInfoOptions
 ): Promise<string> {
   const updatedPackageInfo = await getPackageInfo(packageName, options)
   const versions = Object.keys(updatedPackageInfo.packageInfo)
@@ -91,7 +91,7 @@ async function getPackageLatestVersion(
 async function validatePackageVersion(
   packageName: string,
   packageVersion: string,
-  options?: Readonly<opts.PackageInfoOptions>
+  options?: opts.PackageInfoOptions
 ): Promise<string> {
   const packageInfo = await getPackageInfo(packageName, options)
   const packageVersionStatus = packageInfo.packageInfo[packageVersion]
@@ -111,7 +111,7 @@ async function validatePackageVersion(
 export async function resolvePackageVersion(
   packageName: string,
   packageVersion: string,
-  options?: Readonly<opts.PackageInfoOptions>
+  options?: opts.PackageInfoOptions
 ): Promise<string> {
   if (packageVersion === 'latest') {
     return await getPackageLatestVersion(packageName, options)
@@ -122,7 +122,7 @@ export async function resolvePackageVersion(
 
 export async function getPackageSource(
   packageName: string,
-  options?: Readonly<opts.PackageSourceOptions>
+  options?: opts.PackageSourceOptions
 ): Promise<{packageVersion: string; packageDir: string}> {
   let packageVersion = options?.packageVersion ?? 'latest'
   const validateVersion = options?.validateVersion ?? true

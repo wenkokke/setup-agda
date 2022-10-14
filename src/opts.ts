@@ -51,14 +51,14 @@ export interface SetupAgdaInputs
 
 export type UPXVersion = '3.96'
 
-export interface BuildOptions extends Readonly<SetupAgdaInputs> {
-  readonly 'compatible-ghc-versions': string[]
-  readonly 'extra-lib-dirs': string[]
-  readonly 'extra-include-dirs': string[]
-  readonly 'icu-version'?: string
-  readonly 'upx-version'?: UPXVersion
-  readonly 'package-info-cache'?: PackageInfoCache
-  readonly 'libs-to-bundle': string[]
+export interface BuildOptions extends SetupAgdaInputs {
+  'compatible-ghc-versions': string[]
+  'extra-lib-dirs': string[]
+  'extra-include-dirs': string[]
+  'icu-version'?: string
+  'upx-version'?: UPXVersion
+  'package-info-cache'?: PackageInfoCache
+  'libs-to-bundle': string[]
 }
 
 // Helper functions to check support of various build options
@@ -128,25 +128,25 @@ export type PackageStatus = 'normal' | 'deprecated'
 export type PackageInfo = Record<string, PackageStatus | undefined>
 
 export interface PackageInfoCache {
-  readonly packageInfo: PackageInfo
-  readonly lastModified: string
+  packageInfo: PackageInfo
+  lastModified: string
 }
 
 export interface PackageInfoOptions {
-  readonly fetchPackageInfo?: boolean
-  readonly packageInfoCache?: PackageInfoCache
-  readonly packageInfoHeaders?: http.OutgoingHttpHeaders
-  readonly returnCacheOnError?: boolean
+  fetchPackageInfo?: boolean
+  packageInfoCache?: PackageInfoCache
+  packageInfoHeaders?: http.OutgoingHttpHeaders
+  returnCacheOnError?: boolean
 }
 
 export interface PackageSourceOptions extends PackageInfoOptions {
-  readonly packageVersion?: 'latest' | string
-  readonly archivePath?: string
-  readonly downloadAuth?: string
-  readonly downloadHeaders?: http.OutgoingHttpHeaders
-  readonly extractToPath?: string
-  readonly tarFlags?: string[]
-  readonly validateVersion?: boolean
+  packageVersion?: 'latest' | string
+  archivePath?: string
+  downloadAuth?: string
+  downloadHeaders?: http.OutgoingHttpHeaders
+  extractToPath?: string
+  tarFlags?: string[]
+  validateVersion?: boolean
 }
 
 export const packageInfoCache = distPackageInfoCache as PackageInfoCache

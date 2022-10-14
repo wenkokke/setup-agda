@@ -14,8 +14,8 @@ export const agdaBinNames: string[] = [agdaBinName, agdaModeBinName]
 // System calls
 
 export interface AgdaOptions {
-  readonly agdaBin: string
-  readonly agdaDataDir: string
+  agdaBin: string
+  agdaDataDir: string
 }
 
 function resolveAgdaOptions(

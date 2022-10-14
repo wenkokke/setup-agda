@@ -19,7 +19,7 @@ export default async function buildFromSource(
 ): Promise<string> {
   const {sourceDir, buildTool, requireSetup} = await core.group(
     '🛠 Preparing to build Agda from source',
-    async (): Promise<Readonly<BuildInfo>> => {
+    async (): Promise<BuildInfo> => {
       const ret: Partial<BuildInfo> = {}
       // Download the source:
       core.info('Download source distribution from Hackage')
@@ -43,12 +43,12 @@ export default async function buildFromSource(
         core.info('Found compatible versions of GHC and Cabal')
         ret.requireSetup = false
         options = maybeOptions
-        return ret as Readonly<BuildInfo>
+        return ret as BuildInfo
       } else {
         core.info('Could not find compatible versions of GHC and Cabal')
         ret.requireSetup = true
         options = selectGhcVersion(options)
-        return ret as Readonly<BuildInfo>
+        return ret as BuildInfo
       }
     }
   )
@@ -107,7 +107,7 @@ export default async function buildFromSource(
 }
 
 interface BuildTool {
-  readonly name: string
+  name: string
   build: (
     sourceDir: string,
     installDir: string,
