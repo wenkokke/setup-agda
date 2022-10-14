@@ -374,12 +374,12 @@ function installFromBdist(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // 1. Download:
         const bdistDir = yield core.group(`🔍 Searching for Agda ${options['agda-version']} in package index`, () => __awaiter(this, void 0, void 0, function* () {
-            const tmpBdistZip = yield bdist.download(options);
-            if (tmpBdistZip === null)
+            const bdistZip = yield bdist.download(options);
+            if (bdistZip === null)
                 return null;
-            const tmpBdistDir = yield tc.extractZip(tmpBdistZip);
-            io.rmRF(tmpBdistZip);
-            return path.join(tmpBdistDir, path.basename(tmpBdistZip, '.zip'));
+            const bdistParentDir = yield tc.extractZip(bdistZip);
+            io.rmRF(bdistZip);
+            return path.join(bdistParentDir, path.basename(bdistZip, '.zip'));
         }));
         if (bdistDir === null)
             return null;

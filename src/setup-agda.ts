@@ -96,11 +96,11 @@ async function installFromBdist(
   const bdistDir = await core.group(
     `🔍 Searching for Agda ${options['agda-version']} in package index`,
     async () => {
-      const tmpBdistZip = await bdist.download(options)
-      if (tmpBdistZip === null) return null
-      const tmpBdistDir = await tc.extractZip(tmpBdistZip)
-      io.rmRF(tmpBdistZip)
-      return path.join(tmpBdistDir, path.basename(tmpBdistZip, '.zip'))
+      const bdistZip = await bdist.download(options)
+      if (bdistZip === null) return null
+      const bdistParentDir = await tc.extractZip(bdistZip)
+      io.rmRF(bdistZip)
+      return path.join(bdistParentDir, path.basename(bdistZip, '.zip'))
     }
   )
   if (bdistDir === null) return null
