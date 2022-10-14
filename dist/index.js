@@ -78,6 +78,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const yaml = __importStar(__nccwpck_require__(1917));
 const fs = __importStar(__nccwpck_require__(7561));
 const node_os_1 = __nccwpck_require__(612);
+const Mustache = __importStar(__nccwpck_require__(8272));
 const path = __importStar(__nccwpck_require__(9411));
 const process = __importStar(__nccwpck_require__(7742));
 const object_pick_1 = __importDefault(__nccwpck_require__(9962));
@@ -85,6 +86,7 @@ const semver = __importStar(__nccwpck_require__(1383));
 const Agda_bdist_json_1 = __importDefault(__nccwpck_require__(3475));
 const Agda_json_1 = __importDefault(__nccwpck_require__(4862));
 const simver = __importStar(__nccwpck_require__(7609));
+const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 // Helper functions to check support of various build options
 function compressExe(options) {
     // NOTE:
@@ -210,6 +212,14 @@ function getOptions(inputs) {
         throw Error('Input "ghc-version-range" is not a valid version range');
     if (options['force-build'] && options['force-no-build'])
         throw Error('Build or no build? What do you want from me? 🤷🏻‍♀️');
+    if (options['bdist-name'] !== '') {
+        try {
+            Mustache.parse(options['bdist-name']);
+        }
+        catch (error) {
+            throw Error(`Could not parse "bdist-name": ${(0, ensure_error_1.default)(error).message}`);
+        }
+    }
     return options;
 }
 exports.getOptions = getOptions;
@@ -517,13 +527,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.upload = exports.download = void 0;
+exports.renderName = exports.upload = exports.download = void 0;
 const artifact = __importStar(__nccwpck_require__(2605));
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const tc = __importStar(__nccwpck_require__(7784));
 const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
-const mustache = __importStar(__nccwpck_require__(8272));
+const Mustache = __importStar(__nccwpck_require__(8272));
 const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
 const object_pick_1 = __importDefault(__nccwpck_require__(9962));
@@ -676,7 +686,7 @@ function bundleLibs(bdistDir, options) {
 }
 function renderName(template, options) {
     const templateOrDefault = template !== '' ? template : 'agda-{{agda-version}}-{{arch}}-{{platform}}';
-    return mustache.render(templateOrDefault, Object.assign(Object.assign({}, (0, object_pick_1.default)(options, [
+    return Mustache.render(templateOrDefault, Object.assign(Object.assign({}, (0, object_pick_1.default)(options, [
         'agda-version',
         'ghc-version',
         'cabal-version',
@@ -687,6 +697,7 @@ function renderName(template, options) {
         // Boolean flags:
         'if-stack': options['stack-version'] !== '', 'if-icu': options['icu-version'] !== '', 'if-upx': options['upx-version'] !== '' }));
 }
+exports.renderName = renderName;
 // Helpers for patching executables
 function printNeededLibs(binPath) {
     return __awaiter(this, void 0, void 0, function* () {

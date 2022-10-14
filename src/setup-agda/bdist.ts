@@ -3,7 +3,7 @@ import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as tc from '@actions/tool-cache'
 import ensureError from 'ensure-error'
-import * as mustache from 'mustache'
+import * as Mustache from 'mustache'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import pick from 'object.pick'
@@ -193,10 +193,13 @@ async function bundleLibs(
   }
 }
 
-function renderName(template: string, options: opts.BuildOptions): string {
+export function renderName(
+  template: string,
+  options: opts.BuildOptions
+): string {
   const templateOrDefault =
     template !== '' ? template : 'agda-{{agda-version}}-{{arch}}-{{platform}}'
-  return mustache.render(templateOrDefault, {
+  return Mustache.render(templateOrDefault, {
     ...pick(options, [
       'agda-version',
       'ghc-version',

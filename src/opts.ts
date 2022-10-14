@@ -3,6 +3,7 @@ import * as yaml from 'js-yaml'
 import * as fs from 'node:fs'
 import * as http from 'node:http'
 import {homedir, release} from 'node:os'
+import * as Mustache from 'mustache'
 import * as path from 'node:path'
 import * as process from 'node:process'
 import pick from 'object.pick'
@@ -10,6 +11,7 @@ import * as semver from 'semver'
 import distBdistIndex from './package-info/Agda.bdist.json'
 import distPackageInfoCache from './package-info/Agda.json'
 import * as simver from './util/simver'
+import ensureError from 'ensure-error'
 
 // Setup options for haskell/actions/setup:
 
@@ -235,6 +237,13 @@ export function getOptions(
     throw Error('Input "ghc-version-range" is not a valid version range')
   if (options['force-build'] && options['force-no-build'])
     throw Error('Build or no build? What do you want from me? 🤷🏻‍♀️')
+  if (options['bdist-name'] !== '') {
+    try {
+      Mustache.parse(options['bdist-name'])
+    } catch (error) {
+      throw Error(`Could not parse "bdist-name": ${ensureError(error).message}`)
+    }
+  }
 
   return options
 }
