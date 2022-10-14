@@ -1454,8 +1454,7 @@ const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 function download(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Get the name for the distribution:
-        options = Object.assign(Object.assign({}, options), { 'bdist-name': '' });
-        const bdistName = yield renderBdistName(options);
+        const bdistName = yield renderBdistName(Object.assign(Object.assign({}, options), { 'bdist-name': '' }));
         const bdistUrl = opts.bdistIndex[bdistName];
         if (bdistUrl !== undefined) {
             try {

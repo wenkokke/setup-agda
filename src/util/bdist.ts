@@ -19,8 +19,7 @@ export async function download(
   options: opts.BuildOptions
 ): Promise<string | null> {
   // Get the name for the distribution:
-  options = {...options, 'bdist-name': ''}
-  const bdistName = await renderBdistName(options)
+  const bdistName = await renderBdistName({...options, 'bdist-name': ''})
   const bdistUrl = opts.bdistIndex[bdistName]
   if (bdistUrl !== undefined) {
     try {
