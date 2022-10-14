@@ -56,7 +56,7 @@ export async function upload(
   await util.cpR(path.join(installDir, 'data'), bdistDir)
 
   // Compress binaries:
-  if (!options['bdist-no-compress-exe']) {
+  if (opts.compressExe(options)) {
     try {
       const upxExe = await setupUpx(options)
       for (const binName of util.agdaBinNames)
@@ -105,12 +105,16 @@ export async function upload(
 }
 
 async function compressBin(upxExe: string, binPath: string): Promise<void> {
-  // Print the needed libraries before compressing:
-  printNeededLibs(binPath)
-  // Compress with UPX:
-  await util.getOutput(upxExe, ['--best', binPath])
-  // Print the needed libraries after compressing:
-  printNeededLibs(binPath)
+  switch (opts.os) {
+    case 'linux': {
+      // Print the needed libraries before compressing:
+      printNeededLibs(binPath)
+      // Compress with UPX:
+      await util.getOutput(upxExe, ['--best', binPath])
+      // Print the needed libraries after compressing:
+      printNeededLibs(binPath)
+    }
+  }
 }
 
 async function bundleLibs(
@@ -119,51 +123,49 @@ async function bundleLibs(
 ): Promise<void> {
   switch (opts.os) {
     case 'linux': {
-      // UPX should've bundled all libs
+      // UPX should bundled all libs
       break
     }
     case 'macos': {
-      // If we compiled with --enable-cluster-counting, bundle ICU:
-      if (opts.enableClusterCounting(options)) {
+      if (options['bdist-libs'].length > 0)
         await util.mkdirP(path.join(bdistDir, 'lib'))
-        // Copy needed libraries:
+
+      // Copy needed libraries:
+      for (const libPath of options['bdist-libs']) {
+        await util.cp(
+          path.join(libPath),
+          path.join(bdistDir, 'lib', path.basename(libPath))
+        )
+      }
+      // Patch run paths for loaded libraries:
+      for (const binName of util.agdaBinNames) {
+        const binPath = path.join(bdistDir, 'bin', binName)
+        const libDirs = new Set<string>()
+
+        // Update run paths for libraries:
         for (const libPath of options['bdist-libs']) {
-          await util.cp(
-            path.join(libPath),
-            path.join(bdistDir, 'lib', path.basename(libPath))
-          )
+          const libName = path.basename(libPath)
+          libDirs.add(path.dirname(libPath))
+          await changeDependency(binPath, libPath, `@rpath/${libName}`)
         }
-        // Patch run paths for loaded libraries:
-        for (const binName of util.agdaBinNames) {
-          const binPath = path.join(bdistDir, 'bin', binName)
-          const libDirs = new Set<string>()
-          // Update run paths for libraries:
-          for (const libPath of options['bdist-libs']) {
-            const libName = path.basename(libPath)
-            libDirs.add(path.dirname(libPath))
-            await changeDependency(binPath, libPath, `@rpath/${libName}`)
-          }
-          // Add load paths for libraries:
-          await addRunPaths(
-            binPath,
-            '@executable_path',
-            '@executable_path/../lib',
-            ...libDirs
-          )
-        }
+
+        // Add load paths for libraries:
+        await addRunPaths(
+          binPath,
+          '@executable_path',
+          '@executable_path/../lib',
+          ...libDirs
+        )
       }
       break
     }
     case 'windows': {
-      // If we compiled with --enable-cluster-counting, bundle ICU:
-      if (opts.supportsClusterCounting(options)) {
-        // Copy needed libraries:
-        for (const libPath of options['bdist-libs']) {
-          await util.cp(
-            path.join(libPath),
-            path.join(bdistDir, 'bin', path.basename(libPath))
-          )
-        }
+      // Copy needed libraries:
+      for (const libPath of options['bdist-libs']) {
+        await util.cp(
+          path.join(libPath),
+          path.join(bdistDir, 'bin', path.basename(libPath))
+        )
       }
       break
     }

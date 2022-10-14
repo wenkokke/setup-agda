@@ -63,6 +63,13 @@ export interface BuildOptions extends SetupAgdaInputs {
 
 // Helper functions to check support of various build options
 
+export function compressExe(options: BuildOptions): boolean {
+  // NOTE:
+  //   We do not compress executables on MacOS or Windows, since the resulting
+  //   executables are unsigned, and therefore cause problems with security:
+  return !options['bdist-no-compress-exe'] && os === 'linux'
+}
+
 export function enableClusterCounting(options: BuildOptions): boolean {
   // NOTE:
   //   We only enable --cluster-counting on versions after 2.6.2,

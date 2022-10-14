@@ -73,7 +73,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.pickSetupHaskellInputs = exports.getOptions = exports.os = exports.bdistIndex = exports.packageInfoCache = exports.supportsUPX = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.enableClusterCounting = void 0;
+exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.pickSetupHaskellInputs = exports.getOptions = exports.os = exports.bdistIndex = exports.packageInfoCache = exports.supportsUPX = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.enableClusterCounting = exports.compressExe = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const yaml = __importStar(__nccwpck_require__(1917));
 const fs = __importStar(__nccwpck_require__(7561));
@@ -86,6 +86,13 @@ const Agda_bdist_json_1 = __importDefault(__nccwpck_require__(3475));
 const Agda_json_1 = __importDefault(__nccwpck_require__(4862));
 const simver = __importStar(__nccwpck_require__(7609));
 // Helper functions to check support of various build options
+function compressExe(options) {
+    // NOTE:
+    //   We do not compress executables on MacOS or Windows, since the resulting
+    //   executables are unsigned, and therefore cause problems with security:
+    return !options['bdist-no-compress-exe'] && exports.os === 'linux';
+}
+exports.compressExe = compressExe;
 function enableClusterCounting(options) {
     // NOTE:
     //   We only enable --cluster-counting on versions after 2.6.2,
@@ -560,7 +567,7 @@ function upload(installDir, options) {
         // Copy data:
         yield util.cpR(path.join(installDir, 'data'), bdistDir);
         // Compress binaries:
-        if (!options['bdist-no-compress-exe']) {
+        if (opts.compressExe(options)) {
             try {
                 const upxExe = yield (0, setup_upx_1.default)(options);
                 for (const binName of util.agdaBinNames)
@@ -601,52 +608,51 @@ function upload(installDir, options) {
 exports.upload = upload;
 function compressBin(upxExe, binPath) {
     return __awaiter(this, void 0, void 0, function* () {
-        // Print the needed libraries before compressing:
-        printNeededLibs(binPath);
-        // Compress with UPX:
-        yield util.getOutput(upxExe, ['--best', binPath]);
-        // Print the needed libraries after compressing:
-        printNeededLibs(binPath);
+        switch (opts.os) {
+            case 'linux': {
+                // Print the needed libraries before compressing:
+                printNeededLibs(binPath);
+                // Compress with UPX:
+                yield util.getOutput(upxExe, ['--best', binPath]);
+                // Print the needed libraries after compressing:
+                printNeededLibs(binPath);
+            }
+        }
     });
 }
 function bundleLibs(bdistDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (opts.os) {
             case 'linux': {
-                // UPX should've bundled all libs
+                // UPX should bundled all libs
                 break;
             }
             case 'macos': {
-                // If we compiled with --enable-cluster-counting, bundle ICU:
-                if (opts.enableClusterCounting(options)) {
+                if (options['bdist-libs'].length > 0)
                     yield util.mkdirP(path.join(bdistDir, 'lib'));
-                    // Copy needed libraries:
+                // Copy needed libraries:
+                for (const libPath of options['bdist-libs']) {
+                    yield util.cp(path.join(libPath), path.join(bdistDir, 'lib', path.basename(libPath)));
+                }
+                // Patch run paths for loaded libraries:
+                for (const binName of util.agdaBinNames) {
+                    const binPath = path.join(bdistDir, 'bin', binName);
+                    const libDirs = new Set();
+                    // Update run paths for libraries:
                     for (const libPath of options['bdist-libs']) {
-                        yield util.cp(path.join(libPath), path.join(bdistDir, 'lib', path.basename(libPath)));
+                        const libName = path.basename(libPath);
+                        libDirs.add(path.dirname(libPath));
+                        yield changeDependency(binPath, libPath, `@rpath/${libName}`);
                     }
-                    // Patch run paths for loaded libraries:
-                    for (const binName of util.agdaBinNames) {
-                        const binPath = path.join(bdistDir, 'bin', binName);
-                        const libDirs = new Set();
-                        // Update run paths for libraries:
-                        for (const libPath of options['bdist-libs']) {
-                            const libName = path.basename(libPath);
-                            libDirs.add(path.dirname(libPath));
-                            yield changeDependency(binPath, libPath, `@rpath/${libName}`);
-                        }
-                        // Add load paths for libraries:
-                        yield addRunPaths(binPath, '@executable_path', '@executable_path/../lib', ...libDirs);
-                    }
+                    // Add load paths for libraries:
+                    yield addRunPaths(binPath, '@executable_path', '@executable_path/../lib', ...libDirs);
                 }
                 break;
             }
             case 'windows': {
-                // If we compiled with --enable-cluster-counting, bundle ICU:
-                if (opts.supportsClusterCounting(options)) {
-                    // Copy needed libraries:
-                    for (const libPath of options['bdist-libs']) {
-                        yield util.cp(path.join(libPath), path.join(bdistDir, 'bin', path.basename(libPath)));
-                    }
+                // Copy needed libraries:
+                for (const libPath of options['bdist-libs']) {
+                    yield util.cp(path.join(libPath), path.join(bdistDir, 'bin', path.basename(libPath)));
                 }
                 break;
             }
