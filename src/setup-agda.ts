@@ -148,18 +148,28 @@ async function installFromBdist(
 }
 
 async function repairPermissions(bdistDir: string): Promise<void> {
-  if (opts.os === 'macos') {
-    // Fix permissions on binaries
-    for (const binName of util.agdaBinNames) {
-      await util.chmod('+x', path.join(bdistDir, 'bin', binName))
-      await util.xattr('-c', path.join(bdistDir, 'bin', binName))
+  switch (opts.os) {
+    case 'linux': {
+      // Fix permissions on binaries
+      for (const binName of util.agdaBinNames) {
+        await util.chmod('+x', path.join(bdistDir, 'bin', binName))
+      }
+      break
     }
-    // Fix permissions on libraries
-    const libGlobber = await glob.create(path.join(bdistDir, 'lib', '*'))
-    for await (const libPath of libGlobber.globGenerator()) {
-      await util.chmod('+w', libPath)
-      await util.xattr('-c', libPath)
-      await util.chmod('-w', libPath)
+    case 'macos': {
+      // Fix permissions on binaries
+      for (const binName of util.agdaBinNames) {
+        await util.chmod('+x', path.join(bdistDir, 'bin', binName))
+        await util.xattr('-c', path.join(bdistDir, 'bin', binName))
+      }
+      // Fix permissions on libraries
+      const libGlobber = await glob.create(path.join(bdistDir, 'lib', '*'))
+      for await (const libPath of libGlobber.globGenerator()) {
+        await util.chmod('+w', libPath)
+        await util.xattr('-c', libPath)
+        await util.chmod('-w', libPath)
+      }
+      break
     }
   }
 }
