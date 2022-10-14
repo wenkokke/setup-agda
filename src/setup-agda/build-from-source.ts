@@ -96,8 +96,8 @@ export default async function buildFromSource(
     }
   )
 
-  // 8. If 'upload-bdist' is specified, upload as a binary distribution:
-  if (options['upload-bdist']) {
+  // 8. If 'bdist-upload' is specified, upload as a binary distribution:
+  if (options['bdist-upload']) {
     await core.group('📦 Upload binary distribution', async () => {
       const bdistName = await bdist.upload(agdaDir, options)
       core.info(`Uploaded binary distribution as '${bdistName}'`)

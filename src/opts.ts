@@ -14,15 +14,15 @@ import distBdistIndex from './package-info/Agda.bdist.json'
 // Setup options for haskell/actions/setup:
 
 export type SetupHaskellOption =
-  | 'ghc-version'
   | 'cabal-version'
+  | 'ghc-version'
   | 'stack-version'
 
 export type SetupHaskellFlag =
+  | 'disable-matcher'
   | 'enable-stack'
   | 'stack-no-global'
   | 'stack-setup-ghc'
-  | 'disable-matcher'
 
 export interface SetupHaskellInputs
   extends Record<SetupHaskellOption, string>,
@@ -32,15 +32,16 @@ export interface SetupHaskellInputs
 
 export type SetupAgdaOption =
   | 'agda-version'
-  | 'ghc-version-range'
   | 'bdist-name'
+  | 'ghc-version-range'
   | SetupHaskellOption
 
 export type SetupAgdaFlag =
+  | 'bdist-compress-exe'
+  | 'bdist-upload'
   | 'disable-cluster-counting'
+  | 'force-build'
   | 'ghc-version-match-exact'
-  | 'upload-bdist'
-  | 'bdist-compress-bin'
   | SetupHaskellFlag
 
 export interface SetupAgdaInputs
@@ -56,9 +57,9 @@ export interface BuildOptions extends SetupAgdaInputs {
   'extra-lib-dirs': string[]
   'extra-include-dirs': string[]
   'icu-version'?: string
-  'upx-version'?: UPXVersion
-  'package-info-cache'?: PackageInfoCache
   'libs-to-bundle': string[]
+  'package-info-cache'?: PackageInfoCache
+  'upx-version'?: string
 }
 
 // Helper functions to check support of various build options
@@ -195,21 +196,27 @@ export function getOptions(
     return ![false, '', 'false', undefined].includes(maybeInput)
   }
   const options: BuildOptions = {
+    // Specified in AgdaSetupInputs
     'agda-version': getOption('agda-version'),
-    'ghc-version-range': getOption('ghc-version-range'),
-    'compatible-ghc-versions': [],
-    'ghc-version': getOption('ghc-version'),
-    'cabal-version': getOption('cabal-version'),
-    'stack-version': getOption('stack-version'),
-    'disable-cluster-counting': getFlag('disable-cluster-counting'),
-    'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
-    'upload-bdist': getFlag('upload-bdist'),
+    'bdist-compress-exe': getFlag('bdist-compress-exe'),
     'bdist-name': getOption('bdist-name'),
-    'bdist-compress-bin': getFlag('bdist-compress-bin'),
+    'bdist-upload': getFlag('bdist-upload'),
+    'disable-cluster-counting': getFlag('disable-cluster-counting'),
+    'force-build': getFlag('force-build'),
+    'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
+    'ghc-version-range': getOption('ghc-version-range'),
+
+    // Specified in HaskellSetupInputs
+    'cabal-version': getOption('cabal-version'),
+    'disable-matcher': getFlag('disable-matcher'),
     'enable-stack': getFlag('enable-stack'),
+    'ghc-version': getOption('ghc-version'),
     'stack-no-global': getFlag('stack-no-global'),
     'stack-setup-ghc': getFlag('stack-setup-ghc'),
-    'disable-matcher': getFlag('disable-matcher'),
+    'stack-version': getOption('stack-version'),
+
+    // Specified in BuildOptions
+    'compatible-ghc-versions': [],
     'extra-lib-dirs': [],
     'extra-include-dirs': [],
     'libs-to-bundle': []
@@ -220,8 +227,8 @@ export function getOptions(
     throw Error('Value "nightly" for input "agda-version" is unupported')
   if (options['ghc-version'] !== 'latest')
     throw Error('Input "ghc-version" is unsupported. Use "ghc-version-range"')
-  if (options['bdist-compress-bin'] && !supportsUPX())
-    throw Error('Input "bdist-compress-bin" is unsupported on MacOS <12')
+  if (options['bdist-compress-exe'] && !supportsUPX())
+    throw Error('Input "bdist-compress-exe" is unsupported on MacOS <12')
   if (!semver.validRange(options['ghc-version-range']))
     throw Error('Input "ghc-version-range" is not a valid version range')
 
@@ -232,13 +239,13 @@ export function pickSetupHaskellInputs(
   options: BuildOptions
 ): SetupHaskellInputs {
   return pick(options, [
-    'ghc-version',
     'cabal-version',
-    'stack-version',
+    'disable-matcher',
     'enable-stack',
+    'ghc-version',
     'stack-no-global',
     'stack-setup-ghc',
-    'disable-matcher'
+    'stack-version'
   ])
 }
 

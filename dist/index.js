@@ -171,21 +171,25 @@ function getOptions(inputs) {
         return ![false, '', 'false', undefined].includes(maybeInput);
     };
     const options = {
+        // Specified in AgdaSetupInputs
         'agda-version': getOption('agda-version'),
-        'ghc-version-range': getOption('ghc-version-range'),
-        'compatible-ghc-versions': [],
-        'ghc-version': getOption('ghc-version'),
-        'cabal-version': getOption('cabal-version'),
-        'stack-version': getOption('stack-version'),
-        'disable-cluster-counting': getFlag('disable-cluster-counting'),
-        'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
-        'upload-bdist': getFlag('upload-bdist'),
+        'bdist-compress-exe': getFlag('bdist-compress-exe'),
         'bdist-name': getOption('bdist-name'),
-        'bdist-compress-bin': getFlag('bdist-compress-bin'),
+        'bdist-upload': getFlag('bdist-upload'),
+        'disable-cluster-counting': getFlag('disable-cluster-counting'),
+        'force-build': getFlag('force-build'),
+        'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
+        'ghc-version-range': getOption('ghc-version-range'),
+        // Specified in HaskellSetupInputs
+        'cabal-version': getOption('cabal-version'),
+        'disable-matcher': getFlag('disable-matcher'),
         'enable-stack': getFlag('enable-stack'),
+        'ghc-version': getOption('ghc-version'),
         'stack-no-global': getFlag('stack-no-global'),
         'stack-setup-ghc': getFlag('stack-setup-ghc'),
-        'disable-matcher': getFlag('disable-matcher'),
+        'stack-version': getOption('stack-version'),
+        // Specified in BuildOptions
+        'compatible-ghc-versions': [],
         'extra-lib-dirs': [],
         'extra-include-dirs': [],
         'libs-to-bundle': []
@@ -195,8 +199,8 @@ function getOptions(inputs) {
         throw Error('Value "nightly" for input "agda-version" is unupported');
     if (options['ghc-version'] !== 'latest')
         throw Error('Input "ghc-version" is unsupported. Use "ghc-version-range"');
-    if (options['bdist-compress-bin'] && !supportsUPX())
-        throw Error('Input "bdist-compress-bin" is unsupported on MacOS <12');
+    if (options['bdist-compress-exe'] && !supportsUPX())
+        throw Error('Input "bdist-compress-exe" is unsupported on MacOS <12');
     if (!semver.validRange(options['ghc-version-range']))
         throw Error('Input "ghc-version-range" is not a valid version range');
     return options;
@@ -204,13 +208,13 @@ function getOptions(inputs) {
 exports.getOptions = getOptions;
 function pickSetupHaskellInputs(options) {
     return (0, object_pick_1.default)(options, [
-        'ghc-version',
         'cabal-version',
-        'stack-version',
+        'disable-matcher',
         'enable-stack',
+        'ghc-version',
         'stack-no-global',
         'stack-setup-ghc',
-        'disable-matcher'
+        'stack-version'
     ]);
 }
 exports.pickSetupHaskellInputs = pickSetupHaskellInputs;
@@ -581,8 +585,8 @@ function buildFromSource(options) {
         const agdaDirTC = yield core.group('🗄 Caching Agda build in tool cache', () => __awaiter(this, void 0, void 0, function* () {
             return yield tc.cacheDir(agdaDir, 'agda', options['agda-version']);
         }));
-        // 8. If 'upload-bdist' is specified, upload as a binary distribution:
-        if (options['upload-bdist']) {
+        // 8. If 'bdist-upload' is specified, upload as a binary distribution:
+        if (options['bdist-upload']) {
             yield core.group('📦 Upload binary distribution', () => __awaiter(this, void 0, void 0, function* () {
                 const bdistName = yield bdist.upload(agdaDir, options);
                 core.info(`Uploaded binary distribution as '${bdistName}'`);

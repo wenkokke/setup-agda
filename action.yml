@@ -4,20 +4,59 @@ description: 'Set up a specific version of Agda.'
 inputs:
   agda-version:
     default: 'latest'
-    description: 'The Agda version. Can be "nightly", "latest", a specific version number (e.g., 2.6.2.2), a partial version number (e.g., 2.6), or a git commit hash.'
+    description: |
+      The Agda version. Can be "latest" or a specific version number (e.g., 2.6.2.2).
     required: true
-  ghc-version-range:
-    default: '*'
-    description: 'Range of GHC versions to use. It will be used to restrict the set of GHC versions compatible with the specified Agda version.'
-    required: false
-  disable-cluster-counting:
-    description: 'If specified, build without cluster counting.'
-    required: false
-  upload-bdist:
-    description: 'If specified, will upload a binary distribution for the specified Agda version.'
+  bdist-compress-exe:
+    description: |
+      If specified, the executables in the binary distrubtion package are
+      compressed with UPX (https://upx.github.io).
+
+      Only used when "bdist-upload" is specified.
     required: false
   bdist-name:
-    description: 'If specified, will be used as the name for the binary distribution.'
+    description: |
+      If specified, will be used as a name for the binary distribution package.
+
+      The value is interpreted as a template (https://mustache.github.io/).
+      The template may use {{agda-version}}, {{cabal-version}}, {{ghc-version}},
+      {{icu-version}}, {{stack-version}}, and {{upx-version}}, which will be
+      replaced by the concrete versions, if installed, and to {{arch}},
+      {{platform}}, and {{release}}, which will be replaced by the system
+      architecture, operating system, and operating system release, as returned
+      by the corresponding NodeJS functions (https://nodejs.org/api/os.html).
+
+      Only used when "bdist-upload" is specified.
+    required: false
+  bdist-upload:
+    description: |
+      If specified, will upload a binary distribution for the specified Agda version.
+    required: false
+  disable-cluster-counting:
+    description: |
+      If specified, build without cluster counting.
+    required: false
+  force-build:
+    description: |
+      If specified, always build from source.
+    required: false
+  ghc-version-match-exact:
+    description: |
+      If specified, requires an exact match for the GHC version.
+
+      By default, this action uses the pre-installed version of GHC if it is
+      compatible with the requested Agda version (see "ghc-version-range") in
+      the major and minor version numbers, ignoring the patch version.
+    required: false
+  ghc-version-range:
+    default: '*'
+    description: |
+      If specified, restricts the range of allowed GHC versions.
+
+      By default, this action infers the set of compatible GHC versions from
+      the "tested-with" field in Agda.cabal (if building with Cabal) or from the
+      set of "stack-*.yaml" files (if building with Stack). If specified, this
+      inferred set of is then filtered by "ghc-version-range".
     required: false
 
   # If it is called, following inputs are passed to haskell/actions/setup:
