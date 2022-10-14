@@ -100,7 +100,7 @@ async function installFromBdist(
       if (tmpBdistZip === null) return null
       const tmpBdistDir = await tc.extractZip(tmpBdistZip)
       io.rmRF(tmpBdistZip)
-      return tmpBdistDir
+      return path.join(tmpBdistDir, path.basename(tmpBdistZip, '.zip'))
     }
   )
   if (bdistDir === null) return null

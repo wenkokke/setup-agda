@@ -379,7 +379,7 @@ function installFromBdist(options) {
                 return null;
             const tmpBdistDir = yield tc.extractZip(tmpBdistZip);
             io.rmRF(tmpBdistZip);
-            return tmpBdistDir;
+            return path.join(tmpBdistDir, path.basename(tmpBdistZip, '.zip'));
         }));
         if (bdistDir === null)
             return null;
