@@ -314,7 +314,6 @@ const build_from_source_1 = __importDefault(__nccwpck_require__(7222));
 const util = __importStar(__nccwpck_require__(4024));
 const agda = __importStar(__nccwpck_require__(9552));
 const bdist = __importStar(__nccwpck_require__(610));
-const exec = __importStar(__nccwpck_require__(4369));
 const io = __importStar(__nccwpck_require__(9067));
 function setup(inputs) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -388,16 +387,16 @@ function installFromToolCache(options) {
 function installFromBdist(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // 1. Download:
-        const bdistDir = yield core.group(`🔍 Searching for Agda ${options['agda-version']} in package index`, () => __awaiter(this, void 0, void 0, function* () {
+        const { bdistDir } = yield core.group(`🔍 Searching for Agda ${options['agda-version']} in package index`, () => __awaiter(this, void 0, void 0, function* () {
+            const ret = {};
             const bdistZip = yield bdist.download(options);
             if (bdistZip === null)
-                return null;
-            const bdistParentDir = yield tc.extractZip(bdistZip);
+                return ret;
+            ret.bdistDir = yield tc.extractZip(bdistZip);
             io.rmRF(bdistZip);
-            io.lsR(bdistParentDir);
-            return path.join(bdistParentDir, path.basename(bdistZip, '.zip'));
+            return ret;
         }));
-        if (bdistDir === null)
+        if (bdistDir === undefined)
             return null;
         // 2. Repair file permissions:
         yield core.group(`🔧 Repairing file permissions`, () => __awaiter(this, void 0, void 0, function* () { return yield repairPermissions(bdistDir); }));
@@ -428,27 +427,23 @@ function installFromBdist(options) {
         return installDir;
     });
 }
-const chmod = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('chmod', args); });
-const xattr = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('xattr', args); });
 function repairPermissions(bdistDir) {
     var e_1, _a;
     return __awaiter(this, void 0, void 0, function* () {
         if (opts.os === 'macos') {
             // Fix permissions on binaries
-            const bdistBinDir = path.join(bdistDir, 'bin');
             for (const binName of agda.agdaBinNames) {
-                yield chmod('+x', path.join(bdistBinDir, binName));
-                yield xattr('-c', path.join(bdistBinDir, binName));
+                yield util.chmod('+x', path.join(bdistDir, 'bin', binName));
+                yield util.xattr('-c', path.join(bdistDir, 'bin', binName));
             }
             // Fix permissions on libraries
-            const bdistLibDir = path.join(bdistDir, 'lib');
-            const libGlobber = yield glob.create(path.join(bdistLibDir, '*'));
+            const libGlobber = yield glob.create(path.join(bdistDir, 'lib', '*'));
             try {
                 for (var _b = __asyncValues(libGlobber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
                     const libPath = _c.value;
-                    yield chmod('+w', libPath);
-                    yield xattr('-c', libPath);
-                    yield chmod('-w', libPath);
+                    yield util.chmod('+w', libPath);
+                    yield util.xattr('-c', libPath);
+                    yield util.chmod('-w', libPath);
                 }
             }
             catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -862,11 +857,11 @@ function buildFlags(options) {
     flags.push('--no-library-profiling');
     // If supported, pass Agda flag --cluster-counting
     if (opts.supportsClusterCounting(options)) {
-        flags.push('--flag=Agda:+enable-cluster-counting');
+        flags.push('--flag=Agda:enable-cluster-counting');
     }
     // If supported, pass Agda flag --optimise-heavily
     if (opts.supportsOptimiseHeavily(options)) {
-        flags.push('--flag=Agda:+optimise-heavily');
+        flags.push('--flag=Agda:optimise-heavily');
     }
     return flags;
 }
@@ -1218,7 +1213,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.testAgda = exports.agdaModeBinName = exports.agdaBinNames = exports.agdaBinName = exports.setupAgdaEnv = exports.getAgdaSource = exports.resolveAgdaVersion = exports.dumpbin = exports.otool = exports.patchelf = exports.installNameTool = exports.pkgConfig = exports.pacmanGetVersion = exports.pacman = exports.brewGetVersion = exports.brew = void 0;
+exports.testAgda = exports.agdaModeBinName = exports.agdaBinNames = exports.agdaBinName = exports.setupAgdaEnv = exports.getAgdaSource = exports.resolveAgdaVersion = exports.xattr = exports.pkgConfig = exports.patchelf = exports.pacmanGetVersion = exports.pacman = exports.otool = exports.installNameTool = exports.dumpbin = exports.chmod = exports.brewGetVersion = exports.brew = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
@@ -1237,6 +1232,14 @@ const brewGetVersion = (formula) => __awaiter(void 0, void 0, void 0, function* 
     return (_b = (_a = formulaVersions.match(formulaVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version;
 });
 exports.brewGetVersion = brewGetVersion;
+const chmod = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('chmod', args); });
+exports.chmod = chmod;
+const dumpbin = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('dumpbin', args); });
+exports.dumpbin = dumpbin;
+const installNameTool = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('install_name_tool', args); });
+exports.installNameTool = installNameTool;
+const otool = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('otool', args); });
+exports.otool = otool;
 const pacman = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('pacman', args); });
 exports.pacman = pacman;
 const pacmanGetVersion = (pkg) => __awaiter(void 0, void 0, void 0, function* () {
@@ -1250,16 +1253,12 @@ const pacmanGetVersion = (pkg) => __awaiter(void 0, void 0, void 0, function* ()
         throw Error(`Could not determine version of ${pkg}`);
 });
 exports.pacmanGetVersion = pacmanGetVersion;
-const pkgConfig = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('pkg-config', args); });
-exports.pkgConfig = pkgConfig;
-const installNameTool = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('install_name_tool', args); });
-exports.installNameTool = installNameTool;
 const patchelf = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('patchelf', args); });
 exports.patchelf = patchelf;
-const otool = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('otool', args); });
-exports.otool = otool;
-const dumpbin = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('dumpbin', args); });
-exports.dumpbin = dumpbin;
+const pkgConfig = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('pkg-config', args); });
+exports.pkgConfig = pkgConfig;
+const xattr = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('xattr', args); });
+exports.xattr = xattr;
 // Agda utilities
 function resolveAgdaVersion(options) {
     return __awaiter(this, void 0, void 0, function* () {

@@ -20,6 +20,18 @@ export const brewGetVersion = async (
   return formulaVersions.match(formulaVersionRegExp)?.groups?.version
 }
 
+export const chmod = async (...args: string[]): Promise<string> =>
+  await exec.getoutput('chmod', args)
+
+export const dumpbin = async (...args: string[]): Promise<string> =>
+  await exec.getoutput('dumpbin', args)
+
+export const installNameTool = async (...args: string[]): Promise<string> =>
+  await exec.getoutput('install_name_tool', args)
+
+export const otool = async (...args: string[]): Promise<string> =>
+  await exec.getoutput('otool', args)
+
 export const pacman = async (...args: string[]): Promise<string> =>
   await exec.getoutput('pacman', args)
 
@@ -33,20 +45,14 @@ export const pacmanGetVersion = async (
   else throw Error(`Could not determine version of ${pkg}`)
 }
 
-export const pkgConfig = async (...args: string[]): Promise<string> =>
-  await exec.getoutput('pkg-config', args)
-
-export const installNameTool = async (...args: string[]): Promise<string> =>
-  await exec.getoutput('install_name_tool', args)
-
 export const patchelf = async (...args: string[]): Promise<string> =>
   await exec.getoutput('patchelf', args)
 
-export const otool = async (...args: string[]): Promise<string> =>
-  await exec.getoutput('otool', args)
+export const pkgConfig = async (...args: string[]): Promise<string> =>
+  await exec.getoutput('pkg-config', args)
 
-export const dumpbin = async (...args: string[]): Promise<string> =>
-  await exec.getoutput('dumpbin', args)
+export const xattr = async (...args: string[]): Promise<string> =>
+  await exec.getoutput('xattr', args)
 
 // Agda utilities
 

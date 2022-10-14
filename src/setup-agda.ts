@@ -8,7 +8,6 @@ import buildFromSource from './setup-agda/build-from-source'
 import * as util from './util'
 import * as agda from './util/agda'
 import * as bdist from './util/bdist'
-import * as exec from './util/exec'
 import * as io from './util/io'
 
 export default async function setup(
@@ -98,18 +97,18 @@ async function installFromBdist(
   options: opts.BuildOptions
 ): Promise<string | null> {
   // 1. Download:
-  const bdistDir = await core.group(
+  const {bdistDir} = await core.group(
     `🔍 Searching for Agda ${options['agda-version']} in package index`,
     async () => {
+      const ret: Partial<{bdistDir: string}> = {}
       const bdistZip = await bdist.download(options)
-      if (bdistZip === null) return null
-      const bdistParentDir = await tc.extractZip(bdistZip)
+      if (bdistZip === null) return ret
+      ret.bdistDir = await tc.extractZip(bdistZip)
       io.rmRF(bdistZip)
-      io.lsR(bdistParentDir)
-      return path.join(bdistParentDir, path.basename(bdistZip, '.zip'))
+      return ret
     }
   )
-  if (bdistDir === null) return null
+  if (bdistDir === undefined) return null
 
   // 2. Repair file permissions:
   await core.group(
@@ -149,27 +148,19 @@ async function installFromBdist(
   return installDir
 }
 
-const chmod = async (...args: string[]): Promise<string> =>
-  await exec.getoutput('chmod', args)
-
-const xattr = async (...args: string[]): Promise<string> =>
-  await exec.getoutput('xattr', args)
-
 async function repairPermissions(bdistDir: string): Promise<void> {
   if (opts.os === 'macos') {
     // Fix permissions on binaries
-    const bdistBinDir = path.join(bdistDir, 'bin')
     for (const binName of agda.agdaBinNames) {
-      await chmod('+x', path.join(bdistBinDir, binName))
-      await xattr('-c', path.join(bdistBinDir, binName))
+      await util.chmod('+x', path.join(bdistDir, 'bin', binName))
+      await util.xattr('-c', path.join(bdistDir, 'bin', binName))
     }
     // Fix permissions on libraries
-    const bdistLibDir = path.join(bdistDir, 'lib')
-    const libGlobber = await glob.create(path.join(bdistLibDir, '*'))
+    const libGlobber = await glob.create(path.join(bdistDir, 'lib', '*'))
     for await (const libPath of libGlobber.globGenerator()) {
-      await chmod('+w', libPath)
-      await xattr('-c', libPath)
-      await chmod('-w', libPath)
+      await util.chmod('+w', libPath)
+      await util.xattr('-c', libPath)
+      await util.chmod('-w', libPath)
     }
   }
 }
