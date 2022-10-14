@@ -15,6 +15,29 @@ jobs:
     name: Check dist
     uses: ./.github/workflows/check-dist.yml
 
+  test-bdist:
+    name: Setup Agda on ${{ matrix.os }}
+    needs: [check-dist]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          [
+            ubuntu-22.04,
+            ubuntu-20.04,
+            macos-11,
+            macos-12,
+            windows-2019,
+            windows-2022
+          ]
+
+    uses: ./.github/workflows/setup-agda.yml
+    with:
+      runs-on: ${{ matrix.os }}
+      force-no-build: true
+      agda-version: latest
+
   test-build-with-cabal:
     name: Build Agda on ${{ matrix.os }} with Cabal
     needs: [check-dist]
@@ -49,29 +72,6 @@ jobs:
       enable-stack: true
       bdist-upload: true
       bdist-name: agda-{{agda-version}}-{{arch}-${{ matrix.os }}-icu{{icu-version}}-ghc{{ghc-version}}-stack{{stack-version}}
-
-  test-bdist:
-    name: Setup Agda on ${{ matrix.os }}
-    needs: [check-dist]
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          [
-            ubuntu-22.04,
-            ubuntu-20.04,
-            macos-11,
-            macos-12,
-            windows-2019,
-            windows-2022
-          ]
-
-    uses: ./.github/workflows/setup-agda.yml
-    with:
-      runs-on: ${{ matrix.os }}
-      force-no-build: true
-      agda-version: latest
 
   update-latest:
     name: Update latest
