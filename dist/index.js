@@ -384,39 +384,6 @@ function installFromToolCache(options) {
     });
 }
 // Helper to install from binary distributions
-const chmod = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('chmod', args); });
-const xattr = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('xattr', args); });
-function repairPermissions(bdistDir) {
-    var e_1, _a;
-    return __awaiter(this, void 0, void 0, function* () {
-        if (opts.os === 'macos') {
-            // Fix permissions on binaries
-            const bdistBinDir = path.join(bdistDir, 'bin');
-            for (const binName of agda.agdaBinNames) {
-                yield chmod('+x', path.join(bdistBinDir, binName));
-                yield xattr('-c', path.join(bdistBinDir, binName));
-            }
-            // Fix permissions on libraries
-            const bdistLibDir = path.join(bdistDir, 'lib');
-            const libGlobber = yield glob.create(path.join(bdistLibDir, '*'));
-            try {
-                for (var _b = __asyncValues(libGlobber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
-                    const libPath = _c.value;
-                    yield chmod('+w', libPath);
-                    yield xattr('-c', libPath);
-                    yield chmod('-w', libPath);
-                }
-            }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
-            finally {
-                try {
-                    if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
-                }
-                finally { if (e_1) throw e_1.error; }
-            }
-        }
-    });
-}
 function installFromBdist(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // 1. Download:
@@ -457,6 +424,39 @@ function installFromBdist(options) {
             yield io.mv(bdistDir, installDir);
         }));
         return installDir;
+    });
+}
+const chmod = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('chmod', args); });
+const xattr = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('xattr', args); });
+function repairPermissions(bdistDir) {
+    var e_1, _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        if (opts.os === 'macos') {
+            // Fix permissions on binaries
+            const bdistBinDir = path.join(bdistDir, 'bin');
+            for (const binName of agda.agdaBinNames) {
+                yield chmod('+x', path.join(bdistBinDir, binName));
+                yield xattr('-c', path.join(bdistBinDir, binName));
+            }
+            // Fix permissions on libraries
+            const bdistLibDir = path.join(bdistDir, 'lib');
+            const libGlobber = yield glob.create(path.join(bdistLibDir, '*'));
+            try {
+                for (var _b = __asyncValues(libGlobber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
+                    const libPath = _c.value;
+                    yield chmod('+w', libPath);
+                    yield xattr('-c', libPath);
+                    yield chmod('-w', libPath);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+        }
     });
 }
 

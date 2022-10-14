@@ -1,21 +1,11 @@
 import * as core from '@actions/core'
 import * as io from '@actions/io'
 import * as opts from '../opts'
+import * as exec from '../util/exec'
 
 // Wrappers for filesystem functions
 
 export {CopyOptions, MoveOptions} from '@actions/io'
-
-function escape(filePath: string): string {
-  switch (opts.os) {
-    case 'macos':
-    case 'linux':
-      return filePath.replace(/(?<!\\) /g, '\\ ')
-    case 'windows':
-    default:
-      return filePath
-  }
-}
 
 export async function cp(
   source: string,
@@ -60,4 +50,21 @@ export async function rmRF(path: string): Promise<void> {
   path = escape(path)
   core.debug(`rm -rf ${path}`)
   return await io.rmRF(path)
+}
+
+export async function lsR(path: string): Promise<string> {
+  path = escape(path)
+  core.debug(`ls -R ${path}`)
+  return await exec.getoutput('ls', ['-R', path])
+}
+
+function escape(filePath: string): string {
+  switch (opts.os) {
+    case 'macos':
+    case 'linux':
+      return filePath.replace(/(?<!\\) /g, '\\ ')
+    case 'windows':
+    default:
+      return filePath
+  }
 }
