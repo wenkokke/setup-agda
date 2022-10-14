@@ -520,8 +520,9 @@ function download(options) {
         const bdistName = renderName('', options);
         const bdistUrl = opts.bdistIndex[bdistName];
         if (bdistUrl !== undefined) {
+            core.info(`Found package ${bdistName}`);
             try {
-                core.info(`Download package ${bdistName} from ${bdistUrl}`);
+                core.info(`Downloading package ${bdistName} from ${bdistUrl}`);
                 return yield tc.downloadTool(bdistUrl);
             }
             catch (error) {
