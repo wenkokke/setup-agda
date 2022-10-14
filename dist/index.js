@@ -1264,32 +1264,27 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const path = __importStar(__nccwpck_require__(9411));
+const os = __importStar(__nccwpck_require__(612));
 const opts = __importStar(__nccwpck_require__(1352));
 const util_1 = __nccwpck_require__(4024);
+// Names of dynamic libraries needed by icu-i18n on MacOS and Linux:
+const icuLibNames = ['libicudata', 'libicui18n', 'libicuuc'];
 function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (opts.os) {
-            case 'windows': {
-                core.info('Install pkg-config and ICU using Pacman');
-                core.addPath('C:\\msys64\\mingw64\\bin');
-                core.addPath('C:\\msys64\\usr\\bin');
-                yield (0, util_1.pacman)('-v', '--noconfirm', '-Sy', 'mingw-w64-x86_64-pkg-config', 'mingw-w64-x86_64-icu');
-                // Get the icu-i18n version via pacman:
-                options['icu-version'] = yield (0, util_1.pacmanGetVersion)('mingw-w64-x86_64-icu');
-                core.info(`Installed ICU version ${options['icu-version']}`);
-                // Get the ICU libraries to bundle:
-                const icuLibDir = 'C:\\msys64\\mingw64\\bin';
-                const icuLibGlobber = yield glob.create(path.join(icuLibDir, 'icu*.dll'));
-                options['bdist-libs'] = yield icuLibGlobber.glob();
-                core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`);
-                break;
-            }
             case 'linux': {
                 // Ubuntu 20.04 ships with a recent version of ICU
                 // Get the icu-i18n information via pkg-config:
                 options['icu-version'] = yield (0, util_1.pkgConfig)('--modversion', 'icu-i18n');
                 core.info(`Found ICU version ${options['icu-version']}`);
-                const icuLibGlobber = yield glob.create('/usr/lib/libicu*.so.*');
+                const icuVersionMajor = util_1.simver.major(options['icu-version']);
+                const icuLibGlobber = yield glob.create(icuLibNames
+                    .flatMap(libName => [
+                    `/usr/lib/${libName}.so`,
+                    `/usr/lib/${libName}.so.${icuVersionMajor}`,
+                    `/usr/lib/${libName}.so.${options['icu-version']}`
+                ])
+                    .join(os.EOL));
                 options['bdist-libs'] = yield icuLibGlobber.glob();
                 core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`);
                 break;
@@ -1316,7 +1311,29 @@ function setup(options) {
                 options['icu-version'] = yield (0, util_1.pkgConfig)('--modversion', 'icu-i18n');
                 core.info(`Setup ICU version ${options['icu-version']} with pkg-config`);
                 // Get the ICU libraries to bundle:
-                const icuLibGlobber = yield glob.create(path.join(icuLibDir, '*.dylib'));
+                const icuVersionMajor = util_1.simver.major(options['icu-version']);
+                const icuLibGlobber = yield glob.create(icuLibNames
+                    .flatMap(libName => [
+                    `${path.join(icuLibDir, libName)}.dylib`,
+                    `${path.join(icuLibDir, libName)}.${icuVersionMajor}.dylib`,
+                    `${path.join(icuLibDir, libName)}.${options['icu-version']}.dylib`
+                ])
+                    .join(os.EOL));
+                options['bdist-libs'] = yield icuLibGlobber.glob();
+                core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`);
+                break;
+            }
+            case 'windows': {
+                core.info('Install pkg-config and ICU using Pacman');
+                core.addPath('C:\\msys64\\mingw64\\bin');
+                core.addPath('C:\\msys64\\usr\\bin');
+                yield (0, util_1.pacman)('-v', '--noconfirm', '-Sy', 'mingw-w64-x86_64-pkg-config', 'mingw-w64-x86_64-icu');
+                // Get the icu-i18n version via pacman:
+                options['icu-version'] = yield (0, util_1.pacmanGetVersion)('mingw-w64-x86_64-icu');
+                core.info(`Installed ICU version ${options['icu-version']}`);
+                // Get the ICU libraries to bundle:
+                const icuLibDir = 'C:\\msys64\\mingw64\\bin';
+                const icuLibGlobber = yield glob.create(path.join(icuLibDir, 'icu*.dll'));
                 options['bdist-libs'] = yield icuLibGlobber.glob();
                 core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`);
                 break;
@@ -2212,7 +2229,7 @@ function escape(filePath) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.max = exports.toString = exports.neq = exports.eq = exports.gte = exports.gt = exports.lte = exports.lt = exports.compare = exports.parse = void 0;
+exports.max = exports.toString = exports.neq = exports.eq = exports.gte = exports.gt = exports.lte = exports.lt = exports.major = exports.compare = exports.parse = void 0;
 function parse(version) {
     return version.split('.').map(part => part.split('_').map(parseInt));
 }
@@ -2241,6 +2258,12 @@ function compare(v1, v2) {
     return 0;
 }
 exports.compare = compare;
+function major(version) {
+    if (typeof version === 'string')
+        version = parse(version);
+    return version[0].join('_');
+}
+exports.major = major;
 function lt(version1, version2) {
     return compare(version1, version2) === -1;
 }

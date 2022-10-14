@@ -27,6 +27,11 @@ export function compare(v1: string | SimVer, v2: string | SimVer): Ordering {
   return 0
 }
 
+export function major(version: string | SimVer): string {
+  if (typeof version === 'string') version = parse(version)
+  return version[0].join('_')
+}
+
 export function lt(
   version1: string | SimVer,
   version2: string | SimVer
