@@ -134,7 +134,7 @@ async function bundleLibs(
       // Patch run paths for loaded libraries:
       for (const binName of util.agdaBinNames) {
         const binPath = path.join(bdistDir, 'bin', binName)
-        await util.patchelf('-add-rpath', '$ORIGIN/../lib', binPath)
+        await util.patchelf('-add-rpath', "'$ORIGIN/../lib'", binPath)
       }
       break
     }
@@ -202,7 +202,13 @@ function renderName(template: string, options: opts.BuildOptions): string {
       'icu-version',
       'upx-version'
     ]),
-    ...{arch: os.arch(), platform: os.platform(), release: os.release()}
+    arch: os.arch(),
+    platform: os.platform(),
+    release: os.release(),
+    // Boolean flags:
+    'if-stack': options['stack-version'] !== '',
+    'if-icu': options['icu-version'] !== '',
+    'if-upx': options['upx-version'] !== ''
   })
 }
 

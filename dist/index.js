@@ -107,7 +107,7 @@ function supportsClusterCounting(options) {
     //   Agda versions 2.5.3 - 2.6.2 depend on text-icu ^0.7, but text-icu
     //   versions 0.7.0.0 - 0.7.1.0 do not compile with icu68+. This could be
     //   solved by explicitly installing different version of icu depending on
-    //   the text-icu version (the Agda version, as a proxy).
+    //   the text-icu version (or the Agda version, as a proxy).
     const depr = simver.gte(options['agda-version'], '2.6.2');
     return agda && user && todo && depr;
 }
@@ -630,7 +630,7 @@ function bundleLibs(bdistDir, options) {
                 // Patch run paths for loaded libraries:
                 for (const binName of util.agdaBinNames) {
                     const binPath = path.join(bdistDir, 'bin', binName);
-                    yield util.patchelf('-add-rpath', '$ORIGIN/../lib', binPath);
+                    yield util.patchelf('-add-rpath', "'$ORIGIN/../lib'", binPath);
                 }
                 break;
             }
@@ -678,7 +678,9 @@ function renderName(template, options) {
         'stack-version',
         'icu-version',
         'upx-version'
-    ])), { arch: os.arch(), platform: os.platform(), release: os.release() }));
+    ])), { arch: os.arch(), platform: os.platform(), release: os.release(), 
+        // Boolean flags:
+        'if-stack': options['stack-version'] !== '', 'if-icu': options['icu-version'] !== '', 'if-upx': options['upx-version'] !== '' }));
 }
 // Helpers for patching executables
 function printNeededLibs(binPath) {
