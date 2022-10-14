@@ -118,9 +118,12 @@ async function bundleLibs(
 ): Promise<void> {
   switch (opts.os) {
     case 'linux': {
-      // Create bdist/lib
+      // Create bdistDir/lib:
       if (options['bdist-libs'].length > 0) {
-        await util.mkdirP(path.join(bdistDir, 'lib'))
+        for (const binName of util.agdaBinNames) {
+          const binPath = path.join(bdistDir, 'bin', binName)
+          await util.patchelf('-add-rpath', "'$ORIGIN/../lib'", binPath)
+        }
       }
 
       // Copy needed libraries:
@@ -131,10 +134,12 @@ async function bundleLibs(
         )
       }
 
-      // Patch run paths for loaded libraries:
-      for (const binName of util.agdaBinNames) {
-        const binPath = path.join(bdistDir, 'bin', binName)
-        await util.patchelf('-add-rpath', "'$ORIGIN/../lib'", binPath)
+      // Patch run paths:
+      if (options['bdist-libs'].length > 0) {
+        for (const binName of util.agdaBinNames) {
+          const binPath = path.join(bdistDir, 'bin', binName)
+          await util.patchelf('-add-rpath', "'$ORIGIN/../lib'", binPath)
+        }
       }
       break
     }
@@ -153,27 +158,25 @@ async function bundleLibs(
       }
 
       // Patch run paths for loaded libraries:
-      for (const binName of util.agdaBinNames) {
-        const binPath = path.join(bdistDir, 'bin', binName)
-
-        // Update run paths for libraries:
-        for (const libPath of options['bdist-libs']) {
-          const libName = path.basename(libPath)
+      if (options['bdist-libs'].length > 0) {
+        for (const binName of util.agdaBinNames) {
+          const binPath = path.join(bdistDir, 'bin', binName)
+          for (const libPath of options['bdist-libs']) {
+            const libName = path.basename(libPath)
+            await util.installNameTool(
+              '-change',
+              libPath,
+              `@rpath/${libName}`,
+              binPath
+            )
+          }
           await util.installNameTool(
-            '-change',
-            libPath,
-            `@rpath/${libName}`,
+            '-add_rpath',
+            '@executable_path/../lib',
+            ...[...libDirs].flatMap(libDir => ['-add_rpath', libDir]),
             binPath
           )
         }
-
-        // Add load paths for libraries:
-        await util.installNameTool(
-          '-add_rpath',
-          '@executable_path/../lib',
-          ...[...libDirs].flatMap(libDir => ['-add_rpath', libDir]),
-          binPath
-        )
       }
       break
     }

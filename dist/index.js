@@ -619,18 +619,23 @@ function bundleLibs(bdistDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (opts.os) {
             case 'linux': {
-                // Create bdist/lib
+                // Create bdistDir/lib:
                 if (options['bdist-libs'].length > 0) {
-                    yield util.mkdirP(path.join(bdistDir, 'lib'));
+                    for (const binName of util.agdaBinNames) {
+                        const binPath = path.join(bdistDir, 'bin', binName);
+                        yield util.patchelf('-add-rpath', "'$ORIGIN/../lib'", binPath);
+                    }
                 }
                 // Copy needed libraries:
                 for (const libPath of options['bdist-libs']) {
                     yield util.cp(path.join(libPath), path.join(bdistDir, 'lib', path.basename(libPath)));
                 }
-                // Patch run paths for loaded libraries:
-                for (const binName of util.agdaBinNames) {
-                    const binPath = path.join(bdistDir, 'bin', binName);
-                    yield util.patchelf('-add-rpath', "'$ORIGIN/../lib'", binPath);
+                // Patch run paths:
+                if (options['bdist-libs'].length > 0) {
+                    for (const binName of util.agdaBinNames) {
+                        const binPath = path.join(bdistDir, 'bin', binName);
+                        yield util.patchelf('-add-rpath', "'$ORIGIN/../lib'", binPath);
+                    }
                 }
                 break;
             }
@@ -647,15 +652,15 @@ function bundleLibs(bdistDir, options) {
                     yield util.cp(path.join(libPath), path.join(bdistDir, 'lib', libName));
                 }
                 // Patch run paths for loaded libraries:
-                for (const binName of util.agdaBinNames) {
-                    const binPath = path.join(bdistDir, 'bin', binName);
-                    // Update run paths for libraries:
-                    for (const libPath of options['bdist-libs']) {
-                        const libName = path.basename(libPath);
-                        yield util.installNameTool('-change', libPath, `@rpath/${libName}`, binPath);
+                if (options['bdist-libs'].length > 0) {
+                    for (const binName of util.agdaBinNames) {
+                        const binPath = path.join(bdistDir, 'bin', binName);
+                        for (const libPath of options['bdist-libs']) {
+                            const libName = path.basename(libPath);
+                            yield util.installNameTool('-change', libPath, `@rpath/${libName}`, binPath);
+                        }
+                        yield util.installNameTool('-add_rpath', '@executable_path/../lib', ...[...libDirs].flatMap(libDir => ['-add_rpath', libDir]), binPath);
                     }
-                    // Add load paths for libraries:
-                    yield util.installNameTool('-add_rpath', '@executable_path/../lib', ...[...libDirs].flatMap(libDir => ['-add_rpath', libDir]), binPath);
                 }
                 break;
             }
