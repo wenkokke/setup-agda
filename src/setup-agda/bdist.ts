@@ -4,14 +4,13 @@ import * as glob from '@actions/glob'
 import * as tc from '@actions/tool-cache'
 import ensureError from 'ensure-error'
 import * as mustache from 'mustache'
+import assert from 'node:assert'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import pick from 'object.pick'
 import * as opts from '../opts'
 import setupUpx from '../setup-upx'
-import * as agda from './agda'
-import {getoutput, dumpbin, installNameTool, otool, patchelf} from './exec'
-import * as io from './io'
+import * as util from '../util'
 
 export async function download(
   options: opts.BuildOptions
@@ -42,24 +41,24 @@ export async function upload(
   // Get the name for the distribution:
   const bdistName = renderName(options['bdist-name'], options)
   const bdistDir = path.join(opts.agdaDir(), 'bdist', bdistName)
-  io.mkdirP(bdistDir)
+  util.mkdirP(bdistDir)
 
   // Copy binaries:
-  io.mkdirP(path.join(bdistDir, 'bin'))
-  for (const binName of agda.agdaBinNames)
-    await io.cp(
+  util.mkdirP(path.join(bdistDir, 'bin'))
+  for (const binName of util.agdaBinNames)
+    await util.cp(
       path.join(installDir, 'bin', binName),
       path.join(bdistDir, 'bin', binName)
     )
 
   // Copy data:
-  await io.cpR(path.join(installDir, 'data'), bdistDir)
+  await util.cpR(path.join(installDir, 'data'), bdistDir)
 
   // Compress binaries:
   if (!options['bdist-no-compress-exe']) {
     try {
       const upxExe = await setupUpx(options)
-      for (const binName of agda.agdaBinNames)
+      for (const binName of util.agdaBinNames)
         await compressBin(upxExe, path.join(bdistDir, 'bin', binName))
     } catch (error) {
       core.debug(ensureError(error).message)
@@ -70,8 +69,8 @@ export async function upload(
   await bundleLibs(bdistDir, options)
 
   // Test artifact:
-  await agda.testAgda({
-    agdaBin: path.join(bdistDir, 'bin', agda.agdaBinName),
+  await util.testAgda({
+    agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
     agdaDataDir: path.join(bdistDir, 'data')
   })
 
@@ -108,7 +107,7 @@ async function compressBin(upxExe: string, binPath: string): Promise<void> {
   // Print the needed libraries before compressing:
   printNeededLibs(binPath)
   // Compress with UPX:
-  await getoutput(upxExe, ['--best', binPath])
+  await util.getoutput(upxExe, ['--best', binPath])
   // Print the needed libraries after compressing:
   printNeededLibs(binPath)
 }
@@ -125,16 +124,16 @@ async function bundleLibs(
     case 'macos': {
       // If we compiled with --enable-cluster-counting, bundle ICU:
       if (opts.enableClusterCounting(options)) {
-        await io.mkdirP(path.join(bdistDir, 'lib'))
+        await util.mkdirP(path.join(bdistDir, 'lib'))
         // Copy needed libraries:
         for (const libPath of options['bdist-libs']) {
-          await io.cp(
+          await util.cp(
             path.join(libPath),
             path.join(bdistDir, 'lib', path.basename(libPath))
           )
         }
         // Patch run paths for loaded libraries:
-        for (const binName of agda.agdaBinNames) {
+        for (const binName of util.agdaBinNames) {
           const binPath = path.join(bdistDir, 'bin', binName)
           const libDirs = new Set<string>()
           // Update run paths for libraries:
@@ -159,7 +158,7 @@ async function bundleLibs(
       if (opts.supportsClusterCounting(options)) {
         // Copy needed libraries:
         for (const libPath of options['bdist-libs']) {
-          await io.cp(
+          await util.cp(
             path.join(libPath),
             path.join(bdistDir, 'bin', path.basename(libPath))
           )
@@ -193,15 +192,15 @@ async function printNeededLibs(binPath: string): Promise<void> {
     let output = ''
     switch (opts.os) {
       case 'linux': {
-        output = await patchelf('--print-needed', binPath)
+        output = await util.patchelf('--print-needed', binPath)
         break
       }
       case 'macos': {
-        output = await otool('-L', binPath)
+        output = await util.otool('-L', binPath)
         break
       }
       case 'windows': {
-        output = await dumpbin('/imports', binPath)
+        output = await util.dumpbin('/imports', binPath)
         break
       }
     }
@@ -216,14 +215,16 @@ async function changeDependency(
   libPathFrom: string,
   libPathTo: string
 ): Promise<void> {
-  await installNameTool('-change', libPathFrom, libPathTo, binPath)
+  assert(opts.os === 'macos')
+  await util.installNameTool('-change', libPathFrom, libPathTo, binPath)
 }
 
 async function addRunPaths(
   binPath: string,
   ...rpaths: string[]
 ): Promise<void> {
-  await installNameTool(
+  assert(opts.os === 'macos')
+  await util.installNameTool(
     ...rpaths.flatMap<string>(rpath => ['-add_rpath', rpath]),
     binPath
   )

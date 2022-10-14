@@ -5,6 +5,7 @@ import ensureError from 'ensure-error'
 import * as path from 'node:path'
 import * as opts from './opts'
 import buildFromSource from './setup-agda/build-from-source'
+import * as bdist from './setup-agda/bdist'
 import * as util from './util'
 
 export default async function setup(
@@ -98,7 +99,7 @@ async function installFromBdist(
     `🔍 Searching for Agda ${options['agda-version']} in package index`,
     async () => {
       const ret: Partial<{bdistDir: string}> = {}
-      const bdistZip = await util.bdistDownload(options)
+      const bdistZip = await bdist.download(options)
       if (bdistZip === null) return ret
       ret.bdistDir = await tc.extractZip(bdistZip)
       util.rmRF(bdistZip)

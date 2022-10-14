@@ -8,6 +8,7 @@ import * as opts from '../opts'
 import setupHaskell from '../setup-haskell'
 import setupIcu from '../setup-icu'
 import * as util from '../util'
+import * as bdist from './bdist'
 import * as cabal from './build-from-source/cabal'
 import * as stack from './build-from-source/stack'
 
@@ -95,7 +96,7 @@ export default async function buildFromSource(
   // 8. If 'bdist-upload' is specified, upload as a binary distribution:
   if (options['bdist-upload']) {
     await core.group('📦 Upload binary distribution', async () => {
-      const bdistName = await util.bdistUpload(agdaDir, options)
+      const bdistName = await bdist.upload(agdaDir, options)
       core.info(`Uploaded binary distribution as '${bdistName}'`)
     })
   }

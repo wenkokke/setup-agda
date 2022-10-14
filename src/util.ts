@@ -13,8 +13,6 @@ export {
   testAgda
 } from './util/agda'
 
-export {download as bdistDownload, upload as bdistUpload} from './util/bdist'
-
 export * from './util/exec'
 
 export {

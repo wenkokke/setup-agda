@@ -311,6 +311,7 @@ const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const build_from_source_1 = __importDefault(__nccwpck_require__(7222));
+const bdist = __importStar(__nccwpck_require__(3383));
 const util = __importStar(__nccwpck_require__(4024));
 function setup(inputs) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -386,7 +387,7 @@ function installFromBdist(options) {
         // 1. Download:
         const { bdistDir } = yield core.group(`🔍 Searching for Agda ${options['agda-version']} in package index`, () => __awaiter(this, void 0, void 0, function* () {
             const ret = {};
-            const bdistZip = yield util.bdistDownload(options);
+            const bdistZip = yield bdist.download(options);
             if (bdistZip === null)
                 return ret;
             ret.bdistDir = yield tc.extractZip(bdistZip);
@@ -457,6 +458,242 @@ function repairPermissions(bdistDir) {
 
 /***/ }),
 
+/***/ 3383:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.upload = exports.download = void 0;
+const artifact = __importStar(__nccwpck_require__(2605));
+const core = __importStar(__nccwpck_require__(2186));
+const glob = __importStar(__nccwpck_require__(8090));
+const tc = __importStar(__nccwpck_require__(7784));
+const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
+const mustache = __importStar(__nccwpck_require__(8272));
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
+const os = __importStar(__nccwpck_require__(612));
+const path = __importStar(__nccwpck_require__(9411));
+const object_pick_1 = __importDefault(__nccwpck_require__(9962));
+const opts = __importStar(__nccwpck_require__(1352));
+const setup_upx_1 = __importDefault(__nccwpck_require__(4245));
+const util = __importStar(__nccwpck_require__(4024));
+function download(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Get the name for the distribution:
+        const bdistName = renderName('', options);
+        const bdistUrl = opts.bdistIndex[bdistName];
+        if (bdistUrl !== undefined) {
+            try {
+                core.info(`Download package ${bdistName} from ${bdistUrl}`);
+                return yield tc.downloadTool(bdistUrl);
+            }
+            catch (error) {
+                core.warning(`Failed to download package ${bdistName}: ${(0, ensure_error_1.default)(error).message}`);
+                return null;
+            }
+        }
+        else {
+            core.info(`Could not find package ${bdistName}`);
+            return null;
+        }
+    });
+}
+exports.download = download;
+function upload(installDir, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Get the name for the distribution:
+        const bdistName = renderName(options['bdist-name'], options);
+        const bdistDir = path.join(opts.agdaDir(), 'bdist', bdistName);
+        util.mkdirP(bdistDir);
+        // Copy binaries:
+        util.mkdirP(path.join(bdistDir, 'bin'));
+        for (const binName of util.agdaBinNames)
+            yield util.cp(path.join(installDir, 'bin', binName), path.join(bdistDir, 'bin', binName));
+        // Copy data:
+        yield util.cpR(path.join(installDir, 'data'), bdistDir);
+        // Compress binaries:
+        if (!options['bdist-no-compress-exe']) {
+            try {
+                const upxExe = yield (0, setup_upx_1.default)(options);
+                for (const binName of util.agdaBinNames)
+                    yield compressBin(upxExe, path.join(bdistDir, 'bin', binName));
+            }
+            catch (error) {
+                core.debug((0, ensure_error_1.default)(error).message);
+            }
+        }
+        // Bundle libraries:
+        yield bundleLibs(bdistDir, options);
+        // Test artifact:
+        yield util.testAgda({
+            agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
+            agdaDataDir: path.join(bdistDir, 'data')
+        });
+        // Create file list for artifact:
+        const globber = yield glob.create(path.join(bdistDir, '**', '*'), {
+            followSymbolicLinks: false,
+            implicitDescendants: false,
+            matchDirectories: false
+        });
+        const files = yield globber.glob();
+        // Upload artifact:
+        const artifactClient = artifact.create();
+        const uploadInfo = yield artifactClient.uploadArtifact(bdistName, files, bdistDir, {
+            continueOnError: true,
+            retentionDays: 90
+        });
+        // Report any errors:
+        if (uploadInfo.failedItems.length > 0) {
+            core.error(['Failed to upload:', ...uploadInfo.failedItems].join(os.EOL));
+        }
+        // Return artifact name
+        return uploadInfo.artifactName;
+    });
+}
+exports.upload = upload;
+function compressBin(upxExe, binPath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Print the needed libraries before compressing:
+        printNeededLibs(binPath);
+        // Compress with UPX:
+        yield util.getoutput(upxExe, ['--best', binPath]);
+        // Print the needed libraries after compressing:
+        printNeededLibs(binPath);
+    });
+}
+function bundleLibs(bdistDir, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        switch (opts.os) {
+            case 'linux': {
+                // UPX should've bundled all libs
+                break;
+            }
+            case 'macos': {
+                // If we compiled with --enable-cluster-counting, bundle ICU:
+                if (opts.enableClusterCounting(options)) {
+                    yield util.mkdirP(path.join(bdistDir, 'lib'));
+                    // Copy needed libraries:
+                    for (const libPath of options['bdist-libs']) {
+                        yield util.cp(path.join(libPath), path.join(bdistDir, 'lib', path.basename(libPath)));
+                    }
+                    // Patch run paths for loaded libraries:
+                    for (const binName of util.agdaBinNames) {
+                        const binPath = path.join(bdistDir, 'bin', binName);
+                        const libDirs = new Set();
+                        // Update run paths for libraries:
+                        for (const libPath of options['bdist-libs']) {
+                            const libName = path.basename(libPath);
+                            libDirs.add(path.dirname(libPath));
+                            yield changeDependency(binPath, libPath, `@rpath/${libName}`);
+                        }
+                        // Add load paths for libraries:
+                        yield addRunPaths(binPath, '@executable_path', '@executable_path/../lib', ...libDirs);
+                    }
+                }
+                break;
+            }
+            case 'windows': {
+                // If we compiled with --enable-cluster-counting, bundle ICU:
+                if (opts.supportsClusterCounting(options)) {
+                    // Copy needed libraries:
+                    for (const libPath of options['bdist-libs']) {
+                        yield util.cp(path.join(libPath), path.join(bdistDir, 'bin', path.basename(libPath)));
+                    }
+                }
+                break;
+            }
+        }
+    });
+}
+function renderName(template, options) {
+    const templateOrDefault = template !== '' ? template : 'agda-{{agda-version}}-{{arch}}-{{platform}}';
+    return mustache.render(templateOrDefault, Object.assign(Object.assign({}, (0, object_pick_1.default)(options, [
+        'agda-version',
+        'ghc-version',
+        'cabal-version',
+        'stack-version',
+        'icu-version',
+        'upx-version'
+    ])), { arch: os.arch(), platform: os.platform(), release: os.release() }));
+}
+// Helpers for patching executables
+function printNeededLibs(binPath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            let output = '';
+            switch (opts.os) {
+                case 'linux': {
+                    output = yield util.patchelf('--print-needed', binPath);
+                    break;
+                }
+                case 'macos': {
+                    output = yield util.otool('-L', binPath);
+                    break;
+                }
+                case 'windows': {
+                    output = yield util.dumpbin('/imports', binPath);
+                    break;
+                }
+            }
+            core.info(`Needed libraries:${os.EOL}${output}`);
+        }
+        catch (error) {
+            core.debug((0, ensure_error_1.default)(error).message);
+        }
+    });
+}
+function changeDependency(binPath, libPathFrom, libPathTo) {
+    return __awaiter(this, void 0, void 0, function* () {
+        (0, node_assert_1.default)(opts.os === 'macos');
+        yield util.installNameTool('-change', libPathFrom, libPathTo, binPath);
+    });
+}
+function addRunPaths(binPath, ...rpaths) {
+    return __awaiter(this, void 0, void 0, function* () {
+        (0, node_assert_1.default)(opts.os === 'macos');
+        yield util.installNameTool(...rpaths.flatMap(rpath => ['-add_rpath', rpath]), binPath);
+    });
+}
+
+
+/***/ }),
+
 /***/ 7222:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -508,6 +745,7 @@ const opts = __importStar(__nccwpck_require__(1352));
 const setup_haskell_1 = __importDefault(__nccwpck_require__(6933));
 const setup_icu_1 = __importDefault(__nccwpck_require__(4173));
 const util = __importStar(__nccwpck_require__(4024));
+const bdist = __importStar(__nccwpck_require__(3383));
 const cabal = __importStar(__nccwpck_require__(8545));
 const stack = __importStar(__nccwpck_require__(5590));
 function buildFromSource(options) {
@@ -576,7 +814,7 @@ function buildFromSource(options) {
         // 8. If 'bdist-upload' is specified, upload as a binary distribution:
         if (options['bdist-upload']) {
             yield core.group('📦 Upload binary distribution', () => __awaiter(this, void 0, void 0, function* () {
-                const bdistName = yield util.bdistUpload(agdaDir, options);
+                const bdistName = yield bdist.upload(agdaDir, options);
                 core.info(`Uploaded binary distribution as '${bdistName}'`);
             }));
         }
@@ -1202,7 +1440,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setupAgdaEnv = exports.getAgdaSource = exports.resolveAgdaVersion = exports.simver = exports.stackGetLocalBin = exports.stackGetVersion = exports.stack = exports.cabalGetVersion = exports.cabal = exports.ghcGetVersion = exports.ghc = exports.bdistUpload = exports.bdistDownload = exports.testAgda = exports.agdaModeBinName = exports.agdaBinNames = exports.agdaBinName = void 0;
+exports.setupAgdaEnv = exports.getAgdaSource = exports.resolveAgdaVersion = exports.simver = exports.stackGetLocalBin = exports.stackGetVersion = exports.stack = exports.cabalGetVersion = exports.cabal = exports.ghcGetVersion = exports.ghc = exports.testAgda = exports.agdaModeBinName = exports.agdaBinNames = exports.agdaBinName = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const path = __importStar(__nccwpck_require__(9411));
@@ -1214,9 +1452,6 @@ Object.defineProperty(exports, "agdaBinName", ({ enumerable: true, get: function
 Object.defineProperty(exports, "agdaBinNames", ({ enumerable: true, get: function () { return agda_1.agdaBinNames; } }));
 Object.defineProperty(exports, "agdaModeBinName", ({ enumerable: true, get: function () { return agda_1.agdaModeBinName; } }));
 Object.defineProperty(exports, "testAgda", ({ enumerable: true, get: function () { return agda_1.testAgda; } }));
-var bdist_1 = __nccwpck_require__(610);
-Object.defineProperty(exports, "bdistDownload", ({ enumerable: true, get: function () { return bdist_1.download; } }));
-Object.defineProperty(exports, "bdistUpload", ({ enumerable: true, get: function () { return bdist_1.upload; } }));
 __exportStar(__nccwpck_require__(4369), exports);
 var haskell_1 = __nccwpck_require__(1310);
 Object.defineProperty(exports, "ghc", ({ enumerable: true, get: function () { return haskell_1.ghc; } }));
@@ -1429,241 +1664,6 @@ function testAgda(agdaOptions, options) {
     });
 }
 exports.testAgda = testAgda;
-
-
-/***/ }),
-
-/***/ 610:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.upload = exports.download = void 0;
-const artifact = __importStar(__nccwpck_require__(2605));
-const core = __importStar(__nccwpck_require__(2186));
-const glob = __importStar(__nccwpck_require__(8090));
-const tc = __importStar(__nccwpck_require__(7784));
-const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
-const mustache = __importStar(__nccwpck_require__(8272));
-const os = __importStar(__nccwpck_require__(612));
-const path = __importStar(__nccwpck_require__(9411));
-const object_pick_1 = __importDefault(__nccwpck_require__(9962));
-const opts = __importStar(__nccwpck_require__(1352));
-const setup_upx_1 = __importDefault(__nccwpck_require__(4245));
-const agda = __importStar(__nccwpck_require__(9552));
-const exec_1 = __nccwpck_require__(4369);
-const io = __importStar(__nccwpck_require__(9067));
-function download(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Get the name for the distribution:
-        const bdistName = renderName('', options);
-        const bdistUrl = opts.bdistIndex[bdistName];
-        if (bdistUrl !== undefined) {
-            try {
-                core.info(`Download package ${bdistName} from ${bdistUrl}`);
-                return yield tc.downloadTool(bdistUrl);
-            }
-            catch (error) {
-                core.warning(`Failed to download package ${bdistName}: ${(0, ensure_error_1.default)(error).message}`);
-                return null;
-            }
-        }
-        else {
-            core.info(`Could not find package ${bdistName}`);
-            return null;
-        }
-    });
-}
-exports.download = download;
-function upload(installDir, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Get the name for the distribution:
-        const bdistName = renderName(options['bdist-name'], options);
-        const bdistDir = path.join(opts.agdaDir(), 'bdist', bdistName);
-        io.mkdirP(bdistDir);
-        // Copy binaries:
-        io.mkdirP(path.join(bdistDir, 'bin'));
-        for (const binName of agda.agdaBinNames)
-            yield io.cp(path.join(installDir, 'bin', binName), path.join(bdistDir, 'bin', binName));
-        // Copy data:
-        yield io.cpR(path.join(installDir, 'data'), bdistDir);
-        // Compress binaries:
-        if (!options['bdist-no-compress-exe']) {
-            try {
-                const upxExe = yield (0, setup_upx_1.default)(options);
-                for (const binName of agda.agdaBinNames)
-                    yield compressBin(upxExe, path.join(bdistDir, 'bin', binName));
-            }
-            catch (error) {
-                core.debug((0, ensure_error_1.default)(error).message);
-            }
-        }
-        // Bundle libraries:
-        yield bundleLibs(bdistDir, options);
-        // Test artifact:
-        yield agda.testAgda({
-            agdaBin: path.join(bdistDir, 'bin', agda.agdaBinName),
-            agdaDataDir: path.join(bdistDir, 'data')
-        });
-        // Create file list for artifact:
-        const globber = yield glob.create(path.join(bdistDir, '**', '*'), {
-            followSymbolicLinks: false,
-            implicitDescendants: false,
-            matchDirectories: false
-        });
-        const files = yield globber.glob();
-        // Upload artifact:
-        const artifactClient = artifact.create();
-        const uploadInfo = yield artifactClient.uploadArtifact(bdistName, files, bdistDir, {
-            continueOnError: true,
-            retentionDays: 90
-        });
-        // Report any errors:
-        if (uploadInfo.failedItems.length > 0) {
-            core.error(['Failed to upload:', ...uploadInfo.failedItems].join(os.EOL));
-        }
-        // Return artifact name
-        return uploadInfo.artifactName;
-    });
-}
-exports.upload = upload;
-function compressBin(upxExe, binPath) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Print the needed libraries before compressing:
-        printNeededLibs(binPath);
-        // Compress with UPX:
-        yield (0, exec_1.getoutput)(upxExe, ['--best', binPath]);
-        // Print the needed libraries after compressing:
-        printNeededLibs(binPath);
-    });
-}
-function bundleLibs(bdistDir, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        switch (opts.os) {
-            case 'linux': {
-                // UPX should've bundled all libs
-                break;
-            }
-            case 'macos': {
-                // If we compiled with --enable-cluster-counting, bundle ICU:
-                if (opts.enableClusterCounting(options)) {
-                    yield io.mkdirP(path.join(bdistDir, 'lib'));
-                    // Copy needed libraries:
-                    for (const libPath of options['bdist-libs']) {
-                        yield io.cp(path.join(libPath), path.join(bdistDir, 'lib', path.basename(libPath)));
-                    }
-                    // Patch run paths for loaded libraries:
-                    for (const binName of agda.agdaBinNames) {
-                        const binPath = path.join(bdistDir, 'bin', binName);
-                        const libDirs = new Set();
-                        // Update run paths for libraries:
-                        for (const libPath of options['bdist-libs']) {
-                            const libName = path.basename(libPath);
-                            libDirs.add(path.dirname(libPath));
-                            yield changeDependency(binPath, libPath, `@rpath/${libName}`);
-                        }
-                        // Add load paths for libraries:
-                        yield addRunPaths(binPath, '@executable_path', '@executable_path/../lib', ...libDirs);
-                    }
-                }
-                break;
-            }
-            case 'windows': {
-                // If we compiled with --enable-cluster-counting, bundle ICU:
-                if (opts.supportsClusterCounting(options)) {
-                    // Copy needed libraries:
-                    for (const libPath of options['bdist-libs']) {
-                        yield io.cp(path.join(libPath), path.join(bdistDir, 'bin', path.basename(libPath)));
-                    }
-                }
-                break;
-            }
-        }
-    });
-}
-function renderName(template, options) {
-    const templateOrDefault = template !== '' ? template : 'agda-{{agda-version}}-{{arch}}-{{platform}}';
-    return mustache.render(templateOrDefault, Object.assign(Object.assign({}, (0, object_pick_1.default)(options, [
-        'agda-version',
-        'ghc-version',
-        'cabal-version',
-        'stack-version',
-        'icu-version',
-        'upx-version'
-    ])), { arch: os.arch(), platform: os.platform(), release: os.release() }));
-}
-// Helpers for patching executables
-function printNeededLibs(binPath) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            let output = '';
-            switch (opts.os) {
-                case 'linux': {
-                    output = yield (0, exec_1.patchelf)('--print-needed', binPath);
-                    break;
-                }
-                case 'macos': {
-                    output = yield (0, exec_1.otool)('-L', binPath);
-                    break;
-                }
-                case 'windows': {
-                    output = yield (0, exec_1.dumpbin)('/imports', binPath);
-                    break;
-                }
-            }
-            core.info(`Needed libraries:${os.EOL}${output}`);
-        }
-        catch (error) {
-            core.debug((0, ensure_error_1.default)(error).message);
-        }
-    });
-}
-function changeDependency(binPath, libPathFrom, libPathTo) {
-    return __awaiter(this, void 0, void 0, function* () {
-        yield (0, exec_1.installNameTool)('-change', libPathFrom, libPathTo, binPath);
-    });
-}
-function addRunPaths(binPath, ...rpaths) {
-    return __awaiter(this, void 0, void 0, function* () {
-        yield (0, exec_1.installNameTool)(...rpaths.flatMap(rpath => ['-add_rpath', rpath]), binPath);
-    });
-}
 
 
 /***/ }),
