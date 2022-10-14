@@ -398,7 +398,6 @@ function installFromBdist(options) {
             if (bdistZip === null)
                 return ret;
             ret.bdistDir = yield tc.extractZip(bdistZip);
-            util.lsR(ret.bdistDir);
             util.rmRF(bdistZip);
             return ret;
         }));
