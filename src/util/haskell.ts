@@ -19,21 +19,21 @@ export async function ghc(
   args: string[],
   execOptions?: exec.ExecOptions
 ): Promise<string> {
-  return await exec.getoutput('ghc', args, execOptions)
+  return await exec.getOutput('ghc', args, execOptions)
 }
 
 export async function cabal(
   args: string[],
   execOptions?: exec.ExecOptions
 ): Promise<string> {
-  return await exec.getoutput('cabal', args, execOptions)
+  return await exec.getOutput('cabal', args, execOptions)
 }
 
 export async function stack(
   args: string[],
   execOptions?: exec.ExecOptions
 ): Promise<string> {
-  return await exec.getoutput('stack', args, execOptions)
+  return await exec.getOutput('stack', args, execOptions)
 }
 
 export async function ghcGetVersion(): Promise<string> {

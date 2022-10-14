@@ -107,7 +107,7 @@ async function compressBin(upxExe: string, binPath: string): Promise<void> {
   // Print the needed libraries before compressing:
   printNeededLibs(binPath)
   // Compress with UPX:
-  await util.getoutput(upxExe, ['--best', binPath])
+  await util.getOutput(upxExe, ['--best', binPath])
   // Print the needed libraries after compressing:
   printNeededLibs(binPath)
 }

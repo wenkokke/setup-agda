@@ -77,10 +77,10 @@ export async function agda(
   options?: exec.ExecOptions
 ): Promise<string> {
   const [agdaBin, optionsWithDataDir] = resolveAgdaOptions(agdaOptions, options)
-  return await exec.getoutput(agdaBin, args, optionsWithDataDir)
+  return await exec.getOutput(agdaBin, args, optionsWithDataDir)
 }
 
-export async function testAgda(
+export async function agdaTest(
   agdaOptions?: Partial<AgdaOptions>,
   options?: exec.ExecOptions
 ): Promise<void> {

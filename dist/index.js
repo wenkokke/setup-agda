@@ -592,7 +592,7 @@ function compressBin(upxExe, binPath) {
         // Print the needed libraries before compressing:
         printNeededLibs(binPath);
         // Compress with UPX:
-        yield util.getoutput(upxExe, ['--best', binPath]);
+        yield util.getOutput(upxExe, ['--best', binPath]);
         // Print the needed libraries after compressing:
         printNeededLibs(binPath);
     });
@@ -1451,7 +1451,7 @@ var agda_1 = __nccwpck_require__(9552);
 Object.defineProperty(exports, "agdaBinName", ({ enumerable: true, get: function () { return agda_1.agdaBinName; } }));
 Object.defineProperty(exports, "agdaBinNames", ({ enumerable: true, get: function () { return agda_1.agdaBinNames; } }));
 Object.defineProperty(exports, "agdaModeBinName", ({ enumerable: true, get: function () { return agda_1.agdaModeBinName; } }));
-Object.defineProperty(exports, "testAgda", ({ enumerable: true, get: function () { return agda_1.testAgda; } }));
+Object.defineProperty(exports, "testAgda", ({ enumerable: true, get: function () { return agda_1.agdaTest; } }));
 __exportStar(__nccwpck_require__(4369), exports);
 var haskell_1 = __nccwpck_require__(1310);
 Object.defineProperty(exports, "ghc", ({ enumerable: true, get: function () { return haskell_1.ghc; } }));
@@ -1584,7 +1584,7 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
     function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.testAgda = exports.agda = exports.agdaGetDataDir = exports.agdaGetVersion = exports.agdaBinNames = exports.agdaModeBinName = exports.agdaBinName = void 0;
+exports.agdaTest = exports.agda = exports.agdaGetDataDir = exports.agdaGetVersion = exports.agdaBinNames = exports.agdaModeBinName = exports.agdaBinName = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const path = __importStar(__nccwpck_require__(9411));
@@ -1631,11 +1631,11 @@ exports.agdaGetDataDir = agdaGetDataDir;
 function agda(args, agdaOptions, options) {
     return __awaiter(this, void 0, void 0, function* () {
         const [agdaBin, optionsWithDataDir] = resolveAgdaOptions(agdaOptions, options);
-        return yield exec.getoutput(agdaBin, args, optionsWithDataDir);
+        return yield exec.getOutput(agdaBin, args, optionsWithDataDir);
     });
 }
 exports.agda = agda;
-function testAgda(agdaOptions, options) {
+function agdaTest(agdaOptions, options) {
     var e_1, _a;
     return __awaiter(this, void 0, void 0, function* () {
         const versionString = yield agdaGetVersion(agdaOptions);
@@ -1663,7 +1663,7 @@ function testAgda(agdaOptions, options) {
         }
     });
 }
-exports.testAgda = testAgda;
+exports.agdaTest = agdaTest;
 
 
 /***/ }),
@@ -1706,13 +1706,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.xattr = exports.pkgConfig = exports.patchelf = exports.pacmanGetVersion = exports.pacman = exports.otool = exports.installNameTool = exports.dumpbin = exports.chmod = exports.brewGetVersion = exports.brew = exports.getVersion = exports.getoutput = void 0;
+exports.xattr = exports.pkgConfig = exports.patchelf = exports.pacmanGetVersion = exports.pacman = exports.otool = exports.installNameTool = exports.dumpbin = exports.chmod = exports.brewGetVersion = exports.brew = exports.getVersion = exports.getOutput = void 0;
 const exec = __importStar(__nccwpck_require__(1514));
-function getoutput(prog, args, execOptions) {
+const os = __importStar(__nccwpck_require__(612));
+function getOutput(prog, args, execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         let progOutput = '';
         let progErrors = '';
         execOptions = execOptions !== null && execOptions !== void 0 ? execOptions : {};
+        execOptions.ignoreReturnCode = true;
         execOptions.listeners = {
             stdout: (data) => {
                 progOutput += data.toString();
@@ -1726,16 +1728,16 @@ function getoutput(prog, args, execOptions) {
             return progOutput;
         }
         else {
-            throw Error(progErrors);
+            throw Error(`The call to ${prog} failed with exit code ${exitCode}:${os.EOL}${progErrors}`);
         }
     });
 }
-exports.getoutput = getoutput;
+exports.getOutput = getOutput;
 function getVersion(prog, options) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const versionFlag = (_a = options === null || options === void 0 ? void 0 : options.versionFlag) !== null && _a !== void 0 ? _a : '--version';
-        let progOutput = yield getoutput(prog, [versionFlag], options);
+        let progOutput = yield getOutput(prog, [versionFlag], options);
         progOutput = progOutput.trim();
         return (options === null || options === void 0 ? void 0 : options.parseOutput) !== undefined
             ? options === null || options === void 0 ? void 0 : options.parseOutput(progOutput)
@@ -1744,7 +1746,7 @@ function getVersion(prog, options) {
 }
 exports.getVersion = getVersion;
 // System utilities
-const brew = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getoutput('brew', args); });
+const brew = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('brew', args); });
 exports.brew = brew;
 const brewGetVersion = (formula) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
@@ -1753,15 +1755,15 @@ const brewGetVersion = (formula) => __awaiter(void 0, void 0, void 0, function* 
     return (_b = (_a = formulaVersions.match(formulaVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version;
 });
 exports.brewGetVersion = brewGetVersion;
-const chmod = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getoutput('chmod', args); });
+const chmod = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('chmod', args); });
 exports.chmod = chmod;
-const dumpbin = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getoutput('dumpbin', args); });
+const dumpbin = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('dumpbin', args); });
 exports.dumpbin = dumpbin;
-const installNameTool = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getoutput('install_name_tool', args); });
+const installNameTool = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('install_name_tool', args); });
 exports.installNameTool = installNameTool;
-const otool = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getoutput('otool', args); });
+const otool = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('otool', args); });
 exports.otool = otool;
-const pacman = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getoutput('pacman', args); });
+const pacman = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('pacman', args); });
 exports.pacman = pacman;
 const pacmanGetVersion = (pkg) => __awaiter(void 0, void 0, void 0, function* () {
     var _c, _d;
@@ -1774,11 +1776,11 @@ const pacmanGetVersion = (pkg) => __awaiter(void 0, void 0, void 0, function* ()
         throw Error(`Could not determine version of ${pkg}`);
 });
 exports.pacmanGetVersion = pacmanGetVersion;
-const patchelf = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getoutput('patchelf', args); });
+const patchelf = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('patchelf', args); });
 exports.patchelf = patchelf;
-const pkgConfig = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getoutput('pkg-config', args); });
+const pkgConfig = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('pkg-config', args); });
 exports.pkgConfig = pkgConfig;
-const xattr = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getoutput('xattr', args); });
+const xattr = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('xattr', args); });
 exports.xattr = xattr;
 
 
@@ -2007,19 +2009,19 @@ function getGhcInfo(execOptions) {
 exports.getGhcInfo = getGhcInfo;
 function ghc(args, execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield exec.getoutput('ghc', args, execOptions);
+        return yield exec.getOutput('ghc', args, execOptions);
     });
 }
 exports.ghc = ghc;
 function cabal(args, execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield exec.getoutput('cabal', args, execOptions);
+        return yield exec.getOutput('cabal', args, execOptions);
     });
 }
 exports.cabal = cabal;
 function stack(args, execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield exec.getoutput('stack', args, execOptions);
+        return yield exec.getOutput('stack', args, execOptions);
     });
 }
 exports.stack = stack;
@@ -2168,7 +2170,7 @@ function lsR(path) {
     return __awaiter(this, void 0, void 0, function* () {
         path = escape(path);
         core.debug(`ls -R ${path}`);
-        return yield exec.getoutput('ls', ['-R', path]);
+        return yield exec.getOutput('ls', ['-R', path]);
     });
 }
 exports.lsR = lsR;

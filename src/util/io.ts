@@ -55,7 +55,7 @@ export async function rmRF(path: string): Promise<void> {
 export async function lsR(path: string): Promise<string> {
   path = escape(path)
   core.debug(`ls -R ${path}`)
-  return await exec.getoutput('ls', ['-R', path])
+  return await exec.getOutput('ls', ['-R', path])
 }
 
 function escape(filePath: string): string {

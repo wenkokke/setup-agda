@@ -1,10 +1,11 @@
 import * as exec from '@actions/exec'
+import * as os from 'node:os'
 
 // Helpers for system calls
 
 export {ExecOptions} from '@actions/exec'
 
-export async function getoutput(
+export async function getOutput(
   prog: string,
   args: string[],
   execOptions?: exec.ExecOptions
@@ -12,6 +13,7 @@ export async function getoutput(
   let progOutput = ''
   let progErrors = ''
   execOptions = execOptions ?? {}
+  execOptions.ignoreReturnCode = true
   execOptions.listeners = {
     stdout: (data: Buffer) => {
       progOutput += data.toString()
@@ -24,7 +26,9 @@ export async function getoutput(
   if (exitCode === 0) {
     return progOutput
   } else {
-    throw Error(progErrors)
+    throw Error(
+      `The call to ${prog} failed with exit code ${exitCode}:${os.EOL}${progErrors}`
+    )
   }
 }
 
@@ -40,7 +44,7 @@ export async function getVersion(
   options?: VersionOptions
 ): Promise<string> {
   const versionFlag = options?.versionFlag ?? '--version'
-  let progOutput = await getoutput(prog, [versionFlag], options)
+  let progOutput = await getOutput(prog, [versionFlag], options)
   progOutput = progOutput.trim()
   return options?.parseOutput !== undefined
     ? options?.parseOutput(progOutput)
@@ -50,7 +54,7 @@ export async function getVersion(
 // System utilities
 
 export const brew = async (...args: string[]): Promise<string> =>
-  await getoutput('brew', args)
+  await getOutput('brew', args)
 
 export const brewGetVersion = async (
   formula: string
@@ -61,19 +65,19 @@ export const brewGetVersion = async (
 }
 
 export const chmod = async (...args: string[]): Promise<string> =>
-  await getoutput('chmod', args)
+  await getOutput('chmod', args)
 
 export const dumpbin = async (...args: string[]): Promise<string> =>
-  await getoutput('dumpbin', args)
+  await getOutput('dumpbin', args)
 
 export const installNameTool = async (...args: string[]): Promise<string> =>
-  await getoutput('install_name_tool', args)
+  await getOutput('install_name_tool', args)
 
 export const otool = async (...args: string[]): Promise<string> =>
-  await getoutput('otool', args)
+  await getOutput('otool', args)
 
 export const pacman = async (...args: string[]): Promise<string> =>
-  await getoutput('pacman', args)
+  await getOutput('pacman', args)
 
 export const pacmanGetVersion = async (
   pkg: string
@@ -86,10 +90,10 @@ export const pacmanGetVersion = async (
 }
 
 export const patchelf = async (...args: string[]): Promise<string> =>
-  await getoutput('patchelf', args)
+  await getOutput('patchelf', args)
 
 export const pkgConfig = async (...args: string[]): Promise<string> =>
-  await getoutput('pkg-config', args)
+  await getOutput('pkg-config', args)
 
 export const xattr = async (...args: string[]): Promise<string> =>
-  await getoutput('xattr', args)
+  await getOutput('xattr', args)
