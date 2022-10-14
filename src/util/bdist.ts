@@ -56,6 +56,9 @@ export async function upload(
   // Copy data:
   await io.cpR(path.join(installDir, 'data'), bdistDir)
 
+  // Compress binaries:
+  await compressBins(bdistDir)
+
   // Bundle libraries:
   await bundleLibs(bdistDir, options)
 
@@ -94,22 +97,30 @@ export async function upload(
   return uploadInfo.artifactName
 }
 
+async function compressBins(bdistDir: string): Promise<void> {
+  try {
+    const upxExe = await setupUpx()
+    for (const binName of util.agdaBinNames) {
+      const binPath = path.join(bdistDir, 'bin', binName)
+      // Print the needed libraries before compressing:
+      if (core.isDebug()) printNeededLibs(binPath)
+      // Compress with UPX:
+      await exec.exec(upxExe, ['--best', binPath])
+      // Print the needed libraries after compressing:
+      if (core.isDebug()) printNeededLibs(binPath)
+    }
+  } catch (error) {
+    core.debug(ensureError(error).message)
+  }
+}
+
 async function bundleLibs(
   bdistDir: string,
   options: opts.BuildOptions
 ): Promise<void> {
   switch (opts.os) {
     case 'linux': {
-      const upx = await setupUpx('3.96')
-      for (const binName of util.agdaBinNames) {
-        const binPath = path.join(bdistDir, 'bin', binName)
-        // Print the needed libraries before compressing:
-        printNeededLibs(binPath)
-        // Compress with UPX:
-        await exec.exec(upx, ['--best', binPath])
-        // Print the needed libraries after compressing:
-        printNeededLibs(binPath)
-      }
+      // UPX should've bundled all libs
       break
     }
     case 'macos': {
@@ -158,17 +169,6 @@ async function bundleLibs(
             path.join(bdistDir, 'bin', path.basename(libPath))
           )
         }
-      }
-      // Compress with UPX:
-      const upx = await setupUpx('3.96')
-      for (const binName of util.agdaBinNames) {
-        const binPath = path.join(bdistDir, 'bin', binName)
-        // Print the needed libraries before compressing:
-        printNeededLibs(binPath)
-        // Compress with UPX:
-        await exec.exec(upx, ['--best', binPath])
-        // Print the needed libraries after compressing:
-        printNeededLibs(binPath)
       }
       break
     }

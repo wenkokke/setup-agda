@@ -290,18 +290,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
+const glob = __importStar(__nccwpck_require__(8090));
 const tc = __importStar(__nccwpck_require__(7784));
 const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const build_from_source_1 = __importDefault(__nccwpck_require__(7222));
 const util = __importStar(__nccwpck_require__(4024));
+const agda = __importStar(__nccwpck_require__(9552));
 const bdist = __importStar(__nccwpck_require__(610));
+const exec = __importStar(__nccwpck_require__(4369));
 const io = __importStar(__nccwpck_require__(9067));
 function setup(inputs) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -370,6 +380,39 @@ function installFromToolCache(options) {
     });
 }
 // Helper to install from binary distributions
+const chmod = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('chmod', args); });
+const xattr = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('xattr', args); });
+function repairPermissions(bdistDir) {
+    var e_1, _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        if (opts.os === 'macos') {
+            // Fix permissions on binaries
+            const bdistBinDir = path.join(bdistDir, 'bin');
+            for (const binName of agda.agdaBinNames) {
+                yield chmod('+x', path.join(bdistBinDir, binName));
+                yield xattr('-c', path.join(bdistBinDir, binName));
+            }
+            // Fix permissions on libraries
+            const bdistLibDir = path.join(bdistDir, 'lib');
+            const libGlobber = yield glob.create(path.join(bdistLibDir, '*'));
+            try {
+                for (var _b = __asyncValues(libGlobber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
+                    const libPath = _c.value;
+                    yield chmod('+w', libPath);
+                    yield xattr('-c', libPath);
+                    yield chmod('-w', libPath);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+        }
+    });
+}
 function installFromBdist(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // 1. Download:
@@ -383,7 +426,9 @@ function installFromBdist(options) {
         }));
         if (bdistDir === null)
             return null;
-        // 2. Test:
+        // 2. Repair file permissions:
+        yield core.group(`🔧 Repairing file permissions`, () => __awaiter(this, void 0, void 0, function* () { return yield repairPermissions(bdistDir); }));
+        // 3. Test:
         const bdistOK = yield core.group(`👩🏾‍🔬 Testing Agda ${options['agda-version']} package`, () => __awaiter(this, void 0, void 0, function* () {
             try {
                 yield util.testAgda({
@@ -401,7 +446,7 @@ function installFromBdist(options) {
         }));
         if (!bdistOK)
             return null;
-        // 3. Install:
+        // 4. Install:
         const installDir = opts.installDir(options['agda-version']);
         yield core.group(`🔍 Installing Agda ${options['agda-version']} package`, () => __awaiter(this, void 0, void 0, function* () {
             yield io.mkdirP(path.dirname(installDir));
@@ -1107,35 +1152,58 @@ const tc = __importStar(__nccwpck_require__(7784));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const exec = __importStar(__nccwpck_require__(4369));
+const simver = __importStar(__nccwpck_require__(7609));
 const upxUrlLinux = 'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz';
 const upxUrlWindows = 'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-win64.zip';
-function setup(upxVersion) {
+function setup() {
     return __awaiter(this, void 0, void 0, function* () {
-        const upxInstallDir = path.join(opts.agdaDir(), 'upx', upxVersion);
         switch (opts.os) {
             case 'linux': {
-                const upxArchivePath = yield tc.downloadTool(upxUrlLinux);
-                const upxDir = yield tc.extractTar(upxArchivePath, upxInstallDir, [
+                const upxTarPath = yield tc.downloadTool(upxUrlLinux);
+                const upxParentDir = yield tc.extractTar(upxTarPath, undefined, [
                     '--extract',
                     '--xz',
-                    '--preserve-permissions',
-                    '--strip-components=1'
+                    '--preserve-permissions'
                 ]);
-                return path.join(upxDir, 'upx');
+                return path.join(upxParentDir, 'upx-3.96-amd64_linux', 'upx');
             }
             case 'macos': {
-                yield exec.getoutput('brew', ['install', 'upx']);
-                return 'upx';
+                // Ensure UPX is installed:
+                let upxVer = yield brewGetVersion('upx');
+                if (upxVer === undefined)
+                    yield brew('install', 'upx');
+                upxVer = yield brewGetVersion('upx');
+                if (upxVer === undefined)
+                    throw Error(`Could not setup UPX`);
+                // Check if UPX is the correct version:
+                // NOTE: patch version '3.96_1' or (presumably) later versions are OK
+                if (simver.gte(upxVer, '3.96_1'))
+                    return 'upx';
+                // Attempt to upgrade UPX:
+                yield brew('upgrade', 'upx');
+                upxVer = yield brewGetVersion('upx');
+                if (upxVer === undefined)
+                    throw Error(`Could not setup UPX`);
+                if (simver.gte(upxVer, '3.96_1'))
+                    return 'upx';
+                throw Error(`Could not setup UPX`);
             }
             case 'windows': {
-                const upxArchivePath = yield tc.downloadTool(upxUrlWindows);
-                const upxDir = yield tc.extractZip(upxArchivePath, upxInstallDir);
-                return path.join(upxDir, 'upx-3.96-win64', 'upx');
+                const upxZipPath = yield tc.downloadTool(upxUrlWindows);
+                const upxParentDir = yield tc.extractZip(upxZipPath);
+                return path.join(upxParentDir, 'upx-3.96-win64', 'upx');
             }
         }
     });
 }
 exports["default"] = setup;
+const brew = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('brew', args); });
+const brewGetVersion = (formula) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    const formulaVersionRegExp = new RegExp(`${formula} (?<version>[\\d._]+)`);
+    const formulaVersions = yield brew('list', '--formula', '--versions');
+    return (_b = (_a = formulaVersions.match(formulaVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version;
+});
 
 
 /***/ }),
@@ -1486,6 +1554,8 @@ function upload(installDir, options) {
             yield io.cp(path.join(installDir, 'bin', binName), path.join(bdistDir, 'bin', binName));
         // Copy data:
         yield io.cpR(path.join(installDir, 'data'), bdistDir);
+        // Compress binaries:
+        yield compressBins(bdistDir);
         // Bundle libraries:
         yield bundleLibs(bdistDir, options);
         // Test artifact:
@@ -1515,20 +1585,32 @@ function upload(installDir, options) {
     });
 }
 exports.upload = upload;
+function compressBins(bdistDir) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const upxExe = yield (0, setup_upx_1.default)();
+            for (const binName of util.agdaBinNames) {
+                const binPath = path.join(bdistDir, 'bin', binName);
+                // Print the needed libraries before compressing:
+                if (core.isDebug())
+                    printNeededLibs(binPath);
+                // Compress with UPX:
+                yield exec.exec(upxExe, ['--best', binPath]);
+                // Print the needed libraries after compressing:
+                if (core.isDebug())
+                    printNeededLibs(binPath);
+            }
+        }
+        catch (error) {
+            core.debug((0, ensure_error_1.default)(error).message);
+        }
+    });
+}
 function bundleLibs(bdistDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (opts.os) {
             case 'linux': {
-                const upx = yield (0, setup_upx_1.default)('3.96');
-                for (const binName of util.agdaBinNames) {
-                    const binPath = path.join(bdistDir, 'bin', binName);
-                    // Print the needed libraries before compressing:
-                    printNeededLibs(binPath);
-                    // Compress with UPX:
-                    yield exec.exec(upx, ['--best', binPath]);
-                    // Print the needed libraries after compressing:
-                    printNeededLibs(binPath);
-                }
+                // UPX should've bundled all libs
                 break;
             }
             case 'macos': {
@@ -1566,17 +1648,6 @@ function bundleLibs(bdistDir, options) {
                     for (const libPath of options['libs-to-bundle']) {
                         yield io.cp(path.join(libPath), path.join(bdistDir, 'bin', path.basename(libPath)));
                     }
-                }
-                // Compress with UPX:
-                const upx = yield (0, setup_upx_1.default)('3.96');
-                for (const binName of util.agdaBinNames) {
-                    const binPath = path.join(bdistDir, 'bin', binName);
-                    // Print the needed libraries before compressing:
-                    printNeededLibs(binPath);
-                    // Compress with UPX:
-                    yield exec.exec(upx, ['--best', binPath]);
-                    // Print the needed libraries after compressing:
-                    printNeededLibs(binPath);
                 }
                 break;
             }
@@ -2111,28 +2182,28 @@ exports.rmRF = rmRF;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.max = exports.toString = exports.neq = exports.eq = exports.gte = exports.gt = exports.lte = exports.lt = exports.compare = exports.parse = void 0;
 function parse(version) {
-    return version.split('.').map(number => parseInt(number));
+    return version.split('.').map(part => part.split('_').map(parseInt));
 }
 exports.parse = parse;
-function compare(version1, version2) {
-    var _a, _b;
-    if (typeof version1 === 'string') {
-        version1 = parse(version1);
-    }
-    if (typeof version2 === 'string') {
-        version2 = parse(version2);
-    }
-    for (let i = 0; i < Math.max(version1.length, version2.length); i++) {
-        const part1 = (_a = version1.at(i)) !== null && _a !== void 0 ? _a : 0;
-        const part2 = (_b = version2.at(i)) !== null && _b !== void 0 ? _b : 0;
-        if (part1 > part2) {
-            return 1;
-        }
-        else if (part1 < part2) {
-            return -1;
-        }
-        else {
-            continue;
+function compare(v1, v2) {
+    var _a, _b, _c, _d;
+    const sv1 = typeof v1 === 'string' ? parse(v1) : v1;
+    const sv2 = typeof v2 === 'string' ? parse(v2) : v2;
+    for (let i = 0; i < Math.max(sv1.length, sv2.length); i++) {
+        const sv1i = (_a = sv1.at(i)) !== null && _a !== void 0 ? _a : [];
+        const sv2i = (_b = sv2.at(i)) !== null && _b !== void 0 ? _b : [];
+        for (let j = 0; j < Math.max(sv1i.length, sv2i.length); j++) {
+            const sv1ij = (_c = sv1i.at(j)) !== null && _c !== void 0 ? _c : 0;
+            const sv2ij = (_d = sv2i.at(j)) !== null && _d !== void 0 ? _d : 0;
+            if (sv1ij > sv2ij) {
+                return 1;
+            }
+            else if (sv1ij < sv2ij) {
+                return -1;
+            }
+            else {
+                continue;
+            }
         }
     }
     return 0;

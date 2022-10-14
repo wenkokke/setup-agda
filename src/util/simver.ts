@@ -1,30 +1,27 @@
-export type SimVer = number[]
+export type SimVer = number[][]
 
 export function parse(version: string): SimVer {
-  return version.split('.').map(number => parseInt(number))
+  return version.split('.').map(part => part.split('_').map(parseInt))
 }
 
 export type Ordering = -1 | 0 | 1
 
-export function compare(
-  version1: string | SimVer,
-  version2: string | SimVer
-): Ordering {
-  if (typeof version1 === 'string') {
-    version1 = parse(version1)
-  }
-  if (typeof version2 === 'string') {
-    version2 = parse(version2)
-  }
-  for (let i = 0; i < Math.max(version1.length, version2.length); i++) {
-    const part1 = version1.at(i) ?? 0
-    const part2 = version2.at(i) ?? 0
-    if (part1 > part2) {
-      return 1
-    } else if (part1 < part2) {
-      return -1
-    } else {
-      continue
+export function compare(v1: string | SimVer, v2: string | SimVer): Ordering {
+  const sv1 = typeof v1 === 'string' ? parse(v1) : v1
+  const sv2 = typeof v2 === 'string' ? parse(v2) : v2
+  for (let i = 0; i < Math.max(sv1.length, sv2.length); i++) {
+    const sv1i = sv1.at(i) ?? []
+    const sv2i = sv2.at(i) ?? []
+    for (let j = 0; j < Math.max(sv1i.length, sv2i.length); j++) {
+      const sv1ij = sv1i.at(j) ?? 0
+      const sv2ij = sv2i.at(j) ?? 0
+      if (sv1ij > sv2ij) {
+        return 1
+      } else if (sv1ij < sv2ij) {
+        return -1
+      } else {
+        continue
+      }
     }
   }
   return 0

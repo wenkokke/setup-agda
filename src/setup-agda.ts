@@ -1,11 +1,14 @@
 import * as core from '@actions/core'
+import * as glob from '@actions/glob'
 import * as tc from '@actions/tool-cache'
 import ensureError from 'ensure-error'
 import * as path from 'node:path'
 import * as opts from './opts'
 import buildFromSource from './setup-agda/build-from-source'
 import * as util from './util'
+import * as agda from './util/agda'
 import * as bdist from './util/bdist'
+import * as exec from './util/exec'
 import * as io from './util/io'
 
 export default async function setup(
@@ -89,6 +92,31 @@ async function installFromToolCache(
 
 // Helper to install from binary distributions
 
+const chmod = async (...args: string[]): Promise<string> =>
+  await exec.getoutput('chmod', args)
+
+const xattr = async (...args: string[]): Promise<string> =>
+  await exec.getoutput('xattr', args)
+
+async function repairPermissions(bdistDir: string): Promise<void> {
+  if (opts.os === 'macos') {
+    // Fix permissions on binaries
+    const bdistBinDir = path.join(bdistDir, 'bin')
+    for (const binName of agda.agdaBinNames) {
+      await chmod('+x', path.join(bdistBinDir, binName))
+      await xattr('-c', path.join(bdistBinDir, binName))
+    }
+    // Fix permissions on libraries
+    const bdistLibDir = path.join(bdistDir, 'lib')
+    const libGlobber = await glob.create(path.join(bdistLibDir, '*'))
+    for await (const libPath of libGlobber.globGenerator()) {
+      await chmod('+w', libPath)
+      await xattr('-c', libPath)
+      await chmod('-w', libPath)
+    }
+  }
+}
+
 async function installFromBdist(
   options: opts.BuildOptions
 ): Promise<string | null> {
@@ -105,7 +133,13 @@ async function installFromBdist(
   )
   if (bdistDir === null) return null
 
-  // 2. Test:
+  // 2. Repair file permissions:
+  await core.group(
+    `🔧 Repairing file permissions`,
+    async () => await repairPermissions(bdistDir)
+  )
+
+  // 3. Test:
   const bdistOK = await core.group(
     `👩🏾‍🔬 Testing Agda ${options['agda-version']} package`,
     async () => {
@@ -125,7 +159,7 @@ async function installFromBdist(
   )
   if (!bdistOK) return null
 
-  // 3. Install:
+  // 4. Install:
   const installDir = opts.installDir(options['agda-version'])
   await core.group(
     `🔍 Installing Agda ${options['agda-version']} package`,
