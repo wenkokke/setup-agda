@@ -24,12 +24,12 @@ jobs:
       matrix:
         os:
           [
-            ubuntu-22.04,
-            ubuntu-20.04,
+            # ubuntu-22.04,
+            # ubuntu-20.04,
             macos-11,
             macos-12,
-            windows-2019,
-            windows-2022
+            # windows-2019,
+            # windows-2022
           ]
 
     uses: ./.github/workflows/setup-agda.yml
