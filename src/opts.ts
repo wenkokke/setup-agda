@@ -227,6 +227,8 @@ export function getOptions(
     throw Error('Input "ghc-version" is unsupported. Use "ghc-version-range"')
   if (!semver.validRange(options['ghc-version-range']))
     throw Error('Input "ghc-version-range" is not a valid version range')
+  if (options['force-build'] && options['force-no-build'])
+    throw Error('Build or no build? What do you want from me? 🤷🏻‍♀️')
 
   return options
 }

@@ -162,9 +162,9 @@ function getOptions(inputs) {
     // Get build options or their defaults
     const inputSpec = yaml.load(fs.readFileSync(path.join(__dirname, '..', 'action.yml'), 'utf8')).inputs;
     const getOption = (k) => {
-        var _a, _b;
+        var _a, _b, _c;
         const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
-        return (_b = maybeInput !== null && maybeInput !== void 0 ? maybeInput : (_a = inputSpec[k]) === null || _a === void 0 ? void 0 : _a.default) !== null && _b !== void 0 ? _b : '';
+        return (_c = (_a = maybeInput === null || maybeInput === void 0 ? void 0 : maybeInput.trim()) !== null && _a !== void 0 ? _a : (_b = inputSpec[k]) === null || _b === void 0 ? void 0 : _b.default) !== null && _c !== void 0 ? _c : '';
     };
     const getFlag = (k) => {
         const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
@@ -178,6 +178,7 @@ function getOptions(inputs) {
         'bdist-upload': getFlag('bdist-upload'),
         'disable-cluster-counting': getFlag('disable-cluster-counting'),
         'force-build': getFlag('force-build'),
+        'force-no-build': getFlag('force-no-build'),
         'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
         'ghc-version-range': getOption('ghc-version-range'),
         // Specified in HaskellSetupInputs
@@ -189,9 +190,7 @@ function getOptions(inputs) {
         'stack-setup-ghc': getFlag('stack-setup-ghc'),
         'stack-version': getOption('stack-version'),
         // Specified in BuildOptions
-        'compatible-ghc-versions': [],
-        'extra-lib-dirs': [],
-        'extra-include-dirs': [],
+        'ghc-supported-versions': [],
         'bdist-libs': []
     };
     // Validate build options:
@@ -199,10 +198,10 @@ function getOptions(inputs) {
         throw Error('Value "nightly" for input "agda-version" is unupported');
     if (options['ghc-version'] !== 'latest')
         throw Error('Input "ghc-version" is unsupported. Use "ghc-version-range"');
-    if (options['bdist-no-compress-exe'] && !supportsUPX())
-        throw Error('Input "bdist-compress-exe" is unsupported on MacOS <12');
     if (!semver.validRange(options['ghc-version-range']))
         throw Error('Input "ghc-version-range" is not a valid version range');
+    if (options['force-build'] && options['force-no-build'])
+        throw Error('Build or no build? What do you want from me? 🤷🏻‍♀️');
     return options;
 }
 exports.getOptions = getOptions;
@@ -329,8 +328,10 @@ function setup(inputs) {
                 maybeAgdaDir = yield installFromToolCache(options);
             if (!options['force-build'] && maybeAgdaDir === null)
                 maybeAgdaDir = yield installFromBdist(options);
-            if (maybeAgdaDir === null)
+            if (!options['force-no-build'] && maybeAgdaDir === null)
                 maybeAgdaDir = yield (0, build_from_source_1.default)(options);
+            else if (maybeAgdaDir === null)
+                throw Error('Required build, but "force-no-build" is set.');
             const agdaDir = maybeAgdaDir;
             // 4. Set environment variables:
             yield core.group('📝 Registering Agda installation', () => __awaiter(this, void 0, void 0, function* () {
@@ -522,7 +523,7 @@ const cabal = __importStar(__nccwpck_require__(8545));
 const stack = __importStar(__nccwpck_require__(5590));
 function buildFromSource(options) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { sourceDir, buildTool, requireSetup } = yield core.group('🛠 Preparing to build Agda from source', () => __awaiter(this, void 0, void 0, function* () {
+        const buildInfo = yield core.group('🛠 Preparing to build Agda from source', () => __awaiter(this, void 0, void 0, function* () {
             const ret = {};
             // Download the source:
             core.info('Download source distribution from Hackage');
@@ -532,27 +533,24 @@ function buildFromSource(options) {
             ret.buildTool = options['enable-stack'] ? stack : cabal;
             core.info(`Set build tool to ${ret.buildTool.name}`);
             // Determine the compatible GHC versions:
-            (0, node_assert_1.default)(options['compatible-ghc-versions'].length === 0, `Option 'compatible-ghc-versions' is not empty: ${options['compatible-ghc-versions']}`);
-            options['compatible-ghc-versions'] =
-                yield ret.buildTool.compatibleGhcVersions(ret.sourceDir);
-            core.info(`Found compatible GHC versions: [${options['compatible-ghc-versions'].join(', ')}]`);
+            (0, node_assert_1.default)(options['ghc-supported-versions'].length === 0, `Option 'ghc-supported-versions' is not empty: ${options['ghc-supported-versions']}`);
+            options['ghc-supported-versions'] =
+                yield ret.buildTool.supportedGhcVersions(ret.sourceDir);
+            core.info(`Supported GHC versions: ${options['ghc-supported-versions']}`);
             // Determine whether or not we can use the pre-installed build tools:
             core.info('Search for compatible build tools');
-            const useInstalled = yield tryInstalledBuildTools(options);
-            if (useInstalled) {
-                core.info('Found compatible versions of GHC and Cabal');
-                ret.requireSetup = false;
+            ret.requireSetup = yield requireSetup(options);
+            if (ret.requireSetup) {
+                core.info('Could not find supported versions of GHC and Cabal');
                 return ret;
             }
             else {
-                core.info('Could not find compatible versions of GHC and Cabal');
-                ret.requireSetup = true;
-                selectGhcVersion(options);
+                core.info('Found supported versions of GHC and Cabal');
                 return ret;
             }
         }));
         // 3. Setup GHC via <haskell/actions/setup>:
-        if (requireSetup) {
+        if (buildInfo.requireSetup) {
             core.info('📞 Calling "haskell/actions/setup"');
             yield (0, setup_haskell_1.default)(options);
         }
@@ -571,6 +569,7 @@ function buildFromSource(options) {
         // 5. Build:
         const agdaDir = opts.installDir(options['agda-version']);
         yield core.group('👷🏾‍♀️ Building Agda', () => __awaiter(this, void 0, void 0, function* () {
+            const { buildTool, sourceDir } = buildInfo;
             yield buildTool.build(sourceDir, agdaDir, options);
             yield io.cpR(path.join(sourceDir, 'src', 'data'), agdaDir);
         }));
@@ -596,51 +595,40 @@ function buildFromSource(options) {
     });
 }
 exports["default"] = buildFromSource;
-function tryInstalledBuildTools(options) {
+function requireSetup(options) {
     return __awaiter(this, void 0, void 0, function* () {
         if (options['enable-stack']) {
             // NOTE: GitHub runners do not pre-install Stack
             core.info(`Could not find Stack`);
-            return false;
+            return true;
         }
         try {
             // Search for pre-installed GHC & Cabal versions:
-            const ghcVersion = yield haskell.getSystemGhcVersion();
+            const ghcVersion = yield haskell.ghcGetVersion();
             core.info(`Found pre-installed GHC version ${ghcVersion}`);
-            const cabalVersion = yield haskell.getSystemCabalVersion();
+            const cabalVersion = yield haskell.cabalGetVersion();
             core.info(`Found pre-installed Cabal version ${cabalVersion}`);
             // Filter compatible GHC versions to those matching pre-installed version:
-            const compatibleGhcVersions = options['compatible-ghc-versions'].filter(compatibleGhcVersion => opts.ghcVersionMatch(options, ghcVersion, compatibleGhcVersion));
+            const compatibleGhcVersions = options['ghc-supported-versions'].filter(compatibleGhcVersion => opts.ghcVersionMatch(options, ghcVersion, compatibleGhcVersion));
             if (compatibleGhcVersions.length === 0) {
                 core.info(`Installed GHC ${ghcVersion} is incompatible with Agda ${options['agda-version']}`);
-                return false;
+                return true;
             }
             // Check if pre-installed GHC version matches 'ghc-version-range':
             if (!semver.satisfies(ghcVersion, options['ghc-version-range'])) {
                 core.info(`Installed GHC ${ghcVersion} does not satisfy version range ${options['ghc-version-range']}`);
-                return false;
+                return true;
             }
             // Return updated build options
             options['ghc-version'] = ghcVersion;
             options['cabal-version'] = cabalVersion;
-            return true;
+            return false;
         }
         catch (error) {
             core.debug(`Could not find GHC or Cabal: ${(0, ensure_error_1.default)(error).message}`);
-            return false;
+            return true;
         }
     });
-}
-function selectGhcVersion(options) {
-    (0, node_assert_1.default)(options['ghc-version'] === 'latest');
-    const maybeGhcVersion = semver.maxSatisfying(options['compatible-ghc-versions'], options['ghc-version-range']);
-    if (maybeGhcVersion === null) {
-        throw Error(`No compatible GHC versions found: ${options['ghc-version-range']}`);
-    }
-    else {
-        core.info(`Select GHC ${maybeGhcVersion}`);
-        options['ghc-version'] = maybeGhcVersion;
-    }
 }
 
 
@@ -684,7 +672,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.compatibleGhcVersions = exports.build = exports.name = void 0;
+exports.supportedGhcVersions = exports.build = exports.name = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const io = __importStar(__nccwpck_require__(9067));
@@ -743,17 +731,9 @@ function buildFlags(options) {
     if (opts.supportsSplitSections(options)) {
         flags.push('--enable-split-sections');
     }
-    // Pass any extra libraries:
-    for (const dir of options['extra-lib-dirs']) {
-        flags.push(`--extra-lib-dirs=${dir}`);
-    }
-    // Pass any extra headers:
-    for (const dir of options['extra-include-dirs']) {
-        flags.push(`--extra-include-dirs=${dir}`);
-    }
     return flags;
 }
-function compatibleGhcVersions(sourceDir) {
+function supportedGhcVersions(sourceDir) {
     return __awaiter(this, void 0, void 0, function* () {
         const versions = [];
         const cabalFilePath = yield findCabalFile(sourceDir);
@@ -776,7 +756,7 @@ function compatibleGhcVersions(sourceDir) {
         }
     });
 }
-exports.compatibleGhcVersions = compatibleGhcVersions;
+exports.supportedGhcVersions = supportedGhcVersions;
 function findCabalFile(sourceDir) {
     return __awaiter(this, void 0, void 0, function* () {
         const cabalFileGlobber = yield glob.create(path.join(sourceDir, '*.cabal'), {
@@ -838,7 +818,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.compatibleGhcVersions = exports.build = exports.name = void 0;
+exports.supportedGhcVersions = exports.build = exports.name = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const io = __importStar(__nccwpck_require__(9067));
@@ -888,17 +868,9 @@ function buildFlags(options) {
     if (opts.supportsOptimiseHeavily(options)) {
         flags.push('--flag=Agda:+optimise-heavily');
     }
-    // Pass any extra libraries:
-    for (const dir of options['extra-lib-dirs']) {
-        flags.push(`--extra-lib-dirs=${dir}`);
-    }
-    // Pass any extra headers:
-    for (const dir of options['extra-include-dirs']) {
-        flags.push(`--extra-include-dirs=${dir}`);
-    }
     return flags;
 }
-function compatibleGhcVersions(sourceDir) {
+function supportedGhcVersions(sourceDir) {
     return __awaiter(this, void 0, void 0, function* () {
         const versions = [];
         const stackYamlGlobber = yield glob.create(path.join(sourceDir, 'stack-*.yaml'));
@@ -917,7 +889,7 @@ function compatibleGhcVersions(sourceDir) {
         return versions;
     });
 }
-exports.compatibleGhcVersions = compatibleGhcVersions;
+exports.supportedGhcVersions = supportedGhcVersions;
 
 
 /***/ }),
@@ -967,8 +939,12 @@ const core = __importStar(__nccwpck_require__(2186));
 const opts = __importStar(__nccwpck_require__(1352));
 const setup_haskell_1 = __importDefault(__nccwpck_require__(6501));
 const haskell = __importStar(__nccwpck_require__(1310));
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
+const semver = __importStar(__nccwpck_require__(1383));
 function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
+        // Select GHC version:
+        options['ghc-version'] = maxSatisfyingGhcVersion(options);
         // Run haskell/actions/setup:
         yield (0, setup_haskell_1.default)(Object.fromEntries(Object.entries(opts.pickSetupHaskellInputs(options)).map(e => {
             const [k, v] = e;
@@ -982,13 +958,24 @@ function setup(options) {
         options['cabal-version'] =
             options['enable-stack'] && options['stack-no-global']
                 ? yield haskell.getStackCabalVersionForGhc(options['ghc-version'])
-                : yield haskell.getSystemCabalVersion();
+                : yield haskell.cabalGetVersion();
         // Update the Stack version:
         if (options['enable-stack'])
             options['stack-version'] = yield haskell.getSystemStackVersion();
     });
 }
 exports["default"] = setup;
+function maxSatisfyingGhcVersion(options) {
+    (0, node_assert_1.default)(options['ghc-version'] === 'latest');
+    const maybeGhcVersion = semver.maxSatisfying(options['ghc-supported-versions'], options['ghc-version-range']);
+    if (maybeGhcVersion === null) {
+        throw Error(`No compatible GHC versions found: ${options['ghc-version-range']}`);
+    }
+    else {
+        core.info(`Select GHC ${maybeGhcVersion}`);
+        return maybeGhcVersion;
+    }
+}
 
 
 /***/ }),
@@ -1999,7 +1986,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getSystemStackVersion = exports.getStackCabalVersionForGhc = exports.getSystemCabalVersion = exports.getSystemGhcVersion = exports.execSystemStack = exports.execSystemCabal = exports.execSystemGhc = exports.getGhcInfo = void 0;
+exports.getSystemStackVersion = exports.getStackCabalVersionForGhc = exports.cabalGetVersion = exports.ghcGetVersion = exports.execSystemStack = exports.execSystemCabal = exports.execSystemGhc = exports.getGhcInfo = void 0;
 const exec = __importStar(__nccwpck_require__(4369));
 function getGhcInfo(execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -2032,7 +2019,7 @@ function execSystemStack(args, execOptions) {
     });
 }
 exports.execSystemStack = execSystemStack;
-function getSystemGhcVersion() {
+function ghcGetVersion() {
     return __awaiter(this, void 0, void 0, function* () {
         return exec.getVersion('ghc', {
             versionFlag: '--numeric-version',
@@ -2040,8 +2027,8 @@ function getSystemGhcVersion() {
         });
     });
 }
-exports.getSystemGhcVersion = getSystemGhcVersion;
-function getSystemCabalVersion() {
+exports.ghcGetVersion = ghcGetVersion;
+function cabalGetVersion() {
     return __awaiter(this, void 0, void 0, function* () {
         return exec.getVersion('cabal', {
             versionFlag: '--numeric-version',
@@ -2049,7 +2036,7 @@ function getSystemCabalVersion() {
         });
     });
 }
-exports.getSystemCabalVersion = getSystemCabalVersion;
+exports.cabalGetVersion = cabalGetVersion;
 function getStackCabalVersionForGhc(ghcVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield execSystemStack([
