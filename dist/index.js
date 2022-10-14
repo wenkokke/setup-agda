@@ -1236,6 +1236,8 @@ function setupAgdaEnv(installDir) {
         core.info(`Add ${binDir} to PATH`);
         core.addPath(binDir);
         core.setOutput('agda-path', binDir);
+        core.setOutput('agda-exe', path.join(binDir, agda.agdaBinName));
+        core.setOutput('agda-mode-exe', path.join(binDir, agda.agdaModeBinName));
     });
 }
 exports.setupAgdaEnv = setupAgdaEnv;

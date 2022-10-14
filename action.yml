@@ -19,59 +19,65 @@ inputs:
   bdist-name:
     description: 'If specified, will be used as the name for the binary distribution.'
     required: false
-  # NOTE: If it is called, following inputs are passed to haskell/actions/setup.
+
+  # If it is called, following inputs are passed to haskell/actions/setup:
   cabal-version:
     default: 'latest'
-    description: 'Version of Cabal to use. If set to "latest", it will always get the latest stable version'
+    description: 'Version of Cabal to use. If set to "latest", it will always get the latest stable version.'
     required: false
   stack-version:
     default: 'latest'
-    description: 'Version of Stack to use. If set to "latest", it will always get the latest stable version'
+    description: 'Version of Stack to use. If set to "latest", it will always get the latest stable version.'
     required: false
   enable-stack:
-    description: 'If specified, will setup Stack'
+    description: 'If specified, will setup Stack.'
     required: false
   stack-no-global:
-    description: 'If specified, enable-stack must be set. Prevents installing GHC and Cabal globally'
+    description: 'If specified, enable-stack must be set. Prevents installing GHC and Cabal globally.'
     required: false
   stack-setup-ghc:
-    description: 'If specified, enable-stack must be set. Will run stack setup to install the specified GHC'
+    description: 'If specified, enable-stack must be set. Will run stack setup to install the specified GHC.'
     required: false
   disable-matcher:
-    description: 'If specified, disables match messages from GHC as GitHub CI annotations'
+    description: 'If specified, disables match messages from GHC as GitHub CI annotations.'
     required: false
-  # The input 'ghc-version' is unsupported, and here as a workaround for:
+
+  # The input 'ghc-version' is included as a workaround for issue #122:
   # https://github.com/haskell/actions/issues/122
   ghc-version:
     default: 'latest'
-    description: 'Unsupported. Use "ghc-version-range"'
+    description: 'Unsupported. Use "ghc-version-range".'
     required: false
 
 outputs:
   agda-path:
-    description: 'The path of the agda executable _directory_'
+    description: 'The path of the agda executable _directory_.'
   agda-data-path:
-    description: 'The path of the agda data _directory_'
+    description: 'The path of the agda data _directory_.'
+  agda-exe:
+    description: 'The path of the agda _executable_.'
+  agda-mode-exe:
+    description: 'The path of the agda-mode _executable_.'
   haskell-setup:
-    description: 'Whether or not actions/haskell/setup ran'
+    description: 'Whether or not actions/haskell/setup was called.'
 
-  # The following outputs are set by actions/haskell/setup, if it runs:
+  # If it is called, the following outputs are set by actions/haskell/setup:
   ghc-path:
-    description: 'The path of the ghc executable _directory_'
+    description: 'The path of the ghc executable _directory_.'
   cabal-path:
-    description: 'The path of the cabal executable _directory_'
+    description: 'The path of the cabal executable _directory_.'
   stack-path:
-    description: 'The path of the stack executable _directory_'
+    description: 'The path of the stack executable _directory_.'
   cabal-store:
-    description: 'The path to the cabal store'
+    description: 'The path to the cabal store.'
   stack-root:
-    description: 'The path to the stack root (equal to the STACK_ROOT environment variable if it is set; otherwise an OS-specific default)'
+    description: 'The path to the stack root (equal to the STACK_ROOT environment variable if it is set; otherwise an OS-specific default).'
   ghc-exe:
-    description: 'The path of the ghc _executable_'
+    description: 'The path of the ghc _executable_.'
   cabal-exe:
-    description: 'The path of the cabal _executable_'
+    description: 'The path of the cabal _executable_.'
   stack-exe:
-    description: 'The path of the stack _executable_'
+    description: 'The path of the stack _executable_.'
 
 runs:
   using: 'node16'
