@@ -685,7 +685,9 @@ function bundleLibs(bdistDir, options) {
     });
 }
 function renderName(template, options) {
-    const templateOrDefault = template !== '' ? template : 'agda-{{agda-version}}-{{arch}}-{{platform}}';
+    const templateOrDefault = template !== ''
+        ? template
+        : 'agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}';
     return Mustache.render(templateOrDefault, Object.assign(Object.assign({}, (0, object_pick_1.default)(options, [
         'agda-version',
         'ghc-version',
