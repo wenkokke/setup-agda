@@ -50,11 +50,11 @@ function buildFlags(options: opts.BuildOptions): string[] {
   flags.push('--no-library-profiling')
   // If supported, pass Agda flag --cluster-counting
   if (opts.supportsClusterCounting(options)) {
-    flags.push('--flag=Agda:+enable-cluster-counting')
+    flags.push('--flag=Agda:enable-cluster-counting')
   }
   // If supported, pass Agda flag --optimise-heavily
   if (opts.supportsOptimiseHeavily(options)) {
-    flags.push('--flag=Agda:+optimise-heavily')
+    flags.push('--flag=Agda:optimise-heavily')
   }
   return flags
 }
