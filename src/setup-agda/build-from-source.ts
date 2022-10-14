@@ -35,8 +35,13 @@ export default async function buildFromSource(
         options['compatible-ghc-versions'].length === 0,
         `Option 'compatible-ghc-versions' is not empty: ${options['compatible-ghc-versions']}`
       )
-      options['compatible-ghc-versions'] = await ret.buildTool.compatibleGhcVersions(ret.sourceDir)
-      core.info(`Found compatible GHC versions: [${options['compatible-ghc-versions'].join(', ')}]`)
+      options['compatible-ghc-versions'] =
+        await ret.buildTool.compatibleGhcVersions(ret.sourceDir)
+      core.info(
+        `Found compatible GHC versions: [${options[
+          'compatible-ghc-versions'
+        ].join(', ')}]`
+      )
       // Determine whether or not we can use the pre-installed build tools:
       core.info('Search for compatible build tools')
       const useInstalled = await tryInstalledBuildTools(options)
