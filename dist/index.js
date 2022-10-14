@@ -1549,10 +1549,10 @@ function bundleLibs(bdistDir, options) {
                         for (const libPath of options['libs-to-bundle']) {
                             const libName = path.basename(libPath);
                             libDirs.add(path.dirname(libPath));
-                            changeDependency(binPath, libPath, `@rpath/${libName}`);
+                            yield changeDependency(binPath, libPath, `@rpath/${libName}`);
                         }
                         // Add load paths for libraries:
-                        addRunPaths(binPath, '@executable_path', '@executable_path/../lib', ...libDirs);
+                        yield addRunPaths(binPath, '@executable_path', '@executable_path/../lib', ...libDirs);
                         // Print the needed libraries:
                         printNeededLibs(binPath);
                     }

@@ -135,10 +135,10 @@ async function bundleLibs(
           for (const libPath of options['libs-to-bundle']) {
             const libName = path.basename(libPath)
             libDirs.add(path.dirname(libPath))
-            changeDependency(binPath, libPath, `@rpath/${libName}`)
+            await changeDependency(binPath, libPath, `@rpath/${libName}`)
           }
           // Add load paths for libraries:
-          addRunPaths(
+          await addRunPaths(
             binPath,
             '@executable_path',
             '@executable_path/../lib',
