@@ -56,7 +56,7 @@ export default async function buildFromSource(
   }
 
   // 4. Install ICU:
-  if (opts.enableClusterCounting(options)) {
+  if (opts.supportsClusterCounting(options)) {
     await core.group('🔠 Installing ICU', async () => {
       try {
         await setupIcu(options)

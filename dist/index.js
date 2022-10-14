@@ -73,7 +73,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.pickSetupHaskellInputs = exports.getOptions = exports.os = exports.bdistIndex = exports.packageInfoCache = exports.supportsUPX = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.enableClusterCounting = exports.compressExe = void 0;
+exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.pickSetupHaskellInputs = exports.getOptions = exports.os = exports.bdistIndex = exports.packageInfoCache = exports.supportsUPX = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.compressExe = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const yaml = __importStar(__nccwpck_require__(1917));
 const fs = __importStar(__nccwpck_require__(7561));
@@ -93,23 +93,23 @@ function compressExe(options) {
     return options['bdist-compress-exe'];
 }
 exports.compressExe = compressExe;
-function enableClusterCounting(options) {
-    // NOTE:
-    //   We only enable --cluster-counting on versions after 2.6.2,
-    //   since Agda version 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
-    //   text-icu versions <0.7.1.0 fail to compile with icu68+, and we
-    //   do not currently support building with outdated versions of ICU:
-    return (!options['enable-stack'] &&
-        !options['disable-cluster-counting'] &&
-        supportsClusterCounting(options) &&
-        simver.gte(options['agda-version'], '2.6.2'));
-}
-exports.enableClusterCounting = enableClusterCounting;
 function supportsClusterCounting(options) {
     // NOTE:
     //   Agda only supports --cluster-counting on versions after 2.5.3:
     //   https://github.com/agda/agda/blob/f50c14d3a4e92ed695783e26dbe11ad1ad7b73f7/doc/release-notes/2.5.3.md
-    return simver.gte(options['agda-version'], '2.5.3');
+    const agda = simver.gte(options['agda-version'], '2.5.3');
+    const user = !options['disable-cluster-counting'];
+    // NOTE:
+    //   Stack seems to ignore pkg-config dependencies on Windows? This could be
+    //   solved by passing extra-lib-dirs and extra-include-dirs explicitly.
+    const todo = !options['enable-stack'];
+    // NOTE:
+    //   Agda versions 2.5.3 - 2.6.2 depend on text-icu ^0.7, but text-icu
+    //   versions 0.7.0.0 - 0.7.1.0 do not compile with icu68+. This could be
+    //   solved by explicitly installing different version of icu depending on
+    //   the text-icu version (the Agda version, as a proxy).
+    const depr = simver.gte(options['agda-version'], '2.6.2');
+    return agda && user && todo && depr;
 }
 exports.supportsClusterCounting = supportsClusterCounting;
 function supportsOptimiseHeavily(options) {
@@ -798,7 +798,7 @@ function buildFromSource(options) {
             yield (0, setup_haskell_1.default)(options);
         }
         // 4. Install ICU:
-        if (opts.enableClusterCounting(options)) {
+        if (opts.supportsClusterCounting(options)) {
             yield core.group('🔠 Installing ICU', () => __awaiter(this, void 0, void 0, function* () {
                 try {
                     yield (0, setup_icu_1.default)(options);
