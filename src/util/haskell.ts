@@ -3,7 +3,7 @@ import * as exec from './exec'
 export async function getGhcInfo(
   execOptions?: exec.ExecOptions
 ): Promise<Partial<Record<string, string>>> {
-  let ghcInfoString = await execSystemGhc(['--info'], execOptions)
+  let ghcInfoString = await ghc(['--info'], execOptions)
   ghcInfoString = ghcInfoString.replace(/\(/g, '[').replace(/\)/g, ']')
   const ghcInfo = JSON.parse(ghcInfoString) as [string, string][]
   return Object.fromEntries(
@@ -15,21 +15,21 @@ export async function getGhcInfo(
   )
 }
 
-export async function execSystemGhc(
+export async function ghc(
   args: string[],
   execOptions?: exec.ExecOptions
 ): Promise<string> {
   return await exec.getoutput('ghc', args, execOptions)
 }
 
-export async function execSystemCabal(
+export async function cabal(
   args: string[],
   execOptions?: exec.ExecOptions
 ): Promise<string> {
   return await exec.getoutput('cabal', args, execOptions)
 }
 
-export async function execSystemStack(
+export async function stack(
   args: string[],
   execOptions?: exec.ExecOptions
 ): Promise<string> {
@@ -43,31 +43,51 @@ export async function ghcGetVersion(): Promise<string> {
   })
 }
 
-export async function cabalGetVersion(): Promise<string> {
-  return exec.getVersion('cabal', {
-    versionFlag: '--numeric-version',
-    silent: true
-  })
+export async function cabalGetVersion(using?: {
+  'enable-stack': boolean
+  'ghc-version': string
+  'stack-no-global': boolean
+}): Promise<string> {
+  if (
+    using !== undefined &&
+    using['enable-stack'] &&
+    using['stack-no-global']
+  ) {
+    const output = await stack(
+      [
+        'exec',
+        'cabal',
+        `--compiler=ghc-${using['ghc-version']}`,
+        '--',
+        '--numeric-version'
+      ],
+      {silent: true}
+    )
+    return output.trim()
+  } else {
+    return exec.getVersion('cabal', {
+      versionFlag: '--numeric-version',
+      silent: true
+    })
+  }
 }
 
-export async function getStackCabalVersionForGhc(
-  ghcVersion: string
-): Promise<string> {
-  return await execSystemStack(
-    [
-      'exec',
-      'cabal',
-      `--compiler=ghc-${ghcVersion}`,
-      '--',
-      '--numeric-version'
-    ],
-    {silent: true}
-  )
-}
-
-export async function getSystemStackVersion(): Promise<string> {
+export async function stackGetVersion(): Promise<string> {
   return exec.getVersion('stack', {
     versionFlag: '--numeric-version',
     silent: true
   })
+}
+
+export async function stackGetLocalBin(using: {
+  'ghc-version': string
+}): Promise<string> {
+  const stackLocalBin = await stack([
+    `--compiler=ghc-${using['ghc-version']}`,
+    '--system-ghc',
+    '--no-install-ghc',
+    'path',
+    '--local-bin'
+  ])
+  return stackLocalBin.trim()
 }

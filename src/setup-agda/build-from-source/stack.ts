@@ -5,7 +5,9 @@ import * as exec from '../../util/exec'
 import * as path from 'node:path'
 import * as semver from 'semver'
 import * as opts from '../../opts'
+import * as util from '../../util'
 import * as haskell from '../../util/haskell'
+import pick from 'object.pick'
 
 export const name = 'stack'
 
@@ -17,18 +19,22 @@ export async function build(
   const execOptions: exec.ExecOptions = {cwd: sourceDir}
   // Configure, Build, and Install:
   await io.mkdirP(path.join(installDir, 'bin'))
-  await haskell.execSystemStack(
-    ['build', ...buildFlags(options), ...installFlags(installDir)],
+  await haskell.stack(
+    ['build', ...buildFlags(options), '--copy-bins'],
     execOptions
   )
-}
-
-function installFlags(installDir: string): string[] {
-  const flags: string[] = []
-  // Copy binaries to installDir:
-  flags.push('--copy-bins')
-  flags.push(`--local-bin-dir=${installDir}`)
-  return flags
+  // Copy binaries from local bin
+  const localBinDir = await haskell.stackGetLocalBin(
+    pick(options, ['ghc-version'])
+  )
+  const installBinDir = path.join(installDir, 'bin')
+  await io.mkdirP(installBinDir)
+  for (const binName of util.agdaBinNames) {
+    await io.cp(
+      path.join(localBinDir, binName),
+      path.join(installDir, 'bin', binName)
+    )
+  }
 }
 
 function buildFlags(options: opts.BuildOptions): string[] {

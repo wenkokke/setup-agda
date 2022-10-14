@@ -683,14 +683,14 @@ function build(sourceDir, installDir, options) {
         const execOptions = { cwd: sourceDir };
         // Configure:
         core.info(`Configure Agda-${options['agda-version']}`);
-        yield haskell.execSystemCabal(['v2-configure', ...buildFlags(options)], execOptions);
+        yield haskell.cabal(['v2-configure', ...buildFlags(options)], execOptions);
         // Build:
         core.info(`Build Agda-${options['agda-version']}`);
-        yield haskell.execSystemCabal(['v2-build', 'exe:agda', 'exe:agda-mode'], execOptions);
+        yield haskell.cabal(['v2-build', 'exe:agda', 'exe:agda-mode'], execOptions);
         // Install:
         core.info(`Install Agda-${options['agda-version']} to ${installDir}`);
         yield io.mkdirP(path.join(installDir, 'bin'));
-        yield haskell.execSystemCabal([
+        yield haskell.cabal([
             'v2-install',
             'exe:agda',
             'exe:agda-mode',
@@ -812,6 +812,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.supportedGhcVersions = exports.build = exports.name = void 0;
 const core = __importStar(__nccwpck_require__(2186));
@@ -820,24 +823,26 @@ const io = __importStar(__nccwpck_require__(9067));
 const path = __importStar(__nccwpck_require__(9411));
 const semver = __importStar(__nccwpck_require__(1383));
 const opts = __importStar(__nccwpck_require__(1352));
+const util = __importStar(__nccwpck_require__(4024));
 const haskell = __importStar(__nccwpck_require__(1310));
+const object_pick_1 = __importDefault(__nccwpck_require__(9962));
 exports.name = 'stack';
 function build(sourceDir, installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         const execOptions = { cwd: sourceDir };
         // Configure, Build, and Install:
         yield io.mkdirP(path.join(installDir, 'bin'));
-        yield haskell.execSystemStack(['build', ...buildFlags(options), ...installFlags(installDir)], execOptions);
+        yield haskell.stack(['build', ...buildFlags(options), '--copy-bins'], execOptions);
+        // Copy binaries from local bin
+        const localBinDir = yield haskell.stackGetLocalBin((0, object_pick_1.default)(options, ['ghc-version']));
+        const installBinDir = path.join(installDir, 'bin');
+        yield io.mkdirP(installBinDir);
+        for (const binName of util.agdaBinNames) {
+            yield io.cp(path.join(localBinDir, binName), path.join(installDir, 'bin', binName));
+        }
     });
 }
 exports.build = build;
-function installFlags(installDir) {
-    const flags = [];
-    // Copy binaries to installDir:
-    flags.push('--copy-bins');
-    flags.push(`--local-bin-dir=${installDir}`);
-    return flags;
-}
 function buildFlags(options) {
     // NOTE:
     //   We set the build flags following Agda's deploy workflow, which builds
@@ -936,6 +941,7 @@ const setup_haskell_1 = __importDefault(__nccwpck_require__(6501));
 const haskell = __importStar(__nccwpck_require__(1310));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const semver = __importStar(__nccwpck_require__(1383));
+const object_pick_1 = __importDefault(__nccwpck_require__(9962));
 function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Select GHC version:
@@ -950,13 +956,10 @@ function setup(options) {
         })));
         core.setOutput('haskell-setup', 'true');
         // Update the Cabal version:
-        options['cabal-version'] =
-            options['enable-stack'] && options['stack-no-global']
-                ? yield haskell.getStackCabalVersionForGhc(options['ghc-version'])
-                : yield haskell.cabalGetVersion();
+        options['cabal-version'] = yield haskell.cabalGetVersion((0, object_pick_1.default)(options, ['enable-stack', 'ghc-version', 'stack-no-global']));
         // Update the Stack version:
         if (options['enable-stack'])
-            options['stack-version'] = yield haskell.getSystemStackVersion();
+            options['stack-version'] = yield haskell.stackGetVersion();
     });
 }
 exports["default"] = setup;
@@ -1985,11 +1988,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getSystemStackVersion = exports.getStackCabalVersionForGhc = exports.cabalGetVersion = exports.ghcGetVersion = exports.execSystemStack = exports.execSystemCabal = exports.execSystemGhc = exports.getGhcInfo = void 0;
+exports.stackGetLocalBin = exports.stackGetVersion = exports.cabalGetVersion = exports.ghcGetVersion = exports.stack = exports.cabal = exports.ghc = exports.getGhcInfo = void 0;
 const exec = __importStar(__nccwpck_require__(4369));
 function getGhcInfo(execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
-        let ghcInfoString = yield execSystemGhc(['--info'], execOptions);
+        let ghcInfoString = yield ghc(['--info'], execOptions);
         ghcInfoString = ghcInfoString.replace(/\(/g, '[').replace(/\)/g, ']');
         const ghcInfo = JSON.parse(ghcInfoString);
         return Object.fromEntries(ghcInfo.map(entry => [
@@ -2000,24 +2003,24 @@ function getGhcInfo(execOptions) {
     });
 }
 exports.getGhcInfo = getGhcInfo;
-function execSystemGhc(args, execOptions) {
+function ghc(args, execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield exec.getoutput('ghc', args, execOptions);
     });
 }
-exports.execSystemGhc = execSystemGhc;
-function execSystemCabal(args, execOptions) {
+exports.ghc = ghc;
+function cabal(args, execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield exec.getoutput('cabal', args, execOptions);
     });
 }
-exports.execSystemCabal = execSystemCabal;
-function execSystemStack(args, execOptions) {
+exports.cabal = cabal;
+function stack(args, execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield exec.getoutput('stack', args, execOptions);
     });
 }
-exports.execSystemStack = execSystemStack;
+exports.stack = stack;
 function ghcGetVersion() {
     return __awaiter(this, void 0, void 0, function* () {
         return exec.getVersion('ghc', {
@@ -2027,28 +2030,30 @@ function ghcGetVersion() {
     });
 }
 exports.ghcGetVersion = ghcGetVersion;
-function cabalGetVersion() {
+function cabalGetVersion(using) {
     return __awaiter(this, void 0, void 0, function* () {
-        return exec.getVersion('cabal', {
-            versionFlag: '--numeric-version',
-            silent: true
-        });
+        if (using !== undefined &&
+            using['enable-stack'] &&
+            using['stack-no-global']) {
+            const output = yield stack([
+                'exec',
+                'cabal',
+                `--compiler=ghc-${using['ghc-version']}`,
+                '--',
+                '--numeric-version'
+            ], { silent: true });
+            return output.trim();
+        }
+        else {
+            return exec.getVersion('cabal', {
+                versionFlag: '--numeric-version',
+                silent: true
+            });
+        }
     });
 }
 exports.cabalGetVersion = cabalGetVersion;
-function getStackCabalVersionForGhc(ghcVersion) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield execSystemStack([
-            'exec',
-            'cabal',
-            `--compiler=ghc-${ghcVersion}`,
-            '--',
-            '--numeric-version'
-        ], { silent: true });
-    });
-}
-exports.getStackCabalVersionForGhc = getStackCabalVersionForGhc;
-function getSystemStackVersion() {
+function stackGetVersion() {
     return __awaiter(this, void 0, void 0, function* () {
         return exec.getVersion('stack', {
             versionFlag: '--numeric-version',
@@ -2056,7 +2061,20 @@ function getSystemStackVersion() {
         });
     });
 }
-exports.getSystemStackVersion = getSystemStackVersion;
+exports.stackGetVersion = stackGetVersion;
+function stackGetLocalBin(using) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const stackLocalBin = yield stack([
+            `--compiler=ghc-${using['ghc-version']}`,
+            '--system-ghc',
+            '--no-install-ghc',
+            'path',
+            '--local-bin'
+        ]);
+        return stackLocalBin.trim();
+    });
+}
+exports.stackGetLocalBin = stackGetLocalBin;
 
 
 /***/ }),
