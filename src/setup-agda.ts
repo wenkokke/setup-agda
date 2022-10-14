@@ -102,6 +102,7 @@ async function installFromBdist(
       const bdistZip = await bdist.download(options)
       if (bdistZip === null) return ret
       ret.bdistDir = await tc.extractZip(bdistZip)
+      util.lsR(ret.bdistDir)
       util.rmRF(bdistZip)
       return ret
     }
