@@ -8,7 +8,6 @@ import * as opts from '../opts'
 import setupUpx from '../setup-upx'
 import * as util from '../util'
 import * as exec from './exec'
-import * as haskell from './haskell'
 import * as io from './io'
 import * as mustache from 'mustache'
 import pick from 'object.pick'
@@ -19,7 +18,7 @@ export async function download(
   options: opts.BuildOptions
 ): Promise<string | null> {
   // Get the name for the distribution:
-  const bdistName = await renderBdistName('', options)
+  const bdistName = renderName('', options)
   const bdistUrl = opts.bdistIndex[bdistName]
   if (bdistUrl !== undefined) {
     try {
@@ -42,7 +41,7 @@ export async function upload(
   options: opts.BuildOptions
 ): Promise<string> {
   // Get the name for the distribution:
-  const bdistName = await renderBdistName(options['bdist-name'], options)
+  const bdistName = renderName(options['bdist-name'], options)
   const bdistDir = path.join(opts.agdaDir(), 'bdist', bdistName)
   io.mkdirP(bdistDir)
 
@@ -176,6 +175,24 @@ async function bundleLibs(
   }
 }
 
+function renderName(template: string, options: opts.BuildOptions): string {
+  const templateOrDefault =
+    template !== '' ? template : 'agda-{{agda-version}}-{{arch}}-{{platform}}'
+  return mustache.render(templateOrDefault, {
+    ...pick(options, [
+      'agda-version',
+      'ghc-version',
+      'cabal-version',
+      'stack-version',
+      'icu-version',
+      'upx-version'
+    ]),
+    ...{arch: os.arch(), platform: os.platform(), release: os.release()}
+  })
+}
+
+// Helpers for patching executables
+
 async function printNeededLibs(binPath: string): Promise<void> {
   try {
     let output = ''
@@ -218,25 +235,4 @@ async function addRunPaths(bin: string, ...rpaths: string[]): Promise<void> {
   assert(opts.os === 'macos', `Cannot run "install_name_tool" on ${opts.os}`)
   const args = rpaths.flatMap<string>(rpath => ['-add_rpath', rpath])
   await exec.getoutput('install_name_tool', [...args, bin])
-}
-
-async function renderBdistName(
-  template: string,
-  options: opts.BuildOptions
-): Promise<string> {
-  const templateOrDefault =
-    template !== '' ? template : 'agda-{{agda-version}}-{{arch}}-{{platform}}'
-  const ghcInfo = await haskell.getGhcInfo()
-  return mustache.render(templateOrDefault, {
-    ...pick(options, [
-      'agda-version',
-      'ghc-version',
-      'cabal-version',
-      'stack-version',
-      'icu-version',
-      'upx-version'
-    ]),
-    ...{arch: os.arch(), platform: os.platform(), release: os.release()},
-    ...ghcInfo
-  })
 }

@@ -1445,7 +1445,6 @@ const opts = __importStar(__nccwpck_require__(1352));
 const setup_upx_1 = __importDefault(__nccwpck_require__(4245));
 const util = __importStar(__nccwpck_require__(4024));
 const exec = __importStar(__nccwpck_require__(4369));
-const haskell = __importStar(__nccwpck_require__(1310));
 const io = __importStar(__nccwpck_require__(9067));
 const mustache = __importStar(__nccwpck_require__(8272));
 const object_pick_1 = __importDefault(__nccwpck_require__(9962));
@@ -1454,7 +1453,7 @@ const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 function download(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Get the name for the distribution:
-        const bdistName = yield renderBdistName('', options);
+        const bdistName = renderName('', options);
         const bdistUrl = opts.bdistIndex[bdistName];
         if (bdistUrl !== undefined) {
             try {
@@ -1476,7 +1475,7 @@ exports.download = download;
 function upload(installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Get the name for the distribution:
-        const bdistName = yield renderBdistName(options['bdist-name'], options);
+        const bdistName = renderName(options['bdist-name'], options);
         const bdistDir = path.join(opts.agdaDir(), 'bdist', bdistName);
         io.mkdirP(bdistDir);
         // Copy binaries:
@@ -1582,6 +1581,18 @@ function bundleLibs(bdistDir, options) {
         }
     });
 }
+function renderName(template, options) {
+    const templateOrDefault = template !== '' ? template : 'agda-{{agda-version}}-{{arch}}-{{platform}}';
+    return mustache.render(templateOrDefault, Object.assign(Object.assign({}, (0, object_pick_1.default)(options, [
+        'agda-version',
+        'ghc-version',
+        'cabal-version',
+        'stack-version',
+        'icu-version',
+        'upx-version'
+    ])), { arch: os.arch(), platform: os.platform(), release: os.release() }));
+}
+// Helpers for patching executables
 function printNeededLibs(binPath) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -1622,20 +1633,6 @@ function addRunPaths(bin, ...rpaths) {
         (0, node_assert_1.default)(opts.os === 'macos', `Cannot run "install_name_tool" on ${opts.os}`);
         const args = rpaths.flatMap(rpath => ['-add_rpath', rpath]);
         yield exec.getoutput('install_name_tool', [...args, bin]);
-    });
-}
-function renderBdistName(template, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const templateOrDefault = template !== '' ? template : 'agda-{{agda-version}}-{{arch}}-{{platform}}';
-        const ghcInfo = yield haskell.getGhcInfo();
-        return mustache.render(templateOrDefault, Object.assign(Object.assign(Object.assign({}, (0, object_pick_1.default)(options, [
-            'agda-version',
-            'ghc-version',
-            'cabal-version',
-            'stack-version',
-            'icu-version',
-            'upx-version'
-        ])), { arch: os.arch(), platform: os.platform(), release: os.release() }), ghcInfo));
     });
 }
 
