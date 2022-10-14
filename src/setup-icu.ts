@@ -1,86 +1,68 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
-import * as opts from './opts'
-import * as exec from './util/exec'
 import * as path from 'node:path'
+import * as opts from './opts'
+import {brew, brewGetVersion, pacman, pacmanGetVersion, pkgConfig} from './util'
+import * as simver from './util/simver'
 
-export default async function setup(
-  options: opts.BuildOptions
-): Promise<opts.BuildOptions> {
-  // Otherwise, setup ICU:
-  let icuVersion = undefined
-  let icuLibsToBundle: string[] = []
+export default async function setup(options: opts.BuildOptions): Promise<void> {
   switch (opts.os) {
     case 'windows': {
       core.info('Install pkg-config and ICU using Pacman')
       core.addPath('C:\\msys64\\mingw64\\bin')
       core.addPath('C:\\msys64\\usr\\bin')
-      await exec.getoutput('pacman', [
+      await pacman(
         '-v',
         '--noconfirm',
         '-Sy',
         'mingw-w64-x86_64-pkg-config',
         'mingw-w64-x86_64-icu'
-      ])
+      )
       // Get the icu-i18n version via pacman:
-      icuVersion = await exec.getoutput('pacman', [
-        '--noconfirm',
-        '-Qs',
-        'mingw-w64-x86_64-icu'
-      ])
-      icuVersion =
-        icuVersion.match(/(?<version>\d[\d.]+\d)/)?.groups?.version ??
-        icuVersion
-      core.info(`Installed ICU version ${icuVersion}`)
+      options['icu-version'] = await pacmanGetVersion('mingw-w64-x86_64-icu')
+      core.info(`Installed ICU version ${options['icu-version']}`)
 
       // Get the ICU libraries to bundle:
       const icuLibDir = 'C:\\msys64\\mingw64\\bin'
       const icuLibGlobber = await glob.create(path.join(icuLibDir, 'icu*.dll'))
-      icuLibsToBundle = await icuLibGlobber.glob()
-      core.debug(`To bundle: [${icuLibsToBundle.join(', ')}]`)
+      options['bdist-libs'] = await icuLibGlobber.glob()
+      core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`)
       break
     }
     case 'linux': {
       // Ubuntu 20.04 ships with a recent version of ICU
       // Get the icu-i18n version via pkg-config:
-      icuVersion = await exec.getoutput('pkg-config', [
-        '--modversion',
-        'icu-i18n'
-      ])
-      core.info(`Found ICU version ${icuVersion}`)
+      options['icu-version'] = await pkgConfig('--modversion', 'icu-i18n')
+      core.info(`Found ICU version ${options['icu-version']}`)
       break
     }
     case 'macos': {
-      // The GitHub runner for MacOS 11+ has ICU version 69.1,
-      // which is recent enough for 'text-icu' to compile:
-      core.info('Install ICU using Homebrew')
-      await exec.getoutput('brew', ['install', 'icu4c'])
+      // Ensure ICU is installed:
+      let icuVersion = await brewGetVersion('icu4c')
+      if (icuVersion === undefined) brew('install', 'icu4c')
+      else if (simver.lt(icuVersion, '68')) brew('upgrade', 'icu4c')
+      icuVersion = await brewGetVersion('icu4c')
+      if (icuVersion === undefined) throw Error('Could not install icu4c')
 
-      // Get the icu prefix
-      const icuPrefix = await exec.getoutput('brew', ['--prefix', 'icu4c'])
+      // Find the ICU installation location:
+      const icuPrefix = await brew('--prefix', 'icu4c')
       const icuLibDir = path.join(icuPrefix.trim(), 'lib')
-      core.debug(`Found ICU at ${icuLibDir}`)
+      core.debug(`Found ICU version ${icuVersion} at ${icuLibDir}`)
+
+      // Add ICU to the PKG_CONFIG_PATH:
       const icuPkgConfigDir = path.join(icuLibDir, 'pkgconfig')
       core.debug(`Set PKG_CONFIG_PATH to ${icuPkgConfigDir}`)
       core.exportVariable('PKG_CONFIG_PATH', icuPkgConfigDir)
 
       // Get the icu-i18n version via pkg-config:
-      icuVersion = await exec.getoutput('pkg-config', [
-        '--modversion',
-        'icu-i18n'
-      ])
-      core.info(`Installed ICU version ${icuVersion}`)
+      options['icu-version'] = await pkgConfig('--modversion', 'icu-i18n')
+      core.info(`Setup ICU version ${options['icu-version']} with pkg-config`)
 
       // Get the ICU libraries to bundle:
       const icuLibGlobber = await glob.create(path.join(icuLibDir, '*.dylib'))
-      icuLibsToBundle = await icuLibGlobber.glob()
-      core.debug(`To bundle: [${icuLibsToBundle.join(', ')}]`)
+      options['bdist-libs'] = await icuLibGlobber.glob()
+      core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`)
       break
     }
-  }
-  return {
-    ...options,
-    'icu-version': icuVersion,
-    'libs-to-bundle': [...options['libs-to-bundle'], ...icuLibsToBundle]
   }
 }

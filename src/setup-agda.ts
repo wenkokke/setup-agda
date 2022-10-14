@@ -19,17 +19,16 @@ export default async function setup(
 ): Promise<void> {
   try {
     // 1. Parse inputs & validate inputs:
-    const buildOptions = await util.resolveAgdaVersion(opts.getOptions(inputs))
+    const options = await util.resolveAgdaVersion(opts.getOptions(inputs))
 
     // 3. Build from source:
     // NOTE: As output groups cannot be nested, we defer to individual functions.
     let maybeAgdaDir: string | null = null
-    if (maybeAgdaDir === null)
-      maybeAgdaDir = await installFromToolCache(buildOptions)
-    if (maybeAgdaDir === null)
-      maybeAgdaDir = await installFromBdist(buildOptions)
-    if (maybeAgdaDir === null)
-      maybeAgdaDir = await buildFromSource(buildOptions)
+    if (!options['force-build'] && maybeAgdaDir === null)
+      maybeAgdaDir = await installFromToolCache(options)
+    if (!options['force-build'] && maybeAgdaDir === null)
+      maybeAgdaDir = await installFromBdist(options)
+    if (maybeAgdaDir === null) maybeAgdaDir = await buildFromSource(options)
     const agdaDir: string = maybeAgdaDir
 
     // 4. Set environment variables:

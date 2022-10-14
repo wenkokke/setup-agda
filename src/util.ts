@@ -7,6 +7,49 @@ import * as agda from './util/agda'
 import * as exec from './util/exec'
 import * as hackage from './util/hackage'
 
+// System utilities
+
+export const brew = async (...args: string[]): Promise<string> =>
+  await exec.getoutput('brew', args)
+
+export const brewGetVersion = async (
+  formula: string
+): Promise<string | undefined> => {
+  const formulaVersionRegExp = new RegExp(`${formula} (?<version>[\\d._]+)`)
+  const formulaVersions = await brew('list', '--formula', '--versions')
+  return formulaVersions.match(formulaVersionRegExp)?.groups?.version
+}
+
+export const pacman = async (...args: string[]): Promise<string> =>
+  await exec.getoutput('pacman', args)
+
+export const pacmanGetVersion = async (
+  pkg: string
+): Promise<string | undefined> => {
+  const pkgInfo = await pacman('--noconfirm', '-Qs', pkg)
+  const pkgVersionRegExp = /(?<version>\d[\d.]+\d)/
+  const pkgVersion = pkgInfo.match(pkgVersionRegExp)?.groups?.version
+  if (pkgVersion !== undefined) return pkgVersion
+  else throw Error(`Could not determine version of ${pkg}`)
+}
+
+export const pkgConfig = async (...args: string[]): Promise<string> =>
+  await exec.getoutput('pkg-config', args)
+
+export const installNameTool = async (...args: string[]): Promise<string> =>
+  await exec.getoutput('install_name_tool', args)
+
+export const patchelf = async (...args: string[]): Promise<string> =>
+  await exec.getoutput('patchelf', args)
+
+export const otool = async (...args: string[]): Promise<string> =>
+  await exec.getoutput('otool', args)
+
+export const dumpbin = async (...args: string[]): Promise<string> =>
+  await exec.getoutput('dumpbin', args)
+
+// Agda utilities
+
 export async function resolveAgdaVersion(
   options: opts.BuildOptions
 ): Promise<opts.BuildOptions> {

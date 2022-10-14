@@ -25,29 +25,29 @@ export default async function buildFromSource(
       core.info('Download source distribution from Hackage')
       ret.sourceDir = await util.getAgdaSource(options)
       core.debug(`Downloaded source distribution to ${ret.sourceDir}`)
+
       // Determine the build tool:
       ret.buildTool = options['enable-stack'] ? stack : cabal
       core.info(`Set build tool to ${ret.buildTool.name}`)
+
       // Determine the compatible GHC versions:
-      const versions = await ret.buildTool.compatibleGhcVersions(ret.sourceDir)
       assert(
         options['compatible-ghc-versions'].length === 0,
         `Option 'compatible-ghc-versions' is not empty: ${options['compatible-ghc-versions']}`
       )
-      options = {...options, 'compatible-ghc-versions': versions}
-      core.info(`Found compatible GHC versions: [${versions.join(', ')}]`)
+      options['compatible-ghc-versions'] = await ret.buildTool.compatibleGhcVersions(ret.sourceDir)
+      core.info(`Found compatible GHC versions: [${options['compatible-ghc-versions'].join(', ')}]`)
       // Determine whether or not we can use the pre-installed build tools:
       core.info('Search for compatible build tools')
-      const maybeOptions = await tryInstalledBuildTools(options)
-      if (maybeOptions !== null) {
+      const useInstalled = await tryInstalledBuildTools(options)
+      if (useInstalled) {
         core.info('Found compatible versions of GHC and Cabal')
         ret.requireSetup = false
-        options = maybeOptions
         return ret as BuildInfo
       } else {
         core.info('Could not find compatible versions of GHC and Cabal')
         ret.requireSetup = true
-        options = selectGhcVersion(options)
+        selectGhcVersion(options)
         return ret as BuildInfo
       }
     }
@@ -56,14 +56,14 @@ export default async function buildFromSource(
   // 3. Setup GHC via <haskell/actions/setup>:
   if (requireSetup) {
     core.info('📞 Calling "haskell/actions/setup"')
-    options = await setupHaskell(options)
+    await setupHaskell(options)
   }
 
   // 4. Install ICU:
   if (opts.enableClusterCounting(options)) {
     await core.group('🔠 Installing ICU', async () => {
       try {
-        options = await setupIcu(options)
+        await setupIcu(options)
       } catch (error) {
         core.info('If this fails, try setting "disable-cluster-counting"')
         throw error
@@ -124,11 +124,11 @@ interface BuildInfo {
 
 async function tryInstalledBuildTools(
   options: opts.BuildOptions
-): Promise<opts.BuildOptions | null> {
+): Promise<boolean> {
   if (options['enable-stack']) {
     // NOTE: GitHub runners do not pre-install Stack
     core.info(`Could not find Stack`)
-    return null
+    return false
   }
   try {
     // Search for pre-installed GHC & Cabal versions:
@@ -146,7 +146,7 @@ async function tryInstalledBuildTools(
       core.info(
         `Installed GHC ${ghcVersion} is incompatible with Agda ${options['agda-version']}`
       )
-      return null
+      return false
     }
 
     // Check if pre-installed GHC version matches 'ghc-version-range':
@@ -154,33 +154,31 @@ async function tryInstalledBuildTools(
       core.info(
         `Installed GHC ${ghcVersion} does not satisfy version range ${options['ghc-version-range']}`
       )
-      return null
+      return false
     }
 
     // Return updated build options
-    return {
-      ...options,
-      'ghc-version': ghcVersion,
-      'cabal-version': cabalVersion
-    }
+    options['ghc-version'] = ghcVersion
+    options['cabal-version'] = cabalVersion
+    return true
   } catch (error) {
     core.debug(`Could not find GHC or Cabal: ${ensureError(error).message}`)
-    return null
+    return false
   }
 }
 
-function selectGhcVersion(options: opts.BuildOptions): opts.BuildOptions {
-  const ghcVersions = options['compatible-ghc-versions']
-  const ghcVersion = semver.maxSatisfying(
-    ghcVersions,
+function selectGhcVersion(options: opts.BuildOptions): void {
+  assert(options['ghc-version'] === 'latest')
+  const maybeGhcVersion = semver.maxSatisfying(
+    options['compatible-ghc-versions'],
     options['ghc-version-range']
   )
-  if (ghcVersion === null) {
+  if (maybeGhcVersion === null) {
     throw Error(
       `No compatible GHC versions found: ${options['ghc-version-range']}`
     )
   } else {
-    core.info(`Select GHC ${ghcVersion}`)
-    return {...options, 'ghc-version': ghcVersion}
+    core.info(`Select GHC ${maybeGhcVersion}`)
+    options['ghc-version'] = maybeGhcVersion
   }
 }

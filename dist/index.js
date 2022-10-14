@@ -173,7 +173,7 @@ function getOptions(inputs) {
     const options = {
         // Specified in AgdaSetupInputs
         'agda-version': getOption('agda-version'),
-        'bdist-compress-exe': getFlag('bdist-compress-exe'),
+        'bdist-no-compress-exe': getFlag('bdist-no-compress-exe'),
         'bdist-name': getOption('bdist-name'),
         'bdist-upload': getFlag('bdist-upload'),
         'disable-cluster-counting': getFlag('disable-cluster-counting'),
@@ -192,14 +192,14 @@ function getOptions(inputs) {
         'compatible-ghc-versions': [],
         'extra-lib-dirs': [],
         'extra-include-dirs': [],
-        'libs-to-bundle': []
+        'bdist-libs': []
     };
     // Validate build options:
     if (options['agda-version'] === 'nightly')
         throw Error('Value "nightly" for input "agda-version" is unupported');
     if (options['ghc-version'] !== 'latest')
         throw Error('Input "ghc-version" is unsupported. Use "ghc-version-range"');
-    if (options['bdist-compress-exe'] && !supportsUPX())
+    if (options['bdist-no-compress-exe'] && !supportsUPX())
         throw Error('Input "bdist-compress-exe" is unsupported on MacOS <12');
     if (!semver.validRange(options['ghc-version-range']))
         throw Error('Input "ghc-version-range" is not a valid version range');
@@ -321,16 +321,16 @@ function setup(inputs) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             // 1. Parse inputs & validate inputs:
-            const buildOptions = yield util.resolveAgdaVersion(opts.getOptions(inputs));
+            const options = yield util.resolveAgdaVersion(opts.getOptions(inputs));
             // 3. Build from source:
             // NOTE: As output groups cannot be nested, we defer to individual functions.
             let maybeAgdaDir = null;
+            if (!options['force-build'] && maybeAgdaDir === null)
+                maybeAgdaDir = yield installFromToolCache(options);
+            if (!options['force-build'] && maybeAgdaDir === null)
+                maybeAgdaDir = yield installFromBdist(options);
             if (maybeAgdaDir === null)
-                maybeAgdaDir = yield installFromToolCache(buildOptions);
-            if (maybeAgdaDir === null)
-                maybeAgdaDir = yield installFromBdist(buildOptions);
-            if (maybeAgdaDir === null)
-                maybeAgdaDir = yield (0, build_from_source_1.default)(buildOptions);
+                maybeAgdaDir = yield (0, build_from_source_1.default)(options);
             const agdaDir = maybeAgdaDir;
             // 4. Set environment variables:
             yield core.group('📝 Registering Agda installation', () => __awaiter(this, void 0, void 0, function* () {
@@ -393,6 +393,7 @@ function installFromBdist(options) {
                 return null;
             const bdistParentDir = yield tc.extractZip(bdistZip);
             io.rmRF(bdistZip);
+            io.lsR(bdistParentDir);
             return path.join(bdistParentDir, path.basename(bdistZip, '.zip'));
         }));
         if (bdistDir === null)
@@ -531,36 +532,35 @@ function buildFromSource(options) {
             ret.buildTool = options['enable-stack'] ? stack : cabal;
             core.info(`Set build tool to ${ret.buildTool.name}`);
             // Determine the compatible GHC versions:
-            const versions = yield ret.buildTool.compatibleGhcVersions(ret.sourceDir);
             (0, node_assert_1.default)(options['compatible-ghc-versions'].length === 0, `Option 'compatible-ghc-versions' is not empty: ${options['compatible-ghc-versions']}`);
-            options = Object.assign(Object.assign({}, options), { 'compatible-ghc-versions': versions });
-            core.info(`Found compatible GHC versions: [${versions.join(', ')}]`);
+            options['compatible-ghc-versions'] =
+                yield ret.buildTool.compatibleGhcVersions(ret.sourceDir);
+            core.info(`Found compatible GHC versions: [${options['compatible-ghc-versions'].join(', ')}]`);
             // Determine whether or not we can use the pre-installed build tools:
             core.info('Search for compatible build tools');
-            const maybeOptions = yield tryInstalledBuildTools(options);
-            if (maybeOptions !== null) {
+            const useInstalled = yield tryInstalledBuildTools(options);
+            if (useInstalled) {
                 core.info('Found compatible versions of GHC and Cabal');
                 ret.requireSetup = false;
-                options = maybeOptions;
                 return ret;
             }
             else {
                 core.info('Could not find compatible versions of GHC and Cabal');
                 ret.requireSetup = true;
-                options = selectGhcVersion(options);
+                selectGhcVersion(options);
                 return ret;
             }
         }));
         // 3. Setup GHC via <haskell/actions/setup>:
         if (requireSetup) {
             core.info('📞 Calling "haskell/actions/setup"');
-            options = yield (0, setup_haskell_1.default)(options);
+            yield (0, setup_haskell_1.default)(options);
         }
         // 4. Install ICU:
         if (opts.enableClusterCounting(options)) {
             yield core.group('🔠 Installing ICU', () => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    options = yield (0, setup_icu_1.default)(options);
+                    yield (0, setup_icu_1.default)(options);
                 }
                 catch (error) {
                     core.info('If this fails, try setting "disable-cluster-counting"');
@@ -601,7 +601,7 @@ function tryInstalledBuildTools(options) {
         if (options['enable-stack']) {
             // NOTE: GitHub runners do not pre-install Stack
             core.info(`Could not find Stack`);
-            return null;
+            return false;
         }
         try {
             // Search for pre-installed GHC & Cabal versions:
@@ -613,31 +613,33 @@ function tryInstalledBuildTools(options) {
             const compatibleGhcVersions = options['compatible-ghc-versions'].filter(compatibleGhcVersion => opts.ghcVersionMatch(options, ghcVersion, compatibleGhcVersion));
             if (compatibleGhcVersions.length === 0) {
                 core.info(`Installed GHC ${ghcVersion} is incompatible with Agda ${options['agda-version']}`);
-                return null;
+                return false;
             }
             // Check if pre-installed GHC version matches 'ghc-version-range':
             if (!semver.satisfies(ghcVersion, options['ghc-version-range'])) {
                 core.info(`Installed GHC ${ghcVersion} does not satisfy version range ${options['ghc-version-range']}`);
-                return null;
+                return false;
             }
             // Return updated build options
-            return Object.assign(Object.assign({}, options), { 'ghc-version': ghcVersion, 'cabal-version': cabalVersion });
+            options['ghc-version'] = ghcVersion;
+            options['cabal-version'] = cabalVersion;
+            return true;
         }
         catch (error) {
             core.debug(`Could not find GHC or Cabal: ${(0, ensure_error_1.default)(error).message}`);
-            return null;
+            return false;
         }
     });
 }
 function selectGhcVersion(options) {
-    const ghcVersions = options['compatible-ghc-versions'];
-    const ghcVersion = semver.maxSatisfying(ghcVersions, options['ghc-version-range']);
-    if (ghcVersion === null) {
+    (0, node_assert_1.default)(options['ghc-version'] === 'latest');
+    const maybeGhcVersion = semver.maxSatisfying(options['compatible-ghc-versions'], options['ghc-version-range']);
+    if (maybeGhcVersion === null) {
         throw Error(`No compatible GHC versions found: ${options['ghc-version-range']}`);
     }
     else {
-        core.info(`Select GHC ${ghcVersion}`);
-        return Object.assign(Object.assign({}, options), { 'ghc-version': ghcVersion });
+        core.info(`Select GHC ${maybeGhcVersion}`);
+        options['ghc-version'] = maybeGhcVersion;
     }
 }
 
@@ -977,16 +979,13 @@ function setup(options) {
         })));
         core.setOutput('haskell-setup', 'true');
         // Update the Cabal version:
-        const cabalVersion = options['enable-stack'] && options['stack-no-global']
-            ? yield haskell.getStackCabalVersionForGhc(options['ghc-version'])
-            : yield haskell.getSystemCabalVersion();
-        options = Object.assign(Object.assign({}, options), { 'cabal-version': cabalVersion });
+        options['cabal-version'] =
+            options['enable-stack'] && options['stack-no-global']
+                ? yield haskell.getStackCabalVersionForGhc(options['ghc-version'])
+                : yield haskell.getSystemCabalVersion();
         // Update the Stack version:
-        const stackVersion = options['enable-stack']
-            ? yield haskell.getSystemStackVersion()
-            : '';
-        options = Object.assign(Object.assign({}, options), { 'stack-version': stackVersion });
-        return options;
+        if (options['enable-stack'])
+            options['stack-version'] = yield haskell.getSystemStackVersion();
     });
 }
 exports["default"] = setup;
@@ -1034,79 +1033,63 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
-const opts = __importStar(__nccwpck_require__(1352));
-const exec = __importStar(__nccwpck_require__(4369));
 const path = __importStar(__nccwpck_require__(9411));
+const opts = __importStar(__nccwpck_require__(1352));
+const util_1 = __nccwpck_require__(4024);
+const simver = __importStar(__nccwpck_require__(7609));
 function setup(options) {
-    var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
-        // Otherwise, setup ICU:
-        let icuVersion = undefined;
-        let icuLibsToBundle = [];
         switch (opts.os) {
             case 'windows': {
                 core.info('Install pkg-config and ICU using Pacman');
                 core.addPath('C:\\msys64\\mingw64\\bin');
                 core.addPath('C:\\msys64\\usr\\bin');
-                yield exec.getoutput('pacman', [
-                    '-v',
-                    '--noconfirm',
-                    '-Sy',
-                    'mingw-w64-x86_64-pkg-config',
-                    'mingw-w64-x86_64-icu'
-                ]);
+                yield (0, util_1.pacman)('-v', '--noconfirm', '-Sy', 'mingw-w64-x86_64-pkg-config', 'mingw-w64-x86_64-icu');
                 // Get the icu-i18n version via pacman:
-                icuVersion = yield exec.getoutput('pacman', [
-                    '--noconfirm',
-                    '-Qs',
-                    'mingw-w64-x86_64-icu'
-                ]);
-                icuVersion =
-                    (_c = (_b = (_a = icuVersion.match(/(?<version>\d[\d.]+\d)/)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version) !== null && _c !== void 0 ? _c : icuVersion;
-                core.info(`Installed ICU version ${icuVersion}`);
+                options['icu-version'] = yield (0, util_1.pacmanGetVersion)('mingw-w64-x86_64-icu');
+                core.info(`Installed ICU version ${options['icu-version']}`);
                 // Get the ICU libraries to bundle:
                 const icuLibDir = 'C:\\msys64\\mingw64\\bin';
                 const icuLibGlobber = yield glob.create(path.join(icuLibDir, 'icu*.dll'));
-                icuLibsToBundle = yield icuLibGlobber.glob();
-                core.debug(`To bundle: [${icuLibsToBundle.join(', ')}]`);
+                options['bdist-libs'] = yield icuLibGlobber.glob();
+                core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`);
                 break;
             }
             case 'linux': {
                 // Ubuntu 20.04 ships with a recent version of ICU
                 // Get the icu-i18n version via pkg-config:
-                icuVersion = yield exec.getoutput('pkg-config', [
-                    '--modversion',
-                    'icu-i18n'
-                ]);
-                core.info(`Found ICU version ${icuVersion}`);
+                options['icu-version'] = yield (0, util_1.pkgConfig)('--modversion', 'icu-i18n');
+                core.info(`Found ICU version ${options['icu-version']}`);
                 break;
             }
             case 'macos': {
-                // The GitHub runner for MacOS 11+ has ICU version 69.1,
-                // which is recent enough for 'text-icu' to compile:
-                core.info('Install ICU using Homebrew');
-                yield exec.getoutput('brew', ['install', 'icu4c']);
-                // Get the icu prefix
-                const icuPrefix = yield exec.getoutput('brew', ['--prefix', 'icu4c']);
+                // Ensure ICU is installed:
+                let icuVersion = yield (0, util_1.brewGetVersion)('icu4c');
+                if (icuVersion === undefined)
+                    (0, util_1.brew)('install', 'icu4c');
+                else if (simver.lt(icuVersion, '68'))
+                    (0, util_1.brew)('upgrade', 'icu4c');
+                icuVersion = yield (0, util_1.brewGetVersion)('icu4c');
+                if (icuVersion === undefined)
+                    throw Error('Could not install icu4c');
+                // Find the ICU installation location:
+                const icuPrefix = yield (0, util_1.brew)('--prefix', 'icu4c');
                 const icuLibDir = path.join(icuPrefix.trim(), 'lib');
-                core.debug(`Found ICU at ${icuLibDir}`);
+                core.debug(`Found ICU version ${icuVersion} at ${icuLibDir}`);
+                // Add ICU to the PKG_CONFIG_PATH:
                 const icuPkgConfigDir = path.join(icuLibDir, 'pkgconfig');
                 core.debug(`Set PKG_CONFIG_PATH to ${icuPkgConfigDir}`);
                 core.exportVariable('PKG_CONFIG_PATH', icuPkgConfigDir);
                 // Get the icu-i18n version via pkg-config:
-                icuVersion = yield exec.getoutput('pkg-config', [
-                    '--modversion',
-                    'icu-i18n'
-                ]);
-                core.info(`Installed ICU version ${icuVersion}`);
+                options['icu-version'] = yield (0, util_1.pkgConfig)('--modversion', 'icu-i18n');
+                core.info(`Setup ICU version ${options['icu-version']} with pkg-config`);
                 // Get the ICU libraries to bundle:
                 const icuLibGlobber = yield glob.create(path.join(icuLibDir, '*.dylib'));
-                icuLibsToBundle = yield icuLibGlobber.glob();
-                core.debug(`To bundle: [${icuLibsToBundle.join(', ')}]`);
+                options['bdist-libs'] = yield icuLibGlobber.glob();
+                core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`);
                 break;
             }
         }
-        return Object.assign(Object.assign({}, options), { 'icu-version': icuVersion, 'libs-to-bundle': [...options['libs-to-bundle'], ...icuLibsToBundle] });
     });
 }
 exports["default"] = setup;
@@ -1155,11 +1138,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const tc = __importStar(__nccwpck_require__(7784));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
-const exec = __importStar(__nccwpck_require__(4369));
 const simver = __importStar(__nccwpck_require__(7609));
+const util_1 = __nccwpck_require__(4024);
 const upxUrlLinux = 'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz';
 const upxUrlWindows = 'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-win64.zip';
-function setup() {
+function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (opts.os) {
             case 'linux': {
@@ -1169,45 +1152,33 @@ function setup() {
                     '--xz',
                     '--preserve-permissions'
                 ]);
+                options['upx-version'] = '3.96';
                 return path.join(upxParentDir, 'upx-3.96-amd64_linux', 'upx');
             }
             case 'macos': {
-                // Ensure UPX is installed:
-                let upxVer = yield brewGetVersion('upx');
-                if (upxVer === undefined)
-                    yield brew('install', 'upx');
-                upxVer = yield brewGetVersion('upx');
-                if (upxVer === undefined)
-                    throw Error(`Could not setup UPX`);
-                // Check if UPX is the correct version:
-                // NOTE: patch version '3.96_1' or (presumably) later versions are OK
-                if (simver.gte(upxVer, '3.96_1'))
-                    return 'upx';
-                // Attempt to upgrade UPX:
-                yield brew('upgrade', 'upx');
-                upxVer = yield brewGetVersion('upx');
-                if (upxVer === undefined)
-                    throw Error(`Could not setup UPX`);
-                if (simver.gte(upxVer, '3.96_1'))
-                    return 'upx';
-                throw Error(`Could not setup UPX`);
+                // Ensure UPX is installed and is the correct version:
+                // NOTE: patch version '3.96_1' and (presumably) later versions are OK
+                let upxVersion = yield (0, util_1.brewGetVersion)('upx');
+                if (upxVersion === undefined)
+                    yield (0, util_1.brew)('install', 'upx');
+                else if (simver.lt(upxVersion, '3.96_1'))
+                    yield (0, util_1.brew)('upgrade', 'upx');
+                upxVersion = yield (0, util_1.brewGetVersion)('upx');
+                if (upxVersion === undefined)
+                    throw Error(`Could not install UPX`);
+                options['upx-version'] = upxVersion;
+                return 'upx';
             }
             case 'windows': {
                 const upxZipPath = yield tc.downloadTool(upxUrlWindows);
                 const upxParentDir = yield tc.extractZip(upxZipPath);
+                options['upx-version'] = '3.96';
                 return path.join(upxParentDir, 'upx-3.96-win64', 'upx');
             }
         }
     });
 }
 exports["default"] = setup;
-const brew = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('brew', args); });
-const brewGetVersion = (formula) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
-    const formulaVersionRegExp = new RegExp(`${formula} (?<version>[\\d._]+)`);
-    const formulaVersions = yield brew('list', '--formula', '--versions');
-    return (_b = (_a = formulaVersions.match(formulaVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version;
-});
 
 
 /***/ }),
@@ -1260,14 +1231,49 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.testAgda = exports.agdaModeBinName = exports.agdaBinNames = exports.agdaBinName = exports.setupAgdaEnv = exports.getAgdaSource = exports.resolveAgdaVersion = void 0;
+exports.testAgda = exports.agdaModeBinName = exports.agdaBinNames = exports.agdaBinName = exports.setupAgdaEnv = exports.getAgdaSource = exports.resolveAgdaVersion = exports.dumpbin = exports.otool = exports.patchelf = exports.installNameTool = exports.pkgConfig = exports.pacmanGetVersion = exports.pacman = exports.brewGetVersion = exports.brew = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const agda = __importStar(__nccwpck_require__(9552));
+const exec = __importStar(__nccwpck_require__(4369));
 const hackage = __importStar(__nccwpck_require__(903));
+// System utilities
+const brew = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('brew', args); });
+exports.brew = brew;
+const brewGetVersion = (formula) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    const formulaVersionRegExp = new RegExp(`${formula} (?<version>[\\d._]+)`);
+    const formulaVersions = yield (0, exports.brew)('list', '--formula', '--versions');
+    return (_b = (_a = formulaVersions.match(formulaVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version;
+});
+exports.brewGetVersion = brewGetVersion;
+const pacman = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('pacman', args); });
+exports.pacman = pacman;
+const pacmanGetVersion = (pkg) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c, _d;
+    const pkgInfo = yield (0, exports.pacman)('--noconfirm', '-Qs', pkg);
+    const pkgVersionRegExp = /(?<version>\d[\d.]+\d)/;
+    const pkgVersion = (_d = (_c = pkgInfo.match(pkgVersionRegExp)) === null || _c === void 0 ? void 0 : _c.groups) === null || _d === void 0 ? void 0 : _d.version;
+    if (pkgVersion !== undefined)
+        return pkgVersion;
+    else
+        throw Error(`Could not determine version of ${pkg}`);
+});
+exports.pacmanGetVersion = pacmanGetVersion;
+const pkgConfig = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('pkg-config', args); });
+exports.pkgConfig = pkgConfig;
+const installNameTool = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('install_name_tool', args); });
+exports.installNameTool = installNameTool;
+const patchelf = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('patchelf', args); });
+exports.patchelf = patchelf;
+const otool = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('otool', args); });
+exports.otool = otool;
+const dumpbin = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield exec.getoutput('dumpbin', args); });
+exports.dumpbin = dumpbin;
+// Agda utilities
 function resolveAgdaVersion(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Ensure that we cache the package info:
@@ -1523,7 +1529,7 @@ const io = __importStar(__nccwpck_require__(9067));
 const mustache = __importStar(__nccwpck_require__(8272));
 const object_pick_1 = __importDefault(__nccwpck_require__(9962));
 const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
-const node_assert_1 = __importDefault(__nccwpck_require__(8061));
+const util_1 = __nccwpck_require__(4024);
 function download(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Get the name for the distribution:
@@ -1559,7 +1565,16 @@ function upload(installDir, options) {
         // Copy data:
         yield io.cpR(path.join(installDir, 'data'), bdistDir);
         // Compress binaries:
-        yield compressBins(bdistDir);
+        if (!options['bdist-no-compress-exe']) {
+            try {
+                const upxExe = yield (0, setup_upx_1.default)(options);
+                for (const binName of util.agdaBinNames)
+                    yield compressBin(upxExe, path.join(bdistDir, 'bin', binName));
+            }
+            catch (error) {
+                core.debug((0, ensure_error_1.default)(error).message);
+            }
+        }
         // Bundle libraries:
         yield bundleLibs(bdistDir, options);
         // Test artifact:
@@ -1589,25 +1604,14 @@ function upload(installDir, options) {
     });
 }
 exports.upload = upload;
-function compressBins(bdistDir) {
+function compressBin(upxExe, binPath) {
     return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const upxExe = yield (0, setup_upx_1.default)();
-            for (const binName of util.agdaBinNames) {
-                const binPath = path.join(bdistDir, 'bin', binName);
-                // Print the needed libraries before compressing:
-                if (core.isDebug())
-                    printNeededLibs(binPath);
-                // Compress with UPX:
-                yield exec.exec(upxExe, ['--best', binPath]);
-                // Print the needed libraries after compressing:
-                if (core.isDebug())
-                    printNeededLibs(binPath);
-            }
-        }
-        catch (error) {
-            core.debug((0, ensure_error_1.default)(error).message);
-        }
+        // Print the needed libraries before compressing:
+        printNeededLibs(binPath);
+        // Compress with UPX:
+        yield exec.exec(upxExe, ['--best', binPath]);
+        // Print the needed libraries after compressing:
+        printNeededLibs(binPath);
     });
 }
 function bundleLibs(bdistDir, options) {
@@ -1622,25 +1626,21 @@ function bundleLibs(bdistDir, options) {
                 if (opts.enableClusterCounting(options)) {
                     yield io.mkdirP(path.join(bdistDir, 'lib'));
                     // Copy needed libraries:
-                    for (const libPath of options['libs-to-bundle']) {
+                    for (const libPath of options['bdist-libs']) {
                         yield io.cp(path.join(libPath), path.join(bdistDir, 'lib', path.basename(libPath)));
                     }
                     // Patch run paths for loaded libraries:
                     for (const binName of util.agdaBinNames) {
                         const binPath = path.join(bdistDir, 'bin', binName);
                         const libDirs = new Set();
-                        // Print the needed libraries:
-                        printNeededLibs(binPath);
                         // Update run paths for libraries:
-                        for (const libPath of options['libs-to-bundle']) {
+                        for (const libPath of options['bdist-libs']) {
                             const libName = path.basename(libPath);
                             libDirs.add(path.dirname(libPath));
                             yield changeDependency(binPath, libPath, `@rpath/${libName}`);
                         }
                         // Add load paths for libraries:
                         yield addRunPaths(binPath, '@executable_path', '@executable_path/../lib', ...libDirs);
-                        // Print the needed libraries:
-                        printNeededLibs(binPath);
                     }
                 }
                 break;
@@ -1649,7 +1649,7 @@ function bundleLibs(bdistDir, options) {
                 // If we compiled with --enable-cluster-counting, bundle ICU:
                 if (opts.supportsClusterCounting(options)) {
                     // Copy needed libraries:
-                    for (const libPath of options['libs-to-bundle']) {
+                    for (const libPath of options['bdist-libs']) {
                         yield io.cp(path.join(libPath), path.join(bdistDir, 'bin', path.basename(libPath)));
                     }
                 }
@@ -1676,40 +1676,33 @@ function printNeededLibs(binPath) {
             let output = '';
             switch (opts.os) {
                 case 'linux': {
-                    output = yield exec.getoutput('patchelf', ['--print-needed', binPath], {
-                        silent: true
-                    });
+                    output = yield (0, util_1.patchelf)('--print-needed', binPath);
                     break;
                 }
                 case 'macos': {
-                    output = yield exec.getoutput('otool', ['-L', binPath], { silent: true });
+                    output = yield (0, util_1.otool)('-L', binPath);
                     break;
                 }
                 case 'windows': {
-                    output = yield exec.getoutput('dumpbin', ['/imports', binPath], {
-                        silent: true
-                    });
+                    output = yield (0, util_1.dumpbin)('/imports', binPath);
                     break;
                 }
             }
             core.info(`Needed libraries:${os.EOL}${output}`);
         }
         catch (error) {
-            core.debug(`Could not print needed dynamic libraries: ${(0, ensure_error_1.default)(error).message}`);
+            core.debug((0, ensure_error_1.default)(error).message);
         }
     });
 }
-function changeDependency(bin, from, to) {
+function changeDependency(binPath, libPathFrom, libPathTo) {
     return __awaiter(this, void 0, void 0, function* () {
-        (0, node_assert_1.default)(opts.os === 'macos', `Cannot run "install_name_tool" on ${opts.os}`);
-        yield exec.getoutput('install_name_tool', ['-change', from, to, bin]);
+        yield (0, util_1.installNameTool)('-change', libPathFrom, libPathTo, binPath);
     });
 }
-function addRunPaths(bin, ...rpaths) {
+function addRunPaths(binPath, ...rpaths) {
     return __awaiter(this, void 0, void 0, function* () {
-        (0, node_assert_1.default)(opts.os === 'macos', `Cannot run "install_name_tool" on ${opts.os}`);
-        const args = rpaths.flatMap(rpath => ['-add_rpath', rpath]);
-        yield exec.getoutput('install_name_tool', [...args, bin]);
+        yield (0, util_1.installNameTool)(...rpaths.flatMap(rpath => ['-add_rpath', rpath]), binPath);
     });
 }
 
@@ -2120,20 +2113,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.rmRF = exports.mkdirP = exports.mv = exports.cpR = exports.cp = void 0;
+exports.lsR = exports.rmRF = exports.mkdirP = exports.mv = exports.cpR = exports.cp = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const io = __importStar(__nccwpck_require__(7436));
 const opts = __importStar(__nccwpck_require__(1352));
-function escape(filePath) {
-    switch (opts.os) {
-        case 'macos':
-        case 'linux':
-            return filePath.replace(/(?<!\\) /g, '\\ ');
-        case 'windows':
-        default:
-            return filePath;
-    }
-}
+const exec = __importStar(__nccwpck_require__(4369));
 function cp(source, dest, options) {
     return __awaiter(this, void 0, void 0, function* () {
         source = escape(source);
@@ -2174,6 +2158,24 @@ function rmRF(path) {
     });
 }
 exports.rmRF = rmRF;
+function lsR(path) {
+    return __awaiter(this, void 0, void 0, function* () {
+        path = escape(path);
+        core.debug(`ls -R ${path}`);
+        return yield exec.getoutput('ls', ['-R', path]);
+    });
+}
+exports.lsR = lsR;
+function escape(filePath) {
+    switch (opts.os) {
+        case 'macos':
+        case 'linux':
+            return filePath.replace(/(?<!\\) /g, '\\ ');
+        case 'windows':
+        default:
+            return filePath;
+    }
+}
 
 
 /***/ }),

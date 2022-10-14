@@ -3,9 +3,7 @@ import * as opts from './opts'
 import setupHaskell from 'setup-haskell'
 import * as haskell from './util/haskell'
 
-export default async function setup(
-  options: opts.BuildOptions
-): Promise<opts.BuildOptions> {
+export default async function setup(options: opts.BuildOptions): Promise<void> {
   // Run haskell/actions/setup:
   await setupHaskell(
     Object.fromEntries(
@@ -19,17 +17,12 @@ export default async function setup(
   core.setOutput('haskell-setup', 'true')
 
   // Update the Cabal version:
-  const cabalVersion =
+  options['cabal-version'] =
     options['enable-stack'] && options['stack-no-global']
       ? await haskell.getStackCabalVersionForGhc(options['ghc-version'])
       : await haskell.getSystemCabalVersion()
-  options = {...options, 'cabal-version': cabalVersion}
 
   // Update the Stack version:
-  const stackVersion = options['enable-stack']
-    ? await haskell.getSystemStackVersion()
-    : ''
-  options = {...options, 'stack-version': stackVersion}
-
-  return options
+  if (options['enable-stack'])
+    options['stack-version'] = await haskell.getSystemStackVersion()
 }

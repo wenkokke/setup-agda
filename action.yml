@@ -7,10 +7,11 @@ inputs:
     description: |
       The Agda version. Can be "latest" or a specific version number (e.g., 2.6.2.2).
     required: true
-  bdist-compress-exe:
+  bdist-no-compress-exe:
     description: |
-      If specified, the executables in the binary distrubtion package are
-      compressed with UPX (https://upx.github.io).
+      If specified, do not compress the executables in the binary distribution.
+
+      By default, the executables are compressed with UPX (https://upx.github.io).
 
       Only used when "bdist-upload" is specified.
     required: false

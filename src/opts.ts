@@ -37,7 +37,7 @@ export type SetupAgdaOption =
   | SetupHaskellOption
 
 export type SetupAgdaFlag =
-  | 'bdist-compress-exe'
+  | 'bdist-no-compress-exe'
   | 'bdist-upload'
   | 'disable-cluster-counting'
   | 'force-build'
@@ -57,7 +57,7 @@ export interface BuildOptions extends SetupAgdaInputs {
   'extra-lib-dirs': string[]
   'extra-include-dirs': string[]
   'icu-version'?: string
-  'libs-to-bundle': string[]
+  'bdist-libs': string[]
   'package-info-cache'?: PackageInfoCache
   'upx-version'?: string
 }
@@ -198,7 +198,7 @@ export function getOptions(
   const options: BuildOptions = {
     // Specified in AgdaSetupInputs
     'agda-version': getOption('agda-version'),
-    'bdist-compress-exe': getFlag('bdist-compress-exe'),
+    'bdist-no-compress-exe': getFlag('bdist-no-compress-exe'),
     'bdist-name': getOption('bdist-name'),
     'bdist-upload': getFlag('bdist-upload'),
     'disable-cluster-counting': getFlag('disable-cluster-counting'),
@@ -219,7 +219,7 @@ export function getOptions(
     'compatible-ghc-versions': [],
     'extra-lib-dirs': [],
     'extra-include-dirs': [],
-    'libs-to-bundle': []
+    'bdist-libs': []
   }
 
   // Validate build options:
@@ -227,7 +227,7 @@ export function getOptions(
     throw Error('Value "nightly" for input "agda-version" is unupported')
   if (options['ghc-version'] !== 'latest')
     throw Error('Input "ghc-version" is unsupported. Use "ghc-version-range"')
-  if (options['bdist-compress-exe'] && !supportsUPX())
+  if (options['bdist-no-compress-exe'] && !supportsUPX())
     throw Error('Input "bdist-compress-exe" is unsupported on MacOS <12')
   if (!semver.validRange(options['ghc-version-range']))
     throw Error('Input "ghc-version-range" is not a valid version range')

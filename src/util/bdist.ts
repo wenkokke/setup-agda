@@ -12,7 +12,7 @@ import * as io from './io'
 import * as mustache from 'mustache'
 import pick from 'object.pick'
 import ensureError from 'ensure-error'
-import assert from 'node:assert'
+import {installNameTool, patchelf, otool, dumpbin} from '../util'
 
 export async function download(
   options: opts.BuildOptions
@@ -57,7 +57,15 @@ export async function upload(
   await io.cpR(path.join(installDir, 'data'), bdistDir)
 
   // Compress binaries:
-  await compressBins(bdistDir)
+  if (!options['bdist-no-compress-exe']) {
+    try {
+      const upxExe = await setupUpx(options)
+      for (const binName of util.agdaBinNames)
+        await compressBin(upxExe, path.join(bdistDir, 'bin', binName))
+    } catch (error) {
+      core.debug(ensureError(error).message)
+    }
+  }
 
   // Bundle libraries:
   await bundleLibs(bdistDir, options)
@@ -97,21 +105,13 @@ export async function upload(
   return uploadInfo.artifactName
 }
 
-async function compressBins(bdistDir: string): Promise<void> {
-  try {
-    const upxExe = await setupUpx()
-    for (const binName of util.agdaBinNames) {
-      const binPath = path.join(bdistDir, 'bin', binName)
-      // Print the needed libraries before compressing:
-      if (core.isDebug()) printNeededLibs(binPath)
-      // Compress with UPX:
-      await exec.exec(upxExe, ['--best', binPath])
-      // Print the needed libraries after compressing:
-      if (core.isDebug()) printNeededLibs(binPath)
-    }
-  } catch (error) {
-    core.debug(ensureError(error).message)
-  }
+async function compressBin(upxExe: string, binPath: string): Promise<void> {
+  // Print the needed libraries before compressing:
+  printNeededLibs(binPath)
+  // Compress with UPX:
+  await exec.exec(upxExe, ['--best', binPath])
+  // Print the needed libraries after compressing:
+  printNeededLibs(binPath)
 }
 
 async function bundleLibs(
@@ -128,7 +128,7 @@ async function bundleLibs(
       if (opts.enableClusterCounting(options)) {
         await io.mkdirP(path.join(bdistDir, 'lib'))
         // Copy needed libraries:
-        for (const libPath of options['libs-to-bundle']) {
+        for (const libPath of options['bdist-libs']) {
           await io.cp(
             path.join(libPath),
             path.join(bdistDir, 'lib', path.basename(libPath))
@@ -138,10 +138,8 @@ async function bundleLibs(
         for (const binName of util.agdaBinNames) {
           const binPath = path.join(bdistDir, 'bin', binName)
           const libDirs = new Set<string>()
-          // Print the needed libraries:
-          printNeededLibs(binPath)
           // Update run paths for libraries:
-          for (const libPath of options['libs-to-bundle']) {
+          for (const libPath of options['bdist-libs']) {
             const libName = path.basename(libPath)
             libDirs.add(path.dirname(libPath))
             await changeDependency(binPath, libPath, `@rpath/${libName}`)
@@ -153,8 +151,6 @@ async function bundleLibs(
             '@executable_path/../lib',
             ...libDirs
           )
-          // Print the needed libraries:
-          printNeededLibs(binPath)
         }
       }
       break
@@ -163,7 +159,7 @@ async function bundleLibs(
       // If we compiled with --enable-cluster-counting, bundle ICU:
       if (opts.supportsClusterCounting(options)) {
         // Copy needed libraries:
-        for (const libPath of options['libs-to-bundle']) {
+        for (const libPath of options['bdist-libs']) {
           await io.cp(
             path.join(libPath),
             path.join(bdistDir, 'bin', path.basename(libPath))
@@ -198,41 +194,38 @@ async function printNeededLibs(binPath: string): Promise<void> {
     let output = ''
     switch (opts.os) {
       case 'linux': {
-        output = await exec.getoutput('patchelf', ['--print-needed', binPath], {
-          silent: true
-        })
+        output = await patchelf('--print-needed', binPath)
         break
       }
       case 'macos': {
-        output = await exec.getoutput('otool', ['-L', binPath], {silent: true})
+        output = await otool('-L', binPath)
         break
       }
       case 'windows': {
-        output = await exec.getoutput('dumpbin', ['/imports', binPath], {
-          silent: true
-        })
+        output = await dumpbin('/imports', binPath)
         break
       }
     }
     core.info(`Needed libraries:${os.EOL}${output}`)
   } catch (error) {
-    core.debug(
-      `Could not print needed dynamic libraries: ${ensureError(error).message}`
-    )
+    core.debug(ensureError(error).message)
   }
 }
 
 async function changeDependency(
-  bin: string,
-  from: string,
-  to: string
+  binPath: string,
+  libPathFrom: string,
+  libPathTo: string
 ): Promise<void> {
-  assert(opts.os === 'macos', `Cannot run "install_name_tool" on ${opts.os}`)
-  await exec.getoutput('install_name_tool', ['-change', from, to, bin])
+  await installNameTool('-change', libPathFrom, libPathTo, binPath)
 }
 
-async function addRunPaths(bin: string, ...rpaths: string[]): Promise<void> {
-  assert(opts.os === 'macos', `Cannot run "install_name_tool" on ${opts.os}`)
-  const args = rpaths.flatMap<string>(rpath => ['-add_rpath', rpath])
-  await exec.getoutput('install_name_tool', [...args, bin])
+async function addRunPaths(
+  binPath: string,
+  ...rpaths: string[]
+): Promise<void> {
+  await installNameTool(
+    ...rpaths.flatMap<string>(rpath => ['-add_rpath', rpath]),
+    binPath
+  )
 }
