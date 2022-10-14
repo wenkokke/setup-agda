@@ -30,9 +30,9 @@ export async function build(
   const installBinDir = path.join(installDir, 'bin')
   await io.mkdirP(installBinDir)
   for (const binName of util.agdaBinNames) {
-    await io.cp(
+    await io.mv(
       path.join(localBinDir, binName),
-      path.join(installDir, 'bin', binName)
+      path.join(installBinDir, binName)
     )
   }
 }

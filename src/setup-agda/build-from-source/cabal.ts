@@ -19,16 +19,10 @@ export async function build(
   const execOptions: exec.ExecOptions = {cwd: sourceDir}
   // Configure:
   core.info(`Configure Agda-${options['agda-version']}`)
-  await haskell.cabal(
-    ['v2-configure', ...buildFlags(options)],
-    execOptions
-  )
+  await haskell.cabal(['v2-configure', ...buildFlags(options)], execOptions)
   // Build:
   core.info(`Build Agda-${options['agda-version']}`)
-  await haskell.cabal(
-    ['v2-build', 'exe:agda', 'exe:agda-mode'],
-    execOptions
-  )
+  await haskell.cabal(['v2-build', 'exe:agda', 'exe:agda-mode'], execOptions)
   // Install:
   core.info(`Install Agda-${options['agda-version']} to ${installDir}`)
   await io.mkdirP(path.join(installDir, 'bin'))

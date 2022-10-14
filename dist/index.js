@@ -838,7 +838,7 @@ function build(sourceDir, installDir, options) {
         const installBinDir = path.join(installDir, 'bin');
         yield io.mkdirP(installBinDir);
         for (const binName of util.agdaBinNames) {
-            yield io.cp(path.join(localBinDir, binName), path.join(installDir, 'bin', binName));
+            yield io.mv(path.join(localBinDir, binName), path.join(installBinDir, binName));
         }
     });
 }
