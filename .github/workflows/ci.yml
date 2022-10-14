@@ -58,7 +58,7 @@ jobs:
             -{{{arch}}
             -${{ matrix.os }}
         {{#icu-version}}
-            -icu{{{icu-version}}}
+            -icu{{{.}}}
         {{/icu-version}}
       bdist-upload: true
 
@@ -86,7 +86,7 @@ jobs:
             -icu{{{icu-version}}}
         {{/icu-version}}
         {{#stack-version}}
-            -stack{{{stack-version}}}
+            -stack{{{.}}}
         {{/stack-version}}
       bdist-upload: true
 
