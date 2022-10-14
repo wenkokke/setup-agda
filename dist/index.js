@@ -1454,8 +1454,7 @@ const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 function download(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Get the name for the distribution:
-        const maskBdistName = Object.assign(Object.assign({}, options), { 'bdist-name': '' });
-        const bdistName = yield renderBdistName(maskBdistName);
+        const bdistName = yield renderBdistName('', options);
         const bdistUrl = opts.bdistIndex[bdistName];
         if (bdistUrl !== undefined) {
             try {
@@ -1477,7 +1476,7 @@ exports.download = download;
 function upload(installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Get the name for the distribution:
-        const bdistName = yield renderBdistName(options);
+        const bdistName = yield renderBdistName(options['bdist-name'], options);
         const bdistDir = path.join(opts.agdaDir(), 'bdist', bdistName);
         io.mkdirP(bdistDir);
         // Copy binaries:
@@ -1625,20 +1624,18 @@ function addRunPaths(bin, ...rpaths) {
         yield exec.getoutput('install_name_tool', [...args, bin]);
     });
 }
-function renderBdistName(options) {
+function renderBdistName(template, options) {
     return __awaiter(this, void 0, void 0, function* () {
-        let template = options['bdist-name'];
-        if (template !== '')
-            template = 'agda-{{agda-version}}-{{arch}}-{{platform}}';
+        const templateOrDefault = template !== '' ? template : 'agda-{{agda-version}}-{{arch}}-{{platform}}';
         const ghcInfo = yield haskell.getGhcInfo();
-        return mustache.render(template, Object.assign(Object.assign(Object.assign(Object.assign({}, (0, object_pick_1.default)(options, [
+        return mustache.render(templateOrDefault, Object.assign(Object.assign(Object.assign({}, (0, object_pick_1.default)(options, [
             'agda-version',
             'ghc-version',
             'cabal-version',
             'stack-version',
             'icu-version',
             'upx-version'
-        ])), (0, object_pick_1.default)(process, ['arch', 'platform'])), { release: os.release() }), ghcInfo));
+        ])), { arch: os.arch(), platform: os.platform(), release: os.release() }), ghcInfo));
     });
 }
 

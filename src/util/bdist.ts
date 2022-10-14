@@ -19,8 +19,7 @@ export async function download(
   options: opts.BuildOptions
 ): Promise<string | null> {
   // Get the name for the distribution:
-  const maskBdistName = {...options, 'bdist-name': ''}
-  const bdistName = await renderBdistName(maskBdistName)
+  const bdistName = await renderBdistName('', options)
   const bdistUrl = opts.bdistIndex[bdistName]
   if (bdistUrl !== undefined) {
     try {
@@ -43,7 +42,7 @@ export async function upload(
   options: opts.BuildOptions
 ): Promise<string> {
   // Get the name for the distribution:
-  const bdistName = await renderBdistName(options)
+  const bdistName = await renderBdistName(options['bdist-name'], options)
   const bdistDir = path.join(opts.agdaDir(), 'bdist', bdistName)
   io.mkdirP(bdistDir)
 
@@ -221,11 +220,14 @@ async function addRunPaths(bin: string, ...rpaths: string[]): Promise<void> {
   await exec.getoutput('install_name_tool', [...args, bin])
 }
 
-async function renderBdistName(options: opts.BuildOptions): Promise<string> {
-  let template = options['bdist-name']
-  if (template !== '') template = 'agda-{{agda-version}}-{{arch}}-{{platform}}'
+async function renderBdistName(
+  template: string,
+  options: opts.BuildOptions
+): Promise<string> {
+  const templateOrDefault =
+    template !== '' ? template : 'agda-{{agda-version}}-{{arch}}-{{platform}}'
   const ghcInfo = await haskell.getGhcInfo()
-  return mustache.render(template, {
+  return mustache.render(templateOrDefault, {
     ...pick(options, [
       'agda-version',
       'ghc-version',
@@ -234,8 +236,7 @@ async function renderBdistName(options: opts.BuildOptions): Promise<string> {
       'icu-version',
       'upx-version'
     ]),
-    ...pick(process, ['arch', 'platform']),
-    ...{release: os.release()},
+    ...{arch: os.arch(), platform: os.platform(), release: os.release()},
     ...ghcInfo
   })
 }
