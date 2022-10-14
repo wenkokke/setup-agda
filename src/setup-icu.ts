@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
+import assert from 'node:assert'
 import * as path from 'node:path'
 import * as opts from './opts'
 import {
@@ -37,9 +38,17 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
     }
     case 'linux': {
       // Ubuntu 20.04 ships with a recent version of ICU
-      // Get the icu-i18n version via pkg-config:
+      // Get the icu-i18n information via pkg-config:
       options['icu-version'] = await pkgConfig('--modversion', 'icu-i18n')
       core.info(`Found ICU version ${options['icu-version']}`)
+      const icuLinkerFlag = await pkgConfig('--libs-only-L', 'icu-i18n')
+      assert(icuLinkerFlag.startsWith('-L'))
+      const icuLibDir = icuLinkerFlag.trim().substring('-L'.length)
+      const icuLibGlobber = await glob.create(
+        path.join(icuLibDir, 'libicu*.so.*')
+      )
+      options['bdist-libs'] = await icuLibGlobber.glob()
+      core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`)
       break
     }
     case 'macos': {

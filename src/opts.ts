@@ -37,7 +37,7 @@ export type SetupAgdaOption =
   | SetupHaskellOption
 
 export type SetupAgdaFlag =
-  | 'bdist-no-compress-exe'
+  | 'bdist-compress-exe'
   | 'bdist-upload'
   | 'disable-cluster-counting'
   | 'force-build'
@@ -67,7 +67,7 @@ export function compressExe(options: BuildOptions): boolean {
   // NOTE:
   //   We do not compress executables on MacOS or Windows, since the resulting
   //   executables are unsigned, and therefore cause problems with security:
-  return !options['bdist-no-compress-exe'] && os === 'linux'
+  return options['bdist-compress-exe']
 }
 
 export function enableClusterCounting(options: BuildOptions): boolean {
@@ -204,7 +204,7 @@ export function getOptions(
   const options: BuildOptions = {
     // Specified in AgdaSetupInputs
     'agda-version': getOption('agda-version'),
-    'bdist-no-compress-exe': getFlag('bdist-no-compress-exe'),
+    'bdist-compress-exe': getFlag('bdist-compress-exe'),
     'bdist-name': getOption('bdist-name'),
     'bdist-upload': getFlag('bdist-upload'),
     'disable-cluster-counting': getFlag('disable-cluster-counting'),

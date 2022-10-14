@@ -14,6 +14,14 @@ on:
           The Agda version. Can be "latest" or a specific version number (e.g., 2.6.2.2).
         required: true
         type: string
+      bdist-compress-exe:
+        default: ''
+        description: |
+          If specified, the executables are compressed with UPX (https://upx.github.io).
+
+          Only used when "bdist-upload" is specified.
+        required: false
+        type: string
       bdist-name:
         default: ''
         description: |
@@ -26,16 +34,6 @@ on:
           {{platform}}, and {{release}}, which will be replaced by the system
           architecture, operating system, and operating system release, as returned
           by the corresponding NodeJS functions (https://nodejs.org/api/os.html).
-
-          Only used when "bdist-upload" is specified.
-        required: false
-        type: string
-      bdist-no-compress-exe:
-        default: ''
-        description: |
-          If specified, do not compress the executables in the binary distribution.
-
-          By default, the executables are compressed with UPX (https://upx.github.io).
 
           Only used when "bdist-upload" is specified.
         required: false
@@ -130,6 +128,14 @@ on:
           The Agda version. Can be "latest" or a specific version number (e.g., 2.6.2.2).
         required: true
         type: string
+      bdist-compress-exe:
+        default: ''
+        description: |
+          If specified, the executables are compressed with UPX (https://upx.github.io).
+
+          Only used when "bdist-upload" is specified.
+        required: false
+        type: string
       bdist-name:
         default: ''
         description: |
@@ -142,16 +148,6 @@ on:
           {{platform}}, and {{release}}, which will be replaced by the system
           architecture, operating system, and operating system release, as returned
           by the corresponding NodeJS functions (https://nodejs.org/api/os.html).
-
-          Only used when "bdist-upload" is specified.
-        required: false
-        type: string
-      bdist-no-compress-exe:
-        default: ''
-        description: |
-          If specified, do not compress the executables in the binary distribution.
-
-          By default, the executables are compressed with UPX (https://upx.github.io).
 
           Only used when "bdist-upload" is specified.
         required: false
@@ -244,7 +240,7 @@ jobs:
         with:
           agda-version: ${{ inputs.agda-version }}
           bdist-name: ${{ inputs.bdist-name }}
-          bdist-no-compress-exe: ${{ inputs.bdist-no-compress-exe }}
+          bdist-compress-exe: ${{ inputs.bdist-compress-exe }}
           bdist-upload: ${{ inputs.bdist-upload }}
           disable-cluster-counting: ${{ inputs.disable-cluster-counting }}
           force-build: ${{ inputs.force-build }}

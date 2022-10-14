@@ -90,7 +90,7 @@ function compressExe(options) {
     // NOTE:
     //   We do not compress executables on MacOS or Windows, since the resulting
     //   executables are unsigned, and therefore cause problems with security:
-    return !options['bdist-no-compress-exe'] && exports.os === 'linux';
+    return options['bdist-compress-exe'];
 }
 exports.compressExe = compressExe;
 function enableClusterCounting(options) {
@@ -180,7 +180,7 @@ function getOptions(inputs) {
     const options = {
         // Specified in AgdaSetupInputs
         'agda-version': getOption('agda-version'),
-        'bdist-no-compress-exe': getFlag('bdist-no-compress-exe'),
+        'bdist-compress-exe': getFlag('bdist-compress-exe'),
         'bdist-name': getOption('bdist-name'),
         'bdist-upload': getFlag('bdist-upload'),
         'disable-cluster-counting': getFlag('disable-cluster-counting'),
@@ -523,7 +523,6 @@ const glob = __importStar(__nccwpck_require__(8090));
 const tc = __importStar(__nccwpck_require__(7784));
 const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 const mustache = __importStar(__nccwpck_require__(8272));
-const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
 const object_pick_1 = __importDefault(__nccwpck_require__(9962));
@@ -619,12 +618,10 @@ function bundleLibs(bdistDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (opts.os) {
             case 'linux': {
-                // UPX should bundled all libs
-                break;
-            }
-            case 'macos': {
-                if (options['bdist-libs'].length > 0)
+                // Create bdist/lib
+                if (options['bdist-libs'].length > 0) {
                     yield util.mkdirP(path.join(bdistDir, 'lib'));
+                }
                 // Copy needed libraries:
                 for (const libPath of options['bdist-libs']) {
                     yield util.cp(path.join(libPath), path.join(bdistDir, 'lib', path.basename(libPath)));
@@ -632,15 +629,32 @@ function bundleLibs(bdistDir, options) {
                 // Patch run paths for loaded libraries:
                 for (const binName of util.agdaBinNames) {
                     const binPath = path.join(bdistDir, 'bin', binName);
-                    const libDirs = new Set();
+                    yield util.patchelf('-add-rpath', '$ORIGIN/../lib', binPath);
+                }
+                break;
+            }
+            case 'macos': {
+                // Create bdist/lib
+                if (options['bdist-libs'].length > 0) {
+                    yield util.mkdirP(path.join(bdistDir, 'lib'));
+                }
+                // Copy needed libraries:
+                const libDirs = new Set();
+                for (const libPath of options['bdist-libs']) {
+                    const libName = path.basename(libPath);
+                    libDirs.add(path.dirname(libPath));
+                    yield util.cp(path.join(libPath), path.join(bdistDir, 'lib', libName));
+                }
+                // Patch run paths for loaded libraries:
+                for (const binName of util.agdaBinNames) {
+                    const binPath = path.join(bdistDir, 'bin', binName);
                     // Update run paths for libraries:
                     for (const libPath of options['bdist-libs']) {
                         const libName = path.basename(libPath);
-                        libDirs.add(path.dirname(libPath));
-                        yield changeDependency(binPath, libPath, `@rpath/${libName}`);
+                        yield util.installNameTool('-change', libPath, `@rpath/${libName}`, binPath);
                     }
                     // Add load paths for libraries:
-                    yield addRunPaths(binPath, '@executable_path', '@executable_path/../lib', ...libDirs);
+                    yield util.installNameTool('-add_rpath', '@executable_path/../lib', ...[...libDirs].flatMap(libDir => ['-add_rpath', libDir]), binPath);
                 }
                 break;
             }
@@ -689,18 +703,6 @@ function printNeededLibs(binPath) {
         catch (error) {
             core.debug((0, ensure_error_1.default)(error).message);
         }
-    });
-}
-function changeDependency(binPath, libPathFrom, libPathTo) {
-    return __awaiter(this, void 0, void 0, function* () {
-        (0, node_assert_1.default)(opts.os === 'macos');
-        yield util.installNameTool('-change', libPathFrom, libPathTo, binPath);
-    });
-}
-function addRunPaths(binPath, ...rpaths) {
-    return __awaiter(this, void 0, void 0, function* () {
-        (0, node_assert_1.default)(opts.os === 'macos');
-        yield util.installNameTool(...rpaths.flatMap(rpath => ['-add_rpath', rpath]), binPath);
     });
 }
 
@@ -1258,9 +1260,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const util_1 = __nccwpck_require__(4024);
@@ -1284,9 +1290,15 @@ function setup(options) {
             }
             case 'linux': {
                 // Ubuntu 20.04 ships with a recent version of ICU
-                // Get the icu-i18n version via pkg-config:
+                // Get the icu-i18n information via pkg-config:
                 options['icu-version'] = yield (0, util_1.pkgConfig)('--modversion', 'icu-i18n');
                 core.info(`Found ICU version ${options['icu-version']}`);
+                const icuLinkerFlag = yield (0, util_1.pkgConfig)('--libs-only-L', 'icu-i18n');
+                (0, node_assert_1.default)(icuLinkerFlag.startsWith('-L'));
+                const icuLibDir = icuLinkerFlag.trim().substring('-L'.length);
+                const icuLibGlobber = yield glob.create(path.join(icuLibDir, 'libicu*.so.*'));
+                options['bdist-libs'] = yield icuLibGlobber.glob();
+                core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`);
                 break;
             }
             case 'macos': {

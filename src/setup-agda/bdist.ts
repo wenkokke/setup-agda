@@ -4,7 +4,6 @@ import * as glob from '@actions/glob'
 import * as tc from '@actions/tool-cache'
 import ensureError from 'ensure-error'
 import * as mustache from 'mustache'
-import assert from 'node:assert'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import pick from 'object.pick'
@@ -119,12 +118,10 @@ async function bundleLibs(
 ): Promise<void> {
   switch (opts.os) {
     case 'linux': {
-      // UPX should bundled all libs
-      break
-    }
-    case 'macos': {
-      if (options['bdist-libs'].length > 0)
+      // Create bdist/lib
+      if (options['bdist-libs'].length > 0) {
         await util.mkdirP(path.join(bdistDir, 'lib'))
+      }
 
       // Copy needed libraries:
       for (const libPath of options['bdist-libs']) {
@@ -133,24 +130,49 @@ async function bundleLibs(
           path.join(bdistDir, 'lib', path.basename(libPath))
         )
       }
+
       // Patch run paths for loaded libraries:
       for (const binName of util.agdaBinNames) {
         const binPath = path.join(bdistDir, 'bin', binName)
-        const libDirs = new Set<string>()
+        await util.patchelf('-add-rpath', '$ORIGIN/../lib', binPath)
+      }
+      break
+    }
+    case 'macos': {
+      // Create bdist/lib
+      if (options['bdist-libs'].length > 0) {
+        await util.mkdirP(path.join(bdistDir, 'lib'))
+      }
+
+      // Copy needed libraries:
+      const libDirs = new Set<string>()
+      for (const libPath of options['bdist-libs']) {
+        const libName = path.basename(libPath)
+        libDirs.add(path.dirname(libPath))
+        await util.cp(path.join(libPath), path.join(bdistDir, 'lib', libName))
+      }
+
+      // Patch run paths for loaded libraries:
+      for (const binName of util.agdaBinNames) {
+        const binPath = path.join(bdistDir, 'bin', binName)
 
         // Update run paths for libraries:
         for (const libPath of options['bdist-libs']) {
           const libName = path.basename(libPath)
-          libDirs.add(path.dirname(libPath))
-          await changeDependency(binPath, libPath, `@rpath/${libName}`)
+          await util.installNameTool(
+            '-change',
+            libPath,
+            `@rpath/${libName}`,
+            binPath
+          )
         }
 
         // Add load paths for libraries:
-        await addRunPaths(
-          binPath,
-          '@executable_path',
+        await util.installNameTool(
+          '-add_rpath',
           '@executable_path/../lib',
-          ...libDirs
+          ...[...libDirs].flatMap(libDir => ['-add_rpath', libDir]),
+          binPath
         )
       }
       break
@@ -207,24 +229,4 @@ async function printNeededLibs(binPath: string): Promise<void> {
   } catch (error) {
     core.debug(ensureError(error).message)
   }
-}
-
-async function changeDependency(
-  binPath: string,
-  libPathFrom: string,
-  libPathTo: string
-): Promise<void> {
-  assert(opts.os === 'macos')
-  await util.installNameTool('-change', libPathFrom, libPathTo, binPath)
-}
-
-async function addRunPaths(
-  binPath: string,
-  ...rpaths: string[]
-): Promise<void> {
-  assert(opts.os === 'macos')
-  await util.installNameTool(
-    ...rpaths.flatMap<string>(rpath => ['-add_rpath', rpath]),
-    binPath
-  )
 }

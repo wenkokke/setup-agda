@@ -52,8 +52,9 @@ jobs:
       force-build: true
       agda-version: latest
       cabal-version: '3.6'
-      bdist-upload: true
+      bdist-compress-exe: false
       bdist-name: agda-{{agda-version}}-{{arch}-${{ matrix.os }}-icu{{icu-version}}-ghc{{ghc-version}}-cabal{{cabal-version}}
+      bdist-upload: true
 
   test-build-with-stack:
     name: Build Agda on ${{ matrix.os }} with Stack
@@ -70,8 +71,10 @@ jobs:
       agda-version: latest
       cabal-version: '3.4'
       enable-stack: true
-      bdist-upload: true
+      bdist-compress-exe: false
       bdist-name: agda-{{agda-version}}-{{arch}-${{ matrix.os }}-icu{{icu-version}}-ghc{{ghc-version}}-stack{{stack-version}}
+      bdist-upload: true
+
 
   update-latest:
     name: Update latest
