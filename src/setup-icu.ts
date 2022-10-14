@@ -84,6 +84,7 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
         'mingw-w64-x86_64-pkg-config',
         'mingw-w64-x86_64-icu'
       )
+
       // Get the icu-i18n version via pacman:
       options['icu-version'] = await pacmanGetVersion('mingw-w64-x86_64-icu')
       core.info(`Installed ICU version ${options['icu-version']}`)

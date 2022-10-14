@@ -77,6 +77,7 @@ export function enableClusterCounting(options: BuildOptions): boolean {
   //   text-icu versions <0.7.1.0 fail to compile with icu68+, and we
   //   do not currently support building with outdated versions of ICU:
   return (
+    !options['enable-stack'] &&
     !options['disable-cluster-counting'] &&
     supportsClusterCounting(options) &&
     simver.gte(options['agda-version'], '2.6.2')
@@ -223,8 +224,8 @@ export function getOptions(
     'stack-version': getOption('stack-version'),
 
     // Specified in BuildOptions
-    'ghc-supported-versions': [],
-    'bdist-libs': []
+    'bdist-libs': [],
+    'ghc-supported-versions': []
   }
 
   // Validate build options:

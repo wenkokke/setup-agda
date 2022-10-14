@@ -99,7 +99,8 @@ function enableClusterCounting(options) {
     //   since Agda version 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
     //   text-icu versions <0.7.1.0 fail to compile with icu68+, and we
     //   do not currently support building with outdated versions of ICU:
-    return (!options['disable-cluster-counting'] &&
+    return (!options['enable-stack'] &&
+        !options['disable-cluster-counting'] &&
         supportsClusterCounting(options) &&
         simver.gte(options['agda-version'], '2.6.2'));
 }
@@ -197,8 +198,8 @@ function getOptions(inputs) {
         'stack-setup-ghc': getFlag('stack-setup-ghc'),
         'stack-version': getOption('stack-version'),
         // Specified in BuildOptions
-        'ghc-supported-versions': [],
-        'bdist-libs': []
+        'bdist-libs': [],
+        'ghc-supported-versions': []
     };
     // Validate build options:
     if (options['agda-version'] === 'nightly')
