@@ -70,7 +70,7 @@ export async function upload(
   await bundleLibs(bdistDir, options)
 
   // Test artifact:
-  await util.testAgda({
+  await util.agdaTest({
     agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
     agdaDataDir: path.join(bdistDir, 'data')
   })
@@ -108,11 +108,11 @@ async function compressBin(upxExe: string, binPath: string): Promise<void> {
   switch (opts.os) {
     case 'linux': {
       // Print the needed libraries before compressing:
-      printNeededLibs(binPath)
+      await printNeededLibs(binPath)
       // Compress with UPX:
       await util.getOutput(upxExe, ['--best', binPath])
       // Print the needed libraries after compressing:
-      printNeededLibs(binPath)
+      await printNeededLibs(binPath)
     }
   }
 }

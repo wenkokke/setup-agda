@@ -79,7 +79,7 @@ export default async function buildFromSource(
   await core.group(
     '👩🏾‍🔬 Testing Agda build',
     async () =>
-      await util.testAgda({
+      await util.agdaTest({
         agdaBin: path.join(agdaDir, 'bin', util.agdaBinName),
         agdaDataDir: path.join(agdaDir, 'data')
       })

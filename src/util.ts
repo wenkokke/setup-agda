@@ -10,7 +10,7 @@ export {
   agdaBinNames,
   agdaModeBinName,
   AgdaOptions,
-  agdaTest as testAgda
+  agdaTest
 } from './util/agda'
 
 export * from './util/exec'

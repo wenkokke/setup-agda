@@ -39,7 +39,7 @@ export default async function setup(
     // 5. Test:
     await core.group(
       '👩🏾‍🔬 Testing Agda installation',
-      async () => await util.testAgda()
+      async () => await util.agdaTest()
     )
   } catch (error) {
     core.setFailed(ensureError(error))
@@ -74,7 +74,7 @@ async function installFromToolCache(
   } else {
     return await core.group('👩🏾‍🔬 Testing cached Agda installation', async () => {
       try {
-        util.testAgda({
+        util.agdaTest({
           agdaBin: path.join(maybeAgdaDir, 'bin', util.agdaBinName),
           agdaDataDir: path.join(maybeAgdaDir, 'data')
         })
@@ -119,7 +119,7 @@ async function installFromBdist(
     `👩🏾‍🔬 Testing Agda ${options['agda-version']} package`,
     async () => {
       try {
-        await util.testAgda({
+        await util.agdaTest({
           agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
           agdaDataDir: path.join(bdistDir, 'data')
         })

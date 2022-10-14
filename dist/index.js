@@ -342,7 +342,7 @@ function setup(inputs) {
                 yield util.setupAgdaEnv(agdaDir);
             }));
             // 5. Test:
-            yield core.group('👩🏾‍🔬 Testing Agda installation', () => __awaiter(this, void 0, void 0, function* () { return yield util.testAgda(); }));
+            yield core.group('👩🏾‍🔬 Testing Agda installation', () => __awaiter(this, void 0, void 0, function* () { return yield util.agdaTest(); }));
         }
         catch (error) {
             core.setFailed((0, ensure_error_1.default)(error));
@@ -372,7 +372,7 @@ function installFromToolCache(options) {
         else {
             return yield core.group('👩🏾‍🔬 Testing cached Agda installation', () => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    util.testAgda({
+                    util.agdaTest({
                         agdaBin: path.join(maybeAgdaDir, 'bin', util.agdaBinName),
                         agdaDataDir: path.join(maybeAgdaDir, 'data')
                     });
@@ -408,7 +408,7 @@ function installFromBdist(options) {
         // 3. Test:
         const bdistOK = yield core.group(`👩🏾‍🔬 Testing Agda ${options['agda-version']} package`, () => __awaiter(this, void 0, void 0, function* () {
             try {
-                yield util.testAgda({
+                yield util.agdaTest({
                     agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
                     agdaDataDir: path.join(bdistDir, 'data')
                 });
@@ -579,7 +579,7 @@ function upload(installDir, options) {
         // Bundle libraries:
         yield bundleLibs(bdistDir, options);
         // Test artifact:
-        yield util.testAgda({
+        yield util.agdaTest({
             agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
             agdaDataDir: path.join(bdistDir, 'data')
         });
@@ -610,11 +610,11 @@ function compressBin(upxExe, binPath) {
         switch (opts.os) {
             case 'linux': {
                 // Print the needed libraries before compressing:
-                printNeededLibs(binPath);
+                yield printNeededLibs(binPath);
                 // Compress with UPX:
                 yield util.getOutput(upxExe, ['--best', binPath]);
                 // Print the needed libraries after compressing:
-                printNeededLibs(binPath);
+                yield printNeededLibs(binPath);
             }
         }
     });
@@ -819,7 +819,7 @@ function buildFromSource(options) {
         }));
         // 6. Test:
         yield core.group('👩🏾‍🔬 Testing Agda build', () => __awaiter(this, void 0, void 0, function* () {
-            return yield util.testAgda({
+            return yield util.agdaTest({
                 agdaBin: path.join(agdaDir, 'bin', util.agdaBinName),
                 agdaDataDir: path.join(agdaDir, 'data')
             });
@@ -1457,7 +1457,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setupAgdaEnv = exports.getAgdaSource = exports.resolveAgdaVersion = exports.simver = exports.stackGetLocalBin = exports.stackGetVersion = exports.stack = exports.cabalGetVersion = exports.cabal = exports.ghcGetVersion = exports.ghc = exports.testAgda = exports.agdaModeBinName = exports.agdaBinNames = exports.agdaBinName = void 0;
+exports.setupAgdaEnv = exports.getAgdaSource = exports.resolveAgdaVersion = exports.simver = exports.stackGetLocalBin = exports.stackGetVersion = exports.stack = exports.cabalGetVersion = exports.cabal = exports.ghcGetVersion = exports.ghc = exports.agdaTest = exports.agdaModeBinName = exports.agdaBinNames = exports.agdaBinName = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const path = __importStar(__nccwpck_require__(9411));
@@ -1468,7 +1468,7 @@ var agda_1 = __nccwpck_require__(9552);
 Object.defineProperty(exports, "agdaBinName", ({ enumerable: true, get: function () { return agda_1.agdaBinName; } }));
 Object.defineProperty(exports, "agdaBinNames", ({ enumerable: true, get: function () { return agda_1.agdaBinNames; } }));
 Object.defineProperty(exports, "agdaModeBinName", ({ enumerable: true, get: function () { return agda_1.agdaModeBinName; } }));
-Object.defineProperty(exports, "testAgda", ({ enumerable: true, get: function () { return agda_1.agdaTest; } }));
+Object.defineProperty(exports, "agdaTest", ({ enumerable: true, get: function () { return agda_1.agdaTest; } }));
 __exportStar(__nccwpck_require__(4369), exports);
 var haskell_1 = __nccwpck_require__(1310);
 Object.defineProperty(exports, "ghc", ({ enumerable: true, get: function () { return haskell_1.ghc; } }));
