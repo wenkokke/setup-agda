@@ -238,7 +238,6 @@ export function getOptions(
   if (options['force-build'] && options['force-no-build'])
     throw Error('Build or no build? What do you want from me? 🤷🏻‍♀️')
   if (options['bdist-name'] !== '') {
-    options['bdist-name'] = options['bdist-name'].split(/\s+/g).join('').trim()
     try {
       Mustache.parse(options['bdist-name'])
     } catch (error) {

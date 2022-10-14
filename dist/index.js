@@ -213,7 +213,6 @@ function getOptions(inputs) {
     if (options['force-build'] && options['force-no-build'])
         throw Error('Build or no build? What do you want from me? 🤷🏻‍♀️');
     if (options['bdist-name'] !== '') {
-        options['bdist-name'] = options['bdist-name'].split(/\s+/g).join('').trim();
         try {
             Mustache.parse(options['bdist-name']);
         }
@@ -692,16 +691,15 @@ function renderName(template, options) {
     const templateOrDefault = template !== ''
         ? template
         : 'agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}';
-    return Mustache.render(templateOrDefault, Object.assign(Object.assign({}, (0, object_pick_1.default)(options, [
+    const name = Mustache.render(templateOrDefault, Object.assign(Object.assign({}, (0, object_pick_1.default)(options, [
         'agda-version',
         'ghc-version',
         'cabal-version',
         'stack-version',
         'icu-version',
         'upx-version'
-    ])), { arch: os.arch(), platform: os.platform(), release: os.release(), 
-        // Boolean flags:
-        'if-stack': options['stack-version'] !== '', 'if-icu': options['icu-version'] !== '', 'if-upx': options['upx-version'] !== '' }));
+    ])), { arch: os.arch(), platform: os.platform(), release: os.release() }));
+    return name.split(/\s+/g).join('').trim();
 }
 exports.renderName = renderName;
 // Helpers for patching executables

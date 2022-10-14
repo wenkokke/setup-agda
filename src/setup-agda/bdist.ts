@@ -201,7 +201,7 @@ export function renderName(
     template !== ''
       ? template
       : 'agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}'
-  return Mustache.render(templateOrDefault, {
+  const name = Mustache.render(templateOrDefault, {
     ...pick(options, [
       'agda-version',
       'ghc-version',
@@ -212,12 +212,9 @@ export function renderName(
     ]),
     arch: os.arch(),
     platform: os.platform(),
-    release: os.release(),
-    // Boolean flags:
-    'if-stack': options['stack-version'] !== '',
-    'if-icu': options['icu-version'] !== '',
-    'if-upx': options['upx-version'] !== ''
+    release: os.release()
   })
+  return name.split(/\s+/g).join('').trim()
 }
 
 // Helpers for patching executables
