@@ -213,11 +213,15 @@ function getOptions(inputs) {
     if (options['force-build'] && options['force-no-build'])
         throw Error('Build or no build? What do you want from me? 🤷🏻‍♀️');
     if (options['bdist-name'] !== '') {
+        options['bdist-name'] = options['bdist-name'].split(/\s+/g).join('').trim();
         try {
             Mustache.parse(options['bdist-name']);
         }
         catch (error) {
-            throw Error(`Could not parse "bdist-name": ${(0, ensure_error_1.default)(error).message}`);
+            throw Error([
+                `Could not parse bdist-name, '${options['bdist-name']}':`,
+                (0, ensure_error_1.default)(error).message
+            ].join(node_os_1.EOL));
         }
     }
     return options;

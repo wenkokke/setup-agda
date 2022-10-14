@@ -2,7 +2,7 @@ import * as core from '@actions/core'
 import * as yaml from 'js-yaml'
 import * as fs from 'node:fs'
 import * as http from 'node:http'
-import {homedir, release} from 'node:os'
+import {homedir, release, EOL} from 'node:os'
 import * as Mustache from 'mustache'
 import * as path from 'node:path'
 import * as process from 'node:process'
@@ -238,10 +238,16 @@ export function getOptions(
   if (options['force-build'] && options['force-no-build'])
     throw Error('Build or no build? What do you want from me? 🤷🏻‍♀️')
   if (options['bdist-name'] !== '') {
+    options['bdist-name'] = options['bdist-name'].split(/\s+/g).join('').trim()
     try {
       Mustache.parse(options['bdist-name'])
     } catch (error) {
-      throw Error(`Could not parse "bdist-name": ${ensureError(error).message}`)
+      throw Error(
+        [
+          `Could not parse bdist-name, '${options['bdist-name']}':`,
+          ensureError(error).message
+        ].join(EOL)
+      )
     }
   }
 
