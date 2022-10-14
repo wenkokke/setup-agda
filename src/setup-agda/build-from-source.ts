@@ -17,7 +17,7 @@ import * as stack from './build-from-source/stack'
 export default async function buildFromSource(
   options: opts.BuildOptions
 ): Promise<string> {
-  const {sourceDir, buildTool, requireSetup} = await core.group(
+  const buildInfo = await core.group(
     '🛠 Preparing to build Agda from source',
     async (): Promise<BuildInfo> => {
       const ret: Partial<BuildInfo> = {}
@@ -32,34 +32,27 @@ export default async function buildFromSource(
 
       // Determine the compatible GHC versions:
       assert(
-        options['compatible-ghc-versions'].length === 0,
-        `Option 'compatible-ghc-versions' is not empty: ${options['compatible-ghc-versions']}`
+        options['ghc-supported-versions'].length === 0,
+        `Option 'ghc-supported-versions' is not empty: ${options['ghc-supported-versions']}`
       )
-      options['compatible-ghc-versions'] =
-        await ret.buildTool.compatibleGhcVersions(ret.sourceDir)
-      core.info(
-        `Found compatible GHC versions: [${options[
-          'compatible-ghc-versions'
-        ].join(', ')}]`
-      )
+      options['ghc-supported-versions'] =
+        await ret.buildTool.supportedGhcVersions(ret.sourceDir)
+      core.info(`Supported GHC versions: ${options['ghc-supported-versions']}`)
       // Determine whether or not we can use the pre-installed build tools:
       core.info('Search for compatible build tools')
-      const useInstalled = await tryInstalledBuildTools(options)
-      if (useInstalled) {
-        core.info('Found compatible versions of GHC and Cabal')
-        ret.requireSetup = false
+      ret.requireSetup = await requireSetup(options)
+      if (ret.requireSetup) {
+        core.info('Could not find supported versions of GHC and Cabal')
         return ret as BuildInfo
       } else {
-        core.info('Could not find compatible versions of GHC and Cabal')
-        ret.requireSetup = true
-        selectGhcVersion(options)
+        core.info('Found supported versions of GHC and Cabal')
         return ret as BuildInfo
       }
     }
   )
 
   // 3. Setup GHC via <haskell/actions/setup>:
-  if (requireSetup) {
+  if (buildInfo.requireSetup) {
     core.info('📞 Calling "haskell/actions/setup"')
     await setupHaskell(options)
   }
@@ -79,6 +72,7 @@ export default async function buildFromSource(
   // 5. Build:
   const agdaDir = opts.installDir(options['agda-version'])
   await core.group('👷🏾‍♀️ Building Agda', async () => {
+    const {buildTool, sourceDir} = buildInfo
     await buildTool.build(sourceDir, agdaDir, options)
     await io.cpR(path.join(sourceDir, 'src', 'data'), agdaDir)
   })
@@ -118,7 +112,7 @@ interface BuildTool {
     installDir: string,
     options: opts.BuildOptions
   ) => Promise<void>
-  compatibleGhcVersions: (sourceDir: string) => Promise<string[]>
+  supportedGhcVersions: (sourceDir: string) => Promise<string[]>
 }
 
 interface BuildInfo {
@@ -127,23 +121,21 @@ interface BuildInfo {
   requireSetup: boolean
 }
 
-async function tryInstalledBuildTools(
-  options: opts.BuildOptions
-): Promise<boolean> {
+async function requireSetup(options: opts.BuildOptions): Promise<boolean> {
   if (options['enable-stack']) {
     // NOTE: GitHub runners do not pre-install Stack
     core.info(`Could not find Stack`)
-    return false
+    return true
   }
   try {
     // Search for pre-installed GHC & Cabal versions:
-    const ghcVersion = await haskell.getSystemGhcVersion()
+    const ghcVersion = await haskell.ghcGetVersion()
     core.info(`Found pre-installed GHC version ${ghcVersion}`)
-    const cabalVersion = await haskell.getSystemCabalVersion()
+    const cabalVersion = await haskell.cabalGetVersion()
     core.info(`Found pre-installed Cabal version ${cabalVersion}`)
 
     // Filter compatible GHC versions to those matching pre-installed version:
-    const compatibleGhcVersions = options['compatible-ghc-versions'].filter(
+    const compatibleGhcVersions = options['ghc-supported-versions'].filter(
       compatibleGhcVersion =>
         opts.ghcVersionMatch(options, ghcVersion, compatibleGhcVersion)
     )
@@ -151,7 +143,7 @@ async function tryInstalledBuildTools(
       core.info(
         `Installed GHC ${ghcVersion} is incompatible with Agda ${options['agda-version']}`
       )
-      return false
+      return true
     }
 
     // Check if pre-installed GHC version matches 'ghc-version-range':
@@ -159,31 +151,15 @@ async function tryInstalledBuildTools(
       core.info(
         `Installed GHC ${ghcVersion} does not satisfy version range ${options['ghc-version-range']}`
       )
-      return false
+      return true
     }
 
     // Return updated build options
     options['ghc-version'] = ghcVersion
     options['cabal-version'] = cabalVersion
-    return true
+    return false
   } catch (error) {
     core.debug(`Could not find GHC or Cabal: ${ensureError(error).message}`)
-    return false
-  }
-}
-
-function selectGhcVersion(options: opts.BuildOptions): void {
-  assert(options['ghc-version'] === 'latest')
-  const maybeGhcVersion = semver.maxSatisfying(
-    options['compatible-ghc-versions'],
-    options['ghc-version-range']
-  )
-  if (maybeGhcVersion === null) {
-    throw Error(
-      `No compatible GHC versions found: ${options['ghc-version-range']}`
-    )
-  } else {
-    core.info(`Select GHC ${maybeGhcVersion}`)
-    options['ghc-version'] = maybeGhcVersion
+    return true
   }
 }

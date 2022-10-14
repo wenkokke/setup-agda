@@ -41,6 +41,7 @@ export type SetupAgdaFlag =
   | 'bdist-upload'
   | 'disable-cluster-counting'
   | 'force-build'
+  | 'force-no-build'
   | 'ghc-version-match-exact'
   | SetupHaskellFlag
 
@@ -53,9 +54,7 @@ export interface SetupAgdaInputs
 export type UPXVersion = '3.96'
 
 export interface BuildOptions extends SetupAgdaInputs {
-  'compatible-ghc-versions': string[]
-  'extra-lib-dirs': string[]
-  'extra-include-dirs': string[]
+  'ghc-supported-versions': string[]
   'icu-version'?: string
   'bdist-libs': string[]
   'package-info-cache'?: PackageInfoCache
@@ -189,7 +188,7 @@ export function getOptions(
   ).inputs
   const getOption = (k: SetupAgdaOption): string => {
     const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs?.[k]
-    return maybeInput ?? inputSpec[k]?.default ?? ''
+    return maybeInput?.trim() ?? inputSpec[k]?.default ?? ''
   }
   const getFlag = (k: SetupAgdaFlag): boolean => {
     const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs?.[k]
@@ -203,6 +202,7 @@ export function getOptions(
     'bdist-upload': getFlag('bdist-upload'),
     'disable-cluster-counting': getFlag('disable-cluster-counting'),
     'force-build': getFlag('force-build'),
+    'force-no-build': getFlag('force-no-build'),
     'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
     'ghc-version-range': getOption('ghc-version-range'),
 
@@ -216,9 +216,7 @@ export function getOptions(
     'stack-version': getOption('stack-version'),
 
     // Specified in BuildOptions
-    'compatible-ghc-versions': [],
-    'extra-lib-dirs': [],
-    'extra-include-dirs': [],
+    'ghc-supported-versions': [],
     'bdist-libs': []
   }
 
@@ -227,8 +225,6 @@ export function getOptions(
     throw Error('Value "nightly" for input "agda-version" is unupported')
   if (options['ghc-version'] !== 'latest')
     throw Error('Input "ghc-version" is unsupported. Use "ghc-version-range"')
-  if (options['bdist-no-compress-exe'] && !supportsUPX())
-    throw Error('Input "bdist-compress-exe" is unsupported on MacOS <12')
   if (!semver.validRange(options['ghc-version-range']))
     throw Error('Input "ghc-version-range" is not a valid version range')
 

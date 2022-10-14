@@ -15,8 +15,43 @@ jobs:
     name: Check dist
     uses: ./.github/workflows/check-dist.yml
 
-  test-setup-agda:
-    name: Setup Agda ${{ matrix.agda-version }}
+  test-build-with-cabal:
+    name: Build Agda on ${{ matrix.os }} with Cabal
+    needs: [check-dist]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12, windows-2022]
+
+    uses: ./.github/workflows/setup-agda.yml
+    with:
+      runs-on: ${{ matrix.os }}
+      force-build: true
+      agda-version: latest
+      cabal-version: '3.6'
+      bdist-upload: true
+      bdist-name: agda-{{agda-version}}-{{arch}-${{ matrix.os }}-icu{{icu-version}}-ghc{{ghc-version}}-cabal{{cabal-version}}
+
+  test-build-with-stack:
+    name: Build Agda on ${{ matrix.os }} with Stack
+    needs: [check-dist]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12, windows-2022]
+
+    uses: ./.github/workflows/setup-agda.yml
+    with:
+      runs-on: ${{ matrix.os }}
+      force-build: true
+      agda-version: latest
+      cabal-version: '3.4'
+      enable-stack: true
+      bdist-upload: true
+      bdist-name: agda-{{agda-version}}-{{arch}-${{ matrix.os }}-icu{{icu-version}}-ghc{{ghc-version}}-stack{{stack-version}}
+
+  test-bdist:
+    name: Setup Agda on ${{ matrix.os }}
     needs: [check-dist]
 
     strategy:
@@ -28,21 +63,18 @@ jobs:
             ubuntu-20.04,
             macos-11,
             macos-12,
+            windows-2019,
             windows-2022
           ]
-        agda-version: [latest]
-        cabal-version: ['3.6']
-        upload-bdist: [true]
 
-    uses: ./.github/workflows/build.yml
+    uses: ./.github/workflows/setup-agda.yml
     with:
       runs-on: ${{ matrix.os }}
-      agda-version: ${{ matrix.agda-version }}
-      cabal-version: ${{ matrix.cabal-version }}
-      upload-bdist: ${{ matrix.upload-bdist }}
-      bdist-name: agda-{{agda-version}}-{{arch}-${{ matrix.os }}-icu{{icu-version}}
+      force-no-build: true
+      agda-version: latest
 
   update-latest:
     name: Update latest
-    needs: [check-dist, test-setup-agda]
+    needs:
+      [check-dist, test-build-with-cabal, test-build-with-stack, test-bdist]
     uses: ./.github/workflows/update-latest.yml

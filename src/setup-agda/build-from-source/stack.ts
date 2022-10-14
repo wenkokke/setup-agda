@@ -56,18 +56,10 @@ function buildFlags(options: opts.BuildOptions): string[] {
   if (opts.supportsOptimiseHeavily(options)) {
     flags.push('--flag=Agda:+optimise-heavily')
   }
-  // Pass any extra libraries:
-  for (const dir of options['extra-lib-dirs']) {
-    flags.push(`--extra-lib-dirs=${dir}`)
-  }
-  // Pass any extra headers:
-  for (const dir of options['extra-include-dirs']) {
-    flags.push(`--extra-include-dirs=${dir}`)
-  }
   return flags
 }
 
-export async function compatibleGhcVersions(
+export async function supportedGhcVersions(
   sourceDir: string
 ): Promise<string[]> {
   const versions: string[] = []

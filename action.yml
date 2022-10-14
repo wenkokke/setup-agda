@@ -41,6 +41,10 @@ inputs:
     description: |
       If specified, always build from source.
     required: false
+  force-no-build:
+    description: |
+      If specified, never build from source.
+    required: false
   ghc-version-match-exact:
     description: |
       If specified, requires an exact match for the GHC version.

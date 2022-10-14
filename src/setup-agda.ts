@@ -28,7 +28,10 @@ export default async function setup(
       maybeAgdaDir = await installFromToolCache(options)
     if (!options['force-build'] && maybeAgdaDir === null)
       maybeAgdaDir = await installFromBdist(options)
-    if (maybeAgdaDir === null) maybeAgdaDir = await buildFromSource(options)
+    if (!options['force-no-build'] && maybeAgdaDir === null)
+      maybeAgdaDir = await buildFromSource(options)
+    else if (maybeAgdaDir === null)
+      throw Error('Required build, but "force-no-build" is set.')
     const agdaDir: string = maybeAgdaDir
 
     // 4. Set environment variables:

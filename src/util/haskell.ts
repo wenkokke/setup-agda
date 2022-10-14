@@ -36,14 +36,14 @@ export async function execSystemStack(
   return await exec.getoutput('stack', args, execOptions)
 }
 
-export async function getSystemGhcVersion(): Promise<string> {
+export async function ghcGetVersion(): Promise<string> {
   return exec.getVersion('ghc', {
     versionFlag: '--numeric-version',
     silent: true
   })
 }
 
-export async function getSystemCabalVersion(): Promise<string> {
+export async function cabalGetVersion(): Promise<string> {
   return exec.getVersion('cabal', {
     versionFlag: '--numeric-version',
     silent: true
