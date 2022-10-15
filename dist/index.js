@@ -1475,19 +1475,12 @@ function setupForMacOS(options) {
         // Find the ICU installation location:
         const prefix = yield installDirForMacOS();
         core.debug(`Found ICU version ${icuVersion} at ${prefix}`);
-        // Set extra-{include,lib}-dirs
-        options['extra-include-dirs'].push(path.join(prefix, 'include'));
-        options['extra-lib-dirs'].push(path.join(prefix, 'lib'));
         // Add to PKG_CONFIG_PATH:
         const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig');
         util.addPkgConfigPath(pkgConfigDir);
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
         (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version reported by Homebrew differs from ICU version reported by pkg-config');
-        // Print pkg-config information:
-        const icuFlagL = yield util.pkgConfig('--libs-only-L', 'icu-i18n');
-        const icuFlagI = yield util.pkgConfig('--cflags-only-I', 'icu-i18n');
-        core.info(`Set ICU flags: ${icuFlagI} ${icuFlagL}`);
     });
 }
 exports.setupForMacOS = setupForMacOS;
@@ -1597,6 +1590,48 @@ function setupForWindows(options) {
         core.addPath('C:\\msys64\\mingw64\\bin');
         core.addPath('C:\\msys64\\usr\\bin');
         yield util.pacman('-v', '--noconfirm', '-Sy', 'mingw-w64-x86_64-pkg-config', 'mingw-w64-x86_64-icu');
+        try {
+            core.info(yield util.pkgConfig('--list-all'));
+        }
+        catch (_a) {
+            // Ignore
+        }
+        try {
+            core.info(yield util.pkgConfig('--variable', 'libdir', 'icu'));
+        }
+        catch (_b) {
+            // Ignore
+        }
+        try {
+            core.info(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n'));
+        }
+        catch (_c) {
+            // Ignore
+        }
+        try {
+            core.info(yield util.pkgConfig('--variable', 'libdir', 'icu-uc'));
+        }
+        catch (_d) {
+            // Ignore
+        }
+        try {
+            core.info(yield util.pkgConfig('--variable', 'libdir', 'icu-io'));
+        }
+        catch (_e) {
+            // Ignore
+        }
+        try {
+            core.info(yield util.lsR('C:\\msys64\\mingw64'));
+        }
+        catch (_f) {
+            // Ignore
+        }
+        try {
+            core.info(yield util.lsR('C:\\usr'));
+        }
+        catch (_g) {
+            // Ignore
+        }
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
     });
@@ -1609,13 +1644,6 @@ function bundleForWindows(distDir, options) {
         // Gather information
         core.info(`Bundle ICU version ${options['icu-version']}`);
         const libDirFrom = 'C:\\msys64\\mingw64\\bin';
-        try {
-            core.info(yield util.lsR('C:\\msys64\\mingw64'));
-            core.info(yield util.lsR('C:\\usr'));
-        }
-        catch (_a) {
-            // Ignore
-        }
         const libPattern = path.join(libDirFrom, 'libicu*.dll');
         core.info(`Searching with:${os.EOL}${libPattern}`);
         const libGlobber = yield glob.create(libPattern);

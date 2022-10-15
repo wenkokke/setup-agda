@@ -25,10 +25,6 @@ export async function setupForMacOS(options: opts.BuildOptions): Promise<void> {
   const prefix = await installDirForMacOS()
   core.debug(`Found ICU version ${icuVersion} at ${prefix}`)
 
-  // Set extra-{include,lib}-dirs
-  options['extra-include-dirs'].push(path.join(prefix, 'include'))
-  options['extra-lib-dirs'].push(path.join(prefix, 'lib'))
-
   // Add to PKG_CONFIG_PATH:
   const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig')
   util.addPkgConfigPath(pkgConfigDir)
@@ -39,11 +35,6 @@ export async function setupForMacOS(options: opts.BuildOptions): Promise<void> {
     icuVersion === options['icu-version'],
     'ICU version reported by Homebrew differs from ICU version reported by pkg-config'
   )
-
-  // Print pkg-config information:
-  const icuFlagL = await util.pkgConfig('--libs-only-L', 'icu-i18n')
-  const icuFlagI = await util.pkgConfig('--cflags-only-I', 'icu-i18n')
-  core.info(`Set ICU flags: ${icuFlagI} ${icuFlagL}`)
 }
 
 export async function bundleForMacOS(

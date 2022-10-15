@@ -21,6 +21,42 @@ export async function setupForWindows(
     'mingw-w64-x86_64-icu'
   )
 
+  try {
+    core.info(await util.pkgConfig('--list-all'))
+  } catch {
+    // Ignore
+  }
+  try {
+    core.info(await util.pkgConfig('--variable', 'libdir', 'icu'))
+  } catch {
+    // Ignore
+  }
+  try {
+    core.info(await util.pkgConfig('--variable', 'libdir', 'icu-i18n'))
+  } catch {
+    // Ignore
+  }
+  try {
+    core.info(await util.pkgConfig('--variable', 'libdir', 'icu-uc'))
+  } catch {
+    // Ignore
+  }
+  try {
+    core.info(await util.pkgConfig('--variable', 'libdir', 'icu-io'))
+  } catch {
+    // Ignore
+  }
+  try {
+    core.info(await util.lsR('C:\\msys64\\mingw64'))
+  } catch {
+    // Ignore
+  }
+  try {
+    core.info(await util.lsR('C:\\usr'))
+  } catch {
+    // Ignore
+  }
+
   // Find the ICU version:
   options['icu-version'] = await util.pkgConfig('--modversion', 'icu-i18n')
 }
@@ -34,12 +70,6 @@ export async function bundleForWindows(
   // Gather information
   core.info(`Bundle ICU version ${options['icu-version']}`)
   const libDirFrom = 'C:\\msys64\\mingw64\\bin'
-  try {
-    core.info(await util.lsR('C:\\msys64\\mingw64'))
-    core.info(await util.lsR('C:\\usr'))
-  } catch {
-    // Ignore
-  }
   const libPattern = path.join(libDirFrom, 'libicu*.dll')
   core.info(`Searching with:${os.EOL}${libPattern}`)
   const libGlobber = await glob.create(libPattern)
