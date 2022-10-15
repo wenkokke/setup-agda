@@ -239,6 +239,10 @@ export function getOptions(
     throw Error('Build or no build? What do you want from me? 🤷🏻‍♀️')
   if (options['bdist-name'] !== '') {
     try {
+      options['bdist-name'] = options['bdist-name']
+        .split(/\s+/g)
+        .join('')
+        .trim()
       Mustache.parse(options['bdist-name'])
     } catch (error) {
       throw Error(

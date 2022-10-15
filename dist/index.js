@@ -214,6 +214,10 @@ function getOptions(inputs) {
         throw Error('Build or no build? What do you want from me? 🤷🏻‍♀️');
     if (options['bdist-name'] !== '') {
         try {
+            options['bdist-name'] = options['bdist-name']
+                .split(/\s+/g)
+                .join('')
+                .trim();
             Mustache.parse(options['bdist-name']);
         }
         catch (error) {
@@ -691,7 +695,7 @@ function renderName(template, options) {
     const templateOrDefault = template !== ''
         ? template
         : 'agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}';
-    const name = Mustache.render(templateOrDefault, Object.assign(Object.assign({}, (0, object_pick_1.default)(options, [
+    return Mustache.render(templateOrDefault, Object.assign(Object.assign({}, (0, object_pick_1.default)(options, [
         'agda-version',
         'ghc-version',
         'cabal-version',
@@ -699,7 +703,6 @@ function renderName(template, options) {
         'icu-version',
         'upx-version'
     ])), { arch: os.arch(), platform: os.platform(), release: os.release() }));
-    return name.split(/\s+/g).join('').trim();
 }
 exports.renderName = renderName;
 // Helpers for patching executables
