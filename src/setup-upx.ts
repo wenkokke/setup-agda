@@ -1,6 +1,5 @@
 import * as tc from '@actions/tool-cache'
 import * as path from 'node:path'
-import * as os from 'node:os'
 import * as opts from './opts'
 import * as util from './util'
 
@@ -17,16 +16,9 @@ export default async function setup(
   }
 }
 
-function findUpxPkgUrl(upxVersion: string): string {
-  const upxPkgKey = `upx-${upxVersion}-${os.arch()}-${os.platform()}`
-  const upxPkgUrl = opts.packageIndex[upxPkgKey]
-  if (upxPkgUrl === undefined) throw Error(`No package for ${upxPkgKey}`)
-  else return upxPkgUrl
-}
-
 async function setupLinux(options: opts.BuildOptions): Promise<string> {
   const upxVersion = '3.96'
-  const upxPkgUrl = findUpxPkgUrl(upxVersion)
+  const upxPkgUrl = opts.findPkgUrl('upx', upxVersion)
   const upxTar = await tc.downloadTool(upxPkgUrl)
   const upxDir = await tc.extractTar(upxTar, undefined, [
     '--extract',
@@ -53,7 +45,7 @@ async function setupMacOS(options: opts.BuildOptions): Promise<string> {
 
 async function setupWindows(options: opts.BuildOptions): Promise<string> {
   const upxVersion = '3.96'
-  const upxPkgUrl = findUpxPkgUrl(upxVersion)
+  const upxPkgUrl = opts.findPkgUrl('upx', upxVersion)
   const upxZip = await tc.downloadTool(upxPkgUrl)
   const upxDir = await tc.extractZip(upxZip)
   options['upx-version'] = '3.96'

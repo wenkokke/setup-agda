@@ -73,7 +73,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.pickSetupHaskellInputs = exports.getOptions = exports.bdistNameDefaultTemplate = exports.os = exports.packageIndex = exports.packageInfoCache = exports.supportsUPX = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.compressExe = void 0;
+exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.pickSetupHaskellInputs = exports.getOptions = exports.bdistNameDefaultTemplate = exports.findPkgUrl = exports.os = exports.packageIndex = exports.packageInfoCache = exports.supportsUPX = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.compressExe = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const yaml = __importStar(__nccwpck_require__(1917));
 const fs = __importStar(__nccwpck_require__(7561));
@@ -167,6 +167,16 @@ exports.os = (() => {
             throw Error(`Unsupported platform ${process.platform}`);
     }
 })();
+// Helper for binary packages
+function findPkgUrl(pkg, version) {
+    const pkgKey = `${pkg}-${version}-${process.arch}-${process.platform}`;
+    const pkgUrl = exports.packageIndex[pkgKey];
+    if (pkgUrl === undefined)
+        throw Error(`No package for ${pkgKey}`);
+    else
+        return pkgUrl;
+}
+exports.findPkgUrl = findPkgUrl;
 // Helper to get the BuildOptions
 exports.bdistNameDefaultTemplate = 'agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}';
 function getOptions(inputs) {
@@ -1247,28 +1257,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.bundle = exports.setup = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const tc = __importStar(__nccwpck_require__(7784));
-const path = __importStar(__nccwpck_require__(9411));
-const fs = __importStar(__nccwpck_require__(7561));
-const os = __importStar(__nccwpck_require__(612));
 const opts = __importStar(__nccwpck_require__(1352));
-const util = __importStar(__nccwpck_require__(4024));
-const node_assert_1 = __importDefault(__nccwpck_require__(8061));
+const linux_1 = __nccwpck_require__(577);
+const macos_1 = __nccwpck_require__(2199);
+const windows_1 = __nccwpck_require__(908);
 function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (opts.os) {
             case 'linux':
-                return yield setupForLinux(options);
+                return yield (0, linux_1.setupForLinux)(options);
             case 'macos':
-                return yield setupForMacOS(options);
+                return yield (0, macos_1.setupForMacOS)(options);
             case 'windows':
-                return yield setupForWindows(options);
+                return yield (0, windows_1.setupForWindows)(options);
         }
     });
 }
@@ -1277,24 +1280,67 @@ function bundle(distDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (opts.os) {
             case 'linux':
-                return yield bundleForLinux(distDir, options);
+                return yield (0, linux_1.bundleForLinux)(distDir, options);
             case 'macos':
-                return yield bundleForMacOS(distDir, options);
+                return yield (0, macos_1.bundleForMacOS)(distDir, options);
             case 'windows':
-                return yield bundleForWindows(distDir, options);
+                return yield (0, windows_1.bundleForWindows)(distDir, options);
         }
     });
 }
 exports.bundle = bundle;
-function findIcuPkgUrl(icuVersion) {
-    const icuPkgKey = `icu-${icuVersion}-${os.arch()}-${os.platform()}`;
-    const icuPkgUrl = opts.packageIndex[icuPkgKey];
-    if (icuPkgUrl === undefined)
-        throw Error(`No package for ${icuPkgKey}`);
-    else
-        return icuPkgUrl;
-}
-// Linux
+
+
+/***/ }),
+
+/***/ 577:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.bundleForLinux = exports.setupForLinux = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const tc = __importStar(__nccwpck_require__(7784));
+const path = __importStar(__nccwpck_require__(9411));
+const opts = __importStar(__nccwpck_require__(1352));
+const util = __importStar(__nccwpck_require__(4024));
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 function installDirForLinux(icuVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         return path.join(opts.agdaDir(), 'icu', icuVersion);
@@ -1304,7 +1350,7 @@ function setupForLinux(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Download ICU package:
         const icuVersion = '71.1';
-        const icuPkgUrl = findIcuPkgUrl(icuVersion);
+        const icuPkgUrl = opts.findPkgUrl('icu', icuVersion);
         const icuTar = yield tc.downloadTool(icuPkgUrl);
         const prefix = yield installDirForLinux(icuVersion);
         const tarArgs = ['--extract', '--gzip', '--strip-components=4'];
@@ -1322,8 +1368,13 @@ function setupForLinux(options) {
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
         (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version installed differs from ICU version reported by pkg-config');
+        // Print pkg-config information:
+        const icuFlagL = yield util.pkgConfig('--libs-only-L', 'icu-i18n');
+        const icuFlagI = yield util.pkgConfig('--cflags-only-I', 'icu-i18n');
+        core.info(`Set ICU flags: ${icuFlagI} ${icuFlagL}`);
     });
 }
+exports.setupForLinux = setupForLinux;
 function bundleForLinux(distDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         if (options['icu-version'] === undefined)
@@ -1374,6 +1425,57 @@ function bundleForLinux(distDir, options) {
         yield util.patchelf('--add-rpath', "'$ORIGIN/../lib'", agdaBinPath);
     });
 }
+exports.bundleForLinux = bundleForLinux;
+
+
+/***/ }),
+
+/***/ 2199:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.bundleForMacOS = exports.setupForMacOS = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const path = __importStar(__nccwpck_require__(9411));
+const util = __importStar(__nccwpck_require__(4024));
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 // MacOS
 function installDirForMacOS() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -1404,8 +1506,13 @@ function setupForMacOS(options) {
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
         (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version reported by Homebrew differs from ICU version reported by pkg-config');
+        // Print pkg-config information:
+        const icuFlagL = yield util.pkgConfig('--libs-only-L', 'icu-i18n');
+        const icuFlagI = yield util.pkgConfig('--cflags-only-I', 'icu-i18n');
+        core.info(`Set ICU flags: ${icuFlagI} ${icuFlagL}`);
     });
 }
+exports.setupForMacOS = setupForMacOS;
 function bundleForMacOS(distDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         if (options['icu-version'] === undefined)
@@ -1456,6 +1563,61 @@ function bundleForMacOS(distDir, options) {
         }
     });
 }
+exports.bundleForMacOS = bundleForMacOS;
+
+
+/***/ }),
+
+/***/ 908:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.bundleForWindows = exports.setupForWindows = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const tc = __importStar(__nccwpck_require__(7784));
+const path = __importStar(__nccwpck_require__(9411));
+const fs = __importStar(__nccwpck_require__(7561));
+const os = __importStar(__nccwpck_require__(612));
+const opts = __importStar(__nccwpck_require__(1352));
+const util = __importStar(__nccwpck_require__(4024));
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 // Windows
 function installDirForWindows(icuVersion) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -1466,7 +1628,7 @@ function setupForWindows(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Download ICU package:
         const icuVersion = '71.1';
-        const icuPkgUrl = findIcuPkgUrl(icuVersion);
+        const icuPkgUrl = opts.findPkgUrl('icu', icuVersion);
         const icuZip = yield tc.downloadTool(icuPkgUrl);
         const tmpDir = yield tc.extractZip(icuZip);
         const prefix = yield installDirForWindows(icuVersion);
@@ -1537,8 +1699,13 @@ function setupForWindows(options) {
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
         (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version installed differs from ICU version reported by pkg-config');
+        // Print pkg-config information:
+        const icuFlagL = yield util.pkgConfig('--libs-only-L', 'icu-i18n');
+        const icuFlagI = yield util.pkgConfig('--cflags-only-I', 'icu-i18n');
+        core.info(`Set ICU flags: ${icuFlagI} ${icuFlagL}`);
     });
 }
+exports.setupForWindows = setupForWindows;
 function bundleForWindows(distDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         if (options['icu-version'] === undefined)
@@ -1561,6 +1728,7 @@ function bundleForWindows(distDir, options) {
         }
     });
 }
+exports.bundleForWindows = bundleForWindows;
 
 
 /***/ }),
@@ -1605,7 +1773,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const tc = __importStar(__nccwpck_require__(7784));
 const path = __importStar(__nccwpck_require__(9411));
-const os = __importStar(__nccwpck_require__(612));
 const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
 function setup(options) {
@@ -1621,18 +1788,10 @@ function setup(options) {
     });
 }
 exports["default"] = setup;
-function findUpxPkgUrl(upxVersion) {
-    const upxPkgKey = `upx-${upxVersion}-${os.arch()}-${os.platform()}`;
-    const upxPkgUrl = opts.packageIndex[upxPkgKey];
-    if (upxPkgUrl === undefined)
-        throw Error(`No package for ${upxPkgKey}`);
-    else
-        return upxPkgUrl;
-}
 function setupLinux(options) {
     return __awaiter(this, void 0, void 0, function* () {
         const upxVersion = '3.96';
-        const upxPkgUrl = findUpxPkgUrl(upxVersion);
+        const upxPkgUrl = opts.findPkgUrl('upx', upxVersion);
         const upxTar = yield tc.downloadTool(upxPkgUrl);
         const upxDir = yield tc.extractTar(upxTar, undefined, [
             '--extract',
@@ -1663,7 +1822,7 @@ function setupMacOS(options) {
 function setupWindows(options) {
     return __awaiter(this, void 0, void 0, function* () {
         const upxVersion = '3.96';
-        const upxPkgUrl = findUpxPkgUrl(upxVersion);
+        const upxPkgUrl = opts.findPkgUrl('upx', upxVersion);
         const upxZip = yield tc.downloadTool(upxPkgUrl);
         const upxDir = yield tc.extractZip(upxZip);
         options['upx-version'] = '3.96';

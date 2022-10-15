@@ -181,6 +181,15 @@ export const os: OS = (() => {
   }
 })()
 
+// Helper for binary packages
+
+export function findPkgUrl(pkg: string, version: string): string {
+  const pkgKey = `${pkg}-${version}-${process.arch}-${process.platform}`
+  const pkgUrl = packageIndex[pkgKey]
+  if (pkgUrl === undefined) throw Error(`No package for ${pkgKey}`)
+  else return pkgUrl
+}
+
 // Helper to get the BuildOptions
 
 export const bdistNameDefaultTemplate =
