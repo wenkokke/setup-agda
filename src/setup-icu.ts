@@ -59,7 +59,7 @@ async function setupForLinux(options: opts.BuildOptions): Promise<void> {
   const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig')
   util.sed(
     '-i',
-    `"s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/g"`,
+    `s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/g`,
     path.join(pkgConfigDir, 'icu-i18n.pc')
   )
   core.exportVariable('PKG_CONFIG_PATH', pkgConfigDir)

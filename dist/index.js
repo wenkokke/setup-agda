@@ -1296,7 +1296,7 @@ function setupForLinux(options) {
         (0, node_assert_1.default)(prefix === prefixTC);
         // Set PKG_CONFIG_PATH & change prefix in icu-i18n.pc:
         const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig');
-        util.sed('-i', `"s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/g"`, path.join(pkgConfigDir, 'icu-i18n.pc'));
+        util.sed('-i', `s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/g`, path.join(pkgConfigDir, 'icu-i18n.pc'));
         core.exportVariable('PKG_CONFIG_PATH', pkgConfigDir);
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
