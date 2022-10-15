@@ -1,54 +1,13 @@
 import * as core from '@actions/core'
-import * as tc from '@actions/tool-cache'
+import * as glob from '@actions/glob'
+import * as os from 'node:os'
 import * as path from 'node:path'
 import * as opts from '../opts'
 import * as util from '../util'
-import assert from 'node:assert'
-
-async function installDirForLinux(icuVersion: string): Promise<string> {
-  return path.join(opts.agdaDir(), 'icu', icuVersion)
-}
 
 export async function setupForLinux(options: opts.BuildOptions): Promise<void> {
-  // Download ICU package:
-  const icuVersion = '71.1'
-  const icuPkgUrl = opts.findPkgUrl('icu', icuVersion)
-  const icuTar = await tc.downloadTool(icuPkgUrl)
-  const prefix = await installDirForLinux(icuVersion)
-  const tarArgs = ['--extract', '--gzip', '--strip-components=4']
-  const prefixTC = await tc.extractTar(icuTar, prefix, tarArgs)
-  assert(prefix === prefixTC)
-
-  // Set extra-{include,lib}-dirs
-  options['extra-include-dirs'].push(path.join(prefix, 'include'))
-  options['extra-lib-dirs'].push(path.join(prefix, 'lib'))
-
-  // Patch prefix in icu-i18n.pc:
-  const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig')
-  await util.sed(
-    '-i',
-    `s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/g`,
-    path.join(pkgConfigDir, 'icu-i18n.pc')
-  )
-  await util.sed(
-    '-i',
-    `s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/g`,
-    path.join(pkgConfigDir, 'icu-uc.pc')
-  )
-  // Add to PKG_CONFIG_PATH:
-  util.addPkgConfigPath(pkgConfigDir)
-
   // Find the ICU version:
   options['icu-version'] = await util.pkgConfig('--modversion', 'icu-i18n')
-  assert(
-    icuVersion === options['icu-version'],
-    'ICU version installed differs from ICU version reported by pkg-config'
-  )
-
-  // Print pkg-config information:
-  const icuFlagL = await util.pkgConfig('--libs-only-L', 'icu-i18n')
-  const icuFlagI = await util.pkgConfig('--cflags-only-I', 'icu-i18n')
-  core.info(`Set ICU flags: ${icuFlagI} ${icuFlagL}`)
 }
 
 export async function bundleForLinux(
@@ -59,18 +18,31 @@ export async function bundleForLinux(
 
   // Gather information
   core.info(`Bundle ICU version ${options['icu-version']}`)
-  const prefix = await installDirForLinux(options['icu-version'])
+  const icuinLibDir = await util.pkgConfig('--variable', 'libdir', 'icu-i18n')
+  core.info(await util.lsR(icuinLibDir))
+  const icuucLibDir = await util.pkgConfig('--variable', 'libdir', 'icu-uc')
+  core.info(await util.lsR(icuucLibDir))
+  const icuLibPatterns = [icuinLibDir, icuucLibDir]
+    .flatMap<string>(libDir =>
+      ['libicui18n', 'libicuuc', 'libicudata'].flatMap<string>(libName =>
+        path.join(libDir, `${libName}.so.${options['icu-version']}`)
+      )
+    )
+    .join(os.EOL)
+  core.info(`Searching with:${os.EOL}${icuLibPatterns}`)
+  const icuLibGlobber = await glob.create(icuLibPatterns)
+  const icuLibsFrom = await icuLibGlobber.glob()
+  core.info(`Found libraries:${os.EOL}${icuLibsFrom.join(os.EOL)}`)
 
-  core.debug(`Found ICU version ${options['icu-version']} at ${prefix}`)
+  // core.debug(`Found ICU version ${options['icu-version']} at ${prefix}`)
   const distLibDir = path.join(distDir, 'lib')
   const distBinDir = path.join(distDir, 'bin')
 
   // Copy library files & change their IDs
   core.debug(`Copy ICU ${options['icu-version']} in ${distLibDir}`)
   await util.mkdirP(distLibDir)
-  for (const libName of ['libicui18n', 'libicuuc', 'libicudata']) {
-    const libNameFrom = `${libName}.so.${options['icu-version']}`
-    const libFrom = path.join(prefix, 'lib', libNameFrom)
+  for (const libFrom of icuLibsFrom) {
+    const libName = path.basename(libFrom, `.so.${options['icu-version']}`)
     const libNameTo = `agda-${options['agda-version']}-${libName}.so`
     const libTo = path.join(distLibDir, libNameTo)
     // Copy the library:

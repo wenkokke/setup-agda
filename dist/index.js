@@ -1330,48 +1330,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.bundleForLinux = exports.setupForLinux = void 0;
 const core = __importStar(__nccwpck_require__(2186));
-const tc = __importStar(__nccwpck_require__(7784));
+const glob = __importStar(__nccwpck_require__(8090));
+const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
-const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
-const node_assert_1 = __importDefault(__nccwpck_require__(8061));
-function installDirForLinux(icuVersion) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return path.join(opts.agdaDir(), 'icu', icuVersion);
-    });
-}
 function setupForLinux(options) {
     return __awaiter(this, void 0, void 0, function* () {
-        // Download ICU package:
-        const icuVersion = '71.1';
-        const icuPkgUrl = opts.findPkgUrl('icu', icuVersion);
-        const icuTar = yield tc.downloadTool(icuPkgUrl);
-        const prefix = yield installDirForLinux(icuVersion);
-        const tarArgs = ['--extract', '--gzip', '--strip-components=4'];
-        const prefixTC = yield tc.extractTar(icuTar, prefix, tarArgs);
-        (0, node_assert_1.default)(prefix === prefixTC);
-        // Set extra-{include,lib}-dirs
-        options['extra-include-dirs'].push(path.join(prefix, 'include'));
-        options['extra-lib-dirs'].push(path.join(prefix, 'lib'));
-        // Patch prefix in icu-i18n.pc:
-        const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig');
-        yield util.sed('-i', `s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/g`, path.join(pkgConfigDir, 'icu-i18n.pc'));
-        yield util.sed('-i', `s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/g`, path.join(pkgConfigDir, 'icu-uc.pc'));
-        // Add to PKG_CONFIG_PATH:
-        util.addPkgConfigPath(pkgConfigDir);
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
-        (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version installed differs from ICU version reported by pkg-config');
-        // Print pkg-config information:
-        const icuFlagL = yield util.pkgConfig('--libs-only-L', 'icu-i18n');
-        const icuFlagI = yield util.pkgConfig('--cflags-only-I', 'icu-i18n');
-        core.info(`Set ICU flags: ${icuFlagI} ${icuFlagL}`);
     });
 }
 exports.setupForLinux = setupForLinux;
@@ -1381,16 +1350,25 @@ function bundleForLinux(distDir, options) {
             throw Error('No ICU version');
         // Gather information
         core.info(`Bundle ICU version ${options['icu-version']}`);
-        const prefix = yield installDirForLinux(options['icu-version']);
-        core.debug(`Found ICU version ${options['icu-version']} at ${prefix}`);
+        const icuinLibDir = yield util.pkgConfig('--variable', 'libdir', 'icu-i18n');
+        core.info(yield util.lsR(icuinLibDir));
+        const icuucLibDir = yield util.pkgConfig('--variable', 'libdir', 'icu-uc');
+        core.info(yield util.lsR(icuucLibDir));
+        const icuLibPatterns = [icuinLibDir, icuucLibDir]
+            .flatMap(libDir => ['libicui18n', 'libicuuc', 'libicudata'].flatMap(libName => path.join(libDir, `${libName}.so.${options['icu-version']}`)))
+            .join(os.EOL);
+        core.info(`Searching with:${os.EOL}${icuLibPatterns}`);
+        const icuLibGlobber = yield glob.create(icuLibPatterns);
+        const icuLibsFrom = yield icuLibGlobber.glob();
+        core.info(`Found libraries:${os.EOL}${icuLibsFrom.join(os.EOL)}`);
+        // core.debug(`Found ICU version ${options['icu-version']} at ${prefix}`)
         const distLibDir = path.join(distDir, 'lib');
         const distBinDir = path.join(distDir, 'bin');
         // Copy library files & change their IDs
         core.debug(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
         yield util.mkdirP(distLibDir);
-        for (const libName of ['libicui18n', 'libicuuc', 'libicudata']) {
-            const libNameFrom = `${libName}.so.${options['icu-version']}`;
-            const libFrom = path.join(prefix, 'lib', libNameFrom);
+        for (const libFrom of icuLibsFrom) {
+            const libName = path.basename(libFrom, `.so.${options['icu-version']}`);
             const libNameTo = `agda-${options['agda-version']}-${libName}.so`;
             const libTo = path.join(distLibDir, libNameTo);
             // Copy the library:
@@ -1605,104 +1583,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.bundleForWindows = exports.setupForWindows = void 0;
 const core = __importStar(__nccwpck_require__(2186));
-const tc = __importStar(__nccwpck_require__(7784));
-const path = __importStar(__nccwpck_require__(9411));
-const fs = __importStar(__nccwpck_require__(7561));
+const glob = __importStar(__nccwpck_require__(8090));
 const os = __importStar(__nccwpck_require__(612));
-const opts = __importStar(__nccwpck_require__(1352));
+const path = __importStar(__nccwpck_require__(9411));
 const util = __importStar(__nccwpck_require__(4024));
-const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 // Windows
-function installDirForWindows(icuVersion) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return path.join(opts.agdaDir(), 'icu', icuVersion);
-    });
-}
 function setupForWindows(options) {
     return __awaiter(this, void 0, void 0, function* () {
-        // Download ICU package:
-        const icuVersion = '71.1';
-        const icuPkgUrl = opts.findPkgUrl('icu', icuVersion);
-        const icuZip = yield tc.downloadTool(icuPkgUrl);
-        const tmpDir = yield tc.extractZip(icuZip);
-        const prefix = yield installDirForWindows(icuVersion);
-        yield util.mkdirP(path.dirname(prefix));
-        yield util.cpR(tmpDir, prefix);
-        yield util.rmRF(tmpDir);
-        // Set extra-{include,lib}-dirs
-        options['extra-include-dirs'].push(path.join(prefix, 'include'));
-        options['extra-lib-dirs'].push(path.join(prefix, 'bin'));
-        // Install pkg-config:
+        // Install pkg-config & ICU:
         core.addPath('C:\\msys64\\mingw64\\bin');
         core.addPath('C:\\msys64\\usr\\bin');
-        yield util.pacman('-v', '--noconfirm', '-Sy', 'mingw-w64-x86_64-pkg-config');
-        // Create pkg-config file:
-        const pkgConfigDir = path.join(prefix, 'pkgconfig');
-        yield util.mkdirP(pkgConfigDir);
-        // Create icu-i18n.pc
-        fs.writeFileSync(path.join(pkgConfigDir, 'icu-i18n.pc'), [
-            `prefix = ${prefix}`,
-            `exec_prefix = ${prefix}/bin64`,
-            `includedir = ${prefix}/include`,
-            `libdir = ${prefix}/bin64`,
-            'baselibs = -lpthread -ldl -lm',
-            '',
-            `Version: ${icuVersion}`,
-            `Cflags: -I${prefix}/include`,
-            '# end of icu.pc.in',
-            'Description: International Components for Unicode: Internationalization library',
-            'Name: icu-i18n',
-            'Requires: icu-uc',
-            'Libs: -licuin'
-        ].join(os.EOL));
-        // Create icu-uc.pc
-        fs.writeFileSync(path.join(pkgConfigDir, 'icu-uc.pc'), [
-            `prefix = ${prefix}`,
-            `exec_prefix = ${prefix}/bin64`,
-            `includedir = ${prefix}/include`,
-            `libdir = ${prefix}/bin64`,
-            'baselibs = -lpthread -ldl -lm',
-            '',
-            `Version: ${icuVersion}`,
-            `Cflags: -I${prefix}/include`,
-            '# end of icu.pc.in',
-            'Description: International Components for Unicode: Common and Data libraries',
-            'Name: icu-uc',
-            `Libs: -L${prefix}/bin64 -licuuc -licudt`,
-            'Libs.private: ${baselibs}'
-        ].join(os.EOL));
-        // Create icu-io.pc
-        fs.writeFileSync(path.join(pkgConfigDir, 'icu-io.pc'), [
-            `prefix = ${prefix}`,
-            `exec_prefix = ${prefix}/bin64`,
-            `includedir = ${prefix}/include`,
-            `libdir = ${prefix}/bin64`,
-            'baselibs = -lpthread -ldl -lm',
-            '',
-            `Version: ${icuVersion}`,
-            `Cflags: -I${prefix}/include`,
-            '# end of icu.pc.in',
-            'Description: International Components for Unicode: Stream and I/O Library',
-            'Name: icu-io',
-            'Requires: icu-i18n',
-            `Libs: -L${prefix}/bin64 -licuio`,
-            'Libs.private: ${baselibs}'
-        ].join(os.EOL));
-        // Add to PKG_CONFIG_PATH:
-        util.addPkgConfigPath(pkgConfigDir);
+        yield util.pacman('-v', '--noconfirm', '-Sy', 'mingw-w64-x86_64-pkg-config', 'mingw-w64-x86_64-icu');
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
-        (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version installed differs from ICU version reported by pkg-config');
-        // Print pkg-config information:
-        const icuFlagL = yield util.pkgConfig('--libs-only-L', 'icu-i18n');
-        const icuFlagI = yield util.pkgConfig('--cflags-only-I', 'icu-i18n');
-        core.info(`Set ICU flags: ${icuFlagI} ${icuFlagL}`);
     });
 }
 exports.setupForWindows = setupForWindows;
@@ -1712,17 +1608,26 @@ function bundleForWindows(distDir, options) {
             throw Error('No ICU version');
         // Gather information
         core.info(`Bundle ICU version ${options['icu-version']}`);
-        const prefix = yield installDirForWindows(options['icu-version']);
-        core.debug(`Found ICU version ${options['icu-version']} at ${prefix}`);
-        const distLibDir = path.join(distDir, 'bin');
-        const icuVerMaj = util.simver.major(options['icu-version']);
+        const libDirFrom = 'C:\\msys64\\mingw64\\bin';
+        try {
+            core.info(yield util.lsR('C:\\msys64\\mingw64'));
+            core.info(yield util.lsR('C:\\usr'));
+        }
+        catch (_a) {
+            // Ignore
+        }
+        const libPattern = path.join(libDirFrom, 'libicu*.dll');
+        core.info(`Searching with:${os.EOL}${libPattern}`);
+        const libGlobber = yield glob.create(libPattern);
+        const libsFrom = yield libGlobber.glob();
+        core.info(`Found libraries:${os.EOL}${libsFrom.join(os.EOL)}`);
         // Copy library files
-        core.debug(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
-        yield util.mkdirP(distLibDir);
-        for (const libName of ['libicuin', 'libicuuc', 'libicudt']) {
-            const libFullName = `${libName}${icuVerMaj}.dll`;
-            const libFrom = path.join(prefix, 'bin64', libFullName);
-            const libTo = path.join(distLibDir, libFullName);
+        const libDirTo = path.join(distDir, 'bin');
+        core.debug(`Copy ICU ${options['icu-version']} in ${libDirTo}`);
+        yield util.mkdirP(libDirTo);
+        for (const libFrom of libsFrom) {
+            const libName = path.basename(libFrom);
+            const libTo = path.join(libDirTo, libName);
             // Copy the library:
             yield util.cp(libFrom, libTo);
         }
