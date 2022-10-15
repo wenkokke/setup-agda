@@ -244,7 +244,7 @@ async function setupForWindows(options: opts.BuildOptions): Promise<void> {
 
   // Create icu-i18n.pc
   fs.writeFileSync(
-    path.join('icu-i18n.pc'),
+    path.join(pkgConfigDir, 'icu-i18n.pc'),
     [
       `prefix = ${prefix}`,
       `exec_prefix = ${prefix}/bin64`,
@@ -263,7 +263,7 @@ async function setupForWindows(options: opts.BuildOptions): Promise<void> {
   )
   // Create icu-uc.pc
   fs.writeFileSync(
-    path.join('icu-i18n.pc'),
+    path.join(pkgConfigDir, 'icu-i18n.pc'),
     [
       `prefix = ${prefix}`,
       `exec_prefix = ${prefix}/bin64`,

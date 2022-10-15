@@ -1457,7 +1457,7 @@ function setupForWindows(options) {
         const pkgConfigDir = path.join(prefix, 'pkgconfig');
         yield util.mkdirP(pkgConfigDir);
         // Create icu-i18n.pc
-        fs.writeFileSync(path.join('icu-i18n.pc'), [
+        fs.writeFileSync(path.join(pkgConfigDir, 'icu-i18n.pc'), [
             `prefix = ${prefix}`,
             `exec_prefix = ${prefix}/bin64`,
             `includedir = ${prefix}/include`,
@@ -1473,7 +1473,7 @@ function setupForWindows(options) {
             'Libs: -licuin'
         ].join(os.EOL));
         // Create icu-uc.pc
-        fs.writeFileSync(path.join('icu-i18n.pc'), [
+        fs.writeFileSync(path.join(pkgConfigDir, 'icu-i18n.pc'), [
             `prefix = ${prefix}`,
             `exec_prefix = ${prefix}/bin64`,
             `includedir = ${prefix}/include`,
