@@ -24,7 +24,7 @@ export async function getOutput(
   }
   const exitCode = await exec.exec(prog, args, execOptions)
   if (exitCode === 0) {
-    return progOutput
+    return progOutput.trim()
   } else {
     throw Error(
       `The call to ${prog} failed with exit code ${exitCode}:${os.EOL}${progErrors}`
@@ -53,35 +53,41 @@ export async function getVersion(
 
 // System utilities
 
-export const brew = async (...args: string[]): Promise<string> =>
-  await getOutput('brew', args)
+export async function brew(...args: string[]): Promise<string> {
+  return await getOutput('brew', args)
+}
 
-export const brewGetVersion = async (
+export async function brewGetVersion(
   formula: string
-): Promise<string | undefined> => {
+): Promise<string | undefined> {
   const formulaVersionRegExp = new RegExp(`${formula} (?<version>[\\d._]+)`)
   const formulaVersions = await brew('list', '--formula', '--versions')
   return formulaVersions.match(formulaVersionRegExp)?.groups?.version?.trim()
 }
 
-export const chmod = async (...args: string[]): Promise<string> =>
-  await getOutput('chmod', args)
+export async function chmod(...args: string[]): Promise<string> {
+  return await getOutput('chmod', args)
+}
 
-export const dumpbin = async (...args: string[]): Promise<string> =>
-  await getOutput('dumpbin', args)
+export async function dumpbin(...args: string[]): Promise<string> {
+  return await getOutput('dumpbin', args)
+}
 
-export const installNameTool = async (...args: string[]): Promise<string> =>
-  await getOutput('install_name_tool', args)
+export async function installNameTool(...args: string[]): Promise<string> {
+  return await getOutput('install_name_tool', args)
+}
 
-export const otool = async (...args: string[]): Promise<string> =>
-  await getOutput('otool', args)
+export async function otool(...args: string[]): Promise<string> {
+  return await getOutput('otool', args)
+}
 
-export const pacman = async (...args: string[]): Promise<string> =>
-  await getOutput('pacman', args)
+export async function pacman(...args: string[]): Promise<string> {
+  return await getOutput('pacman', args)
+}
 
-export const pacmanGetVersion = async (
+export async function pacmanGetVersion(
   pkg: string
-): Promise<string | undefined> => {
+): Promise<string | undefined> {
   const pkgInfo = await pacman('--noconfirm', '-Qs', pkg)
   const pkgVersionRegExp = /(?<version>\d[\d.]+\d)/
   const pkgVersion = pkgInfo.match(pkgVersionRegExp)?.groups?.version?.trim()
@@ -89,11 +95,18 @@ export const pacmanGetVersion = async (
   else throw Error(`Could not determine version of ${pkg}`)
 }
 
-export const patchelf = async (...args: string[]): Promise<string> =>
-  await getOutput('patchelf', args)
+export async function patchelf(...args: string[]): Promise<string> {
+  return await getOutput('patchelf', args)
+}
 
-export const pkgConfig = async (...args: string[]): Promise<string> =>
-  await getOutput('pkg-config', args)
+export async function pkgConfig(...args: string[]): Promise<string> {
+  return await getOutput('pkg-config', args)
+}
 
-export const xattr = async (...args: string[]): Promise<string> =>
-  await getOutput('xattr', args)
+export async function sed(...args: string[]): Promise<string> {
+  return await getOutput('sed', args)
+}
+
+export async function xattr(...args: string[]): Promise<string> {
+  return await getOutput('xattr', args)
+}

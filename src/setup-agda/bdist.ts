@@ -8,6 +8,7 @@ import * as os from 'node:os'
 import * as path from 'node:path'
 import pick from 'object.pick'
 import * as opts from '../opts'
+import * as icu from '../setup-icu'
 import setupUpx from '../setup-upx'
 import * as util from '../util'
 
@@ -16,7 +17,7 @@ export async function download(
 ): Promise<string | null> {
   // Get the name for the distribution:
   const bdistName = renderName('', options)
-  const bdistUrl = opts.bdistIndex[bdistName]
+  const bdistUrl = opts.packageIndex[bdistName]
   if (bdistUrl !== undefined) {
     core.info(`Found package ${bdistName}`)
     try {
@@ -66,7 +67,9 @@ export async function upload(
   }
 
   // Bundle libraries:
-  await bundleLibs(bdistDir, options)
+  if (options['icu-version'] !== undefined) {
+    await icu.bundle(bdistDir, options)
+  }
 
   // Test artifact:
   await util.agdaTest({
@@ -110,87 +113,6 @@ async function compressBin(upxExe: string, binPath: string): Promise<void> {
   await util.getOutput(upxExe, ['--best', binPath])
   // Print the needed libraries after compressing:
   await printNeededLibs(binPath)
-}
-
-async function bundleLibs(
-  bdistDir: string,
-  options: opts.BuildOptions
-): Promise<void> {
-  switch (opts.os) {
-    case 'linux': {
-      // Create bdistDir/lib:
-      if (options['bdist-libs'].length > 0) {
-        for (const binName of util.agdaBinNames) {
-          const binPath = path.join(bdistDir, 'bin', binName)
-          await util.patchelf('-add-rpath', "'$ORIGIN/../lib'", binPath)
-        }
-      }
-
-      // Copy needed libraries:
-      for (const libPath of options['bdist-libs']) {
-        await util.cp(
-          path.join(libPath),
-          path.join(bdistDir, 'lib', path.basename(libPath))
-        )
-      }
-
-      // Patch run paths:
-      if (options['bdist-libs'].length > 0) {
-        for (const binName of util.agdaBinNames) {
-          const binPath = path.join(bdistDir, 'bin', binName)
-          await util.patchelf('-add-rpath', "'$ORIGIN/../lib'", binPath)
-        }
-      }
-      break
-    }
-    case 'macos': {
-      // Create bdist/lib
-      if (options['bdist-libs'].length > 0) {
-        await util.mkdirP(path.join(bdistDir, 'lib'))
-      }
-
-      // Copy needed libraries:
-      const libDirs = new Set<string>()
-      for (const libPath of options['bdist-libs']) {
-        const libName = path.basename(libPath)
-        libDirs.add(path.dirname(libPath))
-        await util.cp(path.join(libPath), path.join(bdistDir, 'lib', libName))
-      }
-
-      // Patch run paths for loaded libraries:
-      if (options['bdist-libs'].length > 0) {
-        for (const binName of util.agdaBinNames) {
-          const binPath = path.join(bdistDir, 'bin', binName)
-          for (const libPath of options['bdist-libs']) {
-            const libName = path.basename(libPath)
-            await util.installNameTool(
-              '-change',
-              libPath,
-              `@rpath/${libName}`,
-              binPath
-            )
-          }
-          await util.installNameTool(
-            '-add_rpath',
-            '@executable_path/../lib',
-            ...[...libDirs].flatMap(libDir => ['-add_rpath', libDir]),
-            binPath
-          )
-        }
-      }
-      break
-    }
-    case 'windows': {
-      // Copy needed libraries:
-      for (const libPath of options['bdist-libs']) {
-        await util.cp(
-          path.join(libPath),
-          path.join(bdistDir, 'bin', path.basename(libPath))
-        )
-      }
-      break
-    }
-  }
 }
 
 export function renderName(

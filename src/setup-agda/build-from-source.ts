@@ -6,7 +6,7 @@ import * as path from 'node:path'
 import * as semver from 'semver'
 import * as opts from '../opts'
 import setupHaskell from '../setup-haskell'
-import setupIcu from '../setup-icu'
+import * as icu from '../setup-icu'
 import * as util from '../util'
 import * as bdist from './bdist'
 import * as cabal from './build-from-source/cabal'
@@ -59,7 +59,7 @@ export default async function buildFromSource(
   if (opts.supportsClusterCounting(options)) {
     await core.group('🔠 Installing ICU', async () => {
       try {
-        await setupIcu(options)
+        await icu.setup(options)
       } catch (error) {
         core.info('If this fails, try setting "disable-cluster-counting"')
         throw error

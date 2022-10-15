@@ -73,7 +73,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.pickSetupHaskellInputs = exports.getOptions = exports.bdistNameDefaultTemplate = exports.os = exports.bdistIndex = exports.packageInfoCache = exports.supportsUPX = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.compressExe = void 0;
+exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.pickSetupHaskellInputs = exports.getOptions = exports.bdistNameDefaultTemplate = exports.os = exports.packageIndex = exports.packageInfoCache = exports.supportsUPX = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.compressExe = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const yaml = __importStar(__nccwpck_require__(1917));
 const fs = __importStar(__nccwpck_require__(7561));
@@ -83,7 +83,7 @@ const path = __importStar(__nccwpck_require__(9411));
 const process = __importStar(__nccwpck_require__(7742));
 const object_pick_1 = __importDefault(__nccwpck_require__(9962));
 const semver = __importStar(__nccwpck_require__(1383));
-const Agda_bdist_json_1 = __importDefault(__nccwpck_require__(3475));
+const index_json_1 = __importDefault(__nccwpck_require__(1663));
 const Agda_json_1 = __importDefault(__nccwpck_require__(4862));
 const simver = __importStar(__nccwpck_require__(7609));
 const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
@@ -154,7 +154,7 @@ function supportsUPX() {
 exports.supportsUPX = supportsUPX;
 exports.packageInfoCache = Agda_json_1.default;
 // Helpers for finding binary distributions:
-exports.bdistIndex = Agda_bdist_json_1.default;
+exports.packageIndex = index_json_1.default;
 exports.os = (() => {
     switch (process.platform) {
         case 'linux':
@@ -549,13 +549,14 @@ const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
 const object_pick_1 = __importDefault(__nccwpck_require__(9962));
 const opts = __importStar(__nccwpck_require__(1352));
+const icu = __importStar(__nccwpck_require__(4173));
 const setup_upx_1 = __importDefault(__nccwpck_require__(4245));
 const util = __importStar(__nccwpck_require__(4024));
 function download(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Get the name for the distribution:
         const bdistName = renderName('', options);
-        const bdistUrl = opts.bdistIndex[bdistName];
+        const bdistUrl = opts.packageIndex[bdistName];
         if (bdistUrl !== undefined) {
             core.info(`Found package ${bdistName}`);
             try {
@@ -598,7 +599,9 @@ function upload(installDir, options) {
             }
         }
         // Bundle libraries:
-        yield bundleLibs(bdistDir, options);
+        if (options['icu-version'] !== undefined) {
+            yield icu.bundle(bdistDir, options);
+        }
         // Test artifact:
         yield util.agdaTest({
             agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
@@ -634,65 +637,6 @@ function compressBin(upxExe, binPath) {
         yield util.getOutput(upxExe, ['--best', binPath]);
         // Print the needed libraries after compressing:
         yield printNeededLibs(binPath);
-    });
-}
-function bundleLibs(bdistDir, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        switch (opts.os) {
-            case 'linux': {
-                // Create bdistDir/lib:
-                if (options['bdist-libs'].length > 0) {
-                    for (const binName of util.agdaBinNames) {
-                        const binPath = path.join(bdistDir, 'bin', binName);
-                        yield util.patchelf('-add-rpath', "'$ORIGIN/../lib'", binPath);
-                    }
-                }
-                // Copy needed libraries:
-                for (const libPath of options['bdist-libs']) {
-                    yield util.cp(path.join(libPath), path.join(bdistDir, 'lib', path.basename(libPath)));
-                }
-                // Patch run paths:
-                if (options['bdist-libs'].length > 0) {
-                    for (const binName of util.agdaBinNames) {
-                        const binPath = path.join(bdistDir, 'bin', binName);
-                        yield util.patchelf('-add-rpath', "'$ORIGIN/../lib'", binPath);
-                    }
-                }
-                break;
-            }
-            case 'macos': {
-                // Create bdist/lib
-                if (options['bdist-libs'].length > 0) {
-                    yield util.mkdirP(path.join(bdistDir, 'lib'));
-                }
-                // Copy needed libraries:
-                const libDirs = new Set();
-                for (const libPath of options['bdist-libs']) {
-                    const libName = path.basename(libPath);
-                    libDirs.add(path.dirname(libPath));
-                    yield util.cp(path.join(libPath), path.join(bdistDir, 'lib', libName));
-                }
-                // Patch run paths for loaded libraries:
-                if (options['bdist-libs'].length > 0) {
-                    for (const binName of util.agdaBinNames) {
-                        const binPath = path.join(bdistDir, 'bin', binName);
-                        for (const libPath of options['bdist-libs']) {
-                            const libName = path.basename(libPath);
-                            yield util.installNameTool('-change', libPath, `@rpath/${libName}`, binPath);
-                        }
-                        yield util.installNameTool('-add_rpath', '@executable_path/../lib', ...[...libDirs].flatMap(libDir => ['-add_rpath', libDir]), binPath);
-                    }
-                }
-                break;
-            }
-            case 'windows': {
-                // Copy needed libraries:
-                for (const libPath of options['bdist-libs']) {
-                    yield util.cp(path.join(libPath), path.join(bdistDir, 'bin', path.basename(libPath)));
-                }
-                break;
-            }
-        }
     });
 }
 function renderName(template, options) {
@@ -786,7 +730,7 @@ const path = __importStar(__nccwpck_require__(9411));
 const semver = __importStar(__nccwpck_require__(1383));
 const opts = __importStar(__nccwpck_require__(1352));
 const setup_haskell_1 = __importDefault(__nccwpck_require__(6933));
-const setup_icu_1 = __importDefault(__nccwpck_require__(4173));
+const icu = __importStar(__nccwpck_require__(4173));
 const util = __importStar(__nccwpck_require__(4024));
 const bdist = __importStar(__nccwpck_require__(3383));
 const cabal = __importStar(__nccwpck_require__(8545));
@@ -828,7 +772,7 @@ function buildFromSource(options) {
         if (opts.supportsClusterCounting(options)) {
             yield core.group('🔠 Installing ICU', () => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    yield (0, setup_icu_1.default)(options);
+                    yield icu.setup(options);
                 }
                 catch (error) {
                     core.info('If this fails, try setting "disable-cluster-counting"');
@@ -1288,89 +1232,366 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.bundle = exports.setup = void 0;
 const core = __importStar(__nccwpck_require__(2186));
-const glob = __importStar(__nccwpck_require__(8090));
+const tc = __importStar(__nccwpck_require__(7784));
 const path = __importStar(__nccwpck_require__(9411));
+const fs = __importStar(__nccwpck_require__(7561));
 const os = __importStar(__nccwpck_require__(612));
 const opts = __importStar(__nccwpck_require__(1352));
-const util_1 = __nccwpck_require__(4024);
-// Names of dynamic libraries needed by icu-i18n on MacOS and Linux:
-const icuLibNames = ['libicudata', 'libicui18n', 'libicuuc'];
+const util = __importStar(__nccwpck_require__(4024));
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
+// export async function setup(options: opts.BuildOptions): Promise<void> {
+//   switch (opts.os) {
+//     case 'linux': {
+//       // Ubuntu 20.04 ships with a recent version of ICU
+//       // Get the icu-i18n information via pkg-config:
+//       options['icu-version'] = await pkgConfig('--modversion', 'icu-i18n')
+//       core.info(`Found ICU version ${options['icu-version']}`)
+//       const icuVersionMajor = simver.major(options['icu-version'])
+//       const icuLibGlobber = await glob.create(
+//         icuLibNames
+//           .flatMap(libName => [
+//             `/usr/lib/${libName}.so`,
+//             `/usr/lib/${libName}.so.${icuVersionMajor}`,
+//             `/usr/lib/${libName}.so.${options['icu-version']}`
+//           ])
+//           .join(os.EOL)
+//       )
+//       options['bdist-libs'] = await icuLibGlobber.glob()
+//       core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`)
+//       break
+//     }
+//     case 'macos': {
+//       // Ensure ICU is installed:
+//       let icuVersion = await brewGetVersion('icu4c')
+//       if (icuVersion === undefined) brew('install', 'icu4c')
+//       else if (simver.lt(icuVersion, '68')) brew('upgrade', 'icu4c')
+//       icuVersion = await brewGetVersion('icu4c')
+//       if (icuVersion === undefined) throw Error('Could not install icu4c')
+//       // Find the ICU installation location:
+//       const icuPrefix = (await brew('--prefix', 'icu4c')).trim()
+//       const icuLibDir = path.join(icuPrefix, 'lib')
+//       core.debug(`Found ICU version ${icuVersion} at ${icuLibDir}`)
+//       // Add ICU to the PKG_CONFIG_PATH:
+//       const icuPkgConfigDir = path.join(icuLibDir, 'pkgconfig')
+//       core.debug(`Set PKG_CONFIG_PATH to ${icuPkgConfigDir}`)
+//       core.exportVariable('PKG_CONFIG_PATH', icuPkgConfigDir)
+//       // Get the icu-i18n version via pkg-config:
+//       icuVersion = await pkgConfig('--modversion', 'icu-i18n')
+//       options['icu-version'] = icuVersion.trim()
+//       core.info(`Setup ICU version ${options['icu-version']} with pkg-config`)
+//       // Get the ICU libraries to bundle:
+//       const icuVersionMajor = simver.major(options['icu-version'])
+//       const icuLibGlobber = await glob.create(
+//         icuLibNames
+//           .flatMap(libName => [
+//             `${path.join(icuLibDir, libName)}.dylib`,
+//             `${path.join(icuLibDir, libName)}.${icuVersionMajor}.dylib`,
+//             `${path.join(icuLibDir, libName)}.${options['icu-version']}.dylib`
+//           ])
+//           .join(os.EOL)
+//       )
+//       options['bdist-libs'] = await icuLibGlobber.glob()
+//       core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`)
+//       break
+//     }
+//     case 'windows': {
+//       core.info('Install pkg-config and ICU using Pacman')
+//       core.addPath('C:\\msys64\\mingw64\\bin')
+//       core.addPath('C:\\msys64\\usr\\bin')
+//       await pacman(
+//         '-v',
+//         '--noconfirm',
+//         '-Sy',
+//         'mingw-w64-x86_64-pkg-config',
+//         'mingw-w64-x86_64-icu'
+//       )
+//       // Get the icu-i18n version via pacman:
+//       options['icu-version'] = await pacmanGetVersion('mingw-w64-x86_64-icu')
+//       core.info(`Installed ICU version ${options['icu-version']}`)
+//       // Get the ICU libraries to bundle:
+//       const icuLibDir = 'C:\\msys64\\mingw64\\bin'
+//       const icuLibGlobber = await glob.create(path.join(icuLibDir, 'icu*.dll'))
+//       options['bdist-libs'] = await icuLibGlobber.glob()
+//       core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`)
+//       break
+//     }
+//   }
+// }
 function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (opts.os) {
-            case 'linux': {
-                // Ubuntu 20.04 ships with a recent version of ICU
-                // Get the icu-i18n information via pkg-config:
-                options['icu-version'] = yield (0, util_1.pkgConfig)('--modversion', 'icu-i18n');
-                core.info(`Found ICU version ${options['icu-version']}`);
-                const icuVersionMajor = util_1.simver.major(options['icu-version']);
-                const icuLibGlobber = yield glob.create(icuLibNames
-                    .flatMap(libName => [
-                    `/usr/lib/${libName}.so`,
-                    `/usr/lib/${libName}.so.${icuVersionMajor}`,
-                    `/usr/lib/${libName}.so.${options['icu-version']}`
-                ])
-                    .join(os.EOL));
-                options['bdist-libs'] = yield icuLibGlobber.glob();
-                core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`);
-                break;
-            }
-            case 'macos': {
-                // Ensure ICU is installed:
-                let icuVersion = yield (0, util_1.brewGetVersion)('icu4c');
-                if (icuVersion === undefined)
-                    (0, util_1.brew)('install', 'icu4c');
-                else if (util_1.simver.lt(icuVersion, '68'))
-                    (0, util_1.brew)('upgrade', 'icu4c');
-                icuVersion = yield (0, util_1.brewGetVersion)('icu4c');
-                if (icuVersion === undefined)
-                    throw Error('Could not install icu4c');
-                // Find the ICU installation location:
-                const icuPrefix = (yield (0, util_1.brew)('--prefix', 'icu4c')).trim();
-                const icuLibDir = path.join(icuPrefix, 'lib');
-                core.debug(`Found ICU version ${icuVersion} at ${icuLibDir}`);
-                // Add ICU to the PKG_CONFIG_PATH:
-                const icuPkgConfigDir = path.join(icuLibDir, 'pkgconfig');
-                core.debug(`Set PKG_CONFIG_PATH to ${icuPkgConfigDir}`);
-                core.exportVariable('PKG_CONFIG_PATH', icuPkgConfigDir);
-                // Get the icu-i18n version via pkg-config:
-                icuVersion = yield (0, util_1.pkgConfig)('--modversion', 'icu-i18n');
-                options['icu-version'] = icuVersion.trim();
-                core.info(`Setup ICU version ${options['icu-version']} with pkg-config`);
-                // Get the ICU libraries to bundle:
-                const icuVersionMajor = util_1.simver.major(options['icu-version']);
-                const icuLibGlobber = yield glob.create(icuLibNames
-                    .flatMap(libName => [
-                    `${path.join(icuLibDir, libName)}.dylib`,
-                    `${path.join(icuLibDir, libName)}.${icuVersionMajor}.dylib`,
-                    `${path.join(icuLibDir, libName)}.${options['icu-version']}.dylib`
-                ])
-                    .join(os.EOL));
-                options['bdist-libs'] = yield icuLibGlobber.glob();
-                core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`);
-                break;
-            }
-            case 'windows': {
-                core.info('Install pkg-config and ICU using Pacman');
-                core.addPath('C:\\msys64\\mingw64\\bin');
-                core.addPath('C:\\msys64\\usr\\bin');
-                yield (0, util_1.pacman)('-v', '--noconfirm', '-Sy', 'mingw-w64-x86_64-pkg-config', 'mingw-w64-x86_64-icu');
-                // Get the icu-i18n version via pacman:
-                options['icu-version'] = yield (0, util_1.pacmanGetVersion)('mingw-w64-x86_64-icu');
-                core.info(`Installed ICU version ${options['icu-version']}`);
-                // Get the ICU libraries to bundle:
-                const icuLibDir = 'C:\\msys64\\mingw64\\bin';
-                const icuLibGlobber = yield glob.create(path.join(icuLibDir, 'icu*.dll'));
-                options['bdist-libs'] = yield icuLibGlobber.glob();
-                core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`);
-                break;
-            }
+            case 'linux':
+                return yield setupForLinux(options);
+            case 'macos':
+                return yield setupForMacOS(options);
+            case 'windows':
+                return yield setupForWindows(options);
         }
     });
 }
-exports["default"] = setup;
+exports.setup = setup;
+function bundle(distDir, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        switch (opts.os) {
+            case 'linux':
+                return yield bundleForLinux(distDir, options);
+            case 'macos':
+                return yield bundleForMacOS(distDir, options);
+            case 'windows':
+                return yield bundleForWindows(distDir, options);
+        }
+    });
+}
+exports.bundle = bundle;
+// Linux
+function installDirForLinux(icuVersion) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return path.join(opts.agdaDir(), 'icu', icuVersion);
+    });
+}
+function setupForLinux(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const icuVersion = '71.1';
+        const icuPkgKey = `icu-${icuVersion}-${os.arch()}-${os.platform()}`;
+        const icuPkgUrl = opts.packageIndex[icuPkgKey];
+        if (icuPkgUrl === undefined)
+            throw Error(`No package for ${icuPkgKey}`);
+        // Download ICU package:
+        const icuTar = yield tc.downloadTool(icuPkgUrl);
+        const prefix = yield installDirForLinux(icuVersion);
+        const tarArgs = ['--extract', '--gzip', '--strip-components=4'];
+        const prefixTC = yield tc.extractTar(icuTar, prefix, tarArgs);
+        (0, node_assert_1.default)(prefix === prefixTC);
+        // Set PKG_CONFIG_PATH & change prefix in icu-i18n.pc:
+        const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig');
+        util.sed('-i', `'s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/'`, path.join(pkgConfigDir, 'icu-i18n.pc'));
+        core.exportVariable('PKG_CONFIG_PATH', pkgConfigDir);
+        // Find the ICU version:
+        options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
+        (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version installed differs from ICU version reported by pkg-config');
+    });
+}
+function bundleForLinux(distDir, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (options['icu-version'] === undefined)
+            throw Error('No ICU version');
+        // Gather information
+        core.info(`Bundle ICU version ${options['icu-version']}`);
+        const prefix = yield installDirForLinux(options['icu-version']);
+        core.debug(`Found ICU version ${options['icu-version']} at ${prefix}`);
+        const distLibDir = path.join(distDir, 'lib');
+        const distBinDir = path.join(distDir, 'bin');
+        // Copy library files & change their IDs
+        core.debug(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
+        yield util.mkdirP(distLibDir);
+        for (const libName of ['libicui18n', 'libicuuc', 'libicudata']) {
+            const libNameFrom = `${libName}.so.${options['icu-version']}`;
+            const libFrom = path.join(prefix, 'lib', libNameFrom);
+            const libNameTo = `agda-${options['agda-version']}-${libName}.so`;
+            const libTo = path.join(distLibDir, libNameTo);
+            // Copy the library:
+            yield util.cp(libFrom, libTo);
+            // Change the library ID:
+            yield util.patchelf('--set-soname', libNameTo, libTo);
+        }
+        // Change internal dependencies between libraries:
+        const icuVerMaj = util.simver.major(options['icu-version']);
+        const libDepsToChange = [
+            ['libicui18n', ['libicuuc']],
+            ['libicuuc', ['libicudata']]
+        ];
+        for (const [libName, depNames] of libDepsToChange) {
+            const libNameTo = `agda-${options['agda-version']}-${libName}.so`;
+            const libTo = path.join(distLibDir, libNameTo);
+            for (const depName of depNames) {
+                const depFrom = `${depName}.so.${icuVerMaj}`;
+                const depTo = `agda-${options['agda-version']}-${depName}.so`;
+                yield util.patchelf('--replace-needed', depFrom, depTo, libTo);
+            }
+            yield util.patchelf('--add-rpath', "'$ORIGIN'");
+        }
+        // Change dependencies on Agda executable:
+        const agdaBinPath = path.join(distBinDir, util.agdaBinName);
+        const binDepsToChange = ['libicui18n', 'libicuuc', 'libicudata'];
+        for (const depName of binDepsToChange) {
+            const depNameFrom = `${depName}.so.${icuVerMaj}`;
+            const depNameTo = `agda-${options['agda-version']}-${depName}.so`;
+            yield util.patchelf('--replace-needed', depNameFrom, depNameTo, agdaBinPath);
+        }
+        yield util.patchelf('--add-rpath', "'$ORIGIN/../lib'", agdaBinPath);
+    });
+}
+// MacOS
+function installDirForMacOS() {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield util.brew('--prefix', 'icu4c');
+    });
+}
+function setupForMacOS(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Ensure ICU is installed:
+        let icuVersion = yield util.brewGetVersion('icu4c');
+        core.debug(`Found ICU version: ${icuVersion}`);
+        if (icuVersion === undefined) {
+            util.brew('install', 'icu4c');
+            icuVersion = yield util.brewGetVersion('icu4c');
+            core.debug(`Installed ICU version: ${icuVersion}`);
+        }
+        if (icuVersion === undefined)
+            throw Error('Could not install icu4c');
+        // Find the ICU installation location:
+        const prefix = yield installDirForMacOS();
+        core.debug(`Found ICU version ${icuVersion} at ${prefix}`);
+        // Set PKG_CONFIG_PATH:
+        const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig');
+        core.exportVariable('PKG_CONFIG_PATH', pkgConfigDir);
+        // Find the ICU version:
+        options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
+        (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version reported by Homebrew differs from ICU version reported by pkg-config');
+    });
+}
+function bundleForMacOS(distDir, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (options['icu-version'] === undefined)
+            throw Error('No ICU version');
+        // Gather information
+        core.info(`Bundle ICU version ${options['icu-version']}`);
+        const prefix = yield installDirForMacOS();
+        core.debug(`Found ICU version ${options['icu-version']} at ${prefix}`);
+        const distLibDir = path.join(distDir, 'lib');
+        const distBinDir = path.join(distDir, 'bin');
+        // Copy library files & change their IDs
+        core.debug(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
+        yield util.mkdirP(distLibDir);
+        for (const libName of ['libicui18n', 'libicuuc', 'libicudata']) {
+            const libNameFrom = `${libName}.${options['icu-version']}.dylib`;
+            const libFrom = path.join(prefix, 'lib', libNameFrom);
+            const libNameTo = `agda-${options['agda-version']}-${libName}.dylib`;
+            const libTo = path.join(distLibDir, libNameTo);
+            // Copy the library:
+            yield util.cp(libFrom, libTo);
+            // Change the library ID:
+            yield util.installNameTool('-id', libNameTo, libTo);
+        }
+        // Change internal dependencies between libraries:
+        const icuVerMaj = util.simver.major(options['icu-version']);
+        const libDepsToChange = [
+            ['libicui18n', ['libicudata', 'libicuuc']],
+            ['libicuuc', ['libicudata']]
+        ];
+        for (const [libName, depNames] of libDepsToChange) {
+            const libNameTo = `agda-${options['agda-version']}-${libName}.dylib`;
+            const libTo = path.join(distLibDir, libNameTo);
+            for (const depName of depNames) {
+                const depFrom = `@loader_path/${depName}.${icuVerMaj}.dylib`;
+                const depTo = `@loader_path/agda-${options['agda-version']}-${depName}.dylib`;
+                yield util.installNameTool('-change', depFrom, depTo, libTo);
+            }
+        }
+        // Change dependencies on Agda executable:
+        const agdaBinPath = path.join(distBinDir, util.agdaBinName);
+        const binDepsToChange = ['libicui18n', 'libicuuc'];
+        for (const libName of binDepsToChange) {
+            const libNameFrom = `${libName}.${options['icu-version']}.dylib`;
+            const libFrom = path.join(prefix, 'lib', libNameFrom);
+            const libNameTo = `agda-${options['agda-version']}-${libName}.dylib`;
+            const libTo = `@executable_path/../lib/${libNameTo}`;
+            yield util.installNameTool('-change', libFrom, libTo, agdaBinPath);
+        }
+    });
+}
+// Windows
+function installDirForWindows(icuVersion) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return path.join(opts.agdaDir(), 'icu', icuVersion);
+    });
+}
+function setupForWindows(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const icuVersion = '71.1';
+        const icuPkgKey = `icu-${icuVersion}-${os.arch()}-${os.platform()}`;
+        const icuPkgUrl = opts.packageIndex[icuPkgKey];
+        if (icuPkgUrl === undefined)
+            throw Error(`No package for ${icuPkgKey}`);
+        // Download ICU package:
+        const icuZip = yield tc.downloadTool(icuPkgUrl);
+        const tmpDir = yield tc.extractZip(icuZip);
+        const prefix = yield installDirForWindows(icuVersion);
+        util.mkdirP(path.dirname(prefix));
+        util.mv(tmpDir, prefix);
+        // Install pkg-config:
+        core.addPath('C:\\msys64\\mingw64\\bin');
+        core.addPath('C:\\msys64\\usr\\bin');
+        yield util.pacman('-v', '--noconfirm', '-Sy', 'mingw-w64-x86_64-pkg-config');
+        // Create pkg-config file:
+        const pkgConfigDir = path.join(prefix, 'pkgconfig');
+        util.mkdirP(pkgConfigDir);
+        // Create icu-i18n.pc
+        fs.writeFileSync(path.join('icu-i18n.pc'), [
+            `prefix = ${prefix}`,
+            `exec_prefix = ${prefix}/bin64`,
+            `includedir = ${prefix}/include`,
+            `libdir = ${prefix}/bin64`,
+            'baselibs = -lpthread -ldl -lm',
+            '',
+            `Version: ${icuVersion}`,
+            `Cflags: -I${prefix}/include`,
+            '# end of icu.pc.in',
+            'Description: International Components for Unicode: Internationalization library',
+            'Name: icu-i18n',
+            'Requires: icu-uc',
+            'Libs: -licuin'
+        ].join(os.EOL));
+        // Create icu-uc.pc
+        fs.writeFileSync(path.join('icu-i18n.pc'), [
+            `prefix = ${prefix}`,
+            `exec_prefix = ${prefix}/bin64`,
+            `includedir = ${prefix}/include`,
+            `libdir = ${prefix}/bin64`,
+            'baselibs = -lpthread -ldl -lm',
+            '',
+            `Version: ${icuVersion}`,
+            `Cflags: -I${prefix}/include`,
+            '# end of icu.pc.in',
+            'Description: International Components for Unicode: Common and Data libraries',
+            'Name: icu-uc',
+            `Libs: -L${prefix}/bin64 -licuuc -licudt`,
+            'Libs.private: ${baselibs}'
+        ].join(os.EOL));
+        core.exportVariable('PKG_CONFIG_PATH', pkgConfigDir);
+        // Find the ICU version:
+        options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
+        (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version installed differs from ICU version reported by pkg-config');
+    });
+}
+function bundleForWindows(distDir, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (options['icu-version'] === undefined)
+            throw Error('No ICU version');
+        // Gather information
+        core.info(`Bundle ICU version ${options['icu-version']}`);
+        const prefix = yield installDirForWindows(options['icu-version']);
+        core.debug(`Found ICU version ${options['icu-version']} at ${prefix}`);
+        const distLibDir = path.join(distDir, 'bin');
+        const icuVerMaj = util.simver.major(options['icu-version']);
+        // Copy library files
+        core.debug(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
+        yield util.mkdirP(distLibDir);
+        for (const libName of ['libicuin', 'libicuuc', 'libicudt']) {
+            const libFullName = `${libName}${icuVerMaj}.dll`;
+            const libFrom = path.join(prefix, 'bin64', libFullName);
+            const libTo = path.join(distLibDir, libFullName);
+            // Copy the library:
+            yield util.cp(libFrom, libTo);
+        }
+    });
+}
 
 
 /***/ }),
@@ -1770,7 +1991,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.xattr = exports.pkgConfig = exports.patchelf = exports.pacmanGetVersion = exports.pacman = exports.otool = exports.installNameTool = exports.dumpbin = exports.chmod = exports.brewGetVersion = exports.brew = exports.getVersion = exports.getOutput = void 0;
+exports.xattr = exports.sed = exports.pkgConfig = exports.patchelf = exports.pacmanGetVersion = exports.pacman = exports.otool = exports.installNameTool = exports.dumpbin = exports.chmod = exports.brewGetVersion = exports.brew = exports.getVersion = exports.getOutput = void 0;
 const exec = __importStar(__nccwpck_require__(1514));
 const os = __importStar(__nccwpck_require__(612));
 function getOutput(prog, args, execOptions) {
@@ -1789,7 +2010,7 @@ function getOutput(prog, args, execOptions) {
         };
         const exitCode = yield exec.exec(prog, args, execOptions);
         if (exitCode === 0) {
-            return progOutput;
+            return progOutput.trim();
         }
         else {
             throw Error(`The call to ${prog} failed with exit code ${exitCode}:${os.EOL}${progErrors}`);
@@ -1810,41 +2031,87 @@ function getVersion(prog, options) {
 }
 exports.getVersion = getVersion;
 // System utilities
-const brew = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('brew', args); });
+function brew(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield getOutput('brew', args);
+    });
+}
 exports.brew = brew;
-const brewGetVersion = (formula) => __awaiter(void 0, void 0, void 0, function* () {
+function brewGetVersion(formula) {
     var _a, _b, _c;
-    const formulaVersionRegExp = new RegExp(`${formula} (?<version>[\\d._]+)`);
-    const formulaVersions = yield (0, exports.brew)('list', '--formula', '--versions');
-    return (_c = (_b = (_a = formulaVersions.match(formulaVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version) === null || _c === void 0 ? void 0 : _c.trim();
-});
+    return __awaiter(this, void 0, void 0, function* () {
+        const formulaVersionRegExp = new RegExp(`${formula} (?<version>[\\d._]+)`);
+        const formulaVersions = yield brew('list', '--formula', '--versions');
+        return (_c = (_b = (_a = formulaVersions.match(formulaVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version) === null || _c === void 0 ? void 0 : _c.trim();
+    });
+}
 exports.brewGetVersion = brewGetVersion;
-const chmod = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('chmod', args); });
+function chmod(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield getOutput('chmod', args);
+    });
+}
 exports.chmod = chmod;
-const dumpbin = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('dumpbin', args); });
+function dumpbin(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield getOutput('dumpbin', args);
+    });
+}
 exports.dumpbin = dumpbin;
-const installNameTool = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('install_name_tool', args); });
+function installNameTool(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield getOutput('install_name_tool', args);
+    });
+}
 exports.installNameTool = installNameTool;
-const otool = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('otool', args); });
+function otool(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield getOutput('otool', args);
+    });
+}
 exports.otool = otool;
-const pacman = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('pacman', args); });
+function pacman(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield getOutput('pacman', args);
+    });
+}
 exports.pacman = pacman;
-const pacmanGetVersion = (pkg) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d, _e, _f;
-    const pkgInfo = yield (0, exports.pacman)('--noconfirm', '-Qs', pkg);
-    const pkgVersionRegExp = /(?<version>\d[\d.]+\d)/;
-    const pkgVersion = (_f = (_e = (_d = pkgInfo.match(pkgVersionRegExp)) === null || _d === void 0 ? void 0 : _d.groups) === null || _e === void 0 ? void 0 : _e.version) === null || _f === void 0 ? void 0 : _f.trim();
-    if (pkgVersion !== undefined)
-        return pkgVersion;
-    else
-        throw Error(`Could not determine version of ${pkg}`);
-});
+function pacmanGetVersion(pkg) {
+    var _a, _b, _c;
+    return __awaiter(this, void 0, void 0, function* () {
+        const pkgInfo = yield pacman('--noconfirm', '-Qs', pkg);
+        const pkgVersionRegExp = /(?<version>\d[\d.]+\d)/;
+        const pkgVersion = (_c = (_b = (_a = pkgInfo.match(pkgVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version) === null || _c === void 0 ? void 0 : _c.trim();
+        if (pkgVersion !== undefined)
+            return pkgVersion;
+        else
+            throw Error(`Could not determine version of ${pkg}`);
+    });
+}
 exports.pacmanGetVersion = pacmanGetVersion;
-const patchelf = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('patchelf', args); });
+function patchelf(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield getOutput('patchelf', args);
+    });
+}
 exports.patchelf = patchelf;
-const pkgConfig = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('pkg-config', args); });
+function pkgConfig(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield getOutput('pkg-config', args);
+    });
+}
 exports.pkgConfig = pkgConfig;
-const xattr = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('xattr', args); });
+function sed(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield getOutput('sed', args);
+    });
+}
+exports.sed = sed;
+function xattr(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield getOutput('xattr', args);
+    });
+}
 exports.xattr = xattr;
 
 
@@ -30117,19 +30384,19 @@ function ensureError(input) {
 
 /***/ }),
 
-/***/ 3475:
-/***/ ((module) => {
-
-"use strict";
-module.exports = JSON.parse('{"agda-2.6.2.2-x64-darwin":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-darwin.zip","agda-2.6.2.2-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04.zip","agda-2.6.2.2-x64-win32":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022.zip","agda-2.6.2.2-x64-ubuntu-20.04":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04.zip","agda-2.6.2.2-x64-ubuntu-22.04":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-22.04.zip","agda-2.6.2.2-x64-windows-2022":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022.zip"}');
-
-/***/ }),
-
 /***/ 4862:
 /***/ ((module) => {
 
 "use strict";
 module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4":"deprecated","2.5.4.1":"deprecated","2.5.4.2":"normal","2.6.0":"deprecated","2.6.0.1":"normal","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Sat, 08 Oct 2022 14:35:51 GMT"}');
+
+/***/ }),
+
+/***/ 1663:
+/***/ ((module) => {
+
+"use strict";
+module.exports = JSON.parse('{"agda-2.6.2.2-x64-darwin":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-darwin.zip","agda-2.6.2.2-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04.zip","agda-2.6.2.2-x64-win32":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022.zip","icu-67.1-x64-linux":"https://github.com/unicode-org/icu/releases/download/release-67-1/icu4c-67_1-Ubuntu18.04-x64.tgz","icu-67.1-x64-win32":"https://github.com/unicode-org/icu/releases/download/release-67-1/icu4c-67_1-Win64-MSVC2017.zip","icu-71.1-x64-linux":"https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-Ubuntu20.04-x64.tgz","icu-71.1-x64-win32":"https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-Win64-MSVC2019.zip","upx-3.96-x64-linux":"https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz","upx-3.96-x64-win32":"https://github.com/upx/upx/releases/download/v3.96/upx-3.96-win64.zip"}');
 
 /***/ }),
 

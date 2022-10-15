@@ -8,7 +8,7 @@ import * as path from 'node:path'
 import * as process from 'node:process'
 import pick from 'object.pick'
 import * as semver from 'semver'
-import distBdistIndex from './package-info/Agda.bdist.json'
+import distPackageIndex from './package-info/index.json'
 import distPackageInfoCache from './package-info/Agda.json'
 import * as simver from './util/simver'
 import ensureError from 'ensure-error'
@@ -161,7 +161,7 @@ export const packageInfoCache = distPackageInfoCache as PackageInfoCache
 
 // Helpers for finding binary distributions:
 
-export const bdistIndex = distBdistIndex as Partial<Record<string, string>>
+export const packageIndex = distPackageIndex as Partial<Record<string, string>>
 
 // Helpers for matching the OS:
 
