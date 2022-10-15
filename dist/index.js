@@ -201,6 +201,8 @@ function getOptions(inputs) {
         'stack-setup-ghc': getFlag('stack-setup-ghc'),
         'stack-version': getOption('stack-version'),
         // Specified in BuildOptions
+        'extra-include-dirs': [],
+        'extra-lib-dirs': [],
         'ghc-supported-versions': []
     };
     // Validate build options:
@@ -943,6 +945,13 @@ function buildFlags(options) {
     if (opts.supportsSplitSections(options)) {
         flags.push('--enable-split-sections');
     }
+    // Add extra-{include,lib}-dirs:
+    for (const includeDir of options['extra-include-dirs']) {
+        flags.push(`--extra-include-dirs=${includeDir}`);
+    }
+    for (const libDir of options['extra-lib-dirs']) {
+        flags.push(`--extra-lib-dirs=${libDir}`);
+    }
     return flags;
 }
 function supportedGhcVersions(sourceDir) {
@@ -1083,6 +1092,13 @@ function buildFlags(options) {
     // If supported, pass Agda flag --optimise-heavily
     if (opts.supportsOptimiseHeavily(options)) {
         flags.push('--flag=Agda:optimise-heavily');
+    }
+    // Add extra-{include,lib}-dirs:
+    for (const includeDir of options['extra-include-dirs']) {
+        flags.push(`--extra-include-dirs=${includeDir}`);
+    }
+    for (const libDir of options['extra-lib-dirs']) {
+        flags.push(`--extra-lib-dirs=${libDir}`);
     }
     return flags;
 }
@@ -1294,6 +1310,9 @@ function setupForLinux(options) {
         const tarArgs = ['--extract', '--gzip', '--strip-components=4'];
         const prefixTC = yield tc.extractTar(icuTar, prefix, tarArgs);
         (0, node_assert_1.default)(prefix === prefixTC);
+        // Set extra-{include,lib}-dirs
+        options['extra-include-dirs'].push(path.join(prefix, 'include'));
+        options['extra-lib-dirs'].push(path.join(prefix, 'lib'));
         // Patch prefix in icu-i18n.pc:
         const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig');
         yield util.sed('-i', `s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/g`, path.join(pkgConfigDir, 'icu-i18n.pc'));
@@ -1376,6 +1395,9 @@ function setupForMacOS(options) {
         // Find the ICU installation location:
         const prefix = yield installDirForMacOS();
         core.debug(`Found ICU version ${icuVersion} at ${prefix}`);
+        // Set extra-{include,lib}-dirs
+        options['extra-include-dirs'].push(path.join(prefix, 'include'));
+        options['extra-lib-dirs'].push(path.join(prefix, 'lib'));
         // Add to PKG_CONFIG_PATH:
         const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig');
         util.addPkgConfigPath(pkgConfigDir);
@@ -1451,6 +1473,9 @@ function setupForWindows(options) {
         yield util.mkdirP(path.dirname(prefix));
         yield util.cpR(tmpDir, prefix);
         yield util.rmRF(tmpDir);
+        // Set extra-{include,lib}-dirs
+        options['extra-include-dirs'].push(path.join(prefix, 'include'));
+        options['extra-lib-dirs'].push(path.join(prefix, 'bin'));
         // Install pkg-config:
         core.addPath('C:\\msys64\\mingw64\\bin');
         core.addPath('C:\\msys64\\usr\\bin');

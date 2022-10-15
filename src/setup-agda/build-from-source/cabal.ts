@@ -62,6 +62,13 @@ function buildFlags(options: opts.BuildOptions): string[] {
   if (opts.supportsSplitSections(options)) {
     flags.push('--enable-split-sections')
   }
+  // Add extra-{include,lib}-dirs:
+  for (const includeDir of options['extra-include-dirs']) {
+    flags.push(`--extra-include-dirs=${includeDir}`)
+  }
+  for (const libDir of options['extra-lib-dirs']) {
+    flags.push(`--extra-lib-dirs=${libDir}`)
+  }
   return flags
 }
 

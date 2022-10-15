@@ -55,6 +55,10 @@ async function setupForLinux(options: opts.BuildOptions): Promise<void> {
   const prefixTC = await tc.extractTar(icuTar, prefix, tarArgs)
   assert(prefix === prefixTC)
 
+  // Set extra-{include,lib}-dirs
+  options['extra-include-dirs'].push(path.join(prefix, 'include'))
+  options['extra-lib-dirs'].push(path.join(prefix, 'lib'))
+
   // Patch prefix in icu-i18n.pc:
   const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig')
   await util.sed(
@@ -155,6 +159,10 @@ async function setupForMacOS(options: opts.BuildOptions): Promise<void> {
   const prefix = await installDirForMacOS()
   core.debug(`Found ICU version ${icuVersion} at ${prefix}`)
 
+  // Set extra-{include,lib}-dirs
+  options['extra-include-dirs'].push(path.join(prefix, 'include'))
+  options['extra-lib-dirs'].push(path.join(prefix, 'lib'))
+
   // Add to PKG_CONFIG_PATH:
   const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig')
   util.addPkgConfigPath(pkgConfigDir)
@@ -238,6 +246,10 @@ async function setupForWindows(options: opts.BuildOptions): Promise<void> {
   await util.mkdirP(path.dirname(prefix))
   await util.cpR(tmpDir, prefix)
   await util.rmRF(tmpDir)
+
+  // Set extra-{include,lib}-dirs
+  options['extra-include-dirs'].push(path.join(prefix, 'include'))
+  options['extra-lib-dirs'].push(path.join(prefix, 'bin'))
 
   // Install pkg-config:
   core.addPath('C:\\msys64\\mingw64\\bin')
