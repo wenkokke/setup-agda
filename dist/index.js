@@ -1297,6 +1297,7 @@ function setupForLinux(options) {
         // Patch prefix in icu-i18n.pc:
         const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig');
         yield util.sed('-i', `s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/g`, path.join(pkgConfigDir, 'icu-i18n.pc'));
+        yield util.sed('-i', `s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/g`, path.join(pkgConfigDir, 'icu-uc.pc'));
         // Add to PKG_CONFIG_PATH:
         util.addPkgConfigPath(pkgConfigDir);
         // Find the ICU version:

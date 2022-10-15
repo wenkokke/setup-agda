@@ -62,6 +62,11 @@ async function setupForLinux(options: opts.BuildOptions): Promise<void> {
     `s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/g`,
     path.join(pkgConfigDir, 'icu-i18n.pc')
   )
+  await util.sed(
+    '-i',
+    `s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/g`,
+    path.join(pkgConfigDir, 'icu-uc.pc')
+  )
   // Add to PKG_CONFIG_PATH:
   util.addPkgConfigPath(pkgConfigDir)
 
