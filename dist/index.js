@@ -1350,24 +1350,23 @@ function bundleForLinux(distDir, options) {
             throw Error('No ICU version');
         // Gather information
         core.info(`Bundle ICU version ${options['icu-version']}`);
-        const icuinLibDir = yield util.pkgConfig('--variable', 'libdir', 'icu-i18n');
-        core.info(yield util.lsR(icuinLibDir));
-        const icuucLibDir = yield util.pkgConfig('--variable', 'libdir', 'icu-uc');
-        core.info(yield util.lsR(icuucLibDir));
-        const icuLibPatterns = [icuinLibDir, icuucLibDir]
+        const libDirsFrom = new Set();
+        libDirsFrom.add(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n'));
+        libDirsFrom.add(yield util.pkgConfig('--variable', 'libdir', 'icu-uc'));
+        const libFromPatterns = [...libDirsFrom]
             .flatMap(libDir => ['libicui18n', 'libicuuc', 'libicudata'].flatMap(libName => path.join(libDir, `${libName}.so.${options['icu-version']}`)))
             .join(os.EOL);
-        core.info(`Searching with:${os.EOL}${icuLibPatterns}`);
-        const icuLibGlobber = yield glob.create(icuLibPatterns);
-        const icuLibsFrom = yield icuLibGlobber.glob();
-        core.info(`Found libraries:${os.EOL}${icuLibsFrom.join(os.EOL)}`);
+        core.info(`Searching with:${os.EOL}${libFromPatterns}`);
+        const libFromGlobber = yield glob.create(libFromPatterns);
+        const libsFrom = yield libFromGlobber.glob();
+        core.info(`Found libraries:${os.EOL}${libsFrom.join(os.EOL)}`);
         // core.debug(`Found ICU version ${options['icu-version']} at ${prefix}`)
         const distLibDir = path.join(distDir, 'lib');
         const distBinDir = path.join(distDir, 'bin');
         // Copy library files & change their IDs
         core.debug(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
         yield util.mkdirP(distLibDir);
-        for (const libFrom of icuLibsFrom) {
+        for (const libFrom of libsFrom) {
             const libName = path.basename(libFrom, `.so.${options['icu-version']}`);
             const libNameTo = `agda-${options['agda-version']}-${libName}.so`;
             const libTo = path.join(distLibDir, libNameTo);
@@ -1590,48 +1589,6 @@ function setupForWindows(options) {
         core.addPath('C:\\msys64\\mingw64\\bin');
         core.addPath('C:\\msys64\\usr\\bin');
         yield util.pacman('-v', '--noconfirm', '-Sy', 'mingw-w64-x86_64-pkg-config', 'mingw-w64-x86_64-icu');
-        try {
-            core.info(yield util.pkgConfig('--list-all'));
-        }
-        catch (_a) {
-            // Ignore
-        }
-        try {
-            core.info(yield util.pkgConfig('--variable', 'libdir', 'icu'));
-        }
-        catch (_b) {
-            // Ignore
-        }
-        try {
-            core.info(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n'));
-        }
-        catch (_c) {
-            // Ignore
-        }
-        try {
-            core.info(yield util.pkgConfig('--variable', 'libdir', 'icu-uc'));
-        }
-        catch (_d) {
-            // Ignore
-        }
-        try {
-            core.info(yield util.pkgConfig('--variable', 'libdir', 'icu-io'));
-        }
-        catch (_e) {
-            // Ignore
-        }
-        try {
-            core.info(yield util.lsR('C:\\msys64\\mingw64'));
-        }
-        catch (_f) {
-            // Ignore
-        }
-        try {
-            core.info(yield util.lsR('C:\\usr'));
-        }
-        catch (_g) {
-            // Ignore
-        }
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
     });
@@ -1641,13 +1598,18 @@ function bundleForWindows(distDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         if (options['icu-version'] === undefined)
             throw Error('No ICU version');
-        // Gather information
         core.info(`Bundle ICU version ${options['icu-version']}`);
-        const libDirFrom = 'C:\\msys64\\mingw64\\bin';
-        const libPattern = path.join(libDirFrom, 'libicu*.dll');
-        core.info(`Searching with:${os.EOL}${libPattern}`);
-        const libGlobber = yield glob.create(libPattern);
-        const libsFrom = yield libGlobber.glob();
+        const icuVerMaj = util.simver.major(options['icu-version']);
+        const libDirsFrom = new Set();
+        libDirsFrom.add(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n'));
+        libDirsFrom.add(yield util.pkgConfig('--variable', 'libdir', 'icu-uc'));
+        libDirsFrom.add(yield util.pkgConfig('--variable', 'libdir', 'icu-io'));
+        const libFromPatterns = [...libDirsFrom]
+            .flatMap(libDir => ['libicuin', 'libicuuc', 'libicudt', 'libicuio'].flatMap(libName => path.join(libDir, `${libName}${icuVerMaj}.dll`)))
+            .join(os.EOL);
+        core.info(`Searching with:${os.EOL}${libFromPatterns}`);
+        const libFromGlobber = yield glob.create(libFromPatterns);
+        const libsFrom = yield libFromGlobber.glob();
         core.info(`Found libraries:${os.EOL}${libsFrom.join(os.EOL)}`);
         // Copy library files
         const libDirTo = path.join(distDir, 'bin');
@@ -30489,7 +30451,7 @@ module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal",
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"agda-2.6.2.2-x64-darwin":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-darwin.zip","agda-2.6.2.2-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04.zip","agda-2.6.2.2-x64-win32":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022.zip","icu-67.1-x64-linux":"https://github.com/unicode-org/icu/releases/download/release-67-1/icu4c-67_1-Ubuntu18.04-x64.tgz","icu-67.1-x64-win32":"https://github.com/unicode-org/icu/releases/download/release-67-1/icu4c-67_1-Win64-MSVC2017.zip","icu-71.1-x64-linux":"https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-Ubuntu20.04-x64.tgz","icu-71.1-x64-win32":"https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-Win64-MSVC2019.zip","upx-3.96-x64-linux":"https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz","upx-3.96-x64-win32":"https://github.com/upx/upx/releases/download/v3.96/upx-3.96-win64.zip"}');
+module.exports = JSON.parse('{"agda-2.6.2.2-x64-darwin":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-macos-11-icu71.1.zip","agda-2.6.2.2-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04.zip","agda-2.6.2.2-x64-win32":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022.zip","icu-67.1-x64-linux":"https://github.com/unicode-org/icu/releases/download/release-67-1/icu4c-67_1-Ubuntu18.04-x64.tgz","icu-67.1-x64-win32":"https://github.com/unicode-org/icu/releases/download/release-67-1/icu4c-67_1-Win64-MSVC2017.zip","icu-71.1-x64-linux":"https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-Ubuntu20.04-x64.tgz","icu-71.1-x64-win32":"https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-Win64-MSVC2019.zip","upx-3.96-x64-linux":"https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz","upx-3.96-x64-win32":"https://github.com/upx/upx/releases/download/v3.96/upx-3.96-win64.zip"}');
 
 /***/ }),
 

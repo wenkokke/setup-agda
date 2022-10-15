@@ -21,42 +21,6 @@ export async function setupForWindows(
     'mingw-w64-x86_64-icu'
   )
 
-  try {
-    core.info(await util.pkgConfig('--list-all'))
-  } catch {
-    // Ignore
-  }
-  try {
-    core.info(await util.pkgConfig('--variable', 'libdir', 'icu'))
-  } catch {
-    // Ignore
-  }
-  try {
-    core.info(await util.pkgConfig('--variable', 'libdir', 'icu-i18n'))
-  } catch {
-    // Ignore
-  }
-  try {
-    core.info(await util.pkgConfig('--variable', 'libdir', 'icu-uc'))
-  } catch {
-    // Ignore
-  }
-  try {
-    core.info(await util.pkgConfig('--variable', 'libdir', 'icu-io'))
-  } catch {
-    // Ignore
-  }
-  try {
-    core.info(await util.lsR('C:\\msys64\\mingw64'))
-  } catch {
-    // Ignore
-  }
-  try {
-    core.info(await util.lsR('C:\\usr'))
-  } catch {
-    // Ignore
-  }
-
   // Find the ICU version:
   options['icu-version'] = await util.pkgConfig('--modversion', 'icu-i18n')
 }
@@ -67,13 +31,22 @@ export async function bundleForWindows(
 ): Promise<void> {
   if (options['icu-version'] === undefined) throw Error('No ICU version')
 
-  // Gather information
   core.info(`Bundle ICU version ${options['icu-version']}`)
-  const libDirFrom = 'C:\\msys64\\mingw64\\bin'
-  const libPattern = path.join(libDirFrom, 'libicu*.dll')
-  core.info(`Searching with:${os.EOL}${libPattern}`)
-  const libGlobber = await glob.create(libPattern)
-  const libsFrom = await libGlobber.glob()
+  const icuVerMaj = util.simver.major(options['icu-version'])
+  const libDirsFrom = new Set<string>()
+  libDirsFrom.add(await util.pkgConfig('--variable', 'libdir', 'icu-i18n'))
+  libDirsFrom.add(await util.pkgConfig('--variable', 'libdir', 'icu-uc'))
+  libDirsFrom.add(await util.pkgConfig('--variable', 'libdir', 'icu-io'))
+  const libFromPatterns = [...libDirsFrom]
+    .flatMap<string>(libDir =>
+      ['libicuin', 'libicuuc', 'libicudt', 'libicuio'].flatMap<string>(
+        libName => path.join(libDir, `${libName}${icuVerMaj}.dll`)
+      )
+    )
+    .join(os.EOL)
+  core.info(`Searching with:${os.EOL}${libFromPatterns}`)
+  const libFromGlobber = await glob.create(libFromPatterns)
+  const libsFrom = await libFromGlobber.glob()
   core.info(`Found libraries:${os.EOL}${libsFrom.join(os.EOL)}`)
 
   // Copy library files

@@ -18,21 +18,20 @@ export async function bundleForLinux(
 
   // Gather information
   core.info(`Bundle ICU version ${options['icu-version']}`)
-  const icuinLibDir = await util.pkgConfig('--variable', 'libdir', 'icu-i18n')
-  core.info(await util.lsR(icuinLibDir))
-  const icuucLibDir = await util.pkgConfig('--variable', 'libdir', 'icu-uc')
-  core.info(await util.lsR(icuucLibDir))
-  const icuLibPatterns = [icuinLibDir, icuucLibDir]
+  const libDirsFrom = new Set<string>()
+  libDirsFrom.add(await util.pkgConfig('--variable', 'libdir', 'icu-i18n'))
+  libDirsFrom.add(await util.pkgConfig('--variable', 'libdir', 'icu-uc'))
+  const libFromPatterns = [...libDirsFrom]
     .flatMap<string>(libDir =>
       ['libicui18n', 'libicuuc', 'libicudata'].flatMap<string>(libName =>
         path.join(libDir, `${libName}.so.${options['icu-version']}`)
       )
     )
     .join(os.EOL)
-  core.info(`Searching with:${os.EOL}${icuLibPatterns}`)
-  const icuLibGlobber = await glob.create(icuLibPatterns)
-  const icuLibsFrom = await icuLibGlobber.glob()
-  core.info(`Found libraries:${os.EOL}${icuLibsFrom.join(os.EOL)}`)
+  core.info(`Searching with:${os.EOL}${libFromPatterns}`)
+  const libFromGlobber = await glob.create(libFromPatterns)
+  const libsFrom = await libFromGlobber.glob()
+  core.info(`Found libraries:${os.EOL}${libsFrom.join(os.EOL)}`)
 
   // core.debug(`Found ICU version ${options['icu-version']} at ${prefix}`)
   const distLibDir = path.join(distDir, 'lib')
@@ -41,7 +40,7 @@ export async function bundleForLinux(
   // Copy library files & change their IDs
   core.debug(`Copy ICU ${options['icu-version']} in ${distLibDir}`)
   await util.mkdirP(distLibDir)
-  for (const libFrom of icuLibsFrom) {
+  for (const libFrom of libsFrom) {
     const libName = path.basename(libFrom, `.so.${options['icu-version']}`)
     const libNameTo = `agda-${options['agda-version']}-${libName}.so`
     const libTo = path.join(distLibDir, libNameTo)
