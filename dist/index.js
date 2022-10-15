@@ -1296,7 +1296,7 @@ function setupForLinux(options) {
         (0, node_assert_1.default)(prefix === prefixTC);
         // Set PKG_CONFIG_PATH & change prefix in icu-i18n.pc:
         const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig');
-        util.sed('-i', `s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/g`, path.join(pkgConfigDir, 'icu-i18n.pc'));
+        yield util.sed('-i', `s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/g`, path.join(pkgConfigDir, 'icu-i18n.pc'));
         core.exportVariable('PKG_CONFIG_PATH', pkgConfigDir);
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
@@ -1365,7 +1365,7 @@ function setupForMacOS(options) {
         let icuVersion = yield util.brewGetVersion('icu4c');
         core.debug(`Found ICU version: ${icuVersion}`);
         if (icuVersion === undefined) {
-            util.brew('install', 'icu4c');
+            yield util.brew('install', 'icu4c');
             icuVersion = yield util.brewGetVersion('icu4c');
             core.debug(`Installed ICU version: ${icuVersion}`);
         }
@@ -1446,16 +1446,16 @@ function setupForWindows(options) {
         const icuZip = yield tc.downloadTool(icuPkgUrl);
         const tmpDir = yield tc.extractZip(icuZip);
         const prefix = yield installDirForWindows(icuVersion);
-        util.mkdirP(path.dirname(prefix));
-        util.cpR(tmpDir, prefix);
-        util.rmRF(tmpDir);
+        yield util.mkdirP(path.dirname(prefix));
+        yield util.cpR(tmpDir, prefix);
+        yield util.rmRF(tmpDir);
         // Install pkg-config:
         core.addPath('C:\\msys64\\mingw64\\bin');
         core.addPath('C:\\msys64\\usr\\bin');
         yield util.pacman('-v', '--noconfirm', '-Sy', 'mingw-w64-x86_64-pkg-config');
         // Create pkg-config file:
         const pkgConfigDir = path.join(prefix, 'pkgconfig');
-        util.mkdirP(pkgConfigDir);
+        yield util.mkdirP(pkgConfigDir);
         // Create icu-i18n.pc
         fs.writeFileSync(path.join('icu-i18n.pc'), [
             `prefix = ${prefix}`,

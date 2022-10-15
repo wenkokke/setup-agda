@@ -57,7 +57,7 @@ async function setupForLinux(options: opts.BuildOptions): Promise<void> {
 
   // Set PKG_CONFIG_PATH & change prefix in icu-i18n.pc:
   const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig')
-  util.sed(
+  await util.sed(
     '-i',
     `s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/g`,
     path.join(pkgConfigDir, 'icu-i18n.pc')
@@ -139,7 +139,7 @@ async function setupForMacOS(options: opts.BuildOptions): Promise<void> {
   let icuVersion = await util.brewGetVersion('icu4c')
   core.debug(`Found ICU version: ${icuVersion}`)
   if (icuVersion === undefined) {
-    util.brew('install', 'icu4c')
+    await util.brew('install', 'icu4c')
     icuVersion = await util.brewGetVersion('icu4c')
     core.debug(`Installed ICU version: ${icuVersion}`)
   }
@@ -229,9 +229,9 @@ async function setupForWindows(options: opts.BuildOptions): Promise<void> {
   const icuZip = await tc.downloadTool(icuPkgUrl)
   const tmpDir = await tc.extractZip(icuZip)
   const prefix = await installDirForWindows(icuVersion)
-  util.mkdirP(path.dirname(prefix))
-  util.cpR(tmpDir, prefix)
-  util.rmRF(tmpDir)
+  await util.mkdirP(path.dirname(prefix))
+  await util.cpR(tmpDir, prefix)
+  await util.rmRF(tmpDir)
 
   // Install pkg-config:
   core.addPath('C:\\msys64\\mingw64\\bin')
@@ -240,7 +240,7 @@ async function setupForWindows(options: opts.BuildOptions): Promise<void> {
 
   // Create pkg-config file:
   const pkgConfigDir = path.join(prefix, 'pkgconfig')
-  util.mkdirP(pkgConfigDir)
+  await util.mkdirP(pkgConfigDir)
 
   // Create icu-i18n.pc
   fs.writeFileSync(
