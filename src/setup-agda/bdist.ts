@@ -198,9 +198,7 @@ export function renderName(
   options: opts.BuildOptions
 ): string {
   const templateOrDefault =
-    template !== ''
-      ? template
-      : 'agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}'
+    template !== '' ? template : opts.bdistNameDefaultTemplate
   return Mustache.render(templateOrDefault, {
     ...pick(options, [
       'agda-version',

@@ -55,7 +55,7 @@ jobs:
       bdist-compress-exe: false
       bdist-name: |
         agda-{{{agda-version}}}
-            -{{{arch}}
+            -{{{arch}}}
             -${{ matrix.os }}
       bdist-upload: true
 
@@ -77,7 +77,7 @@ jobs:
       bdist-compress-exe: false
       bdist-name: |
         agda-{{{agda-version}}}
-            -{{{arch}}
+            -{{{arch}}}
             -${{ matrix.os }}
             -stack{{{stack-version}}}
       bdist-upload: true

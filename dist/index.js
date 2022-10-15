@@ -73,7 +73,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.pickSetupHaskellInputs = exports.getOptions = exports.os = exports.bdistIndex = exports.packageInfoCache = exports.supportsUPX = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.compressExe = void 0;
+exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.pickSetupHaskellInputs = exports.getOptions = exports.bdistNameDefaultTemplate = exports.os = exports.bdistIndex = exports.packageInfoCache = exports.supportsUPX = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.supportsClusterCounting = exports.compressExe = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const yaml = __importStar(__nccwpck_require__(1917));
 const fs = __importStar(__nccwpck_require__(7561));
@@ -168,6 +168,7 @@ exports.os = (() => {
     }
 })();
 // Helper to get the BuildOptions
+exports.bdistNameDefaultTemplate = 'agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}';
 function getOptions(inputs) {
     // Get build options or their defaults
     const inputSpec = yaml.load(fs.readFileSync(path.join(__dirname, '..', 'action.yml'), 'utf8')).inputs;
@@ -212,7 +213,10 @@ function getOptions(inputs) {
         throw Error('Input "ghc-version-range" is not a valid version range');
     if (options['force-build'] && options['force-no-build'])
         throw Error('Build or no build? What do you want from me? 🤷🏻‍♀️');
-    if (options['bdist-name'] !== '') {
+    if (options['bdist-name'] === '') {
+        Mustache.parse(exports.bdistNameDefaultTemplate);
+    }
+    else {
         try {
             options['bdist-name'] = options['bdist-name']
                 .split(/\s+/g)
@@ -692,9 +696,7 @@ function bundleLibs(bdistDir, options) {
     });
 }
 function renderName(template, options) {
-    const templateOrDefault = template !== ''
-        ? template
-        : 'agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}';
+    const templateOrDefault = template !== '' ? template : opts.bdistNameDefaultTemplate;
     return Mustache.render(templateOrDefault, Object.assign(Object.assign({}, (0, object_pick_1.default)(options, [
         'agda-version',
         'ghc-version',

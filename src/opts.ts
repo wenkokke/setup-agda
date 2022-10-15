@@ -182,6 +182,9 @@ export const os: OS = (() => {
 
 // Helper to get the BuildOptions
 
+export const bdistNameDefaultTemplate =
+  'agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}'
+
 export function getOptions(
   inputs?:
     | Partial<SetupAgdaInputs>
@@ -237,7 +240,9 @@ export function getOptions(
     throw Error('Input "ghc-version-range" is not a valid version range')
   if (options['force-build'] && options['force-no-build'])
     throw Error('Build or no build? What do you want from me? 🤷🏻‍♀️')
-  if (options['bdist-name'] !== '') {
+  if (options['bdist-name'] === '') {
+    Mustache.parse(bdistNameDefaultTemplate)
+  } else {
     try {
       options['bdist-name'] = options['bdist-name']
         .split(/\s+/g)
@@ -253,7 +258,6 @@ export function getOptions(
       )
     }
   }
-
   return options
 }
 
