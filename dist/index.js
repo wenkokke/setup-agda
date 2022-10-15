@@ -1328,15 +1328,16 @@ function setup(options) {
                 if (icuVersion === undefined)
                     throw Error('Could not install icu4c');
                 // Find the ICU installation location:
-                const icuPrefix = yield (0, util_1.brew)('--prefix', 'icu4c');
-                const icuLibDir = path.join(icuPrefix.trim(), 'lib');
+                const icuPrefix = (yield (0, util_1.brew)('--prefix', 'icu4c')).trim();
+                const icuLibDir = path.join(icuPrefix, 'lib');
                 core.debug(`Found ICU version ${icuVersion} at ${icuLibDir}`);
                 // Add ICU to the PKG_CONFIG_PATH:
                 const icuPkgConfigDir = path.join(icuLibDir, 'pkgconfig');
                 core.debug(`Set PKG_CONFIG_PATH to ${icuPkgConfigDir}`);
                 core.exportVariable('PKG_CONFIG_PATH', icuPkgConfigDir);
                 // Get the icu-i18n version via pkg-config:
-                options['icu-version'] = yield (0, util_1.pkgConfig)('--modversion', 'icu-i18n');
+                icuVersion = yield (0, util_1.pkgConfig)('--modversion', 'icu-i18n');
+                options['icu-version'] = icuVersion.trim();
                 core.info(`Setup ICU version ${options['icu-version']} with pkg-config`);
                 // Get the ICU libraries to bundle:
                 const icuVersionMajor = util_1.simver.major(options['icu-version']);
@@ -1812,10 +1813,10 @@ exports.getVersion = getVersion;
 const brew = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('brew', args); });
 exports.brew = brew;
 const brewGetVersion = (formula) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c;
     const formulaVersionRegExp = new RegExp(`${formula} (?<version>[\\d._]+)`);
     const formulaVersions = yield (0, exports.brew)('list', '--formula', '--versions');
-    return (_b = (_a = formulaVersions.match(formulaVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version;
+    return (_c = (_b = (_a = formulaVersions.match(formulaVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version) === null || _c === void 0 ? void 0 : _c.trim();
 });
 exports.brewGetVersion = brewGetVersion;
 const chmod = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('chmod', args); });
@@ -1829,10 +1830,10 @@ exports.otool = otool;
 const pacman = (...args) => __awaiter(void 0, void 0, void 0, function* () { return yield getOutput('pacman', args); });
 exports.pacman = pacman;
 const pacmanGetVersion = (pkg) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d;
+    var _d, _e, _f;
     const pkgInfo = yield (0, exports.pacman)('--noconfirm', '-Qs', pkg);
     const pkgVersionRegExp = /(?<version>\d[\d.]+\d)/;
-    const pkgVersion = (_d = (_c = pkgInfo.match(pkgVersionRegExp)) === null || _c === void 0 ? void 0 : _c.groups) === null || _d === void 0 ? void 0 : _d.version;
+    const pkgVersion = (_f = (_e = (_d = pkgInfo.match(pkgVersionRegExp)) === null || _d === void 0 ? void 0 : _d.groups) === null || _e === void 0 ? void 0 : _e.version) === null || _f === void 0 ? void 0 : _f.trim();
     if (pkgVersion !== undefined)
         return pkgVersion;
     else

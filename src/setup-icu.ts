@@ -45,8 +45,8 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
       if (icuVersion === undefined) throw Error('Could not install icu4c')
 
       // Find the ICU installation location:
-      const icuPrefix = await brew('--prefix', 'icu4c')
-      const icuLibDir = path.join(icuPrefix.trim(), 'lib')
+      const icuPrefix = (await brew('--prefix', 'icu4c')).trim()
+      const icuLibDir = path.join(icuPrefix, 'lib')
       core.debug(`Found ICU version ${icuVersion} at ${icuLibDir}`)
 
       // Add ICU to the PKG_CONFIG_PATH:
@@ -55,7 +55,8 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
       core.exportVariable('PKG_CONFIG_PATH', icuPkgConfigDir)
 
       // Get the icu-i18n version via pkg-config:
-      options['icu-version'] = await pkgConfig('--modversion', 'icu-i18n')
+      icuVersion = await pkgConfig('--modversion', 'icu-i18n')
+      options['icu-version'] = icuVersion.trim()
       core.info(`Setup ICU version ${options['icu-version']} with pkg-config`)
 
       // Get the ICU libraries to bundle:

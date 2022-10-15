@@ -61,7 +61,7 @@ export const brewGetVersion = async (
 ): Promise<string | undefined> => {
   const formulaVersionRegExp = new RegExp(`${formula} (?<version>[\\d._]+)`)
   const formulaVersions = await brew('list', '--formula', '--versions')
-  return formulaVersions.match(formulaVersionRegExp)?.groups?.version
+  return formulaVersions.match(formulaVersionRegExp)?.groups?.version?.trim()
 }
 
 export const chmod = async (...args: string[]): Promise<string> =>
@@ -84,7 +84,7 @@ export const pacmanGetVersion = async (
 ): Promise<string | undefined> => {
   const pkgInfo = await pacman('--noconfirm', '-Qs', pkg)
   const pkgVersionRegExp = /(?<version>\d[\d.]+\d)/
-  const pkgVersion = pkgInfo.match(pkgVersionRegExp)?.groups?.version
+  const pkgVersion = pkgInfo.match(pkgVersionRegExp)?.groups?.version?.trim()
   if (pkgVersion !== undefined) return pkgVersion
   else throw Error(`Could not determine version of ${pkg}`)
 }
