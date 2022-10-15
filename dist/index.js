@@ -1341,6 +1341,12 @@ function setupForLinux(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
+        // Print ICU package info:
+        core.info(JSON.stringify({
+            'icu-i18n': yield util.pkgConfigGetInfo('icu-i18n'),
+            'icu-uc': yield util.pkgConfigGetInfo('icu-uc'),
+            'icu-io': yield util.pkgConfigGetInfo('icu-io')
+        }));
     });
 }
 exports.setupForLinux = setupForLinux;
@@ -1480,6 +1486,12 @@ function setupForMacOS(options) {
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
         (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version reported by Homebrew differs from ICU version reported by pkg-config');
+        // Print ICU package info:
+        core.info(JSON.stringify({
+            'icu-i18n': yield util.pkgConfigGetInfo('icu-i18n'),
+            'icu-uc': yield util.pkgConfigGetInfo('icu-uc'),
+            'icu-io': yield util.pkgConfigGetInfo('icu-io')
+        }));
     });
 }
 exports.setupForMacOS = setupForMacOS;
@@ -1583,28 +1595,6 @@ const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
 const util = __importStar(__nccwpck_require__(4024));
 // Windows
-function printIcuInfo() {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Print info
-        try {
-            const icuInfo = {};
-            for (const pkg of ['i18n', 'uc', 'io']) {
-                const pkgInfo = {};
-                const variables = (yield util.pkgConfig('--print-variables', 'icu-i18n'))
-                    .split(os.EOL)
-                    .filter(variable => variable !== '');
-                for (const variable of variables) {
-                    pkgInfo[variable] = yield util.pkgConfig('--variable', variable, `icu-${pkg}`);
-                }
-                icuInfo[pkg] = pkgInfo;
-            }
-            core.info(JSON.stringify(icuInfo));
-        }
-        catch (_a) {
-            // Ignore
-        }
-    });
-}
 function setupForWindows(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Install pkg-config & ICU:
@@ -1613,7 +1603,12 @@ function setupForWindows(options) {
         yield util.pacman('-v', '--noconfirm', '-Sy', 'mingw-w64-x86_64-pkg-config', 'mingw-w64-x86_64-icu');
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
-        yield printIcuInfo();
+        // Print ICU package info:
+        core.info(JSON.stringify({
+            'icu-i18n': yield util.pkgConfigGetInfo('icu-i18n'),
+            'icu-uc': yield util.pkgConfigGetInfo('icu-uc'),
+            'icu-io': yield util.pkgConfigGetInfo('icu-io')
+        }));
     });
 }
 exports.setupForWindows = setupForWindows;
@@ -2069,7 +2064,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.xattr = exports.sed = exports.pkgConfig = exports.patchelf = exports.pacmanGetVersion = exports.pacman = exports.otool = exports.installNameTool = exports.dumpbin = exports.chmod = exports.brewGetVersion = exports.brew = exports.getVersion = exports.getOutput = void 0;
+exports.xattr = exports.sed = exports.pkgConfigGetInfo = exports.pkgConfig = exports.patchelf = exports.pacmanGetVersion = exports.pacman = exports.otool = exports.installNameTool = exports.dumpbin = exports.chmod = exports.brewGetVersion = exports.brew = exports.getVersion = exports.getOutput = void 0;
 const exec = __importStar(__nccwpck_require__(1514));
 const os = __importStar(__nccwpck_require__(612));
 function getOutput(prog, args, execOptions) {
@@ -2179,6 +2174,25 @@ function pkgConfig(...args) {
     });
 }
 exports.pkgConfig = pkgConfig;
+function pkgConfigGetInfo(pkg) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Print info
+        try {
+            const pkgInfo = {};
+            const variables = (yield pkgConfig('--print-variables', pkg))
+                .split(os.EOL)
+                .filter(variable => variable !== '');
+            for (const variable of variables) {
+                pkgInfo[variable] = yield pkgConfig('--variable', variable, pkg);
+            }
+            return pkgInfo;
+        }
+        catch (error) {
+            return {};
+        }
+    });
+}
+exports.pkgConfigGetInfo = pkgConfigGetInfo;
 function sed(...args) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield getOutput('sed', args);

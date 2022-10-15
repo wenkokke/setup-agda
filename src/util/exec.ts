@@ -103,6 +103,24 @@ export async function pkgConfig(...args: string[]): Promise<string> {
   return await getOutput('pkg-config', args)
 }
 
+export async function pkgConfigGetInfo(
+  pkg: string
+): Promise<Partial<Record<string, string>>> {
+  // Print info
+  try {
+    const pkgInfo: Partial<Record<string, string>> = {}
+    const variables = (await pkgConfig('--print-variables', pkg))
+      .split(os.EOL)
+      .filter(variable => variable !== '')
+    for (const variable of variables) {
+      pkgInfo[variable] = await pkgConfig('--variable', variable, pkg)
+    }
+    return pkgInfo
+  } catch (error) {
+    return {}
+  }
+}
+
 export async function sed(...args: string[]): Promise<string> {
   return await getOutput('sed', args)
 }

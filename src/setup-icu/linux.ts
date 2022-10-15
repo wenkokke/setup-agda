@@ -8,6 +8,15 @@ import * as util from '../util'
 export async function setupForLinux(options: opts.BuildOptions): Promise<void> {
   // Find the ICU version:
   options['icu-version'] = await util.pkgConfig('--modversion', 'icu-i18n')
+
+  // Print ICU package info:
+  core.info(
+    JSON.stringify({
+      'icu-i18n': await util.pkgConfigGetInfo('icu-i18n'),
+      'icu-uc': await util.pkgConfigGetInfo('icu-uc'),
+      'icu-io': await util.pkgConfigGetInfo('icu-io')
+    })
+  )
 }
 
 export async function bundleForLinux(

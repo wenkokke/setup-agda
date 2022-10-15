@@ -35,6 +35,15 @@ export async function setupForMacOS(options: opts.BuildOptions): Promise<void> {
     icuVersion === options['icu-version'],
     'ICU version reported by Homebrew differs from ICU version reported by pkg-config'
   )
+
+  // Print ICU package info:
+  core.info(
+    JSON.stringify({
+      'icu-i18n': await util.pkgConfigGetInfo('icu-i18n'),
+      'icu-uc': await util.pkgConfigGetInfo('icu-uc'),
+      'icu-io': await util.pkgConfigGetInfo('icu-io')
+    })
+  )
 }
 
 export async function bundleForMacOS(

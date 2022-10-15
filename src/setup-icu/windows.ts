@@ -7,30 +7,6 @@ import * as util from '../util'
 
 // Windows
 
-async function printIcuInfo(): Promise<void> {
-  // Print info
-  try {
-    const icuInfo: Partial<Record<string, Partial<Record<string, string>>>> = {}
-    for (const pkg of ['i18n', 'uc', 'io']) {
-      const pkgInfo: Partial<Record<string, string>> = {}
-      const variables = (await util.pkgConfig('--print-variables', 'icu-i18n'))
-        .split(os.EOL)
-        .filter(variable => variable !== '')
-      for (const variable of variables) {
-        pkgInfo[variable] = await util.pkgConfig(
-          '--variable',
-          variable,
-          `icu-${pkg}`
-        )
-      }
-      icuInfo[pkg] = pkgInfo
-    }
-    core.info(JSON.stringify(icuInfo))
-  } catch {
-    // Ignore
-  }
-}
-
 export async function setupForWindows(
   options: opts.BuildOptions
 ): Promise<void> {
@@ -47,7 +23,15 @@ export async function setupForWindows(
 
   // Find the ICU version:
   options['icu-version'] = await util.pkgConfig('--modversion', 'icu-i18n')
-  await printIcuInfo()
+
+  // Print ICU package info:
+  core.info(
+    JSON.stringify({
+      'icu-i18n': await util.pkgConfigGetInfo('icu-i18n'),
+      'icu-uc': await util.pkgConfigGetInfo('icu-uc'),
+      'icu-io': await util.pkgConfigGetInfo('icu-io')
+    })
+  )
 }
 
 export async function bundleForWindows(
