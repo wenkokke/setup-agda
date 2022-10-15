@@ -1619,6 +1619,8 @@ function bundleForWindows(distDir, options) {
         core.info(`Bundle ICU version ${options['icu-version']}`);
         const libVerMaj = util.simver.major(options['icu-version']);
         const libDirsFrom = new Set();
+        libDirsFrom.add('C:\\msys64\\mingw64\\bin');
+        libDirsFrom.add('C:\\msys64\\usr\\bin');
         libDirsFrom.add(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n'));
         libDirsFrom.add(yield util.pkgConfig('--variable', 'libdir', 'icu-uc'));
         libDirsFrom.add(yield util.pkgConfig('--variable', 'libdir', 'icu-io'));

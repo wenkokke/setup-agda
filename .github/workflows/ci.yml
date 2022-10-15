@@ -44,7 +44,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-10.5, ubuntu-18.04]
+        os: [windows-2022]
     uses: ./.github/workflows/setup-agda.yml
     with:
       runs-on: ${{ matrix.os }}
