@@ -55,14 +55,15 @@ async function setupForLinux(options: opts.BuildOptions): Promise<void> {
   const prefixTC = await tc.extractTar(icuTar, prefix, tarArgs)
   assert(prefix === prefixTC)
 
-  // Set PKG_CONFIG_PATH & change prefix in icu-i18n.pc:
+  // Patch prefix in icu-i18n.pc:
   const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig')
   await util.sed(
     '-i',
     `s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/g`,
     path.join(pkgConfigDir, 'icu-i18n.pc')
   )
-  core.exportVariable('PKG_CONFIG_PATH', pkgConfigDir)
+  // Add to PKG_CONFIG_PATH:
+  util.addPkgConfigPath(pkgConfigDir)
 
   // Find the ICU version:
   options['icu-version'] = await util.pkgConfig('--modversion', 'icu-i18n')
@@ -149,9 +150,9 @@ async function setupForMacOS(options: opts.BuildOptions): Promise<void> {
   const prefix = await installDirForMacOS()
   core.debug(`Found ICU version ${icuVersion} at ${prefix}`)
 
-  // Set PKG_CONFIG_PATH:
+  // Add to PKG_CONFIG_PATH:
   const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig')
-  core.exportVariable('PKG_CONFIG_PATH', pkgConfigDir)
+  util.addPkgConfigPath(pkgConfigDir)
 
   // Find the ICU version:
   options['icu-version'] = await util.pkgConfig('--modversion', 'icu-i18n')
@@ -261,6 +262,7 @@ async function setupForWindows(options: opts.BuildOptions): Promise<void> {
       'Libs: -licuin'
     ].join(os.EOL)
   )
+
   // Create icu-uc.pc
   fs.writeFileSync(
     path.join(pkgConfigDir, 'icu-i18n.pc'),
@@ -280,7 +282,9 @@ async function setupForWindows(options: opts.BuildOptions): Promise<void> {
       'Libs.private: ${baselibs}'
     ].join(os.EOL)
   )
-  core.exportVariable('PKG_CONFIG_PATH', pkgConfigDir)
+
+  // Add to PKG_CONFIG_PATH:
+  util.addPkgConfigPath(pkgConfigDir)
 
   // Find the ICU version:
   options['icu-version'] = await util.pkgConfig('--modversion', 'icu-i18n')

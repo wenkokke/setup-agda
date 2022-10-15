@@ -29,6 +29,16 @@ export * from './util/io'
 
 export * as simver from './util/simver'
 
+export function addPkgConfigPath(pkgConfigDir: string): void {
+  const pathSep = opts.os === 'windows' ? ';' : ':'
+  const pkgConfigPath = process.env.PKG_CONFIG_PATH ?? ''
+  const pkgConfigDirs = pkgConfigPath.split(pathSep).filter(dir => dir !== '')
+  core.exportVariable(
+    'PKG_CONFIG_PATH',
+    [pkgConfigDir, ...pkgConfigDirs].join(pathSep)
+  )
+}
+
 // Agda utilities
 
 export async function resolveAgdaVersion(

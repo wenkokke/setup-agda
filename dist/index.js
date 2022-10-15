@@ -1294,10 +1294,11 @@ function setupForLinux(options) {
         const tarArgs = ['--extract', '--gzip', '--strip-components=4'];
         const prefixTC = yield tc.extractTar(icuTar, prefix, tarArgs);
         (0, node_assert_1.default)(prefix === prefixTC);
-        // Set PKG_CONFIG_PATH & change prefix in icu-i18n.pc:
+        // Patch prefix in icu-i18n.pc:
         const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig');
         yield util.sed('-i', `s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/g`, path.join(pkgConfigDir, 'icu-i18n.pc'));
-        core.exportVariable('PKG_CONFIG_PATH', pkgConfigDir);
+        // Add to PKG_CONFIG_PATH:
+        util.addPkgConfigPath(pkgConfigDir);
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
         (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version installed differs from ICU version reported by pkg-config');
@@ -1374,9 +1375,9 @@ function setupForMacOS(options) {
         // Find the ICU installation location:
         const prefix = yield installDirForMacOS();
         core.debug(`Found ICU version ${icuVersion} at ${prefix}`);
-        // Set PKG_CONFIG_PATH:
+        // Add to PKG_CONFIG_PATH:
         const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig');
-        core.exportVariable('PKG_CONFIG_PATH', pkgConfigDir);
+        util.addPkgConfigPath(pkgConfigDir);
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
         (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version reported by Homebrew differs from ICU version reported by pkg-config');
@@ -1488,7 +1489,8 @@ function setupForWindows(options) {
             `Libs: -L${prefix}/bin64 -licuuc -licudt`,
             'Libs.private: ${baselibs}'
         ].join(os.EOL));
-        core.exportVariable('PKG_CONFIG_PATH', pkgConfigDir);
+        // Add to PKG_CONFIG_PATH:
+        util.addPkgConfigPath(pkgConfigDir);
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
         (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version installed differs from ICU version reported by pkg-config');
@@ -1673,7 +1675,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setupAgdaEnv = exports.getAgdaSource = exports.resolveAgdaVersion = exports.simver = exports.stackGetLocalBin = exports.stackGetVersion = exports.stack = exports.cabalGetVersion = exports.cabal = exports.ghcGetVersion = exports.ghc = exports.agdaTest = exports.agdaModeBinName = exports.agdaBinNames = exports.agdaBinName = void 0;
+exports.setupAgdaEnv = exports.getAgdaSource = exports.resolveAgdaVersion = exports.addPkgConfigPath = exports.simver = exports.stackGetLocalBin = exports.stackGetVersion = exports.stack = exports.cabalGetVersion = exports.cabal = exports.ghcGetVersion = exports.ghc = exports.agdaTest = exports.agdaModeBinName = exports.agdaBinNames = exports.agdaBinName = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const path = __importStar(__nccwpck_require__(9411));
@@ -1696,6 +1698,14 @@ Object.defineProperty(exports, "stackGetVersion", ({ enumerable: true, get: func
 Object.defineProperty(exports, "stackGetLocalBin", ({ enumerable: true, get: function () { return haskell_1.stackGetLocalBin; } }));
 __exportStar(__nccwpck_require__(9067), exports);
 exports.simver = __importStar(__nccwpck_require__(7609));
+function addPkgConfigPath(pkgConfigDir) {
+    var _a;
+    const pathSep = opts.os === 'windows' ? ';' : ':';
+    const pkgConfigPath = (_a = process.env.PKG_CONFIG_PATH) !== null && _a !== void 0 ? _a : '';
+    const pkgConfigDirs = pkgConfigPath.split(pathSep).filter(dir => dir !== '');
+    core.exportVariable('PKG_CONFIG_PATH', [pkgConfigDir, ...pkgConfigDirs].join(pathSep));
+}
+exports.addPkgConfigPath = addPkgConfigPath;
 // Agda utilities
 function resolveAgdaVersion(options) {
     return __awaiter(this, void 0, void 0, function* () {
