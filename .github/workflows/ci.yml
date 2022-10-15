@@ -38,27 +38,26 @@ jobs:
       force-no-build: true
       agda-version: latest
 
-  # test-build-with-cabal:
-  #   name: Build Agda on ${{ matrix.os }} with Cabal
-  #   needs: [check-dist]
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       os: [ubuntu-20.04] #, macos-11, windows-2022]
-
-  #   uses: ./.github/workflows/setup-agda.yml
-  #   with:
-  #     runs-on: ${{ matrix.os }}
-  #     force-build: true
-  #     agda-version: latest
-  #     cabal-version: '3.6'
-  #     bdist-compress-exe: false
-  #     bdist-name: |
-  #       agda-{{{agda-version}}}
-  #           -{{{arch}}}
-  #           -${{ matrix.os }}
-  #           -icu{{{icu-version}}}
-  #     bdist-upload: true
+  test-build-with-cabal:
+    name: Build Agda on ${{ matrix.os }} with Cabal
+    needs: [check-dist]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-10.5, ubuntu-18.04]
+    uses: ./.github/workflows/setup-agda.yml
+    with:
+      runs-on: ${{ matrix.os }}
+      force-build: true
+      agda-version: latest
+      cabal-version: '3.6'
+      bdist-compress-exe: false
+      bdist-name: |
+        agda-{{{agda-version}}}
+            -{{{arch}}}
+            -${{ matrix.os }}
+            -icu{{{icu-version}}}
+      bdist-upload: true
 
   # test-build-with-stack:
   #   name: Build Agda on ${{ matrix.os }} with Stack
@@ -66,8 +65,7 @@ jobs:
   #   strategy:
   #     fail-fast: false
   #     matrix:
-  #       os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12, windows-2022]
-
+  #       os: [ubuntu-latest, macos-latest, windows-latest]
   #   uses: ./.github/workflows/setup-agda.yml
   #   with:
   #     runs-on: ${{ matrix.os }}
