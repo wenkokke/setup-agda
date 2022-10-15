@@ -1583,6 +1583,28 @@ const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
 const util = __importStar(__nccwpck_require__(4024));
 // Windows
+function printIcuInfo() {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Print info
+        try {
+            const icuInfo = {};
+            for (const pkg of ['i18n', 'uc', 'io']) {
+                const pkgInfo = {};
+                const variables = (yield util.pkgConfig('--print-variables', 'icu-i18n'))
+                    .split(os.EOL)
+                    .filter(variable => variable !== '');
+                for (const variable of variables) {
+                    pkgInfo[variable] = yield util.pkgConfig('--variable', variable, `icu-${pkg}`);
+                }
+                icuInfo[pkg] = pkgInfo;
+            }
+            core.info(JSON.stringify(icuInfo));
+        }
+        catch (_a) {
+            // Ignore
+        }
+    });
+}
 function setupForWindows(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Install pkg-config & ICU:
@@ -1591,6 +1613,7 @@ function setupForWindows(options) {
         yield util.pacman('-v', '--noconfirm', '-Sy', 'mingw-w64-x86_64-pkg-config', 'mingw-w64-x86_64-icu');
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
+        yield printIcuInfo();
     });
 }
 exports.setupForWindows = setupForWindows;
