@@ -32,7 +32,7 @@ export async function bundleForWindows(
   if (options['icu-version'] === undefined) throw Error('No ICU version')
 
   core.info(`Bundle ICU version ${options['icu-version']}`)
-  const icuVerMaj = util.simver.major(options['icu-version'])
+  const libVerMaj = util.simver.major(options['icu-version'])
   const libDirsFrom = new Set<string>()
   libDirsFrom.add(await util.pkgConfig('--variable', 'libdir', 'icu-i18n'))
   libDirsFrom.add(await util.pkgConfig('--variable', 'libdir', 'icu-uc'))
@@ -40,7 +40,7 @@ export async function bundleForWindows(
   const libFromPatterns = [...libDirsFrom]
     .flatMap<string>(libDir =>
       ['libicuin', 'libicuuc', 'libicudt', 'libicuio'].flatMap<string>(
-        libName => path.join(libDir, `${libName}${icuVerMaj}.dll`)
+        libName => path.join(libDir, `${libName}${libVerMaj}.dll`)
       )
     )
     .join(os.EOL)

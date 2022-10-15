@@ -1599,13 +1599,13 @@ function bundleForWindows(distDir, options) {
         if (options['icu-version'] === undefined)
             throw Error('No ICU version');
         core.info(`Bundle ICU version ${options['icu-version']}`);
-        const icuVerMaj = util.simver.major(options['icu-version']);
+        const libVerMaj = util.simver.major(options['icu-version']);
         const libDirsFrom = new Set();
         libDirsFrom.add(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n'));
         libDirsFrom.add(yield util.pkgConfig('--variable', 'libdir', 'icu-uc'));
         libDirsFrom.add(yield util.pkgConfig('--variable', 'libdir', 'icu-io'));
         const libFromPatterns = [...libDirsFrom]
-            .flatMap(libDir => ['libicuin', 'libicuuc', 'libicudt', 'libicuio'].flatMap(libName => path.join(libDir, `${libName}${icuVerMaj}.dll`)))
+            .flatMap(libDir => ['libicuin', 'libicuuc', 'libicudt', 'libicuio'].flatMap(libName => path.join(libDir, `${libName}${libVerMaj}.dll`)))
             .join(os.EOL);
         core.info(`Searching with:${os.EOL}${libFromPatterns}`);
         const libFromGlobber = yield glob.create(libFromPatterns);
