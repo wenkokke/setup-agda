@@ -1395,7 +1395,7 @@ function bundleForLinux(distDir, options) {
                 const depTo = `agda-${options['agda-version']}-${depName}.so`;
                 yield util.patchelf('--replace-needed', depFrom, depTo, libTo);
             }
-            yield util.patchelf('--add-rpath', "'$ORIGIN'");
+            yield util.patchelf('--add-rpath', "'$ORIGIN'", libTo);
         }
         // Change dependencies on Agda executable:
         const agdaBinPath = path.join(distBinDir, util.agdaBinName);

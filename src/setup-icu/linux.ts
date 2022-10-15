@@ -73,7 +73,7 @@ export async function bundleForLinux(
       const depTo = `agda-${options['agda-version']}-${depName}.so`
       await util.patchelf('--replace-needed', depFrom, depTo, libTo)
     }
-    await util.patchelf('--add-rpath', "'$ORIGIN'")
+    await util.patchelf('--add-rpath', "'$ORIGIN'", libTo)
   }
 
   // Change dependencies on Agda executable:
