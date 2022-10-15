@@ -270,7 +270,7 @@ async function setupForWindows(options: opts.BuildOptions): Promise<void> {
 
   // Create icu-uc.pc
   fs.writeFileSync(
-    path.join(pkgConfigDir, 'icu-i18n.pc'),
+    path.join(pkgConfigDir, 'icu-uc.pc'),
     [
       `prefix = ${prefix}`,
       `exec_prefix = ${prefix}/bin64`,
@@ -284,6 +284,27 @@ async function setupForWindows(options: opts.BuildOptions): Promise<void> {
       'Description: International Components for Unicode: Common and Data libraries',
       'Name: icu-uc',
       `Libs: -L${prefix}/bin64 -licuuc -licudt`,
+      'Libs.private: ${baselibs}'
+    ].join(os.EOL)
+  )
+
+  // Create icu-io.pc
+  fs.writeFileSync(
+    path.join(pkgConfigDir, 'icu-io.pc'),
+    [
+      `prefix = ${prefix}`,
+      `exec_prefix = ${prefix}/bin64`,
+      `includedir = ${prefix}/include`,
+      `libdir = ${prefix}/bin64`,
+      'baselibs = -lpthread -ldl -lm',
+      '',
+      `Version: ${icuVersion}`,
+      `Cflags: -I${prefix}/include`,
+      '# end of icu.pc.in',
+      'Description: International Components for Unicode: Stream and I/O Library',
+      'Name: icu-io',
+      'Requires: icu-i18n',
+      `Libs: -L${prefix}/bin64 -licuio`,
       'Libs.private: ${baselibs}'
     ].join(os.EOL)
   )
