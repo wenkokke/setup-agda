@@ -58,7 +58,6 @@ export type UPXVersion = '3.96'
 export interface BuildOptions extends SetupAgdaInputs {
   'ghc-supported-versions': string[]
   'icu-version'?: string
-  'bdist-libs': string[]
   'package-info-cache'?: PackageInfoCache
   'upx-version'?: string
 }
@@ -227,7 +226,6 @@ export function getOptions(
     'stack-version': getOption('stack-version'),
 
     // Specified in BuildOptions
-    'bdist-libs': [],
     'ghc-supported-versions': []
   }
 

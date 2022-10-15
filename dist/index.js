@@ -201,7 +201,6 @@ function getOptions(inputs) {
         'stack-setup-ghc': getFlag('stack-setup-ghc'),
         'stack-version': getOption('stack-version'),
         // Specified in BuildOptions
-        'bdist-libs': [],
         'ghc-supported-versions': []
     };
     // Validate build options:
@@ -1245,84 +1244,6 @@ const os = __importStar(__nccwpck_require__(612));
 const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
-// export async function setup(options: opts.BuildOptions): Promise<void> {
-//   switch (opts.os) {
-//     case 'linux': {
-//       // Ubuntu 20.04 ships with a recent version of ICU
-//       // Get the icu-i18n information via pkg-config:
-//       options['icu-version'] = await pkgConfig('--modversion', 'icu-i18n')
-//       core.info(`Found ICU version ${options['icu-version']}`)
-//       const icuVersionMajor = simver.major(options['icu-version'])
-//       const icuLibGlobber = await glob.create(
-//         icuLibNames
-//           .flatMap(libName => [
-//             `/usr/lib/${libName}.so`,
-//             `/usr/lib/${libName}.so.${icuVersionMajor}`,
-//             `/usr/lib/${libName}.so.${options['icu-version']}`
-//           ])
-//           .join(os.EOL)
-//       )
-//       options['bdist-libs'] = await icuLibGlobber.glob()
-//       core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`)
-//       break
-//     }
-//     case 'macos': {
-//       // Ensure ICU is installed:
-//       let icuVersion = await brewGetVersion('icu4c')
-//       if (icuVersion === undefined) brew('install', 'icu4c')
-//       else if (simver.lt(icuVersion, '68')) brew('upgrade', 'icu4c')
-//       icuVersion = await brewGetVersion('icu4c')
-//       if (icuVersion === undefined) throw Error('Could not install icu4c')
-//       // Find the ICU installation location:
-//       const icuPrefix = (await brew('--prefix', 'icu4c')).trim()
-//       const icuLibDir = path.join(icuPrefix, 'lib')
-//       core.debug(`Found ICU version ${icuVersion} at ${icuLibDir}`)
-//       // Add ICU to the PKG_CONFIG_PATH:
-//       const icuPkgConfigDir = path.join(icuLibDir, 'pkgconfig')
-//       core.debug(`Set PKG_CONFIG_PATH to ${icuPkgConfigDir}`)
-//       core.exportVariable('PKG_CONFIG_PATH', icuPkgConfigDir)
-//       // Get the icu-i18n version via pkg-config:
-//       icuVersion = await pkgConfig('--modversion', 'icu-i18n')
-//       options['icu-version'] = icuVersion.trim()
-//       core.info(`Setup ICU version ${options['icu-version']} with pkg-config`)
-//       // Get the ICU libraries to bundle:
-//       const icuVersionMajor = simver.major(options['icu-version'])
-//       const icuLibGlobber = await glob.create(
-//         icuLibNames
-//           .flatMap(libName => [
-//             `${path.join(icuLibDir, libName)}.dylib`,
-//             `${path.join(icuLibDir, libName)}.${icuVersionMajor}.dylib`,
-//             `${path.join(icuLibDir, libName)}.${options['icu-version']}.dylib`
-//           ])
-//           .join(os.EOL)
-//       )
-//       options['bdist-libs'] = await icuLibGlobber.glob()
-//       core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`)
-//       break
-//     }
-//     case 'windows': {
-//       core.info('Install pkg-config and ICU using Pacman')
-//       core.addPath('C:\\msys64\\mingw64\\bin')
-//       core.addPath('C:\\msys64\\usr\\bin')
-//       await pacman(
-//         '-v',
-//         '--noconfirm',
-//         '-Sy',
-//         'mingw-w64-x86_64-pkg-config',
-//         'mingw-w64-x86_64-icu'
-//       )
-//       // Get the icu-i18n version via pacman:
-//       options['icu-version'] = await pacmanGetVersion('mingw-w64-x86_64-icu')
-//       core.info(`Installed ICU version ${options['icu-version']}`)
-//       // Get the ICU libraries to bundle:
-//       const icuLibDir = 'C:\\msys64\\mingw64\\bin'
-//       const icuLibGlobber = await glob.create(path.join(icuLibDir, 'icu*.dll'))
-//       options['bdist-libs'] = await icuLibGlobber.glob()
-//       core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`)
-//       break
-//     }
-//   }
-// }
 function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (opts.os) {
@@ -1349,6 +1270,14 @@ function bundle(distDir, options) {
     });
 }
 exports.bundle = bundle;
+function findIcuPkgUrl(icuVersion) {
+    const icuPkgKey = `icu-${icuVersion}-${os.arch()}-${os.platform()}`;
+    const icuPkgUrl = opts.packageIndex[icuPkgKey];
+    if (icuPkgUrl === undefined)
+        throw Error(`No package for ${icuPkgKey}`);
+    else
+        return icuPkgUrl;
+}
 // Linux
 function installDirForLinux(icuVersion) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -1357,12 +1286,9 @@ function installDirForLinux(icuVersion) {
 }
 function setupForLinux(options) {
     return __awaiter(this, void 0, void 0, function* () {
-        const icuVersion = '71.1';
-        const icuPkgKey = `icu-${icuVersion}-${os.arch()}-${os.platform()}`;
-        const icuPkgUrl = opts.packageIndex[icuPkgKey];
-        if (icuPkgUrl === undefined)
-            throw Error(`No package for ${icuPkgKey}`);
         // Download ICU package:
+        const icuVersion = '71.1';
+        const icuPkgUrl = findIcuPkgUrl(icuVersion);
         const icuTar = yield tc.downloadTool(icuPkgUrl);
         const prefix = yield installDirForLinux(icuVersion);
         const tarArgs = ['--extract', '--gzip', '--strip-components=4'];
@@ -1370,7 +1296,7 @@ function setupForLinux(options) {
         (0, node_assert_1.default)(prefix === prefixTC);
         // Set PKG_CONFIG_PATH & change prefix in icu-i18n.pc:
         const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig');
-        util.sed('-i', `'s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/'`, path.join(pkgConfigDir, 'icu-i18n.pc'));
+        util.sed('-i', `"s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/g"`, path.join(pkgConfigDir, 'icu-i18n.pc'));
         core.exportVariable('PKG_CONFIG_PATH', pkgConfigDir);
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
@@ -1514,17 +1440,15 @@ function installDirForWindows(icuVersion) {
 }
 function setupForWindows(options) {
     return __awaiter(this, void 0, void 0, function* () {
-        const icuVersion = '71.1';
-        const icuPkgKey = `icu-${icuVersion}-${os.arch()}-${os.platform()}`;
-        const icuPkgUrl = opts.packageIndex[icuPkgKey];
-        if (icuPkgUrl === undefined)
-            throw Error(`No package for ${icuPkgKey}`);
         // Download ICU package:
+        const icuVersion = '71.1';
+        const icuPkgUrl = findIcuPkgUrl(icuVersion);
         const icuZip = yield tc.downloadTool(icuPkgUrl);
         const tmpDir = yield tc.extractZip(icuZip);
         const prefix = yield installDirForWindows(icuVersion);
         util.mkdirP(path.dirname(prefix));
-        util.mv(tmpDir, prefix);
+        util.cpR(tmpDir, prefix);
+        util.rmRF(tmpDir);
         // Install pkg-config:
         core.addPath('C:\\msys64\\mingw64\\bin');
         core.addPath('C:\\msys64\\usr\\bin');
@@ -1636,47 +1560,71 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const tc = __importStar(__nccwpck_require__(7784));
 const path = __importStar(__nccwpck_require__(9411));
+const os = __importStar(__nccwpck_require__(612));
 const opts = __importStar(__nccwpck_require__(1352));
-const util_1 = __nccwpck_require__(4024);
-const upxUrlLinux = 'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz';
-const upxUrlWindows = 'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-win64.zip';
+const util = __importStar(__nccwpck_require__(4024));
 function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (opts.os) {
-            case 'linux': {
-                const upxTarPath = yield tc.downloadTool(upxUrlLinux);
-                const upxParentDir = yield tc.extractTar(upxTarPath, undefined, [
-                    '--extract',
-                    '--xz',
-                    '--preserve-permissions'
-                ]);
-                options['upx-version'] = '3.96';
-                return path.join(upxParentDir, 'upx-3.96-amd64_linux', 'upx');
-            }
-            case 'macos': {
-                // Ensure UPX is installed and is the correct version:
-                // NOTE: patch version '3.96_1' and (presumably) later versions are OK
-                let upxVersion = yield (0, util_1.brewGetVersion)('upx');
-                if (upxVersion === undefined)
-                    yield (0, util_1.brew)('install', 'upx');
-                else if (util_1.simver.lt(upxVersion, '3.96_1'))
-                    yield (0, util_1.brew)('upgrade', 'upx');
-                upxVersion = yield (0, util_1.brewGetVersion)('upx');
-                if (upxVersion === undefined)
-                    throw Error(`Could not install UPX`);
-                options['upx-version'] = upxVersion;
-                return 'upx';
-            }
-            case 'windows': {
-                const upxZipPath = yield tc.downloadTool(upxUrlWindows);
-                const upxParentDir = yield tc.extractZip(upxZipPath);
-                options['upx-version'] = '3.96';
-                return path.join(upxParentDir, 'upx-3.96-win64', 'upx');
-            }
+            case 'linux':
+                return yield setupLinux(options);
+            case 'macos':
+                return yield setupMacOS(options);
+            case 'windows':
+                return yield setupWindows(options);
         }
     });
 }
 exports["default"] = setup;
+function findUpxPkgUrl(upxVersion) {
+    const upxPkgKey = `upx-${upxVersion}-${os.arch()}-${os.platform()}`;
+    const upxPkgUrl = opts.packageIndex[upxPkgKey];
+    if (upxPkgUrl === undefined)
+        throw Error(`No package for ${upxPkgKey}`);
+    else
+        return upxPkgUrl;
+}
+function setupLinux(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const upxVersion = '3.96';
+        const upxPkgUrl = findUpxPkgUrl(upxVersion);
+        const upxTar = yield tc.downloadTool(upxPkgUrl);
+        const upxDir = yield tc.extractTar(upxTar, undefined, [
+            '--extract',
+            '--xz',
+            '--preserve-permissions',
+            '--strip-components=1'
+        ]);
+        options['upx-version'] = '3.96';
+        return path.join(upxDir, 'upx');
+    });
+}
+function setupMacOS(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Ensure UPX is installed and is the correct version:
+        // NOTE: patch version '3.96_1' and (presumably) later versions are OK
+        let upxVersion = yield util.brewGetVersion('upx');
+        if (upxVersion === undefined)
+            yield util.brew('install', 'upx');
+        else if (util.simver.lt(upxVersion, '3.96_1'))
+            yield util.brew('upgrade', 'upx');
+        upxVersion = yield util.brewGetVersion('upx');
+        if (upxVersion === undefined)
+            throw Error(`Could not install UPX`);
+        options['upx-version'] = upxVersion;
+        return 'upx';
+    });
+}
+function setupWindows(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const upxVersion = '3.96';
+        const upxPkgUrl = findUpxPkgUrl(upxVersion);
+        const upxZip = yield tc.downloadTool(upxPkgUrl);
+        const upxDir = yield tc.extractZip(upxZip);
+        options['upx-version'] = '3.96';
+        return path.join(upxDir, 'upx-3.96-win64', 'upx');
+    });
+}
 
 
 /***/ }),

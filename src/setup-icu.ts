@@ -7,91 +7,6 @@ import * as opts from './opts'
 import * as util from './util'
 import assert from 'node:assert'
 
-// export async function setup(options: opts.BuildOptions): Promise<void> {
-//   switch (opts.os) {
-//     case 'linux': {
-//       // Ubuntu 20.04 ships with a recent version of ICU
-//       // Get the icu-i18n information via pkg-config:
-//       options['icu-version'] = await pkgConfig('--modversion', 'icu-i18n')
-//       core.info(`Found ICU version ${options['icu-version']}`)
-//       const icuVersionMajor = simver.major(options['icu-version'])
-//       const icuLibGlobber = await glob.create(
-//         icuLibNames
-//           .flatMap(libName => [
-//             `/usr/lib/${libName}.so`,
-//             `/usr/lib/${libName}.so.${icuVersionMajor}`,
-//             `/usr/lib/${libName}.so.${options['icu-version']}`
-//           ])
-//           .join(os.EOL)
-//       )
-//       options['bdist-libs'] = await icuLibGlobber.glob()
-//       core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`)
-//       break
-//     }
-//     case 'macos': {
-//       // Ensure ICU is installed:
-//       let icuVersion = await brewGetVersion('icu4c')
-//       if (icuVersion === undefined) brew('install', 'icu4c')
-//       else if (simver.lt(icuVersion, '68')) brew('upgrade', 'icu4c')
-//       icuVersion = await brewGetVersion('icu4c')
-//       if (icuVersion === undefined) throw Error('Could not install icu4c')
-
-//       // Find the ICU installation location:
-//       const icuPrefix = (await brew('--prefix', 'icu4c')).trim()
-//       const icuLibDir = path.join(icuPrefix, 'lib')
-//       core.debug(`Found ICU version ${icuVersion} at ${icuLibDir}`)
-
-//       // Add ICU to the PKG_CONFIG_PATH:
-//       const icuPkgConfigDir = path.join(icuLibDir, 'pkgconfig')
-//       core.debug(`Set PKG_CONFIG_PATH to ${icuPkgConfigDir}`)
-//       core.exportVariable('PKG_CONFIG_PATH', icuPkgConfigDir)
-
-//       // Get the icu-i18n version via pkg-config:
-//       icuVersion = await pkgConfig('--modversion', 'icu-i18n')
-//       options['icu-version'] = icuVersion.trim()
-//       core.info(`Setup ICU version ${options['icu-version']} with pkg-config`)
-
-//       // Get the ICU libraries to bundle:
-//       const icuVersionMajor = simver.major(options['icu-version'])
-//       const icuLibGlobber = await glob.create(
-//         icuLibNames
-//           .flatMap(libName => [
-//             `${path.join(icuLibDir, libName)}.dylib`,
-//             `${path.join(icuLibDir, libName)}.${icuVersionMajor}.dylib`,
-//             `${path.join(icuLibDir, libName)}.${options['icu-version']}.dylib`
-//           ])
-//           .join(os.EOL)
-//       )
-//       options['bdist-libs'] = await icuLibGlobber.glob()
-//       core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`)
-//       break
-//     }
-//     case 'windows': {
-//       core.info('Install pkg-config and ICU using Pacman')
-//       core.addPath('C:\\msys64\\mingw64\\bin')
-//       core.addPath('C:\\msys64\\usr\\bin')
-//       await pacman(
-//         '-v',
-//         '--noconfirm',
-//         '-Sy',
-//         'mingw-w64-x86_64-pkg-config',
-//         'mingw-w64-x86_64-icu'
-//       )
-
-//       // Get the icu-i18n version via pacman:
-//       options['icu-version'] = await pacmanGetVersion('mingw-w64-x86_64-icu')
-//       core.info(`Installed ICU version ${options['icu-version']}`)
-
-//       // Get the ICU libraries to bundle:
-//       const icuLibDir = 'C:\\msys64\\mingw64\\bin'
-//       const icuLibGlobber = await glob.create(path.join(icuLibDir, 'icu*.dll'))
-//       options['bdist-libs'] = await icuLibGlobber.glob()
-//       core.debug(`To bundle: [${options['bdist-libs'].join(', ')}]`)
-//       break
-//     }
-//   }
-// }
-
 export async function setup(options: opts.BuildOptions): Promise<void> {
   switch (opts.os) {
     case 'linux':
@@ -117,6 +32,13 @@ export async function bundle(
   }
 }
 
+function findIcuPkgUrl(icuVersion: string): string {
+  const icuPkgKey = `icu-${icuVersion}-${os.arch()}-${os.platform()}`
+  const icuPkgUrl = opts.packageIndex[icuPkgKey]
+  if (icuPkgUrl === undefined) throw Error(`No package for ${icuPkgKey}`)
+  else return icuPkgUrl
+}
+
 // Linux
 
 async function installDirForLinux(icuVersion: string): Promise<string> {
@@ -124,12 +46,9 @@ async function installDirForLinux(icuVersion: string): Promise<string> {
 }
 
 async function setupForLinux(options: opts.BuildOptions): Promise<void> {
-  const icuVersion = '71.1'
-  const icuPkgKey = `icu-${icuVersion}-${os.arch()}-${os.platform()}`
-  const icuPkgUrl = opts.packageIndex[icuPkgKey]
-  if (icuPkgUrl === undefined) throw Error(`No package for ${icuPkgKey}`)
-
   // Download ICU package:
+  const icuVersion = '71.1'
+  const icuPkgUrl = findIcuPkgUrl(icuVersion)
   const icuTar = await tc.downloadTool(icuPkgUrl)
   const prefix = await installDirForLinux(icuVersion)
   const tarArgs = ['--extract', '--gzip', '--strip-components=4']
@@ -140,7 +59,7 @@ async function setupForLinux(options: opts.BuildOptions): Promise<void> {
   const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig')
   util.sed(
     '-i',
-    `'s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/'`,
+    `"s/^prefix =.*/prefix = ${prefix.replace(/\//g, '\\/')}/g"`,
     path.join(pkgConfigDir, 'icu-i18n.pc')
   )
   core.exportVariable('PKG_CONFIG_PATH', pkgConfigDir)
@@ -304,17 +223,15 @@ async function installDirForWindows(icuVersion: string): Promise<string> {
 }
 
 async function setupForWindows(options: opts.BuildOptions): Promise<void> {
-  const icuVersion = '71.1'
-  const icuPkgKey = `icu-${icuVersion}-${os.arch()}-${os.platform()}`
-  const icuPkgUrl = opts.packageIndex[icuPkgKey]
-  if (icuPkgUrl === undefined) throw Error(`No package for ${icuPkgKey}`)
-
   // Download ICU package:
+  const icuVersion = '71.1'
+  const icuPkgUrl = findIcuPkgUrl(icuVersion)
   const icuZip = await tc.downloadTool(icuPkgUrl)
   const tmpDir = await tc.extractZip(icuZip)
   const prefix = await installDirForWindows(icuVersion)
   util.mkdirP(path.dirname(prefix))
-  util.mv(tmpDir, prefix)
+  util.cpR(tmpDir, prefix)
+  util.rmRF(tmpDir)
 
   // Install pkg-config:
   core.addPath('C:\\msys64\\mingw64\\bin')
