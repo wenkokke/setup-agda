@@ -1,3 +1,8 @@
 {
-  "agda-2.6.2.2-x64-darwin": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-darwin.zip"
+  "agda-2.6.2.2-x64-darwin": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-darwin.zip",
+  "agda-2.6.2.2-x64-linux": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04.zip",
+  "agda-2.6.2.2-x64-win32": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022.zip",
+  "agda-2.6.2.2-x64-ubuntu-20.04": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04.zip",
+  "agda-2.6.2.2-x64-ubuntu-22.04": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-22.04.zip",
+  "agda-2.6.2.2-x64-windows-2022": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022.zip"
 }
