@@ -26,10 +26,10 @@ jobs:
           [
             ubuntu-22.04,
             ubuntu-20.04,
-            macos-11,
-            macos-12,
-            windows-2019,
-            windows-2022
+            # macos-11,
+            # macos-12,
+            # windows-2019,
+            # windows-2022
           ]
 
     uses: ./.github/workflows/setup-agda.yml
@@ -38,26 +38,26 @@ jobs:
       force-no-build: true
       agda-version: latest
 
-  test-build-with-cabal:
-    name: Build Agda on ${{ matrix.os }} with Cabal
-    needs: [check-dist]
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [macos-11, macos-12] # [ubuntu-22.04, ubuntu-20.04, *, windows-2022]
+  # test-build-with-cabal:
+  #   name: Build Agda on ${{ matrix.os }} with Cabal
+  #   needs: [check-dist]
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os: [macos-11, macos-12] # [ubuntu-22.04, ubuntu-20.04, *, windows-2022]
 
-    uses: ./.github/workflows/setup-agda.yml
-    with:
-      runs-on: ${{ matrix.os }}
-      force-build: true
-      agda-version: latest
-      cabal-version: '3.6'
-      bdist-compress-exe: false
-      bdist-name: |
-        agda-{{{agda-version}}}
-            -{{{arch}}}
-            -${{ matrix.os }}
-      bdist-upload: true
+  #   uses: ./.github/workflows/setup-agda.yml
+  #   with:
+  #     runs-on: ${{ matrix.os }}
+  #     force-build: true
+  #     agda-version: latest
+  #     cabal-version: '3.6'
+  #     bdist-compress-exe: false
+  #     bdist-name: |
+  #       agda-{{{agda-version}}}
+  #           -{{{arch}}}
+  #           -${{ matrix.os }}
+  #     bdist-upload: true
 
   # test-build-with-stack:
   #   name: Build Agda on ${{ matrix.os }} with Stack
@@ -82,8 +82,8 @@ jobs:
   #           -stack{{{stack-version}}}
   #     bdist-upload: true
 
-  update-latest:
-    name: Update latest
-    needs:
-      [check-dist, test-build-with-cabal, test-bdist]
-    uses: ./.github/workflows/update-latest.yml
+  # update-latest:
+  #   name: Update latest
+  #   needs:
+  #     [check-dist, test-build-with-cabal, test-bdist]
+  #   uses: ./.github/workflows/update-latest.yml
