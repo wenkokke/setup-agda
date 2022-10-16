@@ -460,7 +460,8 @@ function installFromBdist(options) {
         const installDir = opts.installDir(options['agda-version']);
         yield core.group(`🔍 Installing Agda ${options['agda-version']} package`, () => __awaiter(this, void 0, void 0, function* () {
             yield util.mkdirP(path.dirname(installDir));
-            yield util.mv(bdistDir, installDir);
+            yield util.cpR(bdistDir, installDir);
+            yield util.rmRF(bdistDir);
         }));
         return installDir;
     });

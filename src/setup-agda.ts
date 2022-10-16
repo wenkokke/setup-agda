@@ -140,7 +140,8 @@ async function installFromBdist(
     `🔍 Installing Agda ${options['agda-version']} package`,
     async () => {
       await util.mkdirP(path.dirname(installDir))
-      await util.mv(bdistDir, installDir)
+      await util.cpR(bdistDir, installDir)
+      await util.rmRF(bdistDir)
     }
   )
   return installDir
