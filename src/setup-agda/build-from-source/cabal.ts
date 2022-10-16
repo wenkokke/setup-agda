@@ -60,12 +60,8 @@ function buildFlags(options: opts.BuildOptions): string[] {
     }
   }
   // If supported, pass Agda flag --optimise-heavily
-  if (opts.supportsOptimiseHeavily(options)) {
+  if (opts.shouldEnableOptimiseHeavily(options)) {
     flags.push('--flags=+optimise-heavily')
-  }
-  // If supported, build a static executable
-  if (opts.supportsExecutableStatic(options)) {
-    flags.push('--enable-executable-static')
   }
   // If supported, set --split-sections.
   if (opts.supportsSplitSections(options)) {

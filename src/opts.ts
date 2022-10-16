@@ -106,26 +106,12 @@ export function shouldEnableOptimiseHeavily(options: BuildOptions): boolean {
   return supportsOptimiseHeavily(options)
 }
 
-export function supportsOptimiseHeavily(options: BuildOptions): boolean {
+function supportsOptimiseHeavily(options: BuildOptions): boolean {
   // NOTE:
   //   We only enable --optimise-heavily on versions which support it,
   //   i.e., versions after 2.6.2:
   //   https://github.com/agda/agda/blob/1175c41210716074340da4bd4caa09f4dfe2cc1d/doc/release-notes/2.6.2.md
   return simver.gte(options['agda-version'], '2.6.2')
-}
-
-// Should we build a static executable?
-
-export function supportsExecutableStatic(options: BuildOptions): boolean {
-  // NOTE:
-  //  We only set --enable-executable-static on Linux, because the deploy workflow does it.
-  //  https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-executable-static
-  const osOK = false // os === 'linux' // Unsupported on Ubuntu 20.04
-  // NOTE:
-  //  We only set --enable-executable-static if Ghc >=8.4, when the flag was added:
-  //  https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-static
-  const ghcVersionOK = simver.gte(options['ghc-version'], '8.4')
-  return osOK && ghcVersionOK
 }
 
 // Should we build a with split sections?

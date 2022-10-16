@@ -58,7 +58,7 @@ function buildFlags(options: opts.BuildOptions): string[] {
     flags.push('--flag=Agda:enable-cluster-counting')
   }
   // If supported, pass Agda flag --optimise-heavily
-  if (opts.supportsOptimiseHeavily(options)) {
+  if (opts.shouldEnableOptimiseHeavily(options)) {
     flags.push('--flag=Agda:optimise-heavily')
   }
   // Add extra-{include,lib}-dirs:

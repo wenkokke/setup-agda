@@ -73,7 +73,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.getOptions = exports.os = exports.findPkgUrl = exports.packageIndex = exports.packageInfoCache = exports.supportsUPX = exports.shouldCompressExe = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.shouldEnableOptimiseHeavily = exports.shouldSetupIcu = exports.shouldEnableClusterCounting = void 0;
+exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.getOptions = exports.os = exports.findPkgUrl = exports.packageIndex = exports.packageInfoCache = exports.supportsUPX = exports.shouldCompressExe = exports.supportsSplitSections = exports.shouldEnableOptimiseHeavily = exports.shouldSetupIcu = exports.shouldEnableClusterCounting = void 0;
 const yaml = __importStar(__nccwpck_require__(1917));
 const fs = __importStar(__nccwpck_require__(7561));
 const node_os_1 = __nccwpck_require__(612);
@@ -130,20 +130,6 @@ function supportsOptimiseHeavily(options) {
     //   https://github.com/agda/agda/blob/1175c41210716074340da4bd4caa09f4dfe2cc1d/doc/release-notes/2.6.2.md
     return simver.gte(options['agda-version'], '2.6.2');
 }
-exports.supportsOptimiseHeavily = supportsOptimiseHeavily;
-// Should we build a static executable?
-function supportsExecutableStatic(options) {
-    // NOTE:
-    //  We only set --enable-executable-static on Linux, because the deploy workflow does it.
-    //  https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-executable-static
-    const osOK = false; // os === 'linux' // Unsupported on Ubuntu 20.04
-    // NOTE:
-    //  We only set --enable-executable-static if Ghc >=8.4, when the flag was added:
-    //  https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-static
-    const ghcVersionOK = simver.gte(options['ghc-version'], '8.4');
-    return osOK && ghcVersionOK;
-}
-exports.supportsExecutableStatic = supportsExecutableStatic;
 // Should we build a with split sections?
 function supportsSplitSections(options) {
     // NOTE:
@@ -955,12 +941,8 @@ function buildFlags(options) {
         }
     }
     // If supported, pass Agda flag --optimise-heavily
-    if (opts.supportsOptimiseHeavily(options)) {
+    if (opts.shouldEnableOptimiseHeavily(options)) {
         flags.push('--flags=+optimise-heavily');
-    }
-    // If supported, build a static executable
-    if (opts.supportsExecutableStatic(options)) {
-        flags.push('--enable-executable-static');
     }
     // If supported, set --split-sections.
     if (opts.supportsSplitSections(options)) {
@@ -1111,7 +1093,7 @@ function buildFlags(options) {
         flags.push('--flag=Agda:enable-cluster-counting');
     }
     // If supported, pass Agda flag --optimise-heavily
-    if (opts.supportsOptimiseHeavily(options)) {
+    if (opts.shouldEnableOptimiseHeavily(options)) {
         flags.push('--flag=Agda:optimise-heavily');
     }
     // Add extra-{include,lib}-dirs:
