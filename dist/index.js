@@ -1213,11 +1213,6 @@ function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Select GHC version:
         options['ghc-version'] = maxSatisfyingGhcVersion(options);
-        if (!options['ghc-version-match-exact']) {
-            const ghcVersion = semver.parse(options['ghc-version']);
-            if (ghcVersion !== null)
-                options['ghc-version'] = `${ghcVersion.major}.${ghcVersion.minor}`;
-        }
         // Run haskell/actions/setup:
         yield (0, setup_haskell_1.default)(Object.fromEntries(Object.entries(pickSetupHaskellInputs(options)).map(e => {
             const [k, v] = e;
@@ -1239,11 +1234,17 @@ function setup(options) {
 exports["default"] = setup;
 function maxSatisfyingGhcVersion(options) {
     (0, node_assert_1.default)(options['ghc-version'] === 'latest');
-    const maybeGhcVersion = semver.maxSatisfying(options['ghc-supported-versions'], options['ghc-version-range']);
+    let maybeGhcVersion = semver.maxSatisfying(options['ghc-supported-versions'], options['ghc-version-range']);
     if (maybeGhcVersion === null) {
         throw Error(`No compatible GHC versions found: ${options['ghc-version-range']}`);
     }
     else {
+        // If not 'ghc-version-match-exact', remove the patch version:
+        if (!options['ghc-version-match-exact']) {
+            const ghcSemVer = semver.parse(maybeGhcVersion);
+            (0, node_assert_1.default)(ghcSemVer !== null);
+            maybeGhcVersion = `${ghcSemVer.major}.${ghcSemVer.minor}`;
+        }
         core.info(`Select GHC ${maybeGhcVersion}`);
         return maybeGhcVersion;
     }

@@ -9,11 +9,6 @@ import * as util from './util'
 export default async function setup(options: opts.BuildOptions): Promise<void> {
   // Select GHC version:
   options['ghc-version'] = maxSatisfyingGhcVersion(options)
-  if (!options['ghc-version-match-exact']) {
-    const ghcVersion = semver.parse(options['ghc-version'])
-    if (ghcVersion !== null)
-      options['ghc-version'] = `${ghcVersion.major}.${ghcVersion.minor}`
-  }
 
   // Run haskell/actions/setup:
   await setupHaskell(
@@ -44,7 +39,7 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
 
 function maxSatisfyingGhcVersion(options: opts.BuildOptions): string {
   assert(options['ghc-version'] === 'latest')
-  const maybeGhcVersion = semver.maxSatisfying(
+  let maybeGhcVersion = semver.maxSatisfying(
     options['ghc-supported-versions'],
     options['ghc-version-range']
   )
@@ -53,6 +48,12 @@ function maxSatisfyingGhcVersion(options: opts.BuildOptions): string {
       `No compatible GHC versions found: ${options['ghc-version-range']}`
     )
   } else {
+    // If not 'ghc-version-match-exact', remove the patch version:
+    if (!options['ghc-version-match-exact']) {
+      const ghcSemVer = semver.parse(maybeGhcVersion)
+      assert(ghcSemVer !== null)
+      maybeGhcVersion = `${ghcSemVer.major}.${ghcSemVer.minor}`
+    }
     core.info(`Select GHC ${maybeGhcVersion}`)
     return maybeGhcVersion
   }
