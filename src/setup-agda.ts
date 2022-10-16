@@ -26,7 +26,7 @@ export default async function setup(
         'Options:',
         ...Object.entries(options).map(entry => {
           const [key, value] = entry
-          return `${key}: ${value}`
+          return `- ${key}: ${value}`
         })
       ].join(os.EOL)
     )
