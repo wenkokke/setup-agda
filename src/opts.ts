@@ -68,9 +68,7 @@ export function shouldEnableClusterCounting(options: BuildOptions): boolean {
   // TODO: does Agda before 2.5.3 depend on ICU by default,
   //       or does it not depend on ICU at all?
   return (
-    !options['disable-cluster-counting'] &&
-    supportsClusterCounting(options) &&
-    canSetupIcu(options)
+    !options['disable-cluster-counting'] && supportsClusterCounting(options)
   )
 }
 
@@ -78,13 +76,6 @@ export function shouldSetupIcu(options: BuildOptions): boolean {
   // TODO: does Agda before 2.5.3 depend on ICU by default,
   //       or does it not depend on ICU at all?
   return shouldEnableClusterCounting(options)
-}
-
-function canSetupIcu(options: BuildOptions): boolean {
-  // NOTE:
-  //   Stack seems to ignore pkg-config dependencies on Windows? This could be
-  //   solved by passing extra-lib-dirs and extra-include-dirs explicitly.
-  return !options['enable-stack']
 }
 
 function supportsClusterCounting(options: BuildOptions): boolean {
