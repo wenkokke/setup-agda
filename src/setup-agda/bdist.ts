@@ -16,7 +16,7 @@ export async function download(
   options: opts.BuildOptions
 ): Promise<string | null> {
   // Get the name for the distribution:
-  const bdistName = renderName('', options)
+  const bdistName = renderName(opts.getDefaultPackageName(), options)
   const bdistUrl = opts.packageIndex[bdistName]
   if (bdistUrl !== undefined) {
     core.info(`Found package ${bdistName}`)

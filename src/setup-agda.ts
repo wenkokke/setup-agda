@@ -27,7 +27,7 @@ export default async function setup(
     if (!options['force-build'] && maybeAgdaDir === null)
       maybeAgdaDir = await installFromToolCache(options)
     if (!options['force-build'] && maybeAgdaDir === null)
-      maybeAgdaDir = await installFromBdist(options)
+      maybeAgdaDir = await installFromPackageg(options)
     if (!options['force-no-build'] && maybeAgdaDir === null)
       maybeAgdaDir = await buildFromSource(options)
     else if (maybeAgdaDir === null)
@@ -94,7 +94,7 @@ async function installFromToolCache(
 
 // Helper to install from binary distributions
 
-async function installFromBdist(
+async function installFromPackageg(
   options: opts.BuildOptions
 ): Promise<string | null> {
   // 1. Download:
