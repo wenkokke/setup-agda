@@ -1,0 +1,41 @@
+name: Build
+
+on:
+  schedule:
+    #        ┌───────────── minute (0 - 59)
+    #        │  ┌───────────── hour (0 - 23)
+    #        │  │ ┌───────────── day of the month (1 - 31)
+    #        │  │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+    #        │  │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+    #        │  │ │ │ │
+    #        │  │ │ │ │
+    #        │  │ │ │ │
+    #        *  * * * *
+    - cron: '30 1 * * 0'
+
+jobs:
+  build-from-source:
+    name: Build Agda on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        enable-stack: [true, false]
+        include:
+          - enable-stack: true
+            cabal-version: '3.4'
+          - enable-stack: false
+            cabal-version: '3.6'
+    uses: ./.github/workflows/setup-agda.yml
+    with:
+      runs-on: ${{ matrix.os }}
+      agda-version: latest
+      force-build: true
+      cabal-version: ${{ matrix.cabal-version }}
+      enable-stack: ${{ matrix.enable-stack }}
+      bdist-upload: true
+      bdist-name: |
+        agda-{{{agda-version}}}
+            -{{{arch}}}
+            -${{ matrix.os }}
+            -icu{{{icu-version}}}
