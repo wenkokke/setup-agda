@@ -1,4 +1,4 @@
-name: Update latest
+name: Update Latest
 
 on:
   workflow_call:

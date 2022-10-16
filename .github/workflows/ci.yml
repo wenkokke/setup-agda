@@ -1,4 +1,4 @@
-name: CI
+name: Test
 
 on:
   push:
@@ -12,33 +12,12 @@ on:
 
 jobs:
   check-dist:
-    name: Check dist
     uses: ./.github/workflows/check-dist.yml
 
-  test-bdist:
-    name: Setup Agda on ${{ matrix.os }}
+  test-no-build:
     needs: [check-dist]
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          [
-            ubuntu-22.04,
-            ubuntu-20.04,
-            macos-11,
-            macos-12,
-            windows-2019,
-            windows-2022
-          ]
-
-    uses: ./.github/workflows/setup-agda.yml
-    with:
-      runs-on: ${{ matrix.os }}
-      force-no-build: true
-      agda-version: latest
+    uses: ./.github/workflows/update-latest.yml
 
   update-latest:
-    name: Update Latest
-    needs: [check-dist, test-bdist]
+    needs: [check-dist, test-no-build]
     uses: ./.github/workflows/update-latest.yml
