@@ -1,0 +1,25 @@
+name: Build Bdist
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-from-source:
+    name: Build Agda on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-11, ubuntu-20.04, window-2022]
+        agda-version: ['2.6.2', '2.6.2.1', '2.6.2.2']
+    uses: ./.github/workflows/setup-agda.yml
+    with:
+      runs-on: ${{ matrix.os }}
+      agda-version: ${{ matrix.agda-version }}
+      force-build: true
+      cabal-version: '3.6'
+      bdist-upload: true
+      bdist-name: |
+        agda-{{{agda-version}}}
+            -{{{arch}}}
+            -${{ matrix.os }}
+            -icu{{{icu-version}}}
