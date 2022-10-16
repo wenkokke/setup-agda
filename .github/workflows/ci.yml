@@ -81,8 +81,8 @@ jobs:
   #           -stack{{{stack-version}}}
   #     bdist-upload: true
 
-  # update-latest:
-  #   name: Update latest
-  #   needs:
-  #     [check-dist, test-build-with-cabal, test-bdist]
-  #   uses: ./.github/workflows/update-latest.yml
+  update-latest:
+    name: Update latest
+    needs:
+      [check-dist, test-build-with-cabal, test-bdist]
+    uses: ./.github/workflows/update-latest.yml
