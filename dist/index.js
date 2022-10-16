@@ -966,8 +966,7 @@ function buildFlags(options) {
         //   versions 0.7.0.0 - 0.7.1.0 do not compile with icu68+:
         if (util.simver.gte(options['agda-version'], '2.5.3') &&
             util.simver.lte(options['agda-version'], '2.6.2')) {
-            flags.push('--constraint');
-            flags.push('text-icu>=0.7.1.0');
+            flags.push('--constraint=text-icu>=0.7.1.0');
         }
     }
     // If supported, pass Agda flag --optimise-heavily

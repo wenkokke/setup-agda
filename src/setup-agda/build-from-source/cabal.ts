@@ -56,8 +56,7 @@ function buildFlags(options: opts.BuildOptions): string[] {
       util.simver.gte(options['agda-version'], '2.5.3') &&
       util.simver.lte(options['agda-version'], '2.6.2')
     ) {
-      flags.push('--constraint')
-      flags.push('text-icu>=0.7.1.0')
+      flags.push('--constraint=text-icu>=0.7.1.0')
     }
   }
   // If supported, pass Agda flag --optimise-heavily
