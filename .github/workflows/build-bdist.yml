@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-from-source:
-    name: Build Agda on ${{ matrix.os }}
+  build-bdist:
+    name: Build Agda ${{ matrix.agda-version }} on ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:

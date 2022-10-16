@@ -118,6 +118,7 @@ on:
 
 jobs:
   setup-agda:
+    name: Setup Agda ${{ matrix.agda-version }} on ${{ matrix.os }}
     runs-on: ${{ inputs.runs-on }}
     steps:
       - uses: actions/checkout@v3

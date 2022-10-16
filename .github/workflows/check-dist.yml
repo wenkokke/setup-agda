@@ -1,4 +1,4 @@
-name: Check Dist
+name: Check dist
 
 on:
   workflow_call:
@@ -6,6 +6,7 @@ on:
 
 jobs:
   check-dist:
+    name: Check dist
     runs-on: ubuntu-latest
 
     steps:
