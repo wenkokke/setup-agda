@@ -121,10 +121,6 @@ export async function pkgConfigGetInfo(
   }
 }
 
-export async function sed(...args: string[]): Promise<string> {
-  return await getOutput('sed', args)
-}
-
 export async function xattr(...args: string[]): Promise<string> {
   return await getOutput('xattr', args)
 }

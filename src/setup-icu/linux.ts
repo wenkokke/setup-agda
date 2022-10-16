@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
+import ensureError from 'ensure-error'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import * as opts from '../opts'
@@ -73,7 +74,21 @@ export async function bundleForLinux(
       const depTo = `agda-${options['agda-version']}-${depName}.so`
       await util.patchelf('--replace-needed', depFrom, depTo, libTo)
     }
-    await util.patchelf('--add-rpath', '$ORIGIN', libTo)
+    try {
+      await util.patchelf('--print-rpath', libTo)
+    } catch (error) {
+      core.debug(ensureError(error).message)
+    }
+    try {
+      await util.patchelf('--add-rpath', '$ORIGIN', libTo)
+    } catch (error) {
+      core.debug(ensureError(error).message)
+    }
+    try {
+      await util.patchelf('--set-rpath', '$ORIGIN', libTo)
+    } catch (error) {
+      core.debug(ensureError(error).message)
+    }
   }
 
   // Change dependencies on Agda executable:
@@ -84,5 +99,19 @@ export async function bundleForLinux(
     const depNameTo = `agda-${options['agda-version']}-${depName}.so`
     await util.patchelf('--replace-needed', depNameFrom, depNameTo, agdaBinPath)
   }
-  await util.patchelf('--add-rpath', '$ORIGIN/../lib', agdaBinPath)
+  try {
+    await util.patchelf('--print-rpath', agdaBinPath)
+  } catch (error) {
+    core.debug(ensureError(error).message)
+  }
+  try {
+    await util.patchelf('--add-rpath', '$ORIGIN/../lib', agdaBinPath)
+  } catch (error) {
+    core.debug(ensureError(error).message)
+  }
+  try {
+    await util.patchelf('--set-rpath', '$ORIGIN/../lib', agdaBinPath)
+  } catch (error) {
+    core.debug(ensureError(error).message)
+  }
 }

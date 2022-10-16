@@ -1331,10 +1331,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.bundleForLinux = exports.setupForLinux = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
+const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
 const util = __importStar(__nccwpck_require__(4024));
@@ -1396,7 +1400,24 @@ function bundleForLinux(distDir, options) {
                 const depTo = `agda-${options['agda-version']}-${depName}.so`;
                 yield util.patchelf('--replace-needed', depFrom, depTo, libTo);
             }
-            yield util.patchelf('--add-rpath', '$ORIGIN', libTo);
+            try {
+                yield util.patchelf('--print-rpath', libTo);
+            }
+            catch (error) {
+                core.debug((0, ensure_error_1.default)(error).message);
+            }
+            try {
+                yield util.patchelf('--add-rpath', '$ORIGIN', libTo);
+            }
+            catch (error) {
+                core.debug((0, ensure_error_1.default)(error).message);
+            }
+            try {
+                yield util.patchelf('--set-rpath', '$ORIGIN', libTo);
+            }
+            catch (error) {
+                core.debug((0, ensure_error_1.default)(error).message);
+            }
         }
         // Change dependencies on Agda executable:
         const agdaBinPath = path.join(distBinDir, util.agdaBinName);
@@ -1406,7 +1427,24 @@ function bundleForLinux(distDir, options) {
             const depNameTo = `agda-${options['agda-version']}-${depName}.so`;
             yield util.patchelf('--replace-needed', depNameFrom, depNameTo, agdaBinPath);
         }
-        yield util.patchelf('--add-rpath', '$ORIGIN/../lib', agdaBinPath);
+        try {
+            yield util.patchelf('--print-rpath', agdaBinPath);
+        }
+        catch (error) {
+            core.debug((0, ensure_error_1.default)(error).message);
+        }
+        try {
+            yield util.patchelf('--add-rpath', '$ORIGIN/../lib', agdaBinPath);
+        }
+        catch (error) {
+            core.debug((0, ensure_error_1.default)(error).message);
+        }
+        try {
+            yield util.patchelf('--set-rpath', '$ORIGIN/../lib', agdaBinPath);
+        }
+        catch (error) {
+            core.debug((0, ensure_error_1.default)(error).message);
+        }
     });
 }
 exports.bundleForLinux = bundleForLinux;
@@ -2067,7 +2105,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.xattr = exports.sed = exports.pkgConfigGetInfo = exports.pkgConfig = exports.patchelf = exports.pacmanGetVersion = exports.pacman = exports.otool = exports.installNameTool = exports.dumpbin = exports.chmod = exports.brewGetVersion = exports.brew = exports.getVersion = exports.getOutput = void 0;
+exports.xattr = exports.pkgConfigGetInfo = exports.pkgConfig = exports.patchelf = exports.pacmanGetVersion = exports.pacman = exports.otool = exports.installNameTool = exports.dumpbin = exports.chmod = exports.brewGetVersion = exports.brew = exports.getVersion = exports.getOutput = void 0;
 const exec = __importStar(__nccwpck_require__(1514));
 const os = __importStar(__nccwpck_require__(612));
 function getOutput(prog, args, execOptions) {
@@ -2196,12 +2234,6 @@ function pkgConfigGetInfo(pkg) {
     });
 }
 exports.pkgConfigGetInfo = pkgConfigGetInfo;
-function sed(...args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield getOutput('sed', args);
-    });
-}
-exports.sed = sed;
 function xattr(...args) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield getOutput('xattr', args);
