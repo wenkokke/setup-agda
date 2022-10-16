@@ -1277,6 +1277,14 @@ function setup(options) {
     });
 }
 exports.setup = setup;
+// NOTE: This module hardcodes a number of assumptions about libicu which may
+//       not always be true, e.g., library name starts with 'libicu', binaries
+//       are linked against the major version on Linux and Windows but against
+//       the entire version on MacOS, the internal dependencies of ICU, etc.
+// NOTE: This module could be rewritten to be much closer to 'repairwheel' by
+//       maintaining a list of allowed libraries (like 'manylinux') and using
+//       `dumpbin`, `patchelf` and `otool` to find and bundle *all* libraries
+//       that aren't on that list.
 function bundle(distDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (opts.os) {
@@ -1396,7 +1404,8 @@ function bundleForLinux(distDir, options) {
                 const depTo = `agda-${options['agda-version']}-${depName}.so`;
                 yield util.patchelf('--replace-needed', depFrom, depTo, libTo);
             }
-            yield util.patchelfAddRpath(libTo, '$ORIGIN');
+            // NOTE: This overrides any previously set run path.
+            yield util.patchelf('--set-rpath', '$ORIGIN', libTo);
         }
         // Change dependencies on Agda executable:
         const agdaBinPath = path.join(distBinDir, util.agdaBinName);
@@ -1406,7 +1415,8 @@ function bundleForLinux(distDir, options) {
             const depNameTo = `agda-${options['agda-version']}-${depName}.so`;
             yield util.patchelf('--replace-needed', depNameFrom, depNameTo, agdaBinPath);
         }
-        yield util.patchelfAddRpath(agdaBinPath, '$ORIGIN/../lib');
+        // NOTE: This overrides any previously set run path.
+        yield util.patchelf('--set-rpath', '$ORIGIN/../lib', agdaBinPath);
     });
 }
 exports.bundleForLinux = bundleForLinux;
@@ -2067,7 +2077,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.patchelfAddRpath = exports.xattr = exports.pkgConfigGetInfo = exports.pkgConfig = exports.patchelf = exports.pacmanGetVersion = exports.pacman = exports.otool = exports.installNameTool = exports.dumpbin = exports.chmod = exports.brewGetVersion = exports.brew = exports.getVersion = exports.getOutput = void 0;
+exports.xattr = exports.pkgConfigGetInfo = exports.pkgConfig = exports.patchelf = exports.pacmanGetVersion = exports.pacman = exports.otool = exports.installNameTool = exports.dumpbin = exports.chmod = exports.brewGetVersion = exports.brew = exports.getVersion = exports.getOutput = void 0;
 const exec = __importStar(__nccwpck_require__(1514));
 const os = __importStar(__nccwpck_require__(612));
 function getOutput(prog, args, execOptions) {
@@ -2202,15 +2212,6 @@ function xattr(...args) {
     });
 }
 exports.xattr = xattr;
-function patchelfAddRpath(file, ...rpaths) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const pathSep = ':';
-        const rpath = yield patchelf('--print-rpath', file);
-        rpaths = [...rpaths, ...rpath.split(pathSep).filter(dir => dir !== '')];
-        yield patchelf('--set-rpath', rpaths.join(pathSep), file);
-    });
-}
-exports.patchelfAddRpath = patchelfAddRpath;
 
 
 /***/ }),

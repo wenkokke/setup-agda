@@ -124,13 +124,3 @@ export async function pkgConfigGetInfo(
 export async function xattr(...args: string[]): Promise<string> {
   return await getOutput('xattr', args)
 }
-
-export async function patchelfAddRpath(
-  file: string,
-  ...rpaths: string[]
-): Promise<void> {
-  const pathSep = ':'
-  const rpath = await patchelf('--print-rpath', file)
-  rpaths = [...rpaths, ...rpath.split(pathSep).filter(dir => dir !== '')]
-  await patchelf('--set-rpath', rpaths.join(pathSep), file)
-}

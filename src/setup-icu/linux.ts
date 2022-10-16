@@ -73,7 +73,8 @@ export async function bundleForLinux(
       const depTo = `agda-${options['agda-version']}-${depName}.so`
       await util.patchelf('--replace-needed', depFrom, depTo, libTo)
     }
-    await util.patchelfAddRpath(libTo, '$ORIGIN')
+    // NOTE: This overrides any previously set run path.
+    await util.patchelf('--set-rpath', '$ORIGIN', libTo)
   }
 
   // Change dependencies on Agda executable:
@@ -84,5 +85,6 @@ export async function bundleForLinux(
     const depNameTo = `agda-${options['agda-version']}-${depName}.so`
     await util.patchelf('--replace-needed', depNameFrom, depNameTo, agdaBinPath)
   }
-  await util.patchelfAddRpath(agdaBinPath, '$ORIGIN/../lib')
+  // NOTE: This overrides any previously set run path.
+  await util.patchelf('--set-rpath', '$ORIGIN/../lib', agdaBinPath)
 }
