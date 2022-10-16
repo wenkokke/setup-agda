@@ -373,7 +373,10 @@ function setup(inputs, actionYml) {
             const options = yield util.resolveAgdaVersion(opts.getOptions(inputs, actionYml));
             core.info([
                 'Options:',
-                Object.entries(options).map(entry => `${entry[0]}: ${entry[1]}`)
+                ...Object.entries(options).map(entry => {
+                    const [key, value] = entry;
+                    return `- ${key}: ${value}`;
+                })
             ].join(os.EOL));
             // 2. Build from source:
             // NOTE: As output groups cannot be nested, we defer to individual functions.
