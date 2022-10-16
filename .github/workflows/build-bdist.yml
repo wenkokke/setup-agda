@@ -29,7 +29,7 @@ jobs:
       runs-on: ${{ matrix.os }}
       agda-version: ${{ matrix.agda-version }}
       force-build: true
-      cabal-version: '3.6'
+      cabal-version: '2.4'
       bdist-upload: true
       bdist-name: |
         agda-{{{agda-version}}}
