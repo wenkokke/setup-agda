@@ -32,7 +32,6 @@ jobs:
       cabal-version: '3.4'
       enable-stack: true
       ghc-version-match-exact: true
-      stack-setup-ghc: true
       bdist-upload: true
       bdist-name: |
         agda-{{{agda-version}}}
