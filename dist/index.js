@@ -360,6 +360,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const tc = __importStar(__nccwpck_require__(7784));
 const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
+const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const build_from_source_1 = __importDefault(__nccwpck_require__(7222));
@@ -370,7 +371,11 @@ function setup(inputs, actionYml) {
         try {
             // 1. Parse inputs & validate inputs:
             const options = yield util.resolveAgdaVersion(opts.getOptions(inputs, actionYml));
-            // 3. Build from source:
+            core.info([
+                'Options:',
+                Object.entries(options).map(entry => `${entry[0]}: ${entry[1]}`)
+            ].join(os.EOL));
+            // 2. Build from source:
             // NOTE: As output groups cannot be nested, we defer to individual functions.
             let maybeAgdaDir = null;
             if (!options['force-build'] && maybeAgdaDir === null)
@@ -382,11 +387,11 @@ function setup(inputs, actionYml) {
             else if (maybeAgdaDir === null)
                 throw Error('Required build, but "force-no-build" is set.');
             const agdaDir = maybeAgdaDir;
-            // 4. Set environment variables:
+            // 3. Set environment variables:
             yield core.group('📝 Registering Agda installation', () => __awaiter(this, void 0, void 0, function* () {
                 yield util.setupAgdaEnv(agdaDir);
             }));
-            // 5. Test:
+            // 4. Test:
             yield core.group('👩🏾‍🔬 Testing Agda installation', () => __awaiter(this, void 0, void 0, function* () { return yield util.agdaTest(); }));
         }
         catch (error) {
@@ -1204,6 +1209,11 @@ function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Select GHC version:
         options['ghc-version'] = maxSatisfyingGhcVersion(options);
+        if (!options['ghc-version-match-exact']) {
+            const ghcVersion = semver.parse(options['ghc-version']);
+            if (ghcVersion !== null)
+                options['ghc-version'] = `${ghcVersion.major}.${ghcVersion.minor}`;
+        }
         // Run haskell/actions/setup:
         yield (0, setup_haskell_1.default)(Object.fromEntries(Object.entries(pickSetupHaskellInputs(options)).map(e => {
             const [k, v] = e;
@@ -1213,8 +1223,10 @@ function setup(options) {
                 return [k, v];
         })));
         core.setOutput('haskell-setup', 'true');
+        // Update the GHC version:
+        options['ghc-version'] = yield util.ghcGetVersion((0, object_pick_1.default)(options, ['enable-stack', 'stack-no-global']));
         // Update the Cabal version:
-        options['cabal-version'] = yield util.cabalGetVersion((0, object_pick_1.default)(options, ['enable-stack', 'ghc-version', 'stack-no-global']));
+        options['cabal-version'] = yield util.cabalGetVersion((0, object_pick_1.default)(options, ['enable-stack', 'stack-no-global']));
         // Update the Stack version:
         if (options['enable-stack'])
             options['stack-version'] = yield util.stackGetVersion();
@@ -2481,12 +2493,22 @@ function stack(args, execOptions) {
     });
 }
 exports.stack = stack;
-function ghcGetVersion() {
+function ghcGetVersion(using) {
     return __awaiter(this, void 0, void 0, function* () {
-        return exec.getVersion('ghc', {
-            versionFlag: '--numeric-version',
-            silent: true
-        });
+        if (using !== undefined &&
+            using['enable-stack'] &&
+            using['stack-no-global']) {
+            const output = yield stack(['exec', 'ghc', '--', '--numeric-version'], {
+                silent: true
+            });
+            return output.trim();
+        }
+        else {
+            return exec.getVersion('ghc', {
+                versionFlag: '--numeric-version',
+                silent: true
+            });
+        }
     });
 }
 exports.ghcGetVersion = ghcGetVersion;
@@ -2495,13 +2517,9 @@ function cabalGetVersion(using) {
         if (using !== undefined &&
             using['enable-stack'] &&
             using['stack-no-global']) {
-            const output = yield stack([
-                'exec',
-                'cabal',
-                `--compiler=ghc-${using['ghc-version']}`,
-                '--',
-                '--numeric-version'
-            ], { silent: true });
+            const output = yield stack(['exec', 'cabal', '--', '--numeric-version'], {
+                silent: true
+            });
             return output.trim();
         }
         else {

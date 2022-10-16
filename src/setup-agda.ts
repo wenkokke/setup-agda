@@ -2,6 +2,7 @@ import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as tc from '@actions/tool-cache'
 import ensureError from 'ensure-error'
+import * as os from 'node:os'
 import * as path from 'node:path'
 import * as opts from './opts'
 import buildFromSource from './setup-agda/build-from-source'
@@ -20,8 +21,14 @@ export default async function setup(
     const options = await util.resolveAgdaVersion(
       opts.getOptions(inputs, actionYml)
     )
+    core.info(
+      [
+        'Options:',
+        Object.entries(options).map(entry => `${entry[0]}: ${entry[1]}`)
+      ].join(os.EOL)
+    )
 
-    // 3. Build from source:
+    // 2. Build from source:
     // NOTE: As output groups cannot be nested, we defer to individual functions.
     let maybeAgdaDir: string | null = null
     if (!options['force-build'] && maybeAgdaDir === null)
@@ -34,12 +41,12 @@ export default async function setup(
       throw Error('Required build, but "force-no-build" is set.')
     const agdaDir: string = maybeAgdaDir
 
-    // 4. Set environment variables:
+    // 3. Set environment variables:
     await core.group('📝 Registering Agda installation', async () => {
       await util.setupAgdaEnv(agdaDir)
     })
 
-    // 5. Test:
+    // 4. Test:
     await core.group(
       '👩🏾‍🔬 Testing Agda installation',
       async () => await util.agdaTest()

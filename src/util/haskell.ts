@@ -36,16 +36,8 @@ export async function stack(
   return await exec.getOutput('stack', args, execOptions)
 }
 
-export async function ghcGetVersion(): Promise<string> {
-  return exec.getVersion('ghc', {
-    versionFlag: '--numeric-version',
-    silent: true
-  })
-}
-
-export async function cabalGetVersion(using?: {
+export async function ghcGetVersion(using?: {
   'enable-stack': boolean
-  'ghc-version': string
   'stack-no-global': boolean
 }): Promise<string> {
   if (
@@ -53,16 +45,30 @@ export async function cabalGetVersion(using?: {
     using['enable-stack'] &&
     using['stack-no-global']
   ) {
-    const output = await stack(
-      [
-        'exec',
-        'cabal',
-        `--compiler=ghc-${using['ghc-version']}`,
-        '--',
-        '--numeric-version'
-      ],
-      {silent: true}
-    )
+    const output = await stack(['exec', 'ghc', '--', '--numeric-version'], {
+      silent: true
+    })
+    return output.trim()
+  } else {
+    return exec.getVersion('ghc', {
+      versionFlag: '--numeric-version',
+      silent: true
+    })
+  }
+}
+
+export async function cabalGetVersion(using?: {
+  'enable-stack': boolean
+  'stack-no-global': boolean
+}): Promise<string> {
+  if (
+    using !== undefined &&
+    using['enable-stack'] &&
+    using['stack-no-global']
+  ) {
+    const output = await stack(['exec', 'cabal', '--', '--numeric-version'], {
+      silent: true
+    })
     return output.trim()
   } else {
     return exec.getVersion('cabal', {

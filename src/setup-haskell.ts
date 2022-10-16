@@ -9,6 +9,11 @@ import * as util from './util'
 export default async function setup(options: opts.BuildOptions): Promise<void> {
   // Select GHC version:
   options['ghc-version'] = maxSatisfyingGhcVersion(options)
+  if (!options['ghc-version-match-exact']) {
+    const ghcVersion = semver.parse(options['ghc-version'])
+    if (ghcVersion !== null)
+      options['ghc-version'] = `${ghcVersion.major}.${ghcVersion.minor}`
+  }
 
   // Run haskell/actions/setup:
   await setupHaskell(
@@ -22,9 +27,14 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
   )
   core.setOutput('haskell-setup', 'true')
 
+  // Update the GHC version:
+  options['ghc-version'] = await util.ghcGetVersion(
+    pick(options, ['enable-stack', 'stack-no-global'])
+  )
+
   // Update the Cabal version:
   options['cabal-version'] = await util.cabalGetVersion(
-    pick(options, ['enable-stack', 'ghc-version', 'stack-no-global'])
+    pick(options, ['enable-stack', 'stack-no-global'])
   )
 
   // Update the Stack version:
