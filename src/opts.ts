@@ -287,13 +287,6 @@ function getDefault(
   return inputSpec[k].default
 }
 
-export function getDefaultPackageName(): string {
-  const defaultPackageName = getDefault('bdist-name')
-  if (defaultPackageName === undefined)
-    throw Error('Could not find default value for "bdist-name"')
-  return defaultPackageName
-}
-
 function validateOptions(options: BuildOptions): void {
   if (options['agda-version'] === 'nightly')
     throw Error('Value "nightly" for input "agda-version" is unupported')

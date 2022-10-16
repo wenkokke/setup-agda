@@ -73,7 +73,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.getDefaultPackageName = exports.getOptions = exports.os = exports.findPkgUrl = exports.packageIndex = exports.packageInfoCache = exports.supportsUPX = exports.shouldCompressExe = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.shouldEnableOptimiseHeavily = exports.supportsClusterCounting = exports.canSetupIcu = exports.shouldSetupIcu = exports.shouldEnableClusterCounting = void 0;
+exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.getOptions = exports.os = exports.findPkgUrl = exports.packageIndex = exports.packageInfoCache = exports.supportsUPX = exports.shouldCompressExe = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.shouldEnableOptimiseHeavily = exports.supportsClusterCounting = exports.canSetupIcu = exports.shouldSetupIcu = exports.shouldEnableClusterCounting = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const yaml = __importStar(__nccwpck_require__(1917));
 const fs = __importStar(__nccwpck_require__(7561));
@@ -250,13 +250,6 @@ function getDefault(k, actionYml) {
     }
     return inputSpec[k].default;
 }
-function getDefaultPackageName() {
-    const defaultPackageName = getDefault('bdist-name');
-    if (defaultPackageName === undefined)
-        throw Error('Could not find default value for "bdist-name"');
-    return defaultPackageName;
-}
-exports.getDefaultPackageName = getDefaultPackageName;
 function validateOptions(options) {
     if (options['agda-version'] === 'nightly')
         throw Error('Value "nightly" for input "agda-version" is unupported');
@@ -589,21 +582,20 @@ const util = __importStar(__nccwpck_require__(4024));
 function download(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Get the name for the distribution:
-        const bdistName = renderName(opts.getDefaultPackageName(), options);
-        const bdistUrl = opts.packageIndex[bdistName];
-        if (bdistUrl !== undefined) {
-            core.info(`Found package ${bdistName}`);
+        try {
+            const bdistUrl = opts.findPkgUrl('agda', options['agda-version']);
+            core.info(`Found package for Agda ${options['agda-version']}`);
             try {
-                core.info(`Downloading package ${bdistName} from ${bdistUrl}`);
+                core.info(`Downloading package from ${bdistUrl}`);
                 return yield tc.downloadTool(bdistUrl);
             }
             catch (error) {
-                core.warning(`Failed to download package ${bdistName}: ${(0, ensure_error_1.default)(error).message}`);
+                core.warning(`Failed to download package: ${(0, ensure_error_1.default)(error).message}`);
                 return null;
             }
         }
-        else {
-            core.info(`Could not find package ${bdistName}`);
+        catch (error) {
+            core.warning((0, ensure_error_1.default)(error));
             return null;
         }
     });

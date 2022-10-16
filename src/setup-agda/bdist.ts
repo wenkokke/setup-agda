@@ -16,21 +16,18 @@ export async function download(
   options: opts.BuildOptions
 ): Promise<string | null> {
   // Get the name for the distribution:
-  const bdistName = renderName(opts.getDefaultPackageName(), options)
-  const bdistUrl = opts.packageIndex[bdistName]
-  if (bdistUrl !== undefined) {
-    core.info(`Found package ${bdistName}`)
+  try {
+    const bdistUrl = opts.findPkgUrl('agda', options['agda-version'])
+    core.info(`Found package for Agda ${options['agda-version']}`)
     try {
-      core.info(`Downloading package ${bdistName} from ${bdistUrl}`)
+      core.info(`Downloading package from ${bdistUrl}`)
       return await tc.downloadTool(bdistUrl)
     } catch (error) {
-      core.warning(
-        `Failed to download package ${bdistName}: ${ensureError(error).message}`
-      )
+      core.warning(`Failed to download package: ${ensureError(error).message}`)
       return null
     }
-  } else {
-    core.info(`Could not find package ${bdistName}`)
+  } catch (error) {
+    core.warning(ensureError(error))
     return null
   }
 }
