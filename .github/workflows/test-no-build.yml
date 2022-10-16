@@ -7,7 +7,6 @@ on:
 jobs:
   test-no-build:
     name: Setup Agda on ${{ matrix.os }}
-    needs: [check-dist]
     strategy:
       fail-fast: false
       matrix:
