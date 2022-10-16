@@ -14,6 +14,7 @@ inputs:
       Only used when "bdist-upload" is specified.
     required: false
   bdist-name:
+    default: 'agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}'
     description: |
       If specified, will be used as a name for the binary distribution package.
 

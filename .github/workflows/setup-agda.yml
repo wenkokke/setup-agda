@@ -23,7 +23,7 @@ on:
         required: false
         type: string
       bdist-name:
-        default: ''
+        default: 'agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}'
         description: |
           If specified, will be used as a name for the binary distribution package.
 
@@ -137,7 +137,7 @@ on:
         required: false
         type: string
       bdist-name:
-        default: ''
+        default: 'agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}'
         description: |
           If specified, will be used as a name for the binary distribution package.
 

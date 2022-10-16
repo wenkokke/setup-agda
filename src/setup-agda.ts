@@ -12,11 +12,14 @@ export default async function setup(
   inputs?:
     | Partial<opts.SetupAgdaInputs>
     | Partial<Record<string, string>>
-    | ((name: string) => string | undefined)
+    | ((name: string) => string | undefined),
+  actionYml?: string
 ): Promise<void> {
   try {
     // 1. Parse inputs & validate inputs:
-    const options = await util.resolveAgdaVersion(opts.getOptions(inputs))
+    const options = await util.resolveAgdaVersion(
+      opts.getOptions(inputs, actionYml)
+    )
 
     // 3. Build from source:
     // NOTE: As output groups cannot be nested, we defer to individual functions.

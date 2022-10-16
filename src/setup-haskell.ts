@@ -13,7 +13,7 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
   // Run haskell/actions/setup:
   await setupHaskell(
     Object.fromEntries(
-      Object.entries(opts.pickSetupHaskellInputs(options)).map(e => {
+      Object.entries(pickSetupHaskellInputs(options)).map(e => {
         const [k, v] = e
         if (typeof v === 'boolean') return [k, v ? 'true' : '']
         else return [k, v]
@@ -46,4 +46,18 @@ function maxSatisfyingGhcVersion(options: opts.BuildOptions): string {
     core.info(`Select GHC ${maybeGhcVersion}`)
     return maybeGhcVersion
   }
+}
+
+function pickSetupHaskellInputs(
+  options: opts.BuildOptions
+): opts.SetupHaskellInputs {
+  return pick(options, [
+    'cabal-version',
+    'disable-matcher',
+    'enable-stack',
+    'ghc-version',
+    'stack-no-global',
+    'stack-setup-ghc',
+    'stack-version'
+  ])
 }

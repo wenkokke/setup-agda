@@ -56,7 +56,7 @@ export async function upload(
   await util.cpR(path.join(installDir, 'data'), bdistDir)
 
   // Compress binaries:
-  if (opts.compressExe(options)) {
+  if (opts.shouldCompressExe(options)) {
     try {
       const upxExe = await setupUpx(options)
       for (const binName of util.agdaBinNames)
@@ -119,9 +119,7 @@ export function renderName(
   template: string,
   options: opts.BuildOptions
 ): string {
-  const templateOrDefault =
-    template !== '' ? template : opts.bdistNameDefaultTemplate
-  return Mustache.render(templateOrDefault, {
+  return Mustache.render(template, {
     ...pick(options, [
       'agda-version',
       'ghc-version',
