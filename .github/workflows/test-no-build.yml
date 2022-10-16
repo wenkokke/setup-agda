@@ -1,6 +1,7 @@
 name: Test (No Build)
 
 on:
+  workflow_call:
   workflow_dispatch:
 
 jobs:

@@ -16,7 +16,7 @@ jobs:
 
   test-no-build:
     needs: [check-dist]
-    uses: ./.github/workflows/test-build.yml
+    uses: ./.github/workflows/test-no-build.yml
 
   update-latest:
     needs: [check-dist, test-no-build]
