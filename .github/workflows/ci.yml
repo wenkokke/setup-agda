@@ -82,7 +82,6 @@ jobs:
   #     bdist-upload: true
 
   update-latest:
-    name: Update latest
-    needs:
-      [check-dist, test-build-with-cabal, test-bdist]
+    name: Update Latest
+    needs: [check-dist, test-bdist]
     uses: ./.github/workflows/update-latest.yml
