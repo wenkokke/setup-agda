@@ -9,6 +9,14 @@ export async function setupForLinux(options: opts.BuildOptions): Promise<void> {
   // Find the ICU version:
   options['icu-version'] = await util.pkgConfig('--modversion', 'icu-i18n')
 
+  // Add extra-{include,lib}-dirs:
+  options['extra-include-dirs'].push(
+    await util.pkgConfig('--variable', 'include', 'icu-i18n')
+  )
+  options['extra-lib-dirs'].push(
+    await util.pkgConfig('--variable', 'libdir', 'icu-i18n')
+  )
+
   // Print ICU package info:
   core.info(
     JSON.stringify({

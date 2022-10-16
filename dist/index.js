@@ -1357,6 +1357,9 @@ function setupForLinux(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
+        // Add extra-{include,lib}-dirs:
+        options['extra-include-dirs'].push(yield util.pkgConfig('--variable', 'include', 'icu-i18n'));
+        options['extra-lib-dirs'].push(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n'));
         // Print ICU package info:
         core.info(JSON.stringify({
             'icu-i18n': yield util.pkgConfigGetInfo('icu-i18n'),
@@ -1504,6 +1507,9 @@ function setupForMacOS(options) {
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
         (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version reported by Homebrew differs from ICU version reported by pkg-config');
+        // Add extra-{include,lib}-dirs:
+        options['extra-include-dirs'].push(yield util.pkgConfig('--variable', 'include', 'icu-i18n'));
+        options['extra-lib-dirs'].push(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n'));
         // Print ICU package info:
         core.info(JSON.stringify({
             'icu-i18n': yield util.pkgConfigGetInfo('icu-i18n'),
@@ -1621,6 +1627,10 @@ function setupForWindows(options) {
         yield util.pacman('-v', '--noconfirm', '-Sy', 'mingw-w64-x86_64-pkg-config', 'mingw-w64-x86_64-icu');
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
+        // Add extra-{include,lib}-dirs:
+        options['extra-include-dirs'].push(yield util.pkgConfig('--variable', 'include', 'icu-i18n'));
+        // The variable 'libdir' gives the incorrect result:
+        options['extra-lib-dirs'].push(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n'));
         // Print ICU package info:
         core.info(JSON.stringify({
             'icu-i18n': yield util.pkgConfigGetInfo('icu-i18n'),

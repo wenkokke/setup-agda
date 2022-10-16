@@ -24,6 +24,15 @@ export async function setupForWindows(
   // Find the ICU version:
   options['icu-version'] = await util.pkgConfig('--modversion', 'icu-i18n')
 
+  // Add extra-{include,lib}-dirs:
+  options['extra-include-dirs'].push(
+    await util.pkgConfig('--variable', 'include', 'icu-i18n')
+  )
+  // The variable 'libdir' gives the incorrect result:
+  options['extra-lib-dirs'].push(
+    await util.pkgConfig('--variable', 'libdir', 'icu-i18n')
+  )
+
   // Print ICU package info:
   core.info(
     JSON.stringify({

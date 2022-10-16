@@ -36,6 +36,14 @@ export async function setupForMacOS(options: opts.BuildOptions): Promise<void> {
     'ICU version reported by Homebrew differs from ICU version reported by pkg-config'
   )
 
+  // Add extra-{include,lib}-dirs:
+  options['extra-include-dirs'].push(
+    await util.pkgConfig('--variable', 'include', 'icu-i18n')
+  )
+  options['extra-lib-dirs'].push(
+    await util.pkgConfig('--variable', 'libdir', 'icu-i18n')
+  )
+
   // Print ICU package info:
   core.info(
     JSON.stringify({
