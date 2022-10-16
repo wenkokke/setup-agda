@@ -32,6 +32,16 @@ export function major(version: string | SimVer): string {
   return version[0].join('_')
 }
 
+export function minor(version: string | SimVer): string {
+  if (typeof version === 'string') version = parse(version)
+  return version[1].join('_')
+}
+
+export function majorMinor(version: string | SimVer): string {
+  if (typeof version === 'string') version = parse(version)
+  return [major(version), minor(version)].join('.')
+}
+
 export function lt(
   version1: string | SimVer,
   version2: string | SimVer

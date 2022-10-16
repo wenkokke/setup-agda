@@ -73,8 +73,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.getOptions = exports.os = exports.findPkgUrl = exports.packageIndex = exports.packageInfoCache = exports.supportsUPX = exports.shouldCompressExe = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.shouldEnableOptimiseHeavily = exports.supportsClusterCounting = exports.canSetupIcu = exports.shouldSetupIcu = exports.shouldEnableClusterCounting = void 0;
-const core = __importStar(__nccwpck_require__(2186));
+exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.getOptions = exports.os = exports.findPkgUrl = exports.packageIndex = exports.packageInfoCache = exports.supportsUPX = exports.shouldCompressExe = exports.supportsSplitSections = exports.supportsExecutableStatic = exports.supportsOptimiseHeavily = exports.shouldEnableOptimiseHeavily = exports.shouldSetupIcu = exports.shouldEnableClusterCounting = void 0;
 const yaml = __importStar(__nccwpck_require__(1917));
 const fs = __importStar(__nccwpck_require__(7561));
 const node_os_1 = __nccwpck_require__(612);
@@ -107,7 +106,6 @@ function canSetupIcu(options) {
     //   solved by passing extra-lib-dirs and extra-include-dirs explicitly.
     return !options['enable-stack'];
 }
-exports.canSetupIcu = canSetupIcu;
 function supportsClusterCounting(options) {
     // NOTE:
     //   Agda only supports --cluster-counting on versions after 2.5.3:
@@ -118,7 +116,6 @@ function supportsClusterCounting(options) {
     //   by passing '--constraint="text-icu >= 0.7.1.0"'
     return simver.gte(options['agda-version'], '2.5.3');
 }
-exports.supportsClusterCounting = supportsClusterCounting;
 // Should we pass --optimise-heavily?
 function shouldEnableOptimiseHeavily(options) {
     // TODO: does Agda before 2.5.3 depend on ICU by default,
@@ -271,22 +268,10 @@ function validateOptions(options) {
 }
 // Helper for comparing GHC versions respecting 'ghc-version-match-exact'
 function ghcVersionMatch(options, v1, v2) {
-    if (options['ghc-version-match-exact']) {
-        return v1 === v2;
-    }
-    else {
-        const sv1 = semver.parse(v1);
-        if (sv1 === null) {
-            core.warning(`Could not parse GHC version ${v1}`);
-            return false;
-        }
-        const sv2 = semver.parse(v2);
-        if (sv2 === null) {
-            core.warning(`Could not parse GHC version ${v2}`);
-            return false;
-        }
-        return sv1.major === sv2.major && sv1.minor === sv2.minor;
-    }
+    if (options['ghc-version-match-exact'])
+        return simver.eq(v1, v2);
+    else
+        return simver.eq(simver.majorMinor(v1), simver.majorMinor(v2));
 }
 exports.ghcVersionMatch = ghcVersionMatch;
 // Helpers for getting the system directories
@@ -1240,11 +1225,8 @@ function maxSatisfyingGhcVersion(options) {
     }
     else {
         // If not 'ghc-version-match-exact', remove the patch version:
-        if (!options['ghc-version-match-exact']) {
-            const ghcSemVer = semver.parse(maybeGhcVersion);
-            (0, node_assert_1.default)(ghcSemVer !== null);
-            maybeGhcVersion = `${ghcSemVer.major}.${ghcSemVer.minor}`;
-        }
+        if (!options['ghc-version-match-exact'])
+            maybeGhcVersion = util.simver.majorMinor(maybeGhcVersion);
         core.info(`Select GHC ${maybeGhcVersion}`);
         return maybeGhcVersion;
     }
@@ -2673,7 +2655,7 @@ function escape(filePath) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.max = exports.toString = exports.neq = exports.eq = exports.gte = exports.gt = exports.lte = exports.lt = exports.major = exports.compare = exports.parse = void 0;
+exports.max = exports.toString = exports.neq = exports.eq = exports.gte = exports.gt = exports.lte = exports.lt = exports.majorMinor = exports.minor = exports.major = exports.compare = exports.parse = void 0;
 function parse(version) {
     return version.split('.').map(part => part.split('_').map(parseInt));
 }
@@ -2708,6 +2690,18 @@ function major(version) {
     return version[0].join('_');
 }
 exports.major = major;
+function minor(version) {
+    if (typeof version === 'string')
+        version = parse(version);
+    return version[1].join('_');
+}
+exports.minor = minor;
+function majorMinor(version) {
+    if (typeof version === 'string')
+        version = parse(version);
+    return [major(version), minor(version)].join('.');
+}
+exports.majorMinor = majorMinor;
 function lt(version1, version2) {
     return compare(version1, version2) === -1;
 }

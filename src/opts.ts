@@ -1,4 +1,3 @@
-import * as core from '@actions/core'
 import * as yaml from 'js-yaml'
 import * as fs from 'node:fs'
 import * as http from 'node:http'
@@ -81,14 +80,14 @@ export function shouldSetupIcu(options: BuildOptions): boolean {
   return shouldEnableClusterCounting(options)
 }
 
-export function canSetupIcu(options: BuildOptions): boolean {
+function canSetupIcu(options: BuildOptions): boolean {
   // NOTE:
   //   Stack seems to ignore pkg-config dependencies on Windows? This could be
   //   solved by passing extra-lib-dirs and extra-include-dirs explicitly.
   return !options['enable-stack']
 }
 
-export function supportsClusterCounting(options: BuildOptions): boolean {
+function supportsClusterCounting(options: BuildOptions): boolean {
   // NOTE:
   //   Agda only supports --cluster-counting on versions after 2.5.3:
   //   https://github.com/agda/agda/blob/f50c14d3a4e92ed695783e26dbe11ad1ad7b73f7/doc/release-notes/2.5.3.md
@@ -315,21 +314,8 @@ export function ghcVersionMatch(
   v1: string,
   v2: string
 ): boolean {
-  if (options['ghc-version-match-exact']) {
-    return v1 === v2
-  } else {
-    const sv1 = semver.parse(v1)
-    if (sv1 === null) {
-      core.warning(`Could not parse GHC version ${v1}`)
-      return false
-    }
-    const sv2 = semver.parse(v2)
-    if (sv2 === null) {
-      core.warning(`Could not parse GHC version ${v2}`)
-      return false
-    }
-    return sv1.major === sv2.major && sv1.minor === sv2.minor
-  }
+  if (options['ghc-version-match-exact']) return simver.eq(v1, v2)
+  else return simver.eq(simver.majorMinor(v1), simver.majorMinor(v2))
 }
 
 // Helpers for getting the system directories

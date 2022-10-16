@@ -49,11 +49,8 @@ function maxSatisfyingGhcVersion(options: opts.BuildOptions): string {
     )
   } else {
     // If not 'ghc-version-match-exact', remove the patch version:
-    if (!options['ghc-version-match-exact']) {
-      const ghcSemVer = semver.parse(maybeGhcVersion)
-      assert(ghcSemVer !== null)
-      maybeGhcVersion = `${ghcSemVer.major}.${ghcSemVer.minor}`
-    }
+    if (!options['ghc-version-match-exact'])
+      maybeGhcVersion = util.simver.majorMinor(maybeGhcVersion)
     core.info(`Select GHC ${maybeGhcVersion}`)
     return maybeGhcVersion
   }
