@@ -105,20 +105,17 @@ function canSetupIcu(options) {
     // NOTE:
     //   Stack seems to ignore pkg-config dependencies on Windows? This could be
     //   solved by passing extra-lib-dirs and extra-include-dirs explicitly.
-    const todo = !options['enable-stack'];
-    // NOTE:
-    //   Agda versions 2.5.3 - 2.6.2 depend on text-icu ^0.7, but text-icu
-    //   versions 0.7.0.0 - 0.7.1.0 do not compile with icu68+. This could be
-    //   solved by explicitly installing different version of icu depending on
-    //   the text-icu version (or the Agda version, as a proxy).
-    const depr = simver.gte(options['agda-version'], '2.6.2');
-    return todo && depr;
+    return !options['enable-stack'];
 }
 exports.canSetupIcu = canSetupIcu;
 function supportsClusterCounting(options) {
     // NOTE:
     //   Agda only supports --cluster-counting on versions after 2.5.3:
     //   https://github.com/agda/agda/blob/f50c14d3a4e92ed695783e26dbe11ad1ad7b73f7/doc/release-notes/2.5.3.md
+    // NOTE:
+    //   Agda versions 2.5.3 - 2.6.2 depend on text-icu ^0.7, but versions
+    //   0.7.0.0 - 0.7.1.0 do not compile with icu68+, which can be solved
+    //   by passing '--constraint="text-icu >= 0.7.1.0"'
     return simver.gte(options['agda-version'], '2.5.3');
 }
 exports.supportsClusterCounting = supportsClusterCounting;
@@ -956,6 +953,12 @@ function buildFlags(options) {
     // If supported, pass Agda flag --cluster-counting
     if (opts.shouldEnableClusterCounting(options)) {
         flags.push('--flags=+enable-cluster-counting');
+        // NOTE:
+        //   Agda versions 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
+        //   versions 0.7.0.0 - 0.7.1.0 do not compile with icu68+:
+        if (util.simver.gte(options['agda-version'], '2.5.3') &&
+            util.simver.lte(options['agda-version'], '2.6.2'))
+            flags.push('--constraint="text-icu >= 0.7.1.0"');
     }
     // If supported, pass Agda flag --optimise-heavily
     if (opts.supportsOptimiseHeavily(options)) {
