@@ -1,6 +1,7 @@
-name: Build
+name: Build from Source
 
 on:
+  workflow_dispatch:
   schedule:
     #        ┌───────────── minute (0 - 59)
     #        │  ┌───────────── hour (0 - 23)
