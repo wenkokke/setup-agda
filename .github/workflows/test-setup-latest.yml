@@ -1,4 +1,4 @@
-name: Setup Agda
+name: Setup Agda (latest)
 
 on:
   workflow_run:
@@ -11,7 +11,7 @@ jobs:
     # Run 'test-setup-latest' if 'check-dist' succeeded:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
-    name: Setup Agda on ${{ matrix.os }}
+    name: Setup Agda (latest) on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3

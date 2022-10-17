@@ -1,4 +1,4 @@
-name: Build (Latest)
+name: Build Agda (latest)
 
 on:
   workflow_dispatch:
