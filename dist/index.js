@@ -1370,10 +1370,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.bundleForLinux = exports.setupForLinux = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
+const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
 const util = __importStar(__nccwpck_require__(4024));
@@ -1385,11 +1389,12 @@ function setupForLinux(options) {
         options['extra-include-dirs'].push(yield util.pkgConfig('--variable', 'include', 'icu-i18n'));
         options['extra-lib-dirs'].push(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n'));
         // Print ICU package info:
-        core.info(JSON.stringify({
-            'icu-i18n': yield util.pkgConfigGetInfo('icu-i18n'),
-            'icu-uc': yield util.pkgConfigGetInfo('icu-uc'),
-            'icu-io': yield util.pkgConfigGetInfo('icu-io')
-        }));
+        try {
+            core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-i18n')));
+        }
+        catch (error) {
+            core.debug((0, ensure_error_1.default)(error).message);
+        }
     });
 }
 exports.setupForLinux = setupForLinux;
@@ -1504,6 +1509,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const path = __importStar(__nccwpck_require__(9411));
 const util = __importStar(__nccwpck_require__(4024));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
+const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 // MacOS
 function installDirForMacOS() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -1535,11 +1541,12 @@ function setupForMacOS(options) {
         options['extra-include-dirs'].push(yield util.pkgConfig('--variable', 'include', 'icu-i18n'));
         options['extra-lib-dirs'].push(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n'));
         // Print ICU package info:
-        core.info(JSON.stringify({
-            'icu-i18n': yield util.pkgConfigGetInfo('icu-i18n'),
-            'icu-uc': yield util.pkgConfigGetInfo('icu-uc'),
-            'icu-io': yield util.pkgConfigGetInfo('icu-io')
-        }));
+        try {
+            core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-i18n')));
+        }
+        catch (error) {
+            core.debug((0, ensure_error_1.default)(error).message);
+        }
     });
 }
 exports.setupForMacOS = setupForMacOS;

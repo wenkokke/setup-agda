@@ -3,6 +3,7 @@ import * as path from 'node:path'
 import * as opts from '../opts'
 import * as util from '../util'
 import assert from 'node:assert'
+import ensureError from 'ensure-error'
 
 // MacOS
 
@@ -45,13 +46,11 @@ export async function setupForMacOS(options: opts.BuildOptions): Promise<void> {
   )
 
   // Print ICU package info:
-  core.info(
-    JSON.stringify({
-      'icu-i18n': await util.pkgConfigGetInfo('icu-i18n'),
-      'icu-uc': await util.pkgConfigGetInfo('icu-uc'),
-      'icu-io': await util.pkgConfigGetInfo('icu-io')
-    })
-  )
+  try {
+    core.info(JSON.stringify(await util.pkgConfigGetInfo('icu-i18n')))
+  } catch (error) {
+    core.debug(ensureError(error).message)
+  }
 }
 
 export async function bundleForMacOS(
