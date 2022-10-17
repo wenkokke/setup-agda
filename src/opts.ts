@@ -1,3 +1,4 @@
+import * as core from '@actions/core'
 import * as yaml from 'js-yaml'
 import * as fs from 'node:fs'
 import * as http from 'node:http'
@@ -218,10 +219,10 @@ export function getOptions(
     'bdist-compress-exe': getFlag('bdist-compress-exe'),
     'bdist-name': getOption('bdist-name'),
     'bdist-upload': getFlag('bdist-upload'),
-    'force-cluster-counting': getFlag('force-cluster-counting'),
-    'force-no-cluster-counting': getFlag('force-no-cluster-counting'),
     'force-build': getFlag('force-build'),
     'force-no-build': getFlag('force-no-build'),
+    'force-cluster-counting': getFlag('force-cluster-counting'),
+    'force-no-cluster-counting': getFlag('force-no-cluster-counting'),
     'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
     'ghc-version-range': getOption('ghc-version-range'),
 
@@ -239,6 +240,16 @@ export function getOptions(
     'extra-lib-dirs': [],
     'ghc-supported-versions': []
   }
+  // Print options:
+  core.info(
+    [
+      'Options:',
+      ...Object.entries(options).map(entry => {
+        const [key, value] = entry
+        return `- ${key}: ${value}`
+      })
+    ].join(EOL)
+  )
   validateOptions(options)
   return options
 }
@@ -271,11 +282,9 @@ function validateOptions(options: BuildOptions): void {
     throw Error('Input "ghc-version-range" is not a valid version range')
   // If contradictory options are specified, throw an error:
   if (options['force-build'] && options['force-no-build'])
-    throw Error('Build or no build? What do you want from me? 🤷🏻‍♀️')
+    throw Error('Build or not? What do you want from me? 🤷🏻‍♀️')
   if (options['force-cluster-counting'] && options['force-no-cluster-counting'])
-    throw Error(
-      'Cluster counting or no cluster counting? What do you want from me? 🤷🏻‍♀️'
-    )
+    throw Error('Cluster counting or not? What do you want from me? 🤷🏻‍♀️')
   // If 'force-cluster-counting' is specified, and we cannot build with cluster
   // counting, throw an error:
   if (

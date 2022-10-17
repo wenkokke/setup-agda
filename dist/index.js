@@ -74,6 +74,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.getOptions = exports.os = exports.findPkgUrl = exports.packageIndex = exports.packageInfoCache = exports.supportsUPX = exports.shouldCompressExe = exports.supportsSplitSections = exports.shouldEnableOptimiseHeavily = exports.shouldSetupIcu = exports.shouldEnableClusterCounting = void 0;
+const core = __importStar(__nccwpck_require__(2186));
 const yaml = __importStar(__nccwpck_require__(1917));
 const fs = __importStar(__nccwpck_require__(7561));
 const node_os_1 = __nccwpck_require__(612);
@@ -192,10 +193,10 @@ function getOptions(inputs, actionYml) {
         'bdist-compress-exe': getFlag('bdist-compress-exe'),
         'bdist-name': getOption('bdist-name'),
         'bdist-upload': getFlag('bdist-upload'),
-        'force-cluster-counting': getFlag('force-cluster-counting'),
-        'force-no-cluster-counting': getFlag('force-no-cluster-counting'),
         'force-build': getFlag('force-build'),
         'force-no-build': getFlag('force-no-build'),
+        'force-cluster-counting': getFlag('force-cluster-counting'),
+        'force-no-cluster-counting': getFlag('force-no-cluster-counting'),
         'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
         'ghc-version-range': getOption('ghc-version-range'),
         // Specified in HaskellSetupInputs
@@ -211,6 +212,14 @@ function getOptions(inputs, actionYml) {
         'extra-lib-dirs': [],
         'ghc-supported-versions': []
     };
+    // Print options:
+    core.info([
+        'Options:',
+        ...Object.entries(options).map(entry => {
+            const [key, value] = entry;
+            return `- ${key}: ${value}`;
+        })
+    ].join(node_os_1.EOL));
     validateOptions(options);
     return options;
 }
@@ -232,9 +241,9 @@ function validateOptions(options) {
         throw Error('Input "ghc-version-range" is not a valid version range');
     // If contradictory options are specified, throw an error:
     if (options['force-build'] && options['force-no-build'])
-        throw Error('Build or no build? What do you want from me? 🤷🏻‍♀️');
+        throw Error('Build or not? What do you want from me? 🤷🏻‍♀️');
     if (options['force-cluster-counting'] && options['force-no-cluster-counting'])
-        throw Error('Cluster counting or no cluster counting? What do you want from me? 🤷🏻‍♀️');
+        throw Error('Cluster counting or not? What do you want from me? 🤷🏻‍♀️');
     // If 'force-cluster-counting' is specified, and we cannot build with cluster
     // counting, throw an error:
     if (options['force-cluster-counting'] &&
@@ -332,7 +341,6 @@ const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const tc = __importStar(__nccwpck_require__(7784));
 const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
-const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const build_from_source_1 = __importDefault(__nccwpck_require__(7222));
@@ -343,13 +351,6 @@ function setup(inputs, actionYml) {
         try {
             // 1. Parse inputs & validate inputs:
             const options = yield util.resolveAgdaVersion(opts.getOptions(inputs, actionYml));
-            core.info([
-                'Options:',
-                ...Object.entries(options).map(entry => {
-                    const [key, value] = entry;
-                    return `- ${key}: ${value}`;
-                })
-            ].join(os.EOL));
             // Set 'agda-version' output:
             core.setOutput('agda-version', options['agda-version']);
             // 2. Build from source:

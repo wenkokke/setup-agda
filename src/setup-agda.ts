@@ -2,7 +2,6 @@ import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as tc from '@actions/tool-cache'
 import ensureError from 'ensure-error'
-import * as os from 'node:os'
 import * as path from 'node:path'
 import * as opts from './opts'
 import buildFromSource from './setup-agda/build-from-source'
@@ -20,15 +19,6 @@ export default async function setup(
     // 1. Parse inputs & validate inputs:
     const options = await util.resolveAgdaVersion(
       opts.getOptions(inputs, actionYml)
-    )
-    core.info(
-      [
-        'Options:',
-        ...Object.entries(options).map(entry => {
-          const [key, value] = entry
-          return `- ${key}: ${value}`
-        })
-      ].join(os.EOL)
     )
     // Set 'agda-version' output:
     core.setOutput('agda-version', options['agda-version'])
