@@ -93,6 +93,8 @@ inputs:
     required: false
 
 outputs:
+  agda-version:
+    description: 'The resolved Agda version.'
   agda-path:
     description: 'The path of the agda executable _directory_.'
   agda-data-path:

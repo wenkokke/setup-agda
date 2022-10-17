@@ -30,6 +30,8 @@ export default async function setup(
         })
       ].join(os.EOL)
     )
+    // Set 'agda-version' output:
+    core.setOutput('agda-version', options['agda-version'])
 
     // 2. Build from source:
     // NOTE: As output groups cannot be nested, we defer to individual functions.
