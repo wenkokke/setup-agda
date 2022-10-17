@@ -225,7 +225,10 @@ function getOptions(inputs, actionYml) {
         'Options:',
         ...Object.entries(options).map(entry => {
             const [key, value] = entry;
-            return `- ${key}: ${value}`;
+            if (Array.isArray(value))
+                return `- ${key}: [${value.join(', ')}]`;
+            else
+                return `- ${key}: ${value}`;
         })
     ].join(node_os_1.EOL));
     validateOptions(options);
@@ -434,7 +437,12 @@ function installFromPackageg(options) {
             if (bdistZip === null)
                 return ret;
             ret.bdistDir = yield tc.extractZip(bdistZip);
-            util.rmRF(bdistZip);
+            try {
+                util.rmRF(bdistZip);
+            }
+            catch (error) {
+                core.debug(`Could not clean up: ${(0, ensure_error_1.default)(error).message}`);
+            }
             return ret;
         }));
         if (bdistDir === undefined)
@@ -464,7 +472,12 @@ function installFromPackageg(options) {
         yield core.group(`🔍 Installing Agda ${options['agda-version']} package`, () => __awaiter(this, void 0, void 0, function* () {
             yield util.mkdirP(path.dirname(installDir));
             yield util.cpR(bdistDir, installDir);
-            yield util.rmRF(bdistDir);
+            try {
+                yield util.rmRF(bdistDir);
+            }
+            catch (error) {
+                core.debug(`Could not clean up: ${(0, ensure_error_1.default)(error).message}`);
+            }
         }));
         return installDir;
     });

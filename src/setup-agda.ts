@@ -99,7 +99,11 @@ async function installFromPackageg(
       const bdistZip = await bdist.download(options)
       if (bdistZip === null) return ret
       ret.bdistDir = await tc.extractZip(bdistZip)
-      util.rmRF(bdistZip)
+      try {
+        util.rmRF(bdistZip)
+      } catch (error) {
+        core.debug(`Could not clean up: ${ensureError(error).message}`)
+      }
       return ret
     }
   )
@@ -138,7 +142,11 @@ async function installFromPackageg(
     async () => {
       await util.mkdirP(path.dirname(installDir))
       await util.cpR(bdistDir, installDir)
-      await util.rmRF(bdistDir)
+      try {
+        await util.rmRF(bdistDir)
+      } catch (error) {
+        core.debug(`Could not clean up: ${ensureError(error).message}`)
+      }
     }
   )
   return installDir

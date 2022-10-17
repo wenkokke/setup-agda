@@ -256,7 +256,8 @@ export function getOptions(
       'Options:',
       ...Object.entries(options).map(entry => {
         const [key, value] = entry
-        return `- ${key}: ${value}`
+        if (Array.isArray(value)) return `- ${key}: [${value.join(', ')}]`
+        else return `- ${key}: ${value}`
       })
     ].join(EOL)
   )
