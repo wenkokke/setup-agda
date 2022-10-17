@@ -17,37 +17,19 @@ jobs:
   test-setup-latest:
     name: Setup Agda (latest) on ${{ matrix.os }}
     needs: [check-dist]
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          [
-            ubuntu-22.04,
-            ubuntu-20.04,
-            macos-11,
-            macos-12,
-            windows-2019,
-            windows-2022
-          ]
     runs-on: ${{ matrix.os }}
-    # Output latest version to prevent testing the same version
-    # multiple times (i.e. once explicitly and once via 'latest')
+    # Output the version to which 'latest' resolves,
+    # so 'test-setup-version' can skip that version.
     outputs:
       agda-version: ${{ steps.setup-agda.outputs.agda-version }}
     steps:
       - uses: actions/checkout@v3
       - id: setup-agda
-        name: Setup Agda
+        name: Setup Agda (latest)
         uses: ./
         with:
           force-no-build: true
           agda-version: 'latest'
-
-  test-setup-2_6_2_2:
-    name: Setup Agda on ${{ matrix.os }}
-    needs: [check-dist, test-setup-latest]
-    # Skip if Agda version 2.6.2.2 is the latest version
-    if: needs.test-setup-latest.outputs.agda-version != '2.6.2.2'
     strategy:
       fail-fast: false
       matrix:
@@ -60,14 +42,33 @@ jobs:
             windows-2019,
             windows-2022
           ]
+
+  test-setup-version:
+    name: Setup Agda (${{ matrix.agda-version }}) on ${{ matrix.os }}
+    needs: [check-dist, test-setup-latest]
+    if: needs.test-setup-latest.outputs.agda-version != matrix.agda-version
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-      - uses: ./
+      - name: Setup Agda (${{ matrix.agda-version }})
+        uses: ./
         with:
           force-no-build: true
-          agda-version: '2.6.2.2'
+          agda-version: ${{ matrix.agda-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          [
+            ubuntu-22.04,
+            ubuntu-20.04,
+            macos-11,
+            macos-12,
+            windows-2019,
+            windows-2022
+          ]
+        agda-version: ['2.6.2.2']
 
   release-latest:
-    needs: [check-dist, test-setup-latest, test-setup-2_6_2_2]
+    needs: [check-dist, test-setup-latest, test-setup-version]
     uses: ./.github/workflows/release-latest.yml
