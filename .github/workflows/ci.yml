@@ -18,10 +18,6 @@ jobs:
     name: Setup Agda (latest) on ${{ matrix.os }}
     needs: [check-dist]
     runs-on: ${{ matrix.os }}
-    # Output the version to which 'latest' resolves,
-    # so 'test-setup-version' can skip that version.
-    outputs:
-      agda-version: ${{ steps.setup-agda.outputs.agda-version }}
     steps:
       - uses: actions/checkout@v3
       - id: setup-agda
@@ -42,6 +38,10 @@ jobs:
             windows-2019,
             windows-2022
           ]
+    # Output the version to which 'latest' resolves,
+    # so 'test-setup-version' can skip that version.
+    outputs:
+      agda-version: ${{ steps.setup-agda.outputs.agda-version }}
 
   test-setup-version:
     name: Setup Agda (${{ matrix.agda-version }}) on ${{ matrix.os }}
@@ -50,7 +50,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-      - name: Setup Agda (${{ matrix.agda-version }})
+      - id: setup-agda
+        name: Setup Agda (${{ matrix.agda-version }})
         uses: ./
         with:
           force-no-build: true
