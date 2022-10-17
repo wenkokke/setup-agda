@@ -1,9 +1,9 @@
-name: Setup Agda (2.6.2.2)
+name: Setup 2.6.2.2
 
 on:
   workflow_run:
     branches: [main]
-    workflows: ['Setup Agda (latest)']
+    workflows: ['Setup Latest']
     types: [completed]
 
 jobs:

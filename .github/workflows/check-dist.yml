@@ -1,4 +1,4 @@
-name: Check dist
+name: Check Dist
 
 on:
   push:
@@ -14,7 +14,7 @@ on:
 
 jobs:
   check-dist:
-    name: Check dist
+    name: Check Dist
     runs-on: ubuntu-latest
 
     steps:

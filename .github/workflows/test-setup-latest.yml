@@ -1,9 +1,9 @@
-name: Setup Agda (latest)
+name: Setup Latest
 
 on:
   workflow_run:
     branches: [main]
-    workflows: ['Check dist']
+    workflows: ['Check Dist']
     types: [completed]
 
 jobs:
