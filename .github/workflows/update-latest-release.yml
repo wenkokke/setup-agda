@@ -1,4 +1,4 @@
-name: Release Latest
+name: Update Release Latest
 
 on:
   workflow_run:
@@ -7,8 +7,8 @@ on:
     types: [completed]
 
 jobs:
-  release-latest:
-    # Run 'release-latest' if 'test-setup-2_6_2_2' succeeded:
+  update-latest-release:
+    # Run 'update-latest-release' if 'test-setup-2_6_2_2' succeeded:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     runs-on: ubuntu-latest
