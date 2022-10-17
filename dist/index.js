@@ -180,18 +180,20 @@ exports.os = (() => {
 function getOptions(inputs, actionYml) {
     function getOption(k) {
         var _a, _b;
-        const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
-        core.debug(`Input ${k}: ${maybeInput}`);
-        return (_b = (_a = maybeInput === null || maybeInput === void 0 ? void 0 : maybeInput.trim()) !== null && _a !== void 0 ? _a : getDefault(k, actionYml)) !== null && _b !== void 0 ? _b : '';
+        const rawInputValue = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
+        const inputValue = (_b = (_a = rawInputValue === null || rawInputValue === void 0 ? void 0 : rawInputValue.trim()) !== null && _a !== void 0 ? _a : getDefault(k, actionYml)) !== null && _b !== void 0 ? _b : '';
+        core.debug(`Input ${k}: ${rawInputValue} => ${inputValue}`);
+        return inputValue;
     }
     function getFlag(k) {
-        const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
-        core.debug(`Input ${k}: ${maybeInput}`);
-        return !(maybeInput === false ||
-            maybeInput === null ||
-            maybeInput === undefined ||
-            maybeInput === '' ||
-            maybeInput === 'false');
+        const rawInputValue = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
+        const inputValue = !(rawInputValue === false ||
+            rawInputValue === null ||
+            rawInputValue === undefined ||
+            rawInputValue === '' ||
+            rawInputValue === 'false');
+        core.debug(`Input ${k}: ${rawInputValue} => ${inputValue}`);
+        return inputValue;
     }
     const options = {
         // Specified in AgdaSetupInputs

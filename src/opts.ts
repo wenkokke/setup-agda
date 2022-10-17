@@ -206,20 +206,22 @@ export function getOptions(
   actionYml?: string
 ): BuildOptions {
   function getOption(k: SetupAgdaOption): string {
-    const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs?.[k]
-    core.debug(`Input ${k}: ${maybeInput}`)
-    return maybeInput?.trim() ?? getDefault(k, actionYml) ?? ''
+    const rawInputValue = typeof inputs === 'function' ? inputs(k) : inputs?.[k]
+    const inputValue = rawInputValue?.trim() ?? getDefault(k, actionYml) ?? ''
+    core.debug(`Input ${k}: ${rawInputValue} => ${inputValue}`)
+    return inputValue
   }
   function getFlag(k: SetupAgdaFlag): boolean {
-    const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs?.[k]
-    core.debug(`Input ${k}: ${maybeInput}`)
-    return !(
-      maybeInput === false ||
-      maybeInput === null ||
-      maybeInput === undefined ||
-      maybeInput === '' ||
-      maybeInput === 'false'
+    const rawInputValue = typeof inputs === 'function' ? inputs(k) : inputs?.[k]
+    const inputValue = !(
+      rawInputValue === false ||
+      rawInputValue === null ||
+      rawInputValue === undefined ||
+      rawInputValue === '' ||
+      rawInputValue === 'false'
     )
+    core.debug(`Input ${k}: ${rawInputValue} => ${inputValue}`)
+    return inputValue
   }
   const options: BuildOptions = {
     // Specified in AgdaSetupInputs
