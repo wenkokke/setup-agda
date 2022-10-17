@@ -181,10 +181,12 @@ function getOptions(inputs, actionYml) {
     function getOption(k) {
         var _a, _b;
         const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
+        core.debug(`Input ${k}: ${maybeInput}`);
         return (_b = (_a = maybeInput === null || maybeInput === void 0 ? void 0 : maybeInput.trim()) !== null && _a !== void 0 ? _a : getDefault(k, actionYml)) !== null && _b !== void 0 ? _b : '';
     }
     function getFlag(k) {
         const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
+        core.debug(`Input ${k}: ${maybeInput}`);
         return !(maybeInput === false ||
             maybeInput === null ||
             maybeInput === undefined ||
@@ -216,16 +218,6 @@ function getOptions(inputs, actionYml) {
         'extra-lib-dirs': [],
         'ghc-supported-versions': []
     };
-    // Print inputs:
-    if (inputs !== undefined && typeof inputs !== 'function') {
-        core.info([
-            'Inputs:',
-            ...Object.entries(inputs).map(entry => {
-                const [key, value] = entry;
-                return `- ${key}: ${value}`;
-            })
-        ].join(node_os_1.EOL));
-    }
     // Print options:
     core.info([
         'Options:',

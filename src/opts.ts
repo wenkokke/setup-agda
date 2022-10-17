@@ -207,10 +207,12 @@ export function getOptions(
 ): BuildOptions {
   function getOption(k: SetupAgdaOption): string {
     const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs?.[k]
+    core.debug(`Input ${k}: ${maybeInput}`)
     return maybeInput?.trim() ?? getDefault(k, actionYml) ?? ''
   }
   function getFlag(k: SetupAgdaFlag): boolean {
     const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs?.[k]
+    core.debug(`Input ${k}: ${maybeInput}`)
     return !(
       maybeInput === false ||
       maybeInput === null ||
@@ -245,18 +247,6 @@ export function getOptions(
     'extra-include-dirs': [],
     'extra-lib-dirs': [],
     'ghc-supported-versions': []
-  }
-  // Print inputs:
-  if (inputs !== undefined && typeof inputs !== 'function') {
-    core.info(
-      [
-        'Inputs:',
-        ...Object.entries(inputs).map(entry => {
-          const [key, value] = entry
-          return `- ${key}: ${value}`
-        })
-      ].join(EOL)
-    )
   }
   // Print options:
   core.info(
