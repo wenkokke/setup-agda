@@ -1,5 +1,4 @@
 import * as core from '@actions/core'
-import * as tc from '@actions/tool-cache'
 import assert from 'node:assert'
 import ensureError from 'ensure-error'
 import * as path from 'node:path'
@@ -69,7 +68,7 @@ export default async function buildFromSource(
 
   // 5. Build:
   const agdaDir = opts.installDir(options['agda-version'])
-  await core.group('👷🏾‍♀️ Building Agda', async () => {
+  await core.group('🏗 Building Agda', async () => {
     const {buildTool, sourceDir} = buildInfo
     await buildTool.build(sourceDir, agdaDir, options)
     await util.cpR(path.join(sourceDir, 'src', 'data'), agdaDir)
@@ -85,22 +84,14 @@ export default async function buildFromSource(
       })
   )
 
-  // 7. Store in Tool Cache:
-  const agdaDirTC = await core.group(
-    '🗄 Caching Agda build in tool cache',
-    async () => {
-      return await tc.cacheDir(agdaDir, 'agda', options['agda-version'])
-    }
-  )
-
-  // 8. If 'bdist-upload' is specified, upload as a binary distribution:
+  // 7. If 'bdist-upload' is specified, upload as a package:
   if (options['bdist-upload']) {
-    await core.group('📦 Upload binary distribution', async () => {
+    await core.group('📦 Upload package', async () => {
       const bdistName = await bdist.upload(agdaDir, options)
-      core.info(`Uploaded binary distribution as '${bdistName}'`)
+      core.info(`Uploaded package as '${bdistName}'`)
     })
   }
-  return agdaDirTC
+  return agdaDir
 }
 
 interface BuildTool {

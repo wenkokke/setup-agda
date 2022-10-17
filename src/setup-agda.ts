@@ -7,6 +7,7 @@ import * as opts from './opts'
 import buildFromSource from './setup-agda/build-from-source'
 import * as bdist from './setup-agda/bdist'
 import * as util from './util'
+import assert from 'node:assert'
 
 export default async function setup(options: opts.BuildOptions): Promise<void> {
   try {
@@ -15,22 +16,44 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
     // Set 'agda-version' output:
     core.setOutput('agda-version', options['agda-version'])
 
-    // 2. Build from source:
-    // NOTE: As output groups cannot be nested, we defer to individual functions.
-    let maybeAgdaDir: string | null = null
-    if (!options['force-build'] && maybeAgdaDir === null)
-      maybeAgdaDir = await installFromToolCache(options)
-    if (!options['force-build'] && maybeAgdaDir === null)
-      maybeAgdaDir = await installFromPackageg(options)
-    if (!options['force-no-build'] && maybeAgdaDir === null)
-      maybeAgdaDir = await buildFromSource(options)
-    else if (maybeAgdaDir === null)
+    // 2. Find an existing Agda build or build from source:
+    let agdaDir: string | null = null
+    // 2.1. Try the GitHub Tool Cache:
+    if (!options['force-build'] && agdaDir === null)
+      agdaDir = await core.group(
+        `🔍 Searching for Agda ${options['agda-version']} in tool cache`,
+        async () => await findInToolCache(options)
+      )
+    // 2.2. Try the custom package index:
+    if (!options['force-build'] && agdaDir === null)
+      agdaDir = await core.group(
+        `🔍 Searching for Agda ${options['agda-version']} in package index`,
+        async () => await findInPackageIndex(options)
+      )
+    // 2.3. Build from source:
+    if (!options['force-no-build'] && agdaDir === null)
+      agdaDir = await buildFromSource(options)
+    else if (agdaDir === null)
       throw Error('Required build, but "force-no-build" is set.')
-    const agdaDir: string = maybeAgdaDir
 
     // 3. Set environment variables:
-    await core.group('📝 Registering Agda installation', async () => {
-      await util.setupAgdaEnv(agdaDir)
+    const installDir = opts.installDir(options['agda-version'])
+    await core.group(`🚀 Install Agda ${options['agda-version']}`, async () => {
+      assert(
+        agdaDir !== null,
+        `Variable 'agdaDir' was mutated after build tasks finished. Did you forget an 'await'?`
+      )
+      if (installDir !== agdaDir) {
+        core.info(`Install Agda to ${installDir}`)
+        await util.mkdirP(path.dirname(installDir))
+        await util.cpR(agdaDir, installDir)
+        try {
+          await util.rmRF(agdaDir)
+        } catch (error) {
+          core.debug(`Failed to clean up build: ${ensureError(error).message}`)
+        }
+      }
+      await util.setupAgdaEnv(installDir)
     })
 
     // 4. Test:
@@ -47,127 +70,84 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
 
 // NOTE: We can hope, can't we?
 
-async function installFromToolCache(
+async function findInToolCache(
   options: opts.BuildOptions
 ): Promise<string | null> {
-  const maybeAgdaDir = await core.group(
-    `🔍 Searching for Agda ${options['agda-version']} in tool cache`,
-    async () => {
-      const agdaDirTC = tc.find('agda', options['agda-version'])
-      // NOTE: tc.find returns '' if the tool is not found
-      if (agdaDirTC === '') {
-        core.info(
-          `Could not find Agda ${options['agda-version']} in the tool cache`
-        )
-        return null
-      } else {
-        core.info(`Found Agda ${options['agda-version']} in the tool cache`)
-        return agdaDirTC
-      }
-    }
-  )
-  if (maybeAgdaDir === null) {
+  const agdaDirTC = tc.find('agda', options['agda-version'])
+  // NOTE: tc.find returns '' if the tool is not found
+  if (agdaDirTC === '') {
+    core.info(`Could not find cache for Agda ${options['agda-version']}`)
     return null
   } else {
-    return await core.group('👩🏾‍🔬 Testing cached Agda installation', async () => {
-      try {
-        util.agdaTest({
-          agdaBin: path.join(maybeAgdaDir, 'bin', util.agdaBinName),
-          agdaDataDir: path.join(maybeAgdaDir, 'data')
-        })
-        return maybeAgdaDir
-      } catch (error) {
-        const warning = ensureError(error)
-        warning.message = `Rejecting cached Agda ${options['agda-version']}: ${warning.message}`
-        core.warning(warning)
-        return null
-      }
-    })
+    core.info(`Found cache for Agda ${options['agda-version']}`)
+    core.info(`Testing cache for Agda ${options['agda-version']}`)
+    try {
+      util.agdaTest({
+        agdaBin: path.join(agdaDirTC, 'bin', util.agdaBinName),
+        agdaDataDir: path.join(agdaDirTC, 'data')
+      })
+      return agdaDirTC
+    } catch (error) {
+      const warning = ensureError(error)
+      warning.message = `Rejecting cached Agda ${options['agda-version']}: ${warning.message}`
+      core.warning(warning)
+      return null
+    }
   }
 }
 
 // Helper to install from binary distributions
 
-async function installFromPackageg(
+async function findInPackageIndex(
   options: opts.BuildOptions
 ): Promise<string | null> {
-  // 1. Download:
-  const {bdistDir} = await core.group(
-    `🔍 Searching for Agda ${options['agda-version']} in package index`,
-    async () => {
-      const ret: Partial<{bdistDir: string}> = {}
-      const bdistZip = await bdist.download(options)
-      if (bdistZip === null) return ret
-      ret.bdistDir = await tc.extractZip(bdistZip)
-      try {
-        util.rmRF(bdistZip)
-      } catch (error) {
-        core.debug(`Could not clean up: ${ensureError(error).message}`)
-      }
-      return ret
-    }
-  )
-  if (bdistDir === undefined) return null
-
-  // 2. Repair file permissions:
-  await core.group(
-    `🔧 Repairing file permissions`,
-    async () => await repairPermissions(bdistDir)
-  )
-
-  // 3. Test:
-  const bdistOK = await core.group(
-    `👩🏾‍🔬 Testing Agda ${options['agda-version']} package`,
-    async () => {
-      try {
-        await util.agdaTest({
-          agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
-          agdaDataDir: path.join(bdistDir, 'data')
-        })
-        return true
-      } catch (error) {
-        const warning = ensureError(error)
-        warning.message = `Rejecting Agda ${options['agda-version']} package: ${warning.message}`
-        core.warning(warning)
-        return false
-      }
-    }
-  )
-  if (!bdistOK) return null
-
-  // 4. Install:
-  const installDir = opts.installDir(options['agda-version'])
-  await core.group(
-    `🔍 Installing Agda ${options['agda-version']} package`,
-    async () => {
-      await util.mkdirP(path.dirname(installDir))
-      await util.cpR(bdistDir, installDir)
-      try {
-        await util.rmRF(bdistDir)
-      } catch (error) {
-        core.debug(`Could not clean up: ${ensureError(error).message}`)
-      }
-    }
-  )
-  return installDir
+  // Download & extract package:
+  const bdistZip = await bdist.download(options)
+  if (bdistZip === null) return null
+  const bdistDir = await tc.extractZip(bdistZip)
+  // Try to clean up .zip archive:
+  try {
+    util.rmRF(bdistZip)
+  } catch (error) {
+    core.debug(`Could not clean up: ${ensureError(error).message}`)
+  }
+  // If needed, repair file permissions:
+  await repairPermissions(bdistDir)
+  // Test package:
+  core.info(`Testing Agda ${options['agda-version']} package`)
+  try {
+    await util.agdaTest({
+      agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
+      agdaDataDir: path.join(bdistDir, 'data')
+    })
+    return bdistDir
+  } catch (error) {
+    const warning = ensureError(error)
+    warning.message = `Rejecting Agda ${options['agda-version']} package: ${warning.message}`
+    core.warning(warning)
+    return null
+  }
 }
 
 async function repairPermissions(bdistDir: string): Promise<void> {
   switch (opts.os) {
     case 'linux': {
-      // Fix permissions on binaries
+      // Repair file permissions
+      core.info('Repairing file permissions')
       for (const binName of util.agdaBinNames) {
         await util.chmod('+x', path.join(bdistDir, 'bin', binName))
       }
       break
     }
     case 'macos': {
-      // Fix permissions on binaries
+      // Repair file permissions
+      core.info('Repairing file permissions')
+      // Repair file permissions on executables
       for (const binName of util.agdaBinNames) {
         await util.chmod('+x', path.join(bdistDir, 'bin', binName))
         await util.xattr('-c', path.join(bdistDir, 'bin', binName))
       }
-      // Fix permissions on libraries
+      // Repair file permissions on libraries
       const libGlobber = await glob.create(path.join(bdistDir, 'lib', '*'))
       for await (const libPath of libGlobber.globGenerator()) {
         await util.chmod('+w', libPath)

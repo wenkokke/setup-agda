@@ -357,6 +357,7 @@ const opts = __importStar(__nccwpck_require__(1352));
 const build_from_source_1 = __importDefault(__nccwpck_require__(7222));
 const bdist = __importStar(__nccwpck_require__(3383));
 const util = __importStar(__nccwpck_require__(4024));
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -364,21 +365,35 @@ function setup(options) {
             yield util.resolveAgdaVersion(options);
             // Set 'agda-version' output:
             core.setOutput('agda-version', options['agda-version']);
-            // 2. Build from source:
-            // NOTE: As output groups cannot be nested, we defer to individual functions.
-            let maybeAgdaDir = null;
-            if (!options['force-build'] && maybeAgdaDir === null)
-                maybeAgdaDir = yield installFromToolCache(options);
-            if (!options['force-build'] && maybeAgdaDir === null)
-                maybeAgdaDir = yield installFromPackageg(options);
-            if (!options['force-no-build'] && maybeAgdaDir === null)
-                maybeAgdaDir = yield (0, build_from_source_1.default)(options);
-            else if (maybeAgdaDir === null)
+            // 2. Find an existing Agda build or build from source:
+            let agdaDir = null;
+            // 2.1. Try the GitHub Tool Cache:
+            if (!options['force-build'] && agdaDir === null)
+                agdaDir = yield core.group(`🔍 Searching for Agda ${options['agda-version']} in tool cache`, () => __awaiter(this, void 0, void 0, function* () { return yield findInToolCache(options); }));
+            // 2.2. Try the custom package index:
+            if (!options['force-build'] && agdaDir === null)
+                agdaDir = yield core.group(`🔍 Searching for Agda ${options['agda-version']} in package index`, () => __awaiter(this, void 0, void 0, function* () { return yield findInPackageIndex(options); }));
+            // 2.3. Build from source:
+            if (!options['force-no-build'] && agdaDir === null)
+                agdaDir = yield (0, build_from_source_1.default)(options);
+            else if (agdaDir === null)
                 throw Error('Required build, but "force-no-build" is set.');
-            const agdaDir = maybeAgdaDir;
             // 3. Set environment variables:
-            yield core.group('📝 Registering Agda installation', () => __awaiter(this, void 0, void 0, function* () {
-                yield util.setupAgdaEnv(agdaDir);
+            const installDir = opts.installDir(options['agda-version']);
+            yield core.group(`🚀 Install Agda ${options['agda-version']}`, () => __awaiter(this, void 0, void 0, function* () {
+                (0, node_assert_1.default)(agdaDir !== null, `Variable 'agdaDir' was mutated after build tasks finished. Did you forget an 'await'?`);
+                if (installDir !== agdaDir) {
+                    core.info(`Install Agda to ${installDir}`);
+                    yield util.mkdirP(path.dirname(installDir));
+                    yield util.cpR(agdaDir, installDir);
+                    try {
+                        yield util.rmRF(agdaDir);
+                    }
+                    catch (error) {
+                        core.debug(`Failed to clean up build: ${(0, ensure_error_1.default)(error).message}`);
+                    }
+                }
+                yield util.setupAgdaEnv(installDir);
             }));
             // 4. Test:
             yield core.group('👩🏾‍🔬 Testing Agda installation', () => __awaiter(this, void 0, void 0, function* () { return yield util.agdaTest(); }));
@@ -391,95 +406,65 @@ function setup(options) {
 exports["default"] = setup;
 // Helper to install from GitHub Runner tool cache
 // NOTE: We can hope, can't we?
-function installFromToolCache(options) {
+function findInToolCache(options) {
     return __awaiter(this, void 0, void 0, function* () {
-        const maybeAgdaDir = yield core.group(`🔍 Searching for Agda ${options['agda-version']} in tool cache`, () => __awaiter(this, void 0, void 0, function* () {
-            const agdaDirTC = tc.find('agda', options['agda-version']);
-            // NOTE: tc.find returns '' if the tool is not found
-            if (agdaDirTC === '') {
-                core.info(`Could not find Agda ${options['agda-version']} in the tool cache`);
-                return null;
-            }
-            else {
-                core.info(`Found Agda ${options['agda-version']} in the tool cache`);
-                return agdaDirTC;
-            }
-        }));
-        if (maybeAgdaDir === null) {
+        const agdaDirTC = tc.find('agda', options['agda-version']);
+        // NOTE: tc.find returns '' if the tool is not found
+        if (agdaDirTC === '') {
+            core.info(`Could not find cache for Agda ${options['agda-version']}`);
             return null;
         }
         else {
-            return yield core.group('👩🏾‍🔬 Testing cached Agda installation', () => __awaiter(this, void 0, void 0, function* () {
-                try {
-                    util.agdaTest({
-                        agdaBin: path.join(maybeAgdaDir, 'bin', util.agdaBinName),
-                        agdaDataDir: path.join(maybeAgdaDir, 'data')
-                    });
-                    return maybeAgdaDir;
-                }
-                catch (error) {
-                    const warning = (0, ensure_error_1.default)(error);
-                    warning.message = `Rejecting cached Agda ${options['agda-version']}: ${warning.message}`;
-                    core.warning(warning);
-                    return null;
-                }
-            }));
+            core.info(`Found cache for Agda ${options['agda-version']}`);
+            core.info(`Testing cache for Agda ${options['agda-version']}`);
+            try {
+                util.agdaTest({
+                    agdaBin: path.join(agdaDirTC, 'bin', util.agdaBinName),
+                    agdaDataDir: path.join(agdaDirTC, 'data')
+                });
+                return agdaDirTC;
+            }
+            catch (error) {
+                const warning = (0, ensure_error_1.default)(error);
+                warning.message = `Rejecting cached Agda ${options['agda-version']}: ${warning.message}`;
+                core.warning(warning);
+                return null;
+            }
         }
     });
 }
 // Helper to install from binary distributions
-function installFromPackageg(options) {
+function findInPackageIndex(options) {
     return __awaiter(this, void 0, void 0, function* () {
-        // 1. Download:
-        const { bdistDir } = yield core.group(`🔍 Searching for Agda ${options['agda-version']} in package index`, () => __awaiter(this, void 0, void 0, function* () {
-            const ret = {};
-            const bdistZip = yield bdist.download(options);
-            if (bdistZip === null)
-                return ret;
-            ret.bdistDir = yield tc.extractZip(bdistZip);
-            try {
-                util.rmRF(bdistZip);
-            }
-            catch (error) {
-                core.debug(`Could not clean up: ${(0, ensure_error_1.default)(error).message}`);
-            }
-            return ret;
-        }));
-        if (bdistDir === undefined)
+        // Download & extract package:
+        const bdistZip = yield bdist.download(options);
+        if (bdistZip === null)
             return null;
-        // 2. Repair file permissions:
-        yield core.group(`🔧 Repairing file permissions`, () => __awaiter(this, void 0, void 0, function* () { return yield repairPermissions(bdistDir); }));
-        // 3. Test:
-        const bdistOK = yield core.group(`👩🏾‍🔬 Testing Agda ${options['agda-version']} package`, () => __awaiter(this, void 0, void 0, function* () {
-            try {
-                yield util.agdaTest({
-                    agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
-                    agdaDataDir: path.join(bdistDir, 'data')
-                });
-                return true;
-            }
-            catch (error) {
-                const warning = (0, ensure_error_1.default)(error);
-                warning.message = `Rejecting Agda ${options['agda-version']} package: ${warning.message}`;
-                core.warning(warning);
-                return false;
-            }
-        }));
-        if (!bdistOK)
+        const bdistDir = yield tc.extractZip(bdistZip);
+        // Try to clean up .zip archive:
+        try {
+            util.rmRF(bdistZip);
+        }
+        catch (error) {
+            core.debug(`Could not clean up: ${(0, ensure_error_1.default)(error).message}`);
+        }
+        // If needed, repair file permissions:
+        yield repairPermissions(bdistDir);
+        // Test package:
+        core.info(`Testing Agda ${options['agda-version']} package`);
+        try {
+            yield util.agdaTest({
+                agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
+                agdaDataDir: path.join(bdistDir, 'data')
+            });
+            return bdistDir;
+        }
+        catch (error) {
+            const warning = (0, ensure_error_1.default)(error);
+            warning.message = `Rejecting Agda ${options['agda-version']} package: ${warning.message}`;
+            core.warning(warning);
             return null;
-        // 4. Install:
-        const installDir = opts.installDir(options['agda-version']);
-        yield core.group(`🔍 Installing Agda ${options['agda-version']} package`, () => __awaiter(this, void 0, void 0, function* () {
-            yield util.mkdirP(path.dirname(installDir));
-            yield util.cpR(bdistDir, installDir);
-            try {
-                yield util.rmRF(bdistDir);
-            }
-            catch (error) {
-                core.debug(`Could not clean up: ${(0, ensure_error_1.default)(error).message}`);
-            }
-        }));
-        return installDir;
+        }
     });
 }
 function repairPermissions(bdistDir) {
@@ -487,19 +472,22 @@ function repairPermissions(bdistDir) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (opts.os) {
             case 'linux': {
-                // Fix permissions on binaries
+                // Repair file permissions
+                core.info('Repairing file permissions');
                 for (const binName of util.agdaBinNames) {
                     yield util.chmod('+x', path.join(bdistDir, 'bin', binName));
                 }
                 break;
             }
             case 'macos': {
-                // Fix permissions on binaries
+                // Repair file permissions
+                core.info('Repairing file permissions');
+                // Repair file permissions on executables
                 for (const binName of util.agdaBinNames) {
                     yield util.chmod('+x', path.join(bdistDir, 'bin', binName));
                     yield util.xattr('-c', path.join(bdistDir, 'bin', binName));
                 }
-                // Fix permissions on libraries
+                // Repair file permissions on libraries
                 const libGlobber = yield glob.create(path.join(bdistDir, 'lib', '*'));
                 try {
                     for (var _b = __asyncValues(libGlobber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
@@ -749,7 +737,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
-const tc = __importStar(__nccwpck_require__(7784));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 const path = __importStar(__nccwpck_require__(9411));
@@ -808,7 +795,7 @@ function buildFromSource(options) {
         }
         // 5. Build:
         const agdaDir = opts.installDir(options['agda-version']);
-        yield core.group('👷🏾‍♀️ Building Agda', () => __awaiter(this, void 0, void 0, function* () {
+        yield core.group('🏗 Building Agda', () => __awaiter(this, void 0, void 0, function* () {
             const { buildTool, sourceDir } = buildInfo;
             yield buildTool.build(sourceDir, agdaDir, options);
             yield util.cpR(path.join(sourceDir, 'src', 'data'), agdaDir);
@@ -820,18 +807,14 @@ function buildFromSource(options) {
                 agdaDataDir: path.join(agdaDir, 'data')
             });
         }));
-        // 7. Store in Tool Cache:
-        const agdaDirTC = yield core.group('🗄 Caching Agda build in tool cache', () => __awaiter(this, void 0, void 0, function* () {
-            return yield tc.cacheDir(agdaDir, 'agda', options['agda-version']);
-        }));
-        // 8. If 'bdist-upload' is specified, upload as a binary distribution:
+        // 7. If 'bdist-upload' is specified, upload as a package:
         if (options['bdist-upload']) {
-            yield core.group('📦 Upload binary distribution', () => __awaiter(this, void 0, void 0, function* () {
+            yield core.group('📦 Upload package', () => __awaiter(this, void 0, void 0, function* () {
                 const bdistName = yield bdist.upload(agdaDir, options);
-                core.info(`Uploaded binary distribution as '${bdistName}'`);
+                core.info(`Uploaded package as '${bdistName}'`);
             }));
         }
-        return agdaDirTC;
+        return agdaDir;
     });
 }
 exports["default"] = buildFromSource;
