@@ -1,5 +1,8 @@
 # setup-agda
 
+[![Setup Agda (2.6.2.2)](https://github.com/wenkokke/setup-agda/actions/workflows/test-setup-2_6_2_2.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/test-setup-2_6_2_2.yml)
+[![Setup Agda (latest)](https://github.com/wenkokke/setup-agda/actions/workflows/test-setup-latest.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/test-setup-latest.yml)
+
 This action sets up an Agda environment for use in actions by installing or building a version of Agda and adding it to PATH.
 
 For supported versions, this action uses [custom binary distributions][custom-binary-distributions].

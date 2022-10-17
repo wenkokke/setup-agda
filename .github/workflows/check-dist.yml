@@ -1,7 +1,15 @@
 name: Check dist
 
 on:
-  workflow_call:
+  push:
+    branches:
+      - main
+    paths:
+      - '**.ts'
+      - '**.js'
+      - '**.json'
+      - '.github/workflows/*.yml'
+
   workflow_dispatch:
 
 jobs:

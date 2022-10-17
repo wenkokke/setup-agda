@@ -1,14 +1,16 @@
 name: Setup Agda (latest)
 
 on:
-  workflow_call:
-    outputs:
-      agda-latest-version:
-        description: 'The latest Agda version.'
-        value: ${{ jobs.test-setup-latest.outputs.agda-version }}
+  workflow_run:
+    branches: [main]
+    workflows: ["Check dist"]
+    types: [completed]
 
 jobs:
   test-setup-latest:
+    # Run 'test-setup-latest' if 'check-dist' succeeded:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
     name: Setup Agda (latest) on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:

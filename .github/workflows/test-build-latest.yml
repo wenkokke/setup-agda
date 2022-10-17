@@ -24,7 +24,7 @@ jobs:
         uses: ./
         with:
           force-build: true
-          agda-version: '2.6.2.2'
+          agda-version: 'latest'
           cabal-version: ${{ matrix.cabal-version }}
           enable-stack: ${{ matrix.enable-stack }}
           bdist-upload: true
