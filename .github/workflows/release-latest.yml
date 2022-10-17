@@ -1,4 +1,4 @@
-name: Update Latest
+name: Release Latest
 
 on:
   workflow_call:
@@ -8,9 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: true
-      - run: |
+      - name: Update 'latest' tag
+        run: |
           git config user.name ${{ github.actor }}
           git config user.email ${{ github.actor }}@users.noreply.github.com
           git tag --force latest

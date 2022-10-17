@@ -1,4 +1,4 @@
-name: Test (No Build)
+name: Setup Agda (2.6.2.2)
 
 on:
   workflow_call:
@@ -23,4 +23,4 @@ jobs:
     with:
       runs-on: ${{ matrix.os }}
       force-no-build: true
-      agda-version: latest
+      agda-version: '2.6.2.2'

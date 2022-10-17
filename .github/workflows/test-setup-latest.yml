@@ -1,0 +1,26 @@
+name: Setup Agda (Latest)
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  test-no-build:
+    name: Setup Agda on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          [
+            ubuntu-22.04,
+            ubuntu-20.04,
+            macos-11,
+            macos-12,
+            windows-2019,
+            windows-2022
+          ]
+    uses: ./.github/workflows/setup-agda.yml
+    with:
+      runs-on: ${{ matrix.os }}
+      force-no-build: true
+      agda-version: latest

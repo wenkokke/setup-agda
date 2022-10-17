@@ -14,10 +14,14 @@ jobs:
   check-dist:
     uses: ./.github/workflows/check-dist.yml
 
-  test-no-build:
+  test-setup-2_6_2_2:
     needs: [check-dist]
-    uses: ./.github/workflows/test-no-build.yml
+    uses: ./.github/workflows/test-setup-2.6.2.2.yml
 
-  update-latest:
+  test-setup-latest:
+    needs: [check-dist]
+    uses: ./.github/workflows/test-setup-latest.yml
+
+  release-latest:
     needs: [check-dist, test-no-build]
-    uses: ./.github/workflows/update-latest.yml
+    uses: ./.github/workflows/release-latest.yml

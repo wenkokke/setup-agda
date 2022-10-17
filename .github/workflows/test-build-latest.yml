@@ -1,4 +1,4 @@
-name: Test (Build)
+name: Build (Latest)
 
 on:
   workflow_dispatch:
@@ -20,7 +20,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os:
+          [
+            ubuntu-22.04,
+            ubuntu-20.04,
+            macos-11,
+            macos-12,
+            windows-2019,
+            windows-2022
+          ]
         enable-stack: [true, false]
         include:
           - enable-stack: true
