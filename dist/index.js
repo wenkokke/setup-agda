@@ -1635,10 +1635,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.bundleForWindows = exports.setupForWindows = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
+const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
 const util = __importStar(__nccwpck_require__(4024));
@@ -1660,11 +1664,12 @@ function setupForWindows(options) {
         options['extra-lib-dirs'].push('C:\\msys64\\mingw64\\bin');
         options['extra-lib-dirs'].push('C:\\msys64\\usr\\bin');
         // Print ICU package info:
-        core.info(JSON.stringify({
-            'icu-i18n': yield util.pkgConfigGetInfo('icu-i18n'),
-            'icu-uc': yield util.pkgConfigGetInfo('icu-uc'),
-            'icu-io': yield util.pkgConfigGetInfo('icu-io')
-        }));
+        try {
+            core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-io')));
+        }
+        catch (error) {
+            core.debug((0, ensure_error_1.default)(error).message);
+        }
     });
 }
 exports.setupForWindows = setupForWindows;
@@ -2226,21 +2231,27 @@ function pkgConfig(...args) {
     });
 }
 exports.pkgConfig = pkgConfig;
-function pkgConfigGetInfo(pkg) {
+function pkgConfigGetList(name, listName) {
     return __awaiter(this, void 0, void 0, function* () {
-        // Print info
-        try {
-            const pkgInfo = {};
-            const variables = (yield pkgConfig('--print-variables', pkg))
-                .split(os.EOL)
-                .filter(variable => variable !== '');
-            for (const variable of variables) {
-                pkgInfo[variable] = yield pkgConfig('--variable', variable, pkg);
-            }
-            return pkgInfo;
+        return (yield pkgConfig(`--print-${listName}`, name))
+            .split(os.EOL)
+            .map(variableName => variableName.trim())
+            .filter(variableName => variableName !== '');
+    });
+}
+function pkgConfigGetInfo(name, seen) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (seen === null || seen === void 0 ? void 0 : seen.includes(name)) {
+            throw Error(`Cyclic dependency: ${seen.join(', ')}`);
         }
-        catch (error) {
-            return {};
+        else {
+            const variables = {};
+            for (const vn of yield pkgConfigGetList(name, 'variables'))
+                variables[vn] = yield pkgConfig('--variable', vn, name);
+            const requires = [];
+            for (const rn of yield pkgConfigGetList(name, 'requires'))
+                requires.push(yield pkgConfigGetInfo(rn, [...(seen !== null && seen !== void 0 ? seen : []), name]));
+            return { name, variables, requires };
         }
     });
 }

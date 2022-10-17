@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
+import ensureError from 'ensure-error'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import * as opts from '../opts'
@@ -34,13 +35,11 @@ export async function setupForWindows(
   options['extra-lib-dirs'].push('C:\\msys64\\usr\\bin')
 
   // Print ICU package info:
-  core.info(
-    JSON.stringify({
-      'icu-i18n': await util.pkgConfigGetInfo('icu-i18n'),
-      'icu-uc': await util.pkgConfigGetInfo('icu-uc'),
-      'icu-io': await util.pkgConfigGetInfo('icu-io')
-    })
-  )
+  try {
+    core.info(JSON.stringify(await util.pkgConfigGetInfo('icu-io')))
+  } catch (error) {
+    core.debug(ensureError(error).message)
+  }
 }
 
 export async function bundleForWindows(

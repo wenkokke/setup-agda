@@ -103,21 +103,36 @@ export async function pkgConfig(...args: string[]): Promise<string> {
   return await getOutput('pkg-config', args)
 }
 
+export interface PkgConfig {
+  name: string
+  variables: Partial<Record<string, string>>
+  requires: PkgConfig[]
+}
+
+async function pkgConfigGetList(
+  name: string,
+  listName: string
+): Promise<string[]> {
+  return (await pkgConfig(`--print-${listName}`, name))
+    .split(os.EOL)
+    .map(variableName => variableName.trim())
+    .filter(variableName => variableName !== '')
+}
+
 export async function pkgConfigGetInfo(
-  pkg: string
-): Promise<Partial<Record<string, string>>> {
-  // Print info
-  try {
-    const pkgInfo: Partial<Record<string, string>> = {}
-    const variables = (await pkgConfig('--print-variables', pkg))
-      .split(os.EOL)
-      .filter(variable => variable !== '')
-    for (const variable of variables) {
-      pkgInfo[variable] = await pkgConfig('--variable', variable, pkg)
-    }
-    return pkgInfo
-  } catch (error) {
-    return {}
+  name: string,
+  seen?: string[]
+): Promise<PkgConfig> {
+  if (seen?.includes(name)) {
+    throw Error(`Cyclic dependency: ${seen.join(', ')}`)
+  } else {
+    const variables: Partial<Record<string, string>> = {}
+    for (const vn of await pkgConfigGetList(name, 'variables'))
+      variables[vn] = await pkgConfig('--variable', vn, name)
+    const requires: PkgConfig[] = []
+    for (const rn of await pkgConfigGetList(name, 'requires'))
+      requires.push(await pkgConfigGetInfo(rn, [...(seen ?? []), name]))
+    return {name, variables, requires}
   }
 }
 
