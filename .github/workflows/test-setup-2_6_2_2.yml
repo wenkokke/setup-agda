@@ -1,9 +1,9 @@
-name: Setup Agda (2.6.2.2)
+name: Setup Agda-2.6.2.2
 
 on:
   workflow_run:
     branches: [main]
-    workflows: ["Setup Agda (latest)"]
+    workflows: ["Setup Agda"]
     types: [completed]
 
 jobs:
@@ -11,12 +11,12 @@ jobs:
     # Run 'test-setup-2_6_2_2' if 'test-setup-latest' succeeded:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
-    name: Setup Agda (2.6.2.2) on ${{ matrix.os }}
+    name: Setup Agda-2.6.2.2 on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
       - id: setup-agda
-        name: Setup Agda (2.6.2.2)
+        name: Setup Agda-2.6.2.2
         uses: ./
         with:
           force-no-build: true
