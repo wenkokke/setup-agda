@@ -23,16 +23,13 @@ jobs:
       - name: Build Agda (latest)
         uses: ./
         with:
-          force-build: true
           agda-version: 'latest'
+          bdist-upload: true
+          bdist-name: agda-{{{agda-version}}}-{{{arch}}}-${{ matrix.os }}-icu{{{icu-version}}}
           cabal-version: ${{ matrix.cabal-version }}
           enable-stack: ${{ matrix.enable-stack }}
-          bdist-upload: true
-          bdist-name: |
-            agda-{{{agda-version}}}
-                -{{{arch}}}
-                -${{ matrix.os }}
-                -icu{{{icu-version}}}
+          force-build: true
+          ghc-version-match-exact: true
     strategy:
       fail-fast: false
       matrix:

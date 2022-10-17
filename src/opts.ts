@@ -67,6 +67,12 @@ export interface BuildOptions extends SetupAgdaInputs {
   'upx-version'?: string
 }
 
+// Should we ignore the GHC patch version?
+
+export function shouldIgnoreGhcPatchVersion(options: BuildOptions): boolean {
+  return !options['enable-stack'] && !options['ghc-version-match-exact']
+}
+
 // Should we setup ICU & pass --cluster-counting?
 
 export function shouldEnableClusterCounting(options: BuildOptions): boolean {
@@ -341,8 +347,11 @@ export function ghcVersionMatch(
   v1: string,
   v2: string
 ): boolean {
-  if (options['ghc-version-match-exact']) return simver.eq(v1, v2)
-  else return simver.eq(simver.majorMinor(v1), simver.majorMinor(v2))
+  if (shouldIgnoreGhcPatchVersion(options)) {
+    return simver.eq(simver.majorMinor(v1), simver.majorMinor(v2))
+  } else {
+    return simver.eq(v1, v2)
+  }
 }
 
 // Helpers for getting the system directories

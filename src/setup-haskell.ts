@@ -48,8 +48,8 @@ function maxSatisfyingGhcVersion(options: opts.BuildOptions): string {
       `No compatible GHC versions found: ${options['ghc-version-range']}`
     )
   } else {
-    // If not 'ghc-version-match-exact', remove the patch version:
-    if (!options['ghc-version-match-exact'])
+    // If we should ignore the GHC patch version, do it:
+    if (opts.shouldIgnoreGhcPatchVersion(options))
       maybeGhcVersion = util.simver.majorMinor(maybeGhcVersion)
     core.info(`Select GHC ${maybeGhcVersion}`)
     return maybeGhcVersion

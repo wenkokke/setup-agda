@@ -73,7 +73,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.getOptions = exports.os = exports.stdlibVersionsFor = exports.agdaStdlibInfo = exports.findPkgUrl = exports.packageIndex = exports.packageInfoCache = exports.supportsUPX = exports.shouldCompressExe = exports.supportsSplitSections = exports.shouldEnableOptimiseHeavily = exports.shouldSetupIcu = exports.shouldEnableClusterCounting = void 0;
+exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.getOptions = exports.os = exports.stdlibVersionsFor = exports.agdaStdlibInfo = exports.findPkgUrl = exports.packageIndex = exports.packageInfoCache = exports.supportsUPX = exports.shouldCompressExe = exports.supportsSplitSections = exports.shouldEnableOptimiseHeavily = exports.shouldSetupIcu = exports.shouldEnableClusterCounting = exports.shouldIgnoreGhcPatchVersion = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const yaml = __importStar(__nccwpck_require__(1917));
 const fs = __importStar(__nccwpck_require__(7561));
@@ -87,6 +87,11 @@ const index_json_1 = __importDefault(__nccwpck_require__(1663));
 const Agda_json_1 = __importDefault(__nccwpck_require__(4862));
 const simver = __importStar(__nccwpck_require__(7609));
 const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
+// Should we ignore the GHC patch version?
+function shouldIgnoreGhcPatchVersion(options) {
+    return !options['enable-stack'] && !options['ghc-version-match-exact'];
+}
+exports.shouldIgnoreGhcPatchVersion = shouldIgnoreGhcPatchVersion;
 // Should we setup ICU & pass --cluster-counting?
 function shouldEnableClusterCounting(options) {
     // TODO: does Agda before 2.5.3 depend on ICU by default,
@@ -283,10 +288,12 @@ function validateOptions(options) {
 }
 // Helper for comparing GHC versions respecting 'ghc-version-match-exact'
 function ghcVersionMatch(options, v1, v2) {
-    if (options['ghc-version-match-exact'])
-        return simver.eq(v1, v2);
-    else
+    if (shouldIgnoreGhcPatchVersion(options)) {
         return simver.eq(simver.majorMinor(v1), simver.majorMinor(v2));
+    }
+    else {
+        return simver.eq(v1, v2);
+    }
 }
 exports.ghcVersionMatch = ghcVersionMatch;
 // Helpers for getting the system directories
@@ -1191,6 +1198,7 @@ const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const object_pick_1 = __importDefault(__nccwpck_require__(9962));
 const semver = __importStar(__nccwpck_require__(1383));
 const setup_haskell_1 = __importDefault(__nccwpck_require__(6501));
+const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
 function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -1222,8 +1230,8 @@ function maxSatisfyingGhcVersion(options) {
         throw Error(`No compatible GHC versions found: ${options['ghc-version-range']}`);
     }
     else {
-        // If not 'ghc-version-match-exact', remove the patch version:
-        if (!options['ghc-version-match-exact'])
+        // If we should ignore the GHC patch version, do it:
+        if (opts.shouldIgnoreGhcPatchVersion(options))
             maybeGhcVersion = util.simver.majorMinor(maybeGhcVersion);
         core.info(`Select GHC ${maybeGhcVersion}`);
         return maybeGhcVersion;
