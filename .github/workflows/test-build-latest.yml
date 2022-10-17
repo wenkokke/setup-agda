@@ -18,6 +18,7 @@ jobs:
   test-build-latest-cabal:
     name: Build Agda (latest) on ${{ matrix.os }} with Cabal
     runs-on: ${{ matrix.os }}
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v3
       - name: Build Agda (latest)
@@ -25,30 +26,42 @@ jobs:
         with:
           agda-version: 'latest'
           bdist-upload: true
-          bdist-name: agda-{{{agda-version}}}-{{{arch}}}-${{ matrix.os }}-icu{{{icu-version}}}
+          bdist-name: |
+            agda-{{{agda-version}}}
+                -{{{arch}}}
+                -${{ matrix.os }}
+                -icu{{{icu-version}}}
+                -ghc{{{ghc-version}}}
+                -cabal{{{cabal-version}}}
           cabal-version: '3.6'
           force-build: true
           ghc-version-match-exact: true
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12, windows-2022]
 
   test-build-latest-stack:
     name: Build Agda (latest) on ${{ matrix.os }} with Stack
     runs-on: ${{ matrix.os }}
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v3
       - name: Build Agda (latest)
         uses: ./
         with:
           agda-version: 'latest'
-          bdist-upload: false
+          bdist-upload: true
+          bdist-name: |
+            agda-{{{agda-version}}}
+                -{{{arch}}}
+                -${{ matrix.os }}
+                -icu{{{icu-version}}}
+                -ghc{{{ghc-version}}}
+                -stack{{{stack-version}}}
           cabal-version: '3.4'
           enable-stack: true
           force-build: true
           ghc-version-match-exact: true
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12, windows-2022]

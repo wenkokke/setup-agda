@@ -25,13 +25,13 @@ export async function setupForWindows(
   options['icu-version'] = await util.pkgConfig('--modversion', 'icu-i18n')
 
   // Add extra-{include,lib}-dirs:
-  options['extra-include-dirs'].push(
-    await util.pkgConfig('--variable', 'include', 'icu-i18n')
-  )
-  // The variable 'libdir' gives the incorrect result:
-  options['extra-lib-dirs'].push(
-    await util.pkgConfig('--variable', 'libdir', 'icu-i18n')
-  )
+  const includeDir = await util.pkgConfig('--variable', 'include', 'icu-i18n')
+  options['extra-include-dirs'].push(includeDir)
+  // TODO: 'C:\msys64\mingw64\lib' only contains 'libicu*.dll.a'
+  const libDir = await util.pkgConfig('--variable', 'libdir', 'icu-i18n')
+  options['extra-lib-dirs'].push(libDir)
+  options['extra-lib-dirs'].push('C:\\msys64\\mingw64\\bin')
+  options['extra-lib-dirs'].push('C:\\msys64\\usr\\bin')
 
   // Print ICU package info:
   core.info(
