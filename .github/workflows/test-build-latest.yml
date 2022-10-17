@@ -15,36 +15,31 @@ on:
     - cron: '30 1 * * 0'
 
 jobs:
-  build-from-source:
-    name: Build Agda on ${{ matrix.os }}
+  test-build-latest:
+    name: Build Agda (latest) on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Agda (latest)
+        uses: ./
+        with:
+          force-build: true
+          agda-version: '2.6.2.2'
+          cabal-version: ${{ matrix.cabal-version }}
+          enable-stack: ${{ matrix.enable-stack }}
+          bdist-upload: true
+          bdist-name: |
+            agda-{{{agda-version}}}
+                -{{{arch}}}
+                -${{ matrix.os }}
+                -icu{{{icu-version}}}
     strategy:
       fail-fast: false
       matrix:
-        os:
-          [
-            ubuntu-22.04,
-            ubuntu-20.04,
-            macos-11,
-            macos-12,
-            windows-2019,
-            windows-2022
-          ]
+        os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12, windows-2022]
         enable-stack: [true, false]
         include:
           - enable-stack: true
             cabal-version: '3.4'
           - enable-stack: false
             cabal-version: '3.6'
-    uses: ./.github/workflows/setup-agda.yml
-    with:
-      runs-on: ${{ matrix.os }}
-      agda-version: latest
-      force-build: true
-      cabal-version: ${{ matrix.cabal-version }}
-      enable-stack: ${{ matrix.enable-stack }}
-      bdist-upload: true
-      bdist-name: |
-        agda-{{{agda-version}}}
-            -{{{arch}}}
-            -${{ matrix.os }}
-            -icu{{{icu-version}}}

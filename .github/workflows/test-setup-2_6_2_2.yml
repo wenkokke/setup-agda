@@ -1,0 +1,27 @@
+on:
+  workflow_call:
+
+jobs:
+  test-setup-2_6_2_2:
+    name: Setup Agda (2.6.2.2) on ${{ matrix.os }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: setup-agda
+        name: Setup Agda (2.6.2.2)
+        uses: ./
+        with:
+          force-no-build: true
+          agda-version: '2.6.2.2'
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          [
+            ubuntu-22.04,
+            ubuntu-20.04,
+            macos-11,
+            macos-12,
+            windows-2019,
+            windows-2022
+          ]

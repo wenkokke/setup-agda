@@ -1,0 +1,33 @@
+on:
+  workflow_call:
+    outputs:
+      agda-version:
+        description: 'The resolved Agda version.'
+        value: ${{ jobs.test-setup-latest.outputs.agda-version }}
+
+jobs:
+  test-setup-latest:
+    name: Setup Agda (latest) on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: setup-agda
+        name: Setup Agda (latest)
+        uses: ./
+        with:
+          force-no-build: true
+          agda-version: 'latest'
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          [
+            ubuntu-22.04,
+            ubuntu-20.04,
+            macos-11,
+            macos-12,
+            windows-2019,
+            windows-2022
+          ]
+    outputs:
+      agda-version: ${{ steps.setup-agda.outputs.agda-version }}
