@@ -22,7 +22,6 @@ jobs:
           force-no-build: true
           agda-version: '2.6.2.2'
     strategy:
-      fail-fast: false
       matrix:
         os:
           [
