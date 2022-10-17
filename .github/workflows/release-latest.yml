@@ -4,7 +4,7 @@ on:
   workflow_call:
 
 jobs:
-  update-latest:
+  release-latest:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
