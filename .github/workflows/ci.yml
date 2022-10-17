@@ -23,7 +23,7 @@ jobs:
   test-setup-2_6_2_2:
     name: Setup Agda (2.6.2.2)
     needs: [check-dist, test-setup-latest]
-    if: test-setup-latest.outputs.agda-version != '2.6.2.2'
+    if: needs.test-setup-latest.outputs.agda-latest-version != '2.6.2.2'
     uses: ./.github/workflows/test-setup-2_6_2_2.yml
 
   release-latest:
