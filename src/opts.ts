@@ -7,6 +7,7 @@ import * as Mustache from 'mustache'
 import * as path from 'node:path'
 import * as process from 'node:process'
 import * as semver from 'semver'
+import distAgdaStdLibInfo from './package-info/Agda.stdlib.json'
 import distPackageIndex from './package-info/index.json'
 import distPackageInfoCache from './package-info/Agda.json'
 import * as simver from './util/simver'
@@ -30,6 +31,8 @@ export interface SetupHaskellInputs
     Record<SetupHaskellFlag, boolean> {}
 
 // Setup options for this action:
+
+export type AgdaVersion = keyof typeof distPackageInfoCache.packageInfo
 
 export type SetupAgdaOption =
   | 'agda-version'
@@ -177,6 +180,17 @@ export function findPkgUrl(pkg: string, version: string): string {
   const pkgUrl = packageIndex[pkgKey]
   if (pkgUrl === undefined) throw Error(`No package for ${pkgKey}`)
   else return pkgUrl
+}
+
+// Helpers for finding compatible standard library versions:
+
+export const agdaStdlibInfo = distAgdaStdLibInfo as Record<
+  AgdaVersion,
+  string[]
+>
+
+export function stdlibVersionsFor(version: string): string[] {
+  return agdaStdlibInfo?.[version as AgdaVersion] ?? []
 }
 
 // Helpers for matching the OS:

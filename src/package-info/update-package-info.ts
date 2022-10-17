@@ -18,7 +18,7 @@ async function run(): Promise<void> {
     const newPackageInfoCache = await hackage.getPackageInfo('Agda')
     const oldTime = new Date(oldPackageInfoCache.lastModified).getTime()
     const newTime = new Date(newPackageInfoCache.lastModified).getTime()
-    let failed = false
+    let success = false
     if (oldTime < newTime) {
       // Check if old versions are still available:`
       const versions: string[] = [
@@ -26,47 +26,25 @@ async function run(): Promise<void> {
         ...Object.keys(newPackageInfoCache.packageInfo)
       ]
       for (const version of versions) {
-        const oldStatus = oldPackageInfoCache.packageInfo[version]
-        const newStatus = newPackageInfoCache.packageInfo[version]
-        if (oldStatus === 'normal' && newStatus === undefined) {
-          process.stderr.write(
-            `Error: Agda version ${version} was normal, is now removed${os.EOL}`
-          )
-          // NOTE: no package should ever be removed without being deprecated; something has gone wrong
-          failed = true
-        } else if (oldStatus === 'normal' && newStatus === 'deprecated') {
-          process.stdout.write(
-            `Agda version ${version} was normal, is now deprecated${os.EOL}`
-          )
-        } else if (oldStatus === undefined && newStatus === 'normal') {
-          process.stdout.write(
-            `Agda version ${version} added as normal${os.EOL}`
-          )
-        } else if (oldStatus === undefined && newStatus === 'deprecated') {
-          process.stdout.write(
-            `Agda version ${version} added as deprecated${os.EOL}`
-          )
-        } else if (oldStatus === 'deprecated' && newStatus === undefined) {
-          process.stderr.write(
-            `WARNING: Agda version ${version} was deprecated, is now removed${os.EOL}`
-          )
-          // NOTE: no package should ever be removed EVEN IF deprecated; but we'll allow it
-        } else if (oldStatus === 'deprecated' && newStatus === 'normal') {
-          process.stderr.write(
-            `Error: Agda version ${version} was deprecated, is now normal${os.EOL}`
-          )
-          // NOTE: no package should ever be undeprecated; something has gone wrong
-          failed = true
-        } else if (oldStatus !== newStatus) {
-          process.stderr.write(
-            `Error: unexpected status change ${oldStatus} -> ${newStatus}${os.EOL}`
-          )
-          // NOTE: the above should match any case where oldStatus !== newStatus,
-          //       so either or both are not {normal, deprecated, undefined}
-          failed = true
-        }
+        success =
+          success &&
+          // Only the following automatic version status changes are allowed:
+          // - undefined  -> normal
+          // - normal     -> deprecated
+          // - deprecated -> undefined
+          // All others require human intervention.
+          versionStatusChangeOK(
+            version,
+            oldPackageInfoCache.packageInfo[version],
+            newPackageInfoCache.packageInfo[version]
+          ) &&
+          // Every normal version should have a known compatible version of
+          // the Agda standard library. If this raises an error, see:
+          // https://wiki.portal.chalmers.se/agda/Libraries/StandardLibrary
+          (newPackageInfoCache.packageInfo[version] === 'deprecated' ||
+            versionHasStdlib(version))
       }
-      if (failed === false) {
+      if (success) {
         process.stdout.write(`Updated Agda.json${os.EOL}`)
         fs.writeFileSync(packageInfoPath, JSON.stringify(newPackageInfoCache))
       } else {
@@ -78,6 +56,57 @@ async function run(): Promise<void> {
   } catch (error) {
     process.stderr.write(ensureError(error).message)
   }
+}
+
+function versionHasStdlib(version: string): boolean {
+  if (opts.stdlibVersionsFor(version).length === 0) {
+    process.stderr.write(
+      `WARNING: no known version of agda-stdlib for Agda ${version}`
+    )
+    return false
+  }
+  return true
+}
+
+function versionStatusChangeOK(
+  version: string,
+  oldStatus?: opts.PackageStatus,
+  newStatus?: opts.PackageStatus
+): boolean {
+  if (oldStatus === 'normal' && newStatus === undefined) {
+    process.stderr.write(
+      `Error: Agda version ${version} was normal, is now removed${os.EOL}`
+    )
+    // NOTE: no package should ever be removed without being deprecated; something has gone wrong
+    return false
+  } else if (oldStatus === 'normal' && newStatus === 'deprecated') {
+    process.stdout.write(
+      `Agda version ${version} was normal, is now deprecated${os.EOL}`
+    )
+  } else if (oldStatus === undefined && newStatus === 'normal') {
+    process.stdout.write(`Agda version ${version} added as normal${os.EOL}`)
+  } else if (oldStatus === undefined && newStatus === 'deprecated') {
+    process.stdout.write(`Agda version ${version} added as deprecated${os.EOL}`)
+  } else if (oldStatus === 'deprecated' && newStatus === undefined) {
+    process.stderr.write(
+      `WARNING: Agda version ${version} was deprecated, is now removed${os.EOL}`
+    )
+    // NOTE: no package should ever be removed EVEN IF deprecated; but we'll allow it
+  } else if (oldStatus === 'deprecated' && newStatus === 'normal') {
+    process.stderr.write(
+      `Error: Agda version ${version} was deprecated, is now normal${os.EOL}`
+    )
+    // NOTE: no package should ever be undeprecated; something has gone wrong
+    return false
+  } else if (oldStatus !== newStatus) {
+    process.stderr.write(
+      `Error: unexpected status change ${oldStatus} -> ${newStatus}${os.EOL}`
+    )
+    // NOTE: the above should match any case where oldStatus !== newStatus,
+    //       so either or both are not {normal, deprecated, undefined}
+    return false
+  }
+  return true
 }
 
 run()

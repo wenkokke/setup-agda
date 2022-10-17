@@ -73,7 +73,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.getOptions = exports.os = exports.findPkgUrl = exports.packageIndex = exports.packageInfoCache = exports.supportsUPX = exports.shouldCompressExe = exports.supportsSplitSections = exports.shouldEnableOptimiseHeavily = exports.shouldSetupIcu = exports.shouldEnableClusterCounting = void 0;
+exports.installDir = exports.agdaDir = exports.ghcVersionMatch = exports.getOptions = exports.os = exports.stdlibVersionsFor = exports.agdaStdlibInfo = exports.findPkgUrl = exports.packageIndex = exports.packageInfoCache = exports.supportsUPX = exports.shouldCompressExe = exports.supportsSplitSections = exports.shouldEnableOptimiseHeavily = exports.shouldSetupIcu = exports.shouldEnableClusterCounting = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const yaml = __importStar(__nccwpck_require__(1917));
 const fs = __importStar(__nccwpck_require__(7561));
@@ -82,6 +82,7 @@ const Mustache = __importStar(__nccwpck_require__(8272));
 const path = __importStar(__nccwpck_require__(9411));
 const process = __importStar(__nccwpck_require__(7742));
 const semver = __importStar(__nccwpck_require__(1383));
+const Agda_stdlib_json_1 = __importDefault(__nccwpck_require__(4587));
 const index_json_1 = __importDefault(__nccwpck_require__(1663));
 const Agda_json_1 = __importDefault(__nccwpck_require__(4862));
 const simver = __importStar(__nccwpck_require__(7609));
@@ -164,6 +165,13 @@ function findPkgUrl(pkg, version) {
         return pkgUrl;
 }
 exports.findPkgUrl = findPkgUrl;
+// Helpers for finding compatible standard library versions:
+exports.agdaStdlibInfo = Agda_stdlib_json_1.default;
+function stdlibVersionsFor(version) {
+    var _a;
+    return (_a = exports.agdaStdlibInfo === null || exports.agdaStdlibInfo === void 0 ? void 0 : exports.agdaStdlibInfo[version]) !== null && _a !== void 0 ? _a : [];
+}
+exports.stdlibVersionsFor = stdlibVersionsFor;
 exports.os = (() => {
     switch (process.platform) {
         case 'linux':
@@ -30525,6 +30533,14 @@ function ensureError(input) {
 
 "use strict";
 module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4":"deprecated","2.5.4.1":"deprecated","2.5.4.2":"normal","2.6.0":"deprecated","2.6.0.1":"normal","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Sat, 08 Oct 2022 14:35:51 GMT"}');
+
+/***/ }),
+
+/***/ 4587:
+/***/ ((module) => {
+
+"use strict";
+module.exports = JSON.parse('{"2.6.2.2":["1.7.1"],"2.6.2.1":["1.7.1"],"2.6.2":["1.7","1.7.1"],"2.6.1.3":["1.5","1.6"],"2.6.1.2":["1.5"],"2.6.1.1":["1.4","1.5"],"2.6.1":["1.3","1.4","1.5","1.6"],"2.6.0.1":["1.0.1","1.1","1.2"],"2.6.0":["1.0","1.0.1"],"2.5.4.2":["0.17"],"2.5.4.1":["0.16","0.16.1","0.17"],"2.5.4":["0.16","0.16.1","0.17"],"2.5.3":["0.14","0.15"],"2.5.2":["0.13"],"2.5.1.2":["0.12"],"2.5.1.1":["0.12"],"2.5.1":["0.12"],"2.4.2.5":["0.11"],"2.4.2.4":["0.11"],"2.4.2.3":["0.10"],"2.4.2.2":["0.9"],"2.4.2.1":["0.9"],"2.4.2":["0.8.1"],"2.4.0.2":["0.8"],"2.4.0.1":["0.8"],"2.4.0":["0.8"],"2.3.2.2":["0.7"],"2.3.2.1":["0.7"],"2.3.2":["0.7"],"2.3.0":["0.6"],"2.2.10":["0.5"],"2.2.8":["0.4"],"2.2.6":["0.3"],"2.2.4":["0.2"],"2.2.2":["0.1"]}');
 
 /***/ }),
 
