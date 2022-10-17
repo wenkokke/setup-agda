@@ -39,7 +39,8 @@ export type SetupAgdaOption =
 export type SetupAgdaFlag =
   | 'bdist-compress-exe'
   | 'bdist-upload'
-  | 'disable-cluster-counting'
+  | 'force-cluster-counting'
+  | 'force-no-cluster-counting'
   | 'force-build'
   | 'force-no-build'
   | 'ghc-version-match-exact'
@@ -68,7 +69,7 @@ export function shouldEnableClusterCounting(options: BuildOptions): boolean {
   // TODO: does Agda before 2.5.3 depend on ICU by default,
   //       or does it not depend on ICU at all?
   return (
-    !options['disable-cluster-counting'] && supportsClusterCounting(options)
+    !options['force-no-cluster-counting'] && supportsClusterCounting(options)
   )
 }
 
@@ -217,7 +218,8 @@ export function getOptions(
     'bdist-compress-exe': getFlag('bdist-compress-exe'),
     'bdist-name': getOption('bdist-name'),
     'bdist-upload': getFlag('bdist-upload'),
-    'disable-cluster-counting': getFlag('disable-cluster-counting'),
+    'force-cluster-counting': getFlag('force-cluster-counting'),
+    'force-no-cluster-counting': getFlag('force-no-cluster-counting'),
     'force-build': getFlag('force-build'),
     'force-no-build': getFlag('force-no-build'),
     'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
@@ -267,8 +269,22 @@ function validateOptions(options: BuildOptions): void {
     throw Error('Input "ghc-version" is unsupported. Use "ghc-version-range"')
   if (!semver.validRange(options['ghc-version-range']))
     throw Error('Input "ghc-version-range" is not a valid version range')
+  // If contradictory options are specified, throw an error:
   if (options['force-build'] && options['force-no-build'])
     throw Error('Build or no build? What do you want from me? 🤷🏻‍♀️')
+  if (options['force-cluster-counting'] && options['force-no-cluster-counting'])
+    throw Error(
+      'Cluster counting or no cluster counting? What do you want from me? 🤷🏻‍♀️'
+    )
+  // If 'force-cluster-counting' is specified, and we cannot build with cluster
+  // counting, throw an error:
+  if (
+    options['force-cluster-counting'] &&
+    !shouldEnableClusterCounting(options)
+  )
+    throw Error(
+      `Cannot build Agda ${options['agda-version']} with cluster counting`
+    )
   try {
     // Join various parts of 'bdist-name', if it was defined over multiple lines.
     options['bdist-name'] = options['bdist-name'].split(/\s+/g).join('').trim()
