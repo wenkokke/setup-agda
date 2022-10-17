@@ -3,7 +3,7 @@ on:
 
 jobs:
   test-setup-2_6_2_2:
-    name: Setup Agda (2.6.2.2) on ${{ matrix.os }
+    name: Setup Agda (2.6.2.2) on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
