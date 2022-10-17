@@ -212,6 +212,7 @@ export function getOptions(
   function getFlag(k: SetupAgdaFlag): boolean {
     const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs?.[k]
     return !(
+      maybeInput === false ||
       maybeInput === null ||
       maybeInput === undefined ||
       maybeInput === '' ||
@@ -244,6 +245,18 @@ export function getOptions(
     'extra-include-dirs': [],
     'extra-lib-dirs': [],
     'ghc-supported-versions': []
+  }
+  // Print inputs:
+  if (inputs !== undefined && typeof inputs !== 'function') {
+    core.info(
+      [
+        'Inputs:',
+        ...Object.entries(inputs).map(entry => {
+          const [key, value] = entry
+          return `- ${key}: ${value}`
+        })
+      ].join(EOL)
+    )
   }
   // Print options:
   core.info(

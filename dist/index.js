@@ -185,7 +185,8 @@ function getOptions(inputs, actionYml) {
     }
     function getFlag(k) {
         const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
-        return !(maybeInput === null ||
+        return !(maybeInput === false ||
+            maybeInput === null ||
             maybeInput === undefined ||
             maybeInput === '' ||
             maybeInput === 'false');
@@ -215,6 +216,16 @@ function getOptions(inputs, actionYml) {
         'extra-lib-dirs': [],
         'ghc-supported-versions': []
     };
+    // Print inputs:
+    if (inputs !== undefined && typeof inputs !== 'function') {
+        core.info([
+            'Inputs:',
+            ...Object.entries(inputs).map(entry => {
+                const [key, value] = entry;
+                return `- ${key}: ${value}`;
+            })
+        ].join(node_os_1.EOL));
+    }
     // Print options:
     core.info([
         'Options:',
