@@ -12,6 +12,7 @@ on:
 
 jobs:
   check-dist:
+    name: Check dist
     uses: ./.github/workflows/check-dist.yml
 
   test-setup-latest:
@@ -71,5 +72,6 @@ jobs:
         agda-version: ['2.6.2.2']
 
   release-latest:
-    needs: [check-dist, test-setup-latest, test-setup-version]
+    name: Release Latest
+    needs: [check-dist, test-setup-latest]
     uses: ./.github/workflows/release-latest.yml
