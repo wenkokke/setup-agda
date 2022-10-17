@@ -610,9 +610,9 @@ function upload(installDir, options) {
         // Get the name for the distribution:
         const bdistName = renderName(options['bdist-name'], options);
         const bdistDir = path.join(opts.agdaDir(), 'bdist', bdistName);
-        util.mkdirP(bdistDir);
+        yield util.mkdirP(bdistDir);
         // Copy binaries:
-        util.mkdirP(path.join(bdistDir, 'bin'));
+        yield util.mkdirP(path.join(bdistDir, 'bin'));
         for (const binName of util.agdaBinNames)
             yield util.cp(path.join(installDir, 'bin', binName), path.join(bdistDir, 'bin', binName));
         // Copy data:

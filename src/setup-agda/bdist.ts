@@ -39,10 +39,10 @@ export async function upload(
   // Get the name for the distribution:
   const bdistName = renderName(options['bdist-name'], options)
   const bdistDir = path.join(opts.agdaDir(), 'bdist', bdistName)
-  util.mkdirP(bdistDir)
+  await util.mkdirP(bdistDir)
 
   // Copy binaries:
-  util.mkdirP(path.join(bdistDir, 'bin'))
+  await util.mkdirP(path.join(bdistDir, 'bin'))
   for (const binName of util.agdaBinNames)
     await util.cp(
       path.join(installDir, 'bin', binName),
