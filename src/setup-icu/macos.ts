@@ -39,7 +39,7 @@ export async function setupForMacOS(options: opts.BuildOptions): Promise<void> {
 
   // Add extra-{include,lib}-dirs:
   options['extra-include-dirs'].push(
-    await util.pkgConfig('--variable', 'include', 'icu-i18n')
+    await util.pkgConfig('--variable', 'includedir', 'icu-i18n')
   )
   options['extra-lib-dirs'].push(
     await util.pkgConfig('--variable', 'libdir', 'icu-i18n')

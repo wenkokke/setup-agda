@@ -26,11 +26,13 @@ export async function setupForWindows(
   options['icu-version'] = await util.pkgConfig('--modversion', 'icu-i18n')
 
   // Add extra-{include,lib}-dirs:
-  const includeDir = await util.pkgConfig('--variable', 'include', 'icu-i18n')
-  options['extra-include-dirs'].push(includeDir)
+  options['extra-include-dirs'].push(
+    await util.pkgConfig('--variable', 'includedir', 'icu-i18n')
+  )
   // TODO: 'C:\msys64\mingw64\lib' only contains 'libicu*.dll.a'
-  const libDir = await util.pkgConfig('--variable', 'libdir', 'icu-i18n')
-  options['extra-lib-dirs'].push(libDir)
+  options['extra-lib-dirs'].push(
+    await util.pkgConfig('--variable', 'libdir', 'icu-i18n')
+  )
   options['extra-lib-dirs'].push('C:\\msys64\\mingw64\\bin')
   options['extra-lib-dirs'].push('C:\\msys64\\usr\\bin')
 

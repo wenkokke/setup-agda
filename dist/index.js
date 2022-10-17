@@ -1386,7 +1386,7 @@ function setupForLinux(options) {
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
         // Add extra-{include,lib}-dirs:
-        options['extra-include-dirs'].push(yield util.pkgConfig('--variable', 'include', 'icu-i18n'));
+        options['extra-include-dirs'].push(yield util.pkgConfig('--variable', 'includedir', 'icu-i18n'));
         options['extra-lib-dirs'].push(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n'));
         // Print ICU package info:
         try {
@@ -1538,7 +1538,7 @@ function setupForMacOS(options) {
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
         (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version reported by Homebrew differs from ICU version reported by pkg-config');
         // Add extra-{include,lib}-dirs:
-        options['extra-include-dirs'].push(yield util.pkgConfig('--variable', 'include', 'icu-i18n'));
+        options['extra-include-dirs'].push(yield util.pkgConfig('--variable', 'includedir', 'icu-i18n'));
         options['extra-lib-dirs'].push(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n'));
         // Print ICU package info:
         try {
@@ -1663,11 +1663,9 @@ function setupForWindows(options) {
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
         // Add extra-{include,lib}-dirs:
-        const includeDir = yield util.pkgConfig('--variable', 'include', 'icu-i18n');
-        options['extra-include-dirs'].push(includeDir);
+        options['extra-include-dirs'].push(yield util.pkgConfig('--variable', 'includedir', 'icu-i18n'));
         // TODO: 'C:\msys64\mingw64\lib' only contains 'libicu*.dll.a'
-        const libDir = yield util.pkgConfig('--variable', 'libdir', 'icu-i18n');
-        options['extra-lib-dirs'].push(libDir);
+        options['extra-lib-dirs'].push(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n'));
         options['extra-lib-dirs'].push('C:\\msys64\\mingw64\\bin');
         options['extra-lib-dirs'].push('C:\\msys64\\usr\\bin');
         // Print ICU package info:
