@@ -211,7 +211,12 @@ export function getOptions(
   }
   function getFlag(k: SetupAgdaFlag): boolean {
     const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs?.[k]
-    return !maybeInput || maybeInput === 'false'
+    return !(
+      maybeInput === null ||
+      maybeInput === undefined ||
+      maybeInput === '' ||
+      maybeInput === 'false'
+    )
   }
   const options: BuildOptions = {
     // Specified in AgdaSetupInputs

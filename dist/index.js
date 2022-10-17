@@ -185,7 +185,10 @@ function getOptions(inputs, actionYml) {
     }
     function getFlag(k) {
         const maybeInput = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
-        return !maybeInput || maybeInput === 'false';
+        return !(maybeInput === null ||
+            maybeInput === undefined ||
+            maybeInput === '' ||
+            maybeInput === 'false');
     }
     const options = {
         // Specified in AgdaSetupInputs
