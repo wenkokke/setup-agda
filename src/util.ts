@@ -43,9 +43,9 @@ export function addPkgConfigPath(pkgConfigDir: string): void {
 
 export async function resolveAgdaVersion(
   options: opts.BuildOptions
-): Promise<opts.BuildOptions> {
+): Promise<void> {
   // Ensure that we cache the package info:
-  options = await cachePackageInfo(options)
+  await cachePackageInfo(options)
 
   // Resolve the given version against Hackage's package versions:
   const agdaVersion = await hackage.resolvePackageVersion(
@@ -57,9 +57,7 @@ export async function resolveAgdaVersion(
     core.info(
       `Resolved Agda version ${options['agda-version']} to ${agdaVersion}`
     )
-    return {...options, 'agda-version': agdaVersion}
-  } else {
-    return options
+    options['agda-version'] = agdaVersion
   }
 }
 
@@ -74,7 +72,7 @@ export async function getAgdaSource(
   )
 
   // Ensure that we cache the package info:
-  options = await cachePackageInfo(options)
+  await cachePackageInfo(options)
 
   // Get the package source:
   const {packageVersion, packageDir} = await hackage.getPackageSource('Agda', {
@@ -118,17 +116,10 @@ function packageInfoOptions(
   }
 }
 
-async function cachePackageInfo(
-  options: opts.BuildOptions
-): Promise<opts.BuildOptions> {
+async function cachePackageInfo(options: opts.BuildOptions): Promise<void> {
   if (options['package-info-cache'] === undefined) {
-    return {
-      ...options,
-      'package-info-cache': await hackage.getPackageInfo('Agda', {
-        packageInfoCache: opts.packageInfoCache
-      })
-    }
-  } else {
-    return options
+    options['package-info-cache'] = await hackage.getPackageInfo('Agda', {
+      packageInfoCache: opts.packageInfoCache
+    })
   }
 }

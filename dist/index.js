@@ -352,11 +352,11 @@ const opts = __importStar(__nccwpck_require__(1352));
 const build_from_source_1 = __importDefault(__nccwpck_require__(7222));
 const bdist = __importStar(__nccwpck_require__(3383));
 const util = __importStar(__nccwpck_require__(4024));
-function setup(inputs, actionYml) {
+function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             // 1. Parse inputs & validate inputs:
-            const options = yield util.resolveAgdaVersion(opts.getOptions(inputs, actionYml));
+            yield util.resolveAgdaVersion(options);
             // Set 'agda-version' output:
             core.setOutput('agda-version', options['agda-version']);
             // 2. Build from source:
@@ -1865,15 +1865,12 @@ exports.addPkgConfigPath = addPkgConfigPath;
 function resolveAgdaVersion(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Ensure that we cache the package info:
-        options = yield cachePackageInfo(options);
+        yield cachePackageInfo(options);
         // Resolve the given version against Hackage's package versions:
         const agdaVersion = yield hackage.resolvePackageVersion('Agda', options['agda-version'], packageInfoOptions(options));
         if (options['agda-version'] !== agdaVersion) {
             core.info(`Resolved Agda version ${options['agda-version']} to ${agdaVersion}`);
-            return Object.assign(Object.assign({}, options), { 'agda-version': agdaVersion });
-        }
-        else {
-            return options;
+            options['agda-version'] = agdaVersion;
         }
     });
 }
@@ -1884,7 +1881,7 @@ function getAgdaSource(options) {
         (0, node_assert_1.default)(options['agda-version'] !== 'latest' &&
             options['agda-version'] !== 'nightly', `getAgdaSource: agdaVersion should be resolved`);
         // Ensure that we cache the package info:
-        options = yield cachePackageInfo(options);
+        yield cachePackageInfo(options);
         // Get the package source:
         const { packageVersion, packageDir } = yield hackage.getPackageSource('Agda', Object.assign({ packageVersion: options['agda-version'] }, packageInfoOptions(options)));
         (0, node_assert_1.default)(options['agda-version'] === packageVersion, `getAgdaSource: ${options['agda-version']} was resolved to ${packageVersion}`);
@@ -1924,12 +1921,9 @@ function packageInfoOptions(options) {
 function cachePackageInfo(options) {
     return __awaiter(this, void 0, void 0, function* () {
         if (options['package-info-cache'] === undefined) {
-            return Object.assign(Object.assign({}, options), { 'package-info-cache': yield hackage.getPackageInfo('Agda', {
-                    packageInfoCache: opts.packageInfoCache
-                }) });
-        }
-        else {
-            return options;
+            options['package-info-cache'] = yield hackage.getPackageInfo('Agda', {
+                packageInfoCache: opts.packageInfoCache
+            });
         }
     });
 }

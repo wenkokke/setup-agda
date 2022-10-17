@@ -8,18 +8,10 @@ import buildFromSource from './setup-agda/build-from-source'
 import * as bdist from './setup-agda/bdist'
 import * as util from './util'
 
-export default async function setup(
-  inputs?:
-    | Partial<opts.SetupAgdaInputs>
-    | Partial<Record<string, string>>
-    | ((name: string) => string | undefined),
-  actionYml?: string
-): Promise<void> {
+export default async function setup(options: opts.BuildOptions): Promise<void> {
   try {
     // 1. Parse inputs & validate inputs:
-    const options = await util.resolveAgdaVersion(
-      opts.getOptions(inputs, actionYml)
-    )
+    await util.resolveAgdaVersion(options)
     // Set 'agda-version' output:
     core.setOutput('agda-version', options['agda-version'])
 
