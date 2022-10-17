@@ -1,4 +1,4 @@
-# CI for `setup-agda`
+# GitHub Workflows for `setup-agda`
 
 The action `setup-agda` is tested via a series of workflows, run in order:
 
