@@ -7,7 +7,7 @@
     "strict": true,
     "resolveJsonModule": true,
     "noImplicitAny": true,
-    "esModuleInterop": true,
+    "esModuleInterop": true
   },
   "exclude": [
     "src/package-info/update.ts",

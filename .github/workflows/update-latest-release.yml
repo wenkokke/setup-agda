@@ -3,7 +3,7 @@ name: Update Release Latest
 on:
   workflow_run:
     branches: [main]
-    workflows: ["Setup Agda (2.6.2.2)"]
+    workflows: ['Setup Agda (2.6.2.2)']
     types: [completed]
 
 jobs:

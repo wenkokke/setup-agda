@@ -22,3 +22,6 @@ git add src/package-info/Agda.json
 
 # Delete 'latest' tag locally:
 git tag --delete latest || true
+
+# Run pre-commit:
+pre-commit run --all-files

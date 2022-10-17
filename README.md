@@ -46,10 +46,9 @@ jobs:
 
 ## Supported versions
 
-| Agda    | Release | Ubuntu  | macOS   | Windows |
-| ------- | ------- | ------- | ------- | ------- |
-| 2.6.2.2 | source  | *       | *       | >=2022  |
-| 2.6.2.2 | binary  | *       | *       | *       |
-
+| Agda    | Release | Ubuntu | macOS | Windows |
+| ------- | ------- | ------ | ----- | ------- |
+| 2.6.2.2 | source  | \*     | \*    | >=2022  |
+| 2.6.2.2 | binary  | \*     | \*    | \*      |
 
 [custom-binary-distributions]: https://github.com/wenkokke/setup-agda/releases/tag/latest

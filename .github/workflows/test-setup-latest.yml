@@ -3,7 +3,7 @@ name: Setup Agda (latest)
 on:
   workflow_run:
     branches: [main]
-    workflows: ["Check dist"]
+    workflows: ['Check dist']
     types: [completed]
 
 jobs:

@@ -16,7 +16,3 @@ repos:
     rev: v3.0.0-alpha.0
     hooks:
       - id: prettier
-  - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v8.24.0
-    hooks:
-      - id: eslint
