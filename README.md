@@ -2,7 +2,7 @@
 
 [![Build Latest](https://github.com/wenkokke/setup-agda/actions/workflows/test-build-latest.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/test-build-latest.yml)
 [![Setup Latest](https://github.com/wenkokke/setup-agda/actions/workflows/test-setup-latest.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/test-setup-latest.yml)
-[![Setup 2.6.2.2](https://github.com/wenkokke/setup-agda/actions/workflows/test-setup-2_6_2_2.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/test-setup-2_6_2_2.yml)
+[![Setup Legacy](https://github.com/wenkokke/setup-agda/actions/workflows/test-setup-legacy.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/test-setup-legacy.yml)
 
 This action sets up an Agda environment for use in actions by installing or building a version of Agda and adding it to PATH.
 
