@@ -10,10 +10,7 @@ set -euxo pipefail
 
 # Build dist:
 pre-commit run --all-files
-make build
-npm run format
-npm run lint
-make package
+npm run all
 
 # Add dist to commit:
 git add dist/*

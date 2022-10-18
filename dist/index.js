@@ -1025,7 +1025,6 @@ function build(sourceDir, installDir, options) {
 }
 exports.build = build;
 function buildFlags(sourceDir, options) {
-    var _a;
     const stackYamlName = `stack-${options['ghc-version']}.yaml`;
     // NOTE:
     //   We set the build flags following Agda's deploy workflow, which builds
@@ -1047,30 +1046,7 @@ function buildFlags(sourceDir, options) {
     if (!options['force-no-cluster-counting'] &&
         opts.supportsClusterCounting(options)) {
         flags.push('--flag=Agda:enable-cluster-counting');
-        // NOTE:
-        //   Agda versions 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
-        //   versions 0.7.0.0 - 0.7.1.0 do not compile with icu68+:
-        if (util.simver.lte(options['agda-version'], '2.6.2')) {
-            // Read stack-XYZ.yaml
-            const stackYamlPath = path.join(sourceDir, stackYamlName);
-            const stackYaml = yaml.load(fs.readFileSync(stackYamlPath, 'utf-8'));
-            core.info(`read ${stackYamlName}: ${JSON.stringify(stackYaml)}`);
-            // Add 'text-icu-0.7.1.0' to extra dependencies:
-            if ((stackYaml === null || stackYaml === void 0 ? void 0 : stackYaml['extra-deps']) === undefined)
-                stackYaml['extra-deps'] = [];
-            stackYaml['extra-deps'].push('text-icu-0.7.1.0');
-            core.info(`${stackYamlName}: add 'text-icu-0.7.1.0' to 'extra-deps'`);
-            // Pass 'text-icu>=0.7.1.0' constraint to Cabal:
-            if ((stackYaml === null || stackYaml === void 0 ? void 0 : stackYaml['configure-options']) === undefined)
-                stackYaml['configure-options'] = {};
-            if (((_a = stackYaml['configure-options']) === null || _a === void 0 ? void 0 : _a['Agda']) === undefined)
-                stackYaml['configure-options']['Agda'] = [];
-            stackYaml['configure-options']['Agda'].push('--constraint=text-icu>=0.7.1.0');
-            core.info(`${stackYamlName}: add '--constraint=text-icu>=0.7.1.0' to 'configure-options.Agda'`);
-            core.info(`write ${stackYamlName}: ${JSON.stringify(stackYaml)}`);
-            // Write stack-XYZ.yaml
-            fs.writeFileSync(stackYamlPath, yaml.dump(stackYaml));
-        }
+        fixTextIcuDependency(sourceDir, stackYamlName, options);
     }
     // If supported, pass Agda flag --optimise-heavily
     if (opts.supportsOptimiseHeavily(options)) {
@@ -1113,6 +1089,33 @@ function supportedGhcVersions(sourceDir) {
     });
 }
 exports.supportedGhcVersions = supportedGhcVersions;
+function fixTextIcuDependency(sourceDir, stackYamlName, options) {
+    var _a;
+    // NOTE:
+    //   Agda versions 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
+    //   versions 0.7.0.0 - 0.7.1.0 do not compile with icu68+:
+    if (util.simver.lte(options['agda-version'], '2.6.2')) {
+        // Read stack-XYZ.yaml
+        const stackYamlPath = path.join(sourceDir, stackYamlName);
+        const stackYaml = yaml.load(fs.readFileSync(stackYamlPath, 'utf-8'));
+        core.info(`read ${stackYamlName}: ${JSON.stringify(stackYaml)}`);
+        // Add 'text-icu-0.7.1.0' to extra dependencies:
+        if ((stackYaml === null || stackYaml === void 0 ? void 0 : stackYaml['extra-deps']) === undefined)
+            stackYaml['extra-deps'] = [];
+        stackYaml['extra-deps'].push('text-icu-0.7.1.0');
+        core.info(`${stackYamlName}: add 'text-icu-0.7.1.0' to 'extra-deps'`);
+        // Pass 'text-icu>=0.7.1.0' constraint to Cabal:
+        if ((stackYaml === null || stackYaml === void 0 ? void 0 : stackYaml['configure-options']) === undefined)
+            stackYaml['configure-options'] = {};
+        if (((_a = stackYaml['configure-options']) === null || _a === void 0 ? void 0 : _a['Agda']) === undefined)
+            stackYaml['configure-options']['Agda'] = [];
+        stackYaml['configure-options']['Agda'].push('--constraint=text-icu>=0.7.1.0');
+        core.info(`${stackYamlName}: add '--constraint=text-icu>=0.7.1.0' to 'configure-options.Agda'`);
+        core.info(`write ${stackYamlName}: ${JSON.stringify(stackYaml)}`);
+        // Write stack-XYZ.yaml
+        fs.writeFileSync(stackYamlPath, yaml.dump(stackYaml));
+    }
+}
 
 
 /***/ }),
