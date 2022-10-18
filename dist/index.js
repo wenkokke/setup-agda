@@ -1082,10 +1082,24 @@ const object_pick_1 = __importDefault(__nccwpck_require__(9962));
 exports.name = 'stack';
 function build(sourceDir, installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
-        const execOptions = { cwd: sourceDir };
+        // Install Alex & Happy for versions <=2.5.3:
+        if (util.simver.lte(options['agda-version'], '2.5.3')) {
+            const stackSystemGhc = options['stack-setup-ghc']
+                ? []
+                : ['--system-ghc', '--no-install-ghc'];
+            yield util.stack([
+                ...stackSystemGhc,
+                `--compiler=${options['ghc-version']}`,
+                'install',
+                'alex',
+                'happy'
+            ]);
+        }
         // Configure, Build, and Install:
         yield io.mkdirP(path.join(installDir, 'bin'));
-        yield util.stack(['build', ...buildFlags(options), '--copy-bins'], execOptions);
+        yield util.stack(['build', ...buildFlags(options), '--copy-bins'], {
+            cwd: sourceDir
+        });
         // Copy binaries from local bin
         const localBinDir = yield util.stackGetLocalBin((0, object_pick_1.default)(options, ['ghc-version']));
         const installBinDir = path.join(installDir, 'bin');
@@ -2054,10 +2068,12 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.agdaTest = exports.agda = exports.agdaGetDataDir = exports.agdaGetVersion = exports.agdaBinNames = exports.agdaModeBinName = exports.agdaBinName = void 0;
 const core = __importStar(__nccwpck_require__(2186));
+const io = __importStar(__nccwpck_require__(7436));
 const glob = __importStar(__nccwpck_require__(8090));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const exec = __importStar(__nccwpck_require__(4369));
+const simver = __importStar(__nccwpck_require__(7609));
 // Executable names
 exports.agdaBinName = opts.os === 'windows' ? 'agda.exe' : 'agda';
 exports.agdaModeBinName = opts.os === 'windows' ? 'agda-mode.exe' : 'agda-mode';
@@ -2091,8 +2107,21 @@ function agdaGetVersion(agdaOptions, options) {
 }
 exports.agdaGetVersion = agdaGetVersion;
 function agdaGetDataDir(agdaOptions, options) {
+    var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
-        return yield agda(['--print-agda-dir'], agdaOptions, options);
+        // Support for --print-agda-dir was added in 2.6.2
+        // https://github.com/agda/agda/commit/942c4a86d4941ba14d73ff173bd7d2b26e54da6c
+        const agdaVersion = yield agdaGetVersion(agdaOptions, options);
+        if (simver.gte(agdaVersion, '2.6.2')) {
+            return yield agda(['--print-agda-dir'], agdaOptions, options);
+        }
+        else {
+            const agdaDataDir = (_a = agdaOptions === null || agdaOptions === void 0 ? void 0 : agdaOptions.agdaDataDir) !== null && _a !== void 0 ? _a : (_b = options === null || options === void 0 ? void 0 : options.env) === null || _b === void 0 ? void 0 : _b.Agda_datadir;
+            if (agdaDataDir !== undefined)
+                return agdaDataDir;
+            const agdaBin = (_c = agdaOptions === null || agdaOptions === void 0 ? void 0 : agdaOptions.agdaBin) !== null && _c !== void 0 ? _c : (yield io.which('agda'));
+            return path.join(agdaBin, '..', 'data');
+        }
     });
 }
 exports.agdaGetDataDir = agdaGetDataDir;

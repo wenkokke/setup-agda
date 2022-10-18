@@ -1,8 +1,10 @@
 import * as core from '@actions/core'
+import * as io from '@actions/io'
 import * as glob from '@actions/glob'
 import * as path from 'node:path'
 import * as opts from '../opts'
 import * as exec from './exec'
+import * as simver from './simver'
 
 // Executable names
 
@@ -68,7 +70,17 @@ export async function agdaGetDataDir(
   agdaOptions?: Partial<AgdaOptions>,
   options?: exec.ExecOptions
 ): Promise<string> {
-  return await agda(['--print-agda-dir'], agdaOptions, options)
+  // Support for --print-agda-dir was added in 2.6.2
+  // https://github.com/agda/agda/commit/942c4a86d4941ba14d73ff173bd7d2b26e54da6c
+  const agdaVersion = await agdaGetVersion(agdaOptions, options)
+  if (simver.gte(agdaVersion, '2.6.2')) {
+    return await agda(['--print-agda-dir'], agdaOptions, options)
+  } else {
+    const agdaDataDir = agdaOptions?.agdaDataDir ?? options?.env?.Agda_datadir
+    if (agdaDataDir !== undefined) return agdaDataDir
+    const agdaBin = agdaOptions?.agdaBin ?? (await io.which('agda'))
+    return path.join(agdaBin, '..', 'data')
+  }
 }
 
 export async function agda(

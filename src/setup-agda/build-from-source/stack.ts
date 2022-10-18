@@ -1,7 +1,6 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as io from '../../util/io'
-import * as exec from '../../util/exec'
 import * as path from 'node:path'
 import * as semver from 'semver'
 import * as opts from '../../opts'
@@ -15,13 +14,24 @@ export async function build(
   installDir: string,
   options: opts.BuildOptions
 ): Promise<void> {
-  const execOptions: exec.ExecOptions = {cwd: sourceDir}
+  // Install Alex & Happy for versions <=2.5.3:
+  if (util.simver.lte(options['agda-version'], '2.5.3')) {
+    const stackSystemGhc = options['stack-setup-ghc']
+      ? []
+      : ['--system-ghc', '--no-install-ghc']
+    await util.stack([
+      ...stackSystemGhc,
+      `--compiler=${options['ghc-version']}`,
+      'install',
+      'alex',
+      'happy'
+    ])
+  }
   // Configure, Build, and Install:
   await io.mkdirP(path.join(installDir, 'bin'))
-  await util.stack(
-    ['build', ...buildFlags(options), '--copy-bins'],
-    execOptions
-  )
+  await util.stack(['build', ...buildFlags(options), '--copy-bins'], {
+    cwd: sourceDir
+  })
   // Copy binaries from local bin
   const localBinDir = await util.stackGetLocalBin(
     pick(options, ['ghc-version'])
