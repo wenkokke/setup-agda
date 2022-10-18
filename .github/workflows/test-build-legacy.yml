@@ -5,6 +5,12 @@ on:
 
 # Legacy versions:
 #
+# Agda versions older than 2.4.2.3 do not support any of the GHC versions which
+# are supported by haskell/actions/setup. The oldest GHC version that is still
+# supported is 7.10.3. Agda 2.4.2.3 is the first version to be tested against a
+# GHC 7.10 version, and Agda 2.4.2.5 is the first to be tested against 7.10.3.
+# Therefore, versions older than 2.4.2.3 are unlikely to be easily built.
+#
 # Prior to Agda 2.4.2.2, Agda did not set the 'tested-with' field in the cabal
 # file, so for these versions we cannot automatically determine the compatible
 # GHC versions when building with Cabal. That excludes the following versions
