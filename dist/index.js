@@ -73,7 +73,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installDir = exports.agdaDir = exports.resolveGhcVersion = exports.getOptions = exports.os = exports.stdlibVersionsFor = exports.agdaStdlibInfo = exports.findPkgUrl = exports.packageIndex = exports.packageInfoCache = exports.supportsUPX = exports.shouldCompressExe = exports.supportsSplitSections = exports.shouldEnableOptimiseHeavily = exports.shouldSetupIcu = exports.shouldEnableClusterCounting = void 0;
+exports.installDir = exports.agdaDir = exports.resolveGhcVersion = exports.getOptions = exports.os = exports.stdlibVersionsFor = exports.agdaStdlibInfo = exports.findPkgUrl = exports.packageIndex = exports.supportsUPX = exports.shouldCompressExe = exports.supportsSplitSections = exports.shouldEnableOptimiseHeavily = exports.shouldSetupIcu = exports.shouldEnableClusterCounting = exports.packageInfoCache = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const yaml = __importStar(__nccwpck_require__(1917));
 const fs = __importStar(__nccwpck_require__(7561));
@@ -84,11 +84,12 @@ const process = __importStar(__nccwpck_require__(7742));
 const semver = __importStar(__nccwpck_require__(1383));
 const Agda_stdlib_json_1 = __importDefault(__nccwpck_require__(4587));
 const Haskell_json_1 = __importDefault(__nccwpck_require__(8712));
-const index_json_1 = __importDefault(__nccwpck_require__(1663));
 const Agda_json_1 = __importDefault(__nccwpck_require__(4862));
+const index_json_1 = __importDefault(__nccwpck_require__(1663));
 const simver = __importStar(__nccwpck_require__(7609));
 const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
+exports.packageInfoCache = Agda_json_1.default;
 // Should we setup ICU & pass --cluster-counting?
 function shouldEnableClusterCounting(options) {
     // TODO: does Agda before 2.5.3 depend on ICU by default,
@@ -155,7 +156,7 @@ function supportsUPX() {
     return true;
 }
 exports.supportsUPX = supportsUPX;
-exports.packageInfoCache = Agda_json_1.default;
+// Package info for Hackage:
 // Helpers for finding binary distributions:
 exports.packageIndex = index_json_1.default;
 function findPkgUrl(pkg, version) {
@@ -426,27 +427,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __asyncValues = (this && this.__asyncValues) || function (o) {
-    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-    var m = o[Symbol.asyncIterator], i;
-    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
-    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
-    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
-const glob = __importStar(__nccwpck_require__(8090));
-const tc = __importStar(__nccwpck_require__(7784));
 const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
-const build_from_source_1 = __importDefault(__nccwpck_require__(7222));
-const bdist = __importStar(__nccwpck_require__(3383));
+const build_from_sdist_1 = __importDefault(__nccwpck_require__(3350));
+const install_from_bdist_1 = __importDefault(__nccwpck_require__(6577));
+const install_from_tool_cache_1 = __importDefault(__nccwpck_require__(9546));
 const util = __importStar(__nccwpck_require__(4024));
-const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -458,13 +451,13 @@ function setup(options) {
             let agdaDir = null;
             // 2.1. Try the GitHub Tool Cache:
             if (!options['force-build'] && agdaDir === null)
-                agdaDir = yield core.group(`🔍 Searching for Agda ${options['agda-version']} in tool cache`, () => __awaiter(this, void 0, void 0, function* () { return yield findInToolCache(options); }));
+                agdaDir = yield core.group(`🔍 Searching for Agda ${options['agda-version']} in tool cache`, () => __awaiter(this, void 0, void 0, function* () { return yield (0, install_from_tool_cache_1.default)(options); }));
             // 2.2. Try the custom package index:
             if (!options['force-build'] && agdaDir === null)
-                agdaDir = yield core.group(`🔍 Searching for Agda ${options['agda-version']} in package index`, () => __awaiter(this, void 0, void 0, function* () { return yield findInPackageIndex(options); }));
+                agdaDir = yield core.group(`🔍 Searching for Agda ${options['agda-version']} in package index`, () => __awaiter(this, void 0, void 0, function* () { return yield (0, install_from_bdist_1.default)(options); }));
             // 2.3. Build from source:
             if (!options['force-no-build'] && agdaDir === null)
-                agdaDir = yield (0, build_from_source_1.default)(options);
+                agdaDir = yield (0, build_from_sdist_1.default)(options);
             else if (agdaDir === null)
                 throw Error('Required build, but "force-no-build" is set.');
             // 3. Set environment variables:
@@ -482,7 +475,7 @@ function setup(options) {
                         core.debug(`Failed to clean up build: ${(0, ensure_error_1.default)(error).message}`);
                     }
                 }
-                yield util.setupAgdaEnv(installDir);
+                yield util.installAgda(installDir);
             }));
             // 4. Test:
             yield core.group('👩🏾‍🔬 Testing Agda installation', () => __awaiter(this, void 0, void 0, function* () { return yield util.agdaTest(); }));
@@ -493,298 +486,11 @@ function setup(options) {
     });
 }
 exports["default"] = setup;
-// Helper to install from GitHub Runner tool cache
-// NOTE: We can hope, can't we?
-function findInToolCache(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const agdaDirTC = tc.find('agda', options['agda-version']);
-        // NOTE: tc.find returns '' if the tool is not found
-        if (agdaDirTC === '') {
-            core.info(`Could not find cache for Agda ${options['agda-version']}`);
-            return null;
-        }
-        else {
-            core.info(`Found cache for Agda ${options['agda-version']}`);
-            core.info(`Testing cache for Agda ${options['agda-version']}`);
-            try {
-                util.agdaTest({
-                    agdaBin: path.join(agdaDirTC, 'bin', util.agdaBinName),
-                    agdaDataDir: path.join(agdaDirTC, 'data')
-                });
-                return agdaDirTC;
-            }
-            catch (error) {
-                const warning = (0, ensure_error_1.default)(error);
-                warning.message = `Rejecting cached Agda ${options['agda-version']}: ${warning.message}`;
-                core.warning(warning);
-                return null;
-            }
-        }
-    });
-}
-// Helper to install from binary distributions
-function findInPackageIndex(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Download & extract package:
-        const bdistZip = yield bdist.download(options);
-        if (bdistZip === null)
-            return null;
-        const bdistDir = yield tc.extractZip(bdistZip);
-        // Try to clean up .zip archive:
-        try {
-            util.rmRF(bdistZip);
-        }
-        catch (error) {
-            core.debug(`Could not clean up: ${(0, ensure_error_1.default)(error).message}`);
-        }
-        // If needed, repair file permissions:
-        yield repairPermissions(bdistDir);
-        // Test package:
-        core.info(`Testing Agda ${options['agda-version']} package`);
-        try {
-            yield util.agdaTest({
-                agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
-                agdaDataDir: path.join(bdistDir, 'data')
-            });
-            return bdistDir;
-        }
-        catch (error) {
-            const warning = (0, ensure_error_1.default)(error);
-            warning.message = `Rejecting Agda ${options['agda-version']} package: ${warning.message}`;
-            core.warning(warning);
-            return null;
-        }
-    });
-}
-function repairPermissions(bdistDir) {
-    var e_1, _a;
-    return __awaiter(this, void 0, void 0, function* () {
-        switch (opts.os) {
-            case 'linux': {
-                // Repair file permissions
-                core.info('Repairing file permissions');
-                for (const binName of util.agdaBinNames) {
-                    yield util.chmod('+x', path.join(bdistDir, 'bin', binName));
-                }
-                break;
-            }
-            case 'macos': {
-                // Repair file permissions
-                core.info('Repairing file permissions');
-                // Repair file permissions on executables
-                for (const binName of util.agdaBinNames) {
-                    yield util.chmod('+x', path.join(bdistDir, 'bin', binName));
-                    yield util.xattr('-c', path.join(bdistDir, 'bin', binName));
-                }
-                // Repair file permissions on libraries
-                const libGlobber = yield glob.create(path.join(bdistDir, 'lib', '*'));
-                try {
-                    for (var _b = __asyncValues(libGlobber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
-                        const libPath = _c.value;
-                        yield util.chmod('+w', libPath);
-                        yield util.xattr('-c', libPath);
-                        yield util.chmod('-w', libPath);
-                    }
-                }
-                catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                finally {
-                    try {
-                        if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
-                    }
-                    finally { if (e_1) throw e_1.error; }
-                }
-                break;
-            }
-        }
-    });
-}
 
 
 /***/ }),
 
-/***/ 3383:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.renderName = exports.upload = exports.download = void 0;
-const artifact = __importStar(__nccwpck_require__(2605));
-const core = __importStar(__nccwpck_require__(2186));
-const glob = __importStar(__nccwpck_require__(8090));
-const tc = __importStar(__nccwpck_require__(7784));
-const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
-const Mustache = __importStar(__nccwpck_require__(8272));
-const os = __importStar(__nccwpck_require__(612));
-const path = __importStar(__nccwpck_require__(9411));
-const object_pick_1 = __importDefault(__nccwpck_require__(9962));
-const opts = __importStar(__nccwpck_require__(1352));
-const icu = __importStar(__nccwpck_require__(4173));
-const setup_upx_1 = __importDefault(__nccwpck_require__(4245));
-const util = __importStar(__nccwpck_require__(4024));
-function download(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Get the name for the distribution:
-        try {
-            const bdistUrl = opts.findPkgUrl('agda', options['agda-version']);
-            core.info(`Found package for Agda ${options['agda-version']}`);
-            try {
-                core.info(`Downloading package from ${bdistUrl}`);
-                return yield tc.downloadTool(bdistUrl);
-            }
-            catch (error) {
-                core.warning(`Failed to download package: ${(0, ensure_error_1.default)(error).message}`);
-                return null;
-            }
-        }
-        catch (error) {
-            core.warning((0, ensure_error_1.default)(error));
-            return null;
-        }
-    });
-}
-exports.download = download;
-function upload(installDir, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Get the name for the distribution:
-        const bdistName = renderName(options['bdist-name'], options);
-        const bdistDir = path.join(opts.agdaDir(), 'bdist', bdistName);
-        yield util.mkdirP(bdistDir);
-        // Copy binaries:
-        yield util.mkdirP(path.join(bdistDir, 'bin'));
-        for (const binName of util.agdaBinNames)
-            yield util.cp(path.join(installDir, 'bin', binName), path.join(bdistDir, 'bin', binName));
-        // Copy data:
-        yield util.cpR(path.join(installDir, 'data'), bdistDir);
-        // Compress binaries:
-        if (opts.shouldCompressExe(options)) {
-            try {
-                const upxExe = yield (0, setup_upx_1.default)(options);
-                for (const binName of util.agdaBinNames)
-                    yield compressBin(upxExe, path.join(bdistDir, 'bin', binName));
-            }
-            catch (error) {
-                core.debug((0, ensure_error_1.default)(error).message);
-            }
-        }
-        // Bundle libraries:
-        if (options['icu-version'] !== undefined) {
-            yield icu.bundle(bdistDir, options);
-        }
-        // Test artifact:
-        yield util.agdaTest({
-            agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
-            agdaDataDir: path.join(bdistDir, 'data')
-        });
-        // Create file list for artifact:
-        const globber = yield glob.create(path.join(bdistDir, '**', '*'), {
-            followSymbolicLinks: false,
-            implicitDescendants: false,
-            matchDirectories: false
-        });
-        const files = yield globber.glob();
-        // Upload artifact:
-        const artifactClient = artifact.create();
-        const uploadInfo = yield artifactClient.uploadArtifact(bdistName, files, bdistDir, {
-            continueOnError: true,
-            retentionDays: 90
-        });
-        // Report any errors:
-        if (uploadInfo.failedItems.length > 0) {
-            core.error(['Failed to upload:', ...uploadInfo.failedItems].join(os.EOL));
-        }
-        // Return artifact name
-        return uploadInfo.artifactName;
-    });
-}
-exports.upload = upload;
-function compressBin(upxExe, binPath) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Print the needed libraries before compressing:
-        yield printNeededLibs(binPath);
-        // Compress with UPX:
-        yield util.getOutput(upxExe, ['--best', binPath]);
-        // Print the needed libraries after compressing:
-        yield printNeededLibs(binPath);
-    });
-}
-function renderName(template, options) {
-    return Mustache.render(template, Object.assign(Object.assign({}, (0, object_pick_1.default)(options, [
-        'agda-version',
-        'ghc-version',
-        'cabal-version',
-        'stack-version',
-        'icu-version',
-        'upx-version'
-    ])), { arch: os.arch(), platform: os.platform(), release: os.release() }));
-}
-exports.renderName = renderName;
-// Helpers for patching executables
-function printNeededLibs(binPath) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            let output = '';
-            switch (opts.os) {
-                case 'linux': {
-                    output = yield util.patchelf('--print-needed', binPath);
-                    break;
-                }
-                case 'macos': {
-                    output = yield util.otool('-L', binPath);
-                    break;
-                }
-                case 'windows': {
-                    output = yield util.dumpbin('/imports', binPath);
-                    break;
-                }
-            }
-            core.info(`Needed libraries:${os.EOL}${output}`);
-        }
-        catch (error) {
-            core.debug((0, ensure_error_1.default)(error).message);
-        }
-    });
-}
-
-
-/***/ }),
-
-/***/ 7222:
+/***/ 3350:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -831,9 +537,9 @@ const opts = __importStar(__nccwpck_require__(1352));
 const setup_haskell_1 = __importDefault(__nccwpck_require__(6933));
 const icu = __importStar(__nccwpck_require__(4173));
 const util = __importStar(__nccwpck_require__(4024));
-const bdist = __importStar(__nccwpck_require__(3383));
-const cabal = __importStar(__nccwpck_require__(8545));
-const stack = __importStar(__nccwpck_require__(5590));
+const cabal = __importStar(__nccwpck_require__(4772));
+const stack = __importStar(__nccwpck_require__(5674));
+const upload_bdist_1 = __importDefault(__nccwpck_require__(3888));
 function buildFromSource(options) {
     return __awaiter(this, void 0, void 0, function* () {
         const buildInfo = yield core.group('🛠 Preparing to build Agda from source', () => __awaiter(this, void 0, void 0, function* () {
@@ -904,7 +610,7 @@ function buildFromSource(options) {
         // 7. If 'bdist-upload' is specified, upload as a package:
         if (options['bdist-upload']) {
             yield core.group('📦 Upload package', () => __awaiter(this, void 0, void 0, function* () {
-                const bdistName = yield bdist.upload(agdaDir, options);
+                const bdistName = yield (0, upload_bdist_1.default)(agdaDir, options);
                 core.info(`Uploaded package as '${bdistName}'`);
             }));
         }
@@ -916,7 +622,7 @@ exports["default"] = buildFromSource;
 
 /***/ }),
 
-/***/ 8545:
+/***/ 4772:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -1074,7 +780,7 @@ function findCabalFile(sourceDir) {
 
 /***/ }),
 
-/***/ 5590:
+/***/ 5674:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -1118,7 +824,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.supportedGhcVersions = exports.build = exports.name = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
-const io = __importStar(__nccwpck_require__(9067));
 const path = __importStar(__nccwpck_require__(9411));
 const os = __importStar(__nccwpck_require__(612));
 const semver = __importStar(__nccwpck_require__(1383));
@@ -1129,16 +834,24 @@ exports.name = 'stack';
 function build(sourceDir, installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Configure, Build, and Install:
-        yield io.mkdirP(path.join(installDir, 'bin'));
+        yield util.mkdirP(path.join(installDir, 'bin'));
         yield util.stack(['build', ...buildFlags(options), '--copy-bins'], {
             cwd: sourceDir
         });
         // Copy binaries from local bin
         const localBinDir = yield util.stackGetLocalBin((0, object_pick_1.default)(options, ['ghc-version']));
         const installBinDir = path.join(installDir, 'bin');
-        yield io.mkdirP(installBinDir);
+        yield util.mkdirP(installBinDir);
         for (const binName of util.agdaBinNames) {
-            yield io.mv(path.join(localBinDir, binName), path.join(installBinDir, binName));
+            const localBinPath = path.join(localBinDir, binName);
+            const installBinPath = path.join(installBinDir, binName);
+            yield util.cp(localBinPath, installBinPath);
+            try {
+                yield util.rmRF(localBinPath);
+            }
+            catch (error) {
+                core.debug(`Could not clean up executable at ${localBinPath}`);
+            }
         }
     });
 }
@@ -1205,6 +918,367 @@ function supportedGhcVersions(sourceDir) {
     });
 }
 exports.supportedGhcVersions = supportedGhcVersions;
+
+
+/***/ }),
+
+/***/ 6577:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
+const glob = __importStar(__nccwpck_require__(8090));
+const tc = __importStar(__nccwpck_require__(7784));
+const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
+const path = __importStar(__nccwpck_require__(9411));
+const opts = __importStar(__nccwpck_require__(1352));
+const util = __importStar(__nccwpck_require__(4024));
+function installFromBdist(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Download & extract package:
+        try {
+            const bdistUrl = opts.findPkgUrl('agda', options['agda-version']);
+            core.info(`Found package for Agda ${options['agda-version']}`);
+            try {
+                core.info(`Downloading package from ${bdistUrl}`);
+                const bdistZip = yield tc.downloadTool(bdistUrl);
+                const bdistDir = yield tc.extractZip(bdistZip);
+                // Try to clean up .zip archive:
+                try {
+                    util.rmRF(bdistZip);
+                }
+                catch (error) {
+                    core.debug(`Could not clean up: ${(0, ensure_error_1.default)(error).message}`);
+                }
+                // If needed, repair file permissions:
+                yield repairPermissions(bdistDir);
+                // Test package:
+                core.info(`Testing Agda ${options['agda-version']} package`);
+                try {
+                    yield util.agdaTest({
+                        agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
+                        agdaDataDir: path.join(bdistDir, 'data')
+                    });
+                    return bdistDir;
+                }
+                catch (error) {
+                    const warning = (0, ensure_error_1.default)(error);
+                    warning.message = `Rejecting Agda ${options['agda-version']} package: ${warning.message}`;
+                    core.warning(warning);
+                    return null;
+                }
+            }
+            catch (error) {
+                core.warning(`Failed to download package: ${(0, ensure_error_1.default)(error).message}`);
+                return null;
+            }
+        }
+        catch (error) {
+            core.warning((0, ensure_error_1.default)(error));
+            return null;
+        }
+    });
+}
+exports["default"] = installFromBdist;
+function repairPermissions(bdistDir) {
+    var e_1, _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        switch (opts.os) {
+            case 'linux': {
+                // Repair file permissions
+                core.info('Repairing file permissions');
+                for (const binName of util.agdaBinNames) {
+                    yield util.chmod('+x', path.join(bdistDir, 'bin', binName));
+                }
+                break;
+            }
+            case 'macos': {
+                // Repair file permissions
+                core.info('Repairing file permissions');
+                // Repair file permissions on executables
+                for (const binName of util.agdaBinNames) {
+                    yield util.chmod('+x', path.join(bdistDir, 'bin', binName));
+                    yield util.xattr('-c', path.join(bdistDir, 'bin', binName));
+                }
+                // Repair file permissions on libraries
+                const libGlobber = yield glob.create(path.join(bdistDir, 'lib', '*'));
+                try {
+                    for (var _b = __asyncValues(libGlobber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
+                        const libPath = _c.value;
+                        yield util.chmod('+w', libPath);
+                        yield util.xattr('-c', libPath);
+                        yield util.chmod('-w', libPath);
+                    }
+                }
+                catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                finally {
+                    try {
+                        if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
+                    }
+                    finally { if (e_1) throw e_1.error; }
+                }
+                break;
+            }
+        }
+    });
+}
+
+
+/***/ }),
+
+/***/ 9546:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
+const tc = __importStar(__nccwpck_require__(7784));
+const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
+const path = __importStar(__nccwpck_require__(9411));
+const util = __importStar(__nccwpck_require__(4024));
+// Helper to install from GitHub Runner tool cache
+// NOTE: We can hope, can't we?
+function installFromToolCache(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const agdaDirTC = tc.find('agda', options['agda-version']);
+        // NOTE: tc.find returns '' if the tool is not found
+        if (agdaDirTC === '') {
+            core.info(`Could not find cache for Agda ${options['agda-version']}`);
+            return null;
+        }
+        else {
+            core.info(`Found cache for Agda ${options['agda-version']}`);
+            core.info(`Testing cache for Agda ${options['agda-version']}`);
+            try {
+                util.agdaTest({
+                    agdaBin: path.join(agdaDirTC, 'bin', util.agdaBinName),
+                    agdaDataDir: path.join(agdaDirTC, 'data')
+                });
+                return agdaDirTC;
+            }
+            catch (error) {
+                const warning = (0, ensure_error_1.default)(error);
+                warning.message = `Rejecting cached Agda ${options['agda-version']}: ${warning.message}`;
+                core.warning(warning);
+                return null;
+            }
+        }
+    });
+}
+exports["default"] = installFromToolCache;
+
+
+/***/ }),
+
+/***/ 3888:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.renderName = void 0;
+const artifact = __importStar(__nccwpck_require__(2605));
+const core = __importStar(__nccwpck_require__(2186));
+const glob = __importStar(__nccwpck_require__(8090));
+const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
+const Mustache = __importStar(__nccwpck_require__(8272));
+const os = __importStar(__nccwpck_require__(612));
+const path = __importStar(__nccwpck_require__(9411));
+const object_pick_1 = __importDefault(__nccwpck_require__(9962));
+const opts = __importStar(__nccwpck_require__(1352));
+const icu = __importStar(__nccwpck_require__(4173));
+const setup_upx_1 = __importDefault(__nccwpck_require__(4245));
+const util = __importStar(__nccwpck_require__(4024));
+function uploadBdist(installDir, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Get the name for the distribution:
+        const bdistName = renderName(options['bdist-name'], options);
+        const bdistDir = path.join(opts.agdaDir(), 'bdist', bdistName);
+        yield util.mkdirP(bdistDir);
+        // Copy binaries:
+        yield util.mkdirP(path.join(bdistDir, 'bin'));
+        for (const binName of util.agdaBinNames)
+            yield util.cp(path.join(installDir, 'bin', binName), path.join(bdistDir, 'bin', binName));
+        // Copy data:
+        yield util.cpR(path.join(installDir, 'data'), bdistDir);
+        // Compress binaries:
+        if (opts.shouldCompressExe(options)) {
+            try {
+                const upxExe = yield (0, setup_upx_1.default)(options);
+                for (const binName of util.agdaBinNames)
+                    yield compressBin(upxExe, path.join(bdistDir, 'bin', binName));
+            }
+            catch (error) {
+                core.debug((0, ensure_error_1.default)(error).message);
+            }
+        }
+        // Bundle libraries:
+        if (options['icu-version'] !== undefined) {
+            yield icu.bundle(bdistDir, options);
+        }
+        // Test artifact:
+        yield util.agdaTest({
+            agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
+            agdaDataDir: path.join(bdistDir, 'data')
+        });
+        // Create file list for artifact:
+        const globber = yield glob.create(path.join(bdistDir, '**', '*'), {
+            followSymbolicLinks: false,
+            implicitDescendants: false,
+            matchDirectories: false
+        });
+        const files = yield globber.glob();
+        // Upload artifact:
+        const artifactClient = artifact.create();
+        const uploadInfo = yield artifactClient.uploadArtifact(bdistName, files, bdistDir, {
+            continueOnError: true,
+            retentionDays: 90
+        });
+        // Report any errors:
+        if (uploadInfo.failedItems.length > 0) {
+            core.error(['Failed to upload:', ...uploadInfo.failedItems].join(os.EOL));
+        }
+        // Return artifact name
+        return uploadInfo.artifactName;
+    });
+}
+exports["default"] = uploadBdist;
+function compressBin(upxExe, binPath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Print the needed libraries before compressing:
+        yield util.printNeeded(binPath);
+        // Compress with UPX:
+        yield util.getOutput(upxExe, ['--best', binPath]);
+        // Print the needed libraries after compressing:
+        yield util.printNeeded(binPath);
+    });
+}
+function renderName(template, options) {
+    return Mustache.render(template, Object.assign(Object.assign({}, (0, object_pick_1.default)(options, [
+        'agda-version',
+        'ghc-version',
+        'cabal-version',
+        'stack-version',
+        'icu-version',
+        'upx-version'
+    ])), { arch: os.arch(), platform: os.platform(), release: os.release() }));
+}
+exports.renderName = renderName;
 
 
 /***/ }),
@@ -1899,46 +1973,27 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setupAgdaEnv = exports.getAgdaSource = exports.resolveAgdaVersion = exports.addPkgConfigPath = exports.simver = exports.stackGetLocalBin = exports.stackGetVersion = exports.stack = exports.cabalMaybeGetVersion = exports.cabalGetVersion = exports.cabal = exports.ghcMaybeGetVersion = exports.ghcGetVersion = exports.ghc = exports.agdaTest = exports.agdaModeBinName = exports.agdaBinNames = exports.agdaBinName = void 0;
+exports.getAgdaSource = exports.resolveAgdaVersion = exports.simver = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
-const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
-const agda = __importStar(__nccwpck_require__(9552));
 const hackage = __importStar(__nccwpck_require__(903));
-var agda_1 = __nccwpck_require__(9552);
-Object.defineProperty(exports, "agdaBinName", ({ enumerable: true, get: function () { return agda_1.agdaBinName; } }));
-Object.defineProperty(exports, "agdaBinNames", ({ enumerable: true, get: function () { return agda_1.agdaBinNames; } }));
-Object.defineProperty(exports, "agdaModeBinName", ({ enumerable: true, get: function () { return agda_1.agdaModeBinName; } }));
-Object.defineProperty(exports, "agdaTest", ({ enumerable: true, get: function () { return agda_1.agdaTest; } }));
+__exportStar(__nccwpck_require__(9552), exports);
 __exportStar(__nccwpck_require__(4369), exports);
-var haskell_1 = __nccwpck_require__(1310);
-Object.defineProperty(exports, "ghc", ({ enumerable: true, get: function () { return haskell_1.ghc; } }));
-Object.defineProperty(exports, "ghcGetVersion", ({ enumerable: true, get: function () { return haskell_1.ghcGetVersion; } }));
-Object.defineProperty(exports, "ghcMaybeGetVersion", ({ enumerable: true, get: function () { return haskell_1.ghcMaybeGetVersion; } }));
-Object.defineProperty(exports, "cabal", ({ enumerable: true, get: function () { return haskell_1.cabal; } }));
-Object.defineProperty(exports, "cabalGetVersion", ({ enumerable: true, get: function () { return haskell_1.cabalGetVersion; } }));
-Object.defineProperty(exports, "cabalMaybeGetVersion", ({ enumerable: true, get: function () { return haskell_1.cabalMaybeGetVersion; } }));
-Object.defineProperty(exports, "stack", ({ enumerable: true, get: function () { return haskell_1.stack; } }));
-Object.defineProperty(exports, "stackGetVersion", ({ enumerable: true, get: function () { return haskell_1.stackGetVersion; } }));
-Object.defineProperty(exports, "stackGetLocalBin", ({ enumerable: true, get: function () { return haskell_1.stackGetLocalBin; } }));
-__exportStar(__nccwpck_require__(9067), exports);
+__exportStar(__nccwpck_require__(1310), exports);
+__exportStar(__nccwpck_require__(6295), exports);
+__exportStar(__nccwpck_require__(5066), exports);
+__exportStar(__nccwpck_require__(8398), exports);
+__exportStar(__nccwpck_require__(1311), exports);
+__exportStar(__nccwpck_require__(7066), exports);
 exports.simver = __importStar(__nccwpck_require__(7609));
-function addPkgConfigPath(pkgConfigDir) {
-    var _a;
-    const pathSep = opts.os === 'windows' ? ';' : ':';
-    const pkgConfigPath = (_a = process.env.PKG_CONFIG_PATH) !== null && _a !== void 0 ? _a : '';
-    const pkgConfigDirs = pkgConfigPath.split(pathSep).filter(dir => dir !== '');
-    core.exportVariable('PKG_CONFIG_PATH', [pkgConfigDir, ...pkgConfigDirs].join(pathSep));
-}
-exports.addPkgConfigPath = addPkgConfigPath;
 // Agda utilities
 function resolveAgdaVersion(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Ensure that we cache the package info:
-        yield cachePackageInfo(options);
+        yield cacheAgdaPackageInfo(options);
         // Resolve the given version against Hackage's package versions:
-        const agdaVersion = yield hackage.resolvePackageVersion('Agda', options['agda-version'], packageInfoOptions(options));
+        const agdaVersion = yield hackage.resolvePackageVersion('Agda', options['agda-version'], agdaPackageInfoOptions(options));
         if (options['agda-version'] !== agdaVersion) {
             core.info(`Resolved Agda version ${options['agda-version']} to ${agdaVersion}`);
             options['agda-version'] = agdaVersion;
@@ -1952,31 +2007,15 @@ function getAgdaSource(options) {
         (0, node_assert_1.default)(options['agda-version'] !== 'latest' &&
             options['agda-version'] !== 'nightly', `getAgdaSource: agdaVersion should be resolved`);
         // Ensure that we cache the package info:
-        yield cachePackageInfo(options);
+        yield cacheAgdaPackageInfo(options);
         // Get the package source:
-        const { packageVersion, packageDir } = yield hackage.getPackageSource('Agda', Object.assign({ packageVersion: options['agda-version'] }, packageInfoOptions(options)));
+        const { packageVersion, packageDir } = yield hackage.getPackageSource('Agda', Object.assign({ packageVersion: options['agda-version'] }, agdaPackageInfoOptions(options)));
         (0, node_assert_1.default)(options['agda-version'] === packageVersion, `getAgdaSource: ${options['agda-version']} was resolved to ${packageVersion}`);
         return packageDir;
     });
 }
 exports.getAgdaSource = getAgdaSource;
-function setupAgdaEnv(installDir) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const dataDir = path.join(installDir, 'data');
-        core.info(`Set Agda_datadir to ${dataDir}`);
-        core.exportVariable('Agda_datadir', dataDir);
-        core.setOutput('agda-data-path', dataDir);
-        const binDir = path.join(installDir, 'bin');
-        core.info(`Add ${binDir} to PATH`);
-        core.addPath(binDir);
-        core.setOutput('agda-path', binDir);
-        core.setOutput('agda-exe', path.join(binDir, agda.agdaBinName));
-        core.setOutput('agda-mode-exe', path.join(binDir, agda.agdaModeBinName));
-    });
-}
-exports.setupAgdaEnv = setupAgdaEnv;
-// Helpers for caching package info
-function packageInfoOptions(options) {
+function agdaPackageInfoOptions(options) {
     if (options['package-info-cache'] !== undefined) {
         return {
             fetchPackageInfo: false,
@@ -1989,7 +2028,7 @@ function packageInfoOptions(options) {
         };
     }
 }
-function cachePackageInfo(options) {
+function cacheAgdaPackageInfo(options) {
     return __awaiter(this, void 0, void 0, function* () {
         if (options['package-info-cache'] === undefined) {
             options['package-info-cache'] = yield hackage.getPackageInfo('Agda', {
@@ -2047,7 +2086,7 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
     function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.agdaTest = exports.agda = exports.agdaGetDataDir = exports.agdaGetVersion = exports.agdaBinNames = exports.agdaModeBinName = exports.agdaBinName = void 0;
+exports.installAgda = exports.agdaTest = exports.agda = exports.agdaGetDataDir = exports.agdaGetVersion = exports.agdaBinNames = exports.agdaModeBinName = exports.agdaBinName = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const io = __importStar(__nccwpck_require__(7436));
 const glob = __importStar(__nccwpck_require__(8090));
@@ -2142,6 +2181,21 @@ function agdaTest(agdaOptions, options) {
     });
 }
 exports.agdaTest = agdaTest;
+function installAgda(installDir) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const dataDir = path.join(installDir, 'data');
+        core.info(`Set Agda_datadir to ${dataDir}`);
+        core.exportVariable('Agda_datadir', dataDir);
+        core.setOutput('agda-data-path', dataDir);
+        const binDir = path.join(installDir, 'bin');
+        core.info(`Add ${binDir} to PATH`);
+        core.addPath(binDir);
+        core.setOutput('agda-path', binDir);
+        core.setOutput('agda-exe', path.join(binDir, exports.agdaBinName));
+        core.setOutput('agda-mode-exe', path.join(binDir, exports.agdaModeBinName));
+    });
+}
+exports.installAgda = installAgda;
 
 
 /***/ }),
@@ -2184,9 +2238,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.xattr = exports.pkgConfigGetInfo = exports.pkgConfig = exports.patchelf = exports.pacmanGetVersion = exports.pacman = exports.otool = exports.installNameTool = exports.dumpbin = exports.chmod = exports.brewGetVersion = exports.brew = exports.getVersion = exports.getOutput = void 0;
+exports.getVersion = exports.lsR = exports.rmRF = exports.mkdirP = exports.mv = exports.cpR = exports.cp = exports.getOutput = void 0;
 const exec = __importStar(__nccwpck_require__(1514));
 const os = __importStar(__nccwpck_require__(612));
+const core = __importStar(__nccwpck_require__(2186));
+const io = __importStar(__nccwpck_require__(7436));
+const opts = __importStar(__nccwpck_require__(1352));
 function getOutput(prog, args, execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         let progOutput = '';
@@ -2211,6 +2268,64 @@ function getOutput(prog, args, execOptions) {
     });
 }
 exports.getOutput = getOutput;
+function cp(source, dest, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        source = escape(source);
+        dest = escape(dest);
+        core.debug(`cp ${source} ${dest}`);
+        return yield io.cp(source, dest, options);
+    });
+}
+exports.cp = cp;
+function cpR(source, dest, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield cp(source, dest, Object.assign(Object.assign({}, options), { recursive: true }));
+    });
+}
+exports.cpR = cpR;
+function mv(source, dest, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        source = escape(source);
+        dest = escape(dest);
+        core.debug(`mv ${source} ${dest}`);
+        return yield io.mv(source, dest, options);
+    });
+}
+exports.mv = mv;
+function mkdirP(dir) {
+    return __awaiter(this, void 0, void 0, function* () {
+        dir = escape(dir);
+        core.debug(`mkdir -p ${dir}`);
+        return yield io.mkdirP(dir);
+    });
+}
+exports.mkdirP = mkdirP;
+function rmRF(path) {
+    return __awaiter(this, void 0, void 0, function* () {
+        path = escape(path);
+        core.debug(`rm -rf ${path}`);
+        return yield io.rmRF(path);
+    });
+}
+exports.rmRF = rmRF;
+function lsR(path) {
+    return __awaiter(this, void 0, void 0, function* () {
+        path = escape(path);
+        core.debug(`ls -R ${path}`);
+        return yield getOutput('ls', ['-R', path]);
+    });
+}
+exports.lsR = lsR;
+function escape(filePath) {
+    switch (opts.os) {
+        case 'macos':
+        case 'linux':
+            return filePath.replace(/(?<!\\) /g, '\\ ');
+        case 'windows':
+        default:
+            return filePath;
+    }
+}
 function getVersion(prog, options) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
@@ -2223,108 +2338,6 @@ function getVersion(prog, options) {
     });
 }
 exports.getVersion = getVersion;
-// System utilities
-function brew(...args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield getOutput('brew', args);
-    });
-}
-exports.brew = brew;
-function brewGetVersion(formula) {
-    var _a, _b, _c;
-    return __awaiter(this, void 0, void 0, function* () {
-        const formulaVersionRegExp = new RegExp(`${formula} (?<version>[\\d._]+)`);
-        const formulaVersions = yield brew('list', '--formula', '--versions');
-        return (_c = (_b = (_a = formulaVersions.match(formulaVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version) === null || _c === void 0 ? void 0 : _c.trim();
-    });
-}
-exports.brewGetVersion = brewGetVersion;
-function chmod(...args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield getOutput('chmod', args);
-    });
-}
-exports.chmod = chmod;
-function dumpbin(...args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield getOutput('dumpbin', args);
-    });
-}
-exports.dumpbin = dumpbin;
-function installNameTool(...args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield getOutput('install_name_tool', args);
-    });
-}
-exports.installNameTool = installNameTool;
-function otool(...args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield getOutput('otool', args);
-    });
-}
-exports.otool = otool;
-function pacman(...args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield getOutput('pacman', args);
-    });
-}
-exports.pacman = pacman;
-function pacmanGetVersion(pkg) {
-    var _a, _b, _c;
-    return __awaiter(this, void 0, void 0, function* () {
-        const pkgInfo = yield pacman('--noconfirm', '-Qs', pkg);
-        const pkgVersionRegExp = /(?<version>\d[\d.]+\d)/;
-        const pkgVersion = (_c = (_b = (_a = pkgInfo.match(pkgVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version) === null || _c === void 0 ? void 0 : _c.trim();
-        if (pkgVersion !== undefined)
-            return pkgVersion;
-        else
-            throw Error(`Could not determine version of ${pkg}`);
-    });
-}
-exports.pacmanGetVersion = pacmanGetVersion;
-function patchelf(...args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield getOutput('patchelf', args);
-    });
-}
-exports.patchelf = patchelf;
-function pkgConfig(...args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield getOutput('pkg-config', args);
-    });
-}
-exports.pkgConfig = pkgConfig;
-function pkgConfigGetList(name, listName) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return (yield pkgConfig(`--print-${listName}`, name))
-            .split(os.EOL)
-            .map(variableName => variableName.trim())
-            .filter(variableName => variableName !== '');
-    });
-}
-function pkgConfigGetInfo(name, seen) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (seen === null || seen === void 0 ? void 0 : seen.includes(name)) {
-            throw Error(`Cyclic dependency: ${seen.join(', ')}`);
-        }
-        else {
-            const variables = {};
-            for (const vn of yield pkgConfigGetList(name, 'variables'))
-                variables[vn] = yield pkgConfig('--variable', vn, name);
-            const requires = [];
-            for (const rn of yield pkgConfigGetList(name, 'requires'))
-                requires.push(yield pkgConfigGetInfo(rn, [...(seen !== null && seen !== void 0 ? seen : []), name]));
-            return { name, variables, requires };
-        }
-    });
-}
-exports.pkgConfigGetInfo = pkgConfigGetInfo;
-function xattr(...args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield getOutput('xattr', args);
-    });
-}
-exports.xattr = xattr;
 
 
 /***/ }),
@@ -2378,6 +2391,7 @@ const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
 const simver = __importStar(__nccwpck_require__(7609));
+// Functions for getting package information:
 function packageInfoUrl(packageName) {
     return `https://hackage.haskell.org/package/${packageName}.json`;
 }
@@ -2661,7 +2675,7 @@ exports.stackGetLocalBin = stackGetLocalBin;
 
 /***/ }),
 
-/***/ 9067:
+/***/ 6295:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -2699,69 +2713,335 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.lsR = exports.rmRF = exports.mkdirP = exports.mv = exports.cpR = exports.cp = void 0;
+exports.brewGetVersion = exports.brew = void 0;
+const exec = __importStar(__nccwpck_require__(4369));
+function brew(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield exec.getOutput('brew', args);
+    });
+}
+exports.brew = brew;
+function brewGetVersion(formula) {
+    var _a, _b, _c;
+    return __awaiter(this, void 0, void 0, function* () {
+        const formulaVersionRegExp = new RegExp(`${formula} (?<version>[\\d._]+)`);
+        const formulaVersions = yield brew('list', '--formula', '--versions');
+        return (_c = (_b = (_a = formulaVersions.match(formulaVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version) === null || _c === void 0 ? void 0 : _c.trim();
+    });
+}
+exports.brewGetVersion = brewGetVersion;
+
+
+/***/ }),
+
+/***/ 5066:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.pacmanGetVersion = exports.pacman = void 0;
+const exec = __importStar(__nccwpck_require__(4369));
+function pacman(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield exec.getOutput('pacman', args);
+    });
+}
+exports.pacman = pacman;
+function pacmanGetVersion(pkg) {
+    var _a, _b, _c;
+    return __awaiter(this, void 0, void 0, function* () {
+        const pkgInfo = yield pacman('--noconfirm', '-Qs', pkg);
+        const pkgVersionRegExp = /(?<version>\d[\d.]+\d)/;
+        const pkgVersion = (_c = (_b = (_a = pkgInfo.match(pkgVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version) === null || _c === void 0 ? void 0 : _c.trim();
+        if (pkgVersion !== undefined)
+            return pkgVersion;
+        else
+            throw Error(`Could not determine version of ${pkg}`);
+    });
+}
+exports.pacmanGetVersion = pacmanGetVersion;
+
+
+/***/ }),
+
+/***/ 8398:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.dumpbin = exports.installNameTool = exports.otool = exports.patchelf = exports.printNeeded = void 0;
 const core = __importStar(__nccwpck_require__(2186));
-const io = __importStar(__nccwpck_require__(7436));
+const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
+const os = __importStar(__nccwpck_require__(612));
 const opts = __importStar(__nccwpck_require__(1352));
 const exec = __importStar(__nccwpck_require__(4369));
-function cp(source, dest, options) {
+function printNeeded(binPath) {
     return __awaiter(this, void 0, void 0, function* () {
-        source = escape(source);
-        dest = escape(dest);
-        core.debug(`cp ${source} ${dest}`);
-        return yield io.cp(source, dest, options);
+        try {
+            let output = '';
+            switch (opts.os) {
+                case 'linux': {
+                    output = yield patchelf('--print-needed', binPath);
+                    break;
+                }
+                case 'macos': {
+                    output = yield otool('-L', binPath);
+                    break;
+                }
+                case 'windows': {
+                    output = yield dumpbin('/imports', binPath);
+                    break;
+                }
+            }
+            core.info(`Needed libraries:${os.EOL}${output}`);
+        }
+        catch (error) {
+            core.debug((0, ensure_error_1.default)(error).message);
+        }
     });
 }
-exports.cp = cp;
-function cpR(source, dest, options) {
+exports.printNeeded = printNeeded;
+function patchelf(...args) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield cp(source, dest, Object.assign(Object.assign({}, options), { recursive: true }));
+        return yield exec.getOutput('patchelf', args);
     });
 }
-exports.cpR = cpR;
-function mv(source, dest, options) {
+exports.patchelf = patchelf;
+function otool(...args) {
     return __awaiter(this, void 0, void 0, function* () {
-        source = escape(source);
-        dest = escape(dest);
-        core.debug(`mv ${source} ${dest}`);
-        return yield io.mv(source, dest, options);
+        return yield exec.getOutput('otool', args);
     });
 }
-exports.mv = mv;
-function mkdirP(dir) {
+exports.otool = otool;
+function installNameTool(...args) {
     return __awaiter(this, void 0, void 0, function* () {
-        dir = escape(dir);
-        core.debug(`mkdir -p ${dir}`);
-        return yield io.mkdirP(dir);
+        return yield exec.getOutput('install_name_tool', args);
     });
 }
-exports.mkdirP = mkdirP;
-function rmRF(path) {
+exports.installNameTool = installNameTool;
+function dumpbin(...args) {
     return __awaiter(this, void 0, void 0, function* () {
-        path = escape(path);
-        core.debug(`rm -rf ${path}`);
-        return yield io.rmRF(path);
+        return yield exec.getOutput('dumpbin', args);
     });
 }
-exports.rmRF = rmRF;
-function lsR(path) {
-    return __awaiter(this, void 0, void 0, function* () {
-        path = escape(path);
-        core.debug(`ls -R ${path}`);
-        return yield exec.getOutput('ls', ['-R', path]);
-    });
-}
-exports.lsR = lsR;
-function escape(filePath) {
-    switch (opts.os) {
-        case 'macos':
-        case 'linux':
-            return filePath.replace(/(?<!\\) /g, '\\ ');
-        case 'windows':
-        default:
-            return filePath;
+exports.dumpbin = dumpbin;
+
+
+/***/ }),
+
+/***/ 1311:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
     }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.xattr = exports.chmod = void 0;
+const exec = __importStar(__nccwpck_require__(4369));
+const opts = __importStar(__nccwpck_require__(1352));
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
+function chmod(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        (0, node_assert_1.default)(opts.os !== 'windows', 'MSYS2 does not support chmod');
+        return yield exec.getOutput('chmod', args);
+    });
 }
+exports.chmod = chmod;
+function xattr(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield exec.getOutput('xattr', args);
+    });
+}
+exports.xattr = xattr;
+
+
+/***/ }),
+
+/***/ 7066:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.addPkgConfigPath = exports.pkgConfigGetInfo = exports.pkgConfig = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const os = __importStar(__nccwpck_require__(612));
+const exec = __importStar(__nccwpck_require__(4369));
+const opts = __importStar(__nccwpck_require__(1352));
+function pkgConfig(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield exec.getOutput('pkg-config', args);
+    });
+}
+exports.pkgConfig = pkgConfig;
+function pkgConfigGetList(name, listName) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return (yield pkgConfig(`--print-${listName}`, name))
+            .split(os.EOL)
+            .map(variableName => variableName.trim())
+            .filter(variableName => variableName !== '');
+    });
+}
+function pkgConfigGetInfo(name, seen) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (seen === null || seen === void 0 ? void 0 : seen.includes(name)) {
+            throw Error(`Cyclic dependency: ${seen.join(', ')}`);
+        }
+        else {
+            const variables = {};
+            for (const vn of yield pkgConfigGetList(name, 'variables'))
+                variables[vn] = yield pkgConfig('--variable', vn, name);
+            const requires = [];
+            for (const rn of yield pkgConfigGetList(name, 'requires'))
+                requires.push(yield pkgConfigGetInfo(rn, [...(seen !== null && seen !== void 0 ? seen : []), name]));
+            return { name, variables, requires };
+        }
+    });
+}
+exports.pkgConfigGetInfo = pkgConfigGetInfo;
+function addPkgConfigPath(pkgConfigDir) {
+    var _a;
+    const pathSep = opts.os === 'windows' ? ';' : ':';
+    const pkgConfigPath = (_a = process.env.PKG_CONFIG_PATH) !== null && _a !== void 0 ? _a : '';
+    const pkgConfigDirs = pkgConfigPath.split(pathSep).filter(dir => dir !== '');
+    core.exportVariable('PKG_CONFIG_PATH', [pkgConfigDir, ...pkgConfigDirs].join(pathSep));
+}
+exports.addPkgConfigPath = addPkgConfigPath;
 
 
 /***/ }),

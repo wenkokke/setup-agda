@@ -116,3 +116,16 @@ export async function agdaTest(
     })
   }
 }
+
+export async function installAgda(installDir: string): Promise<void> {
+  const dataDir = path.join(installDir, 'data')
+  core.info(`Set Agda_datadir to ${dataDir}`)
+  core.exportVariable('Agda_datadir', dataDir)
+  core.setOutput('agda-data-path', dataDir)
+  const binDir = path.join(installDir, 'bin')
+  core.info(`Add ${binDir} to PATH`)
+  core.addPath(binDir)
+  core.setOutput('agda-path', binDir)
+  core.setOutput('agda-exe', path.join(binDir, agdaBinName))
+  core.setOutput('agda-mode-exe', path.join(binDir, agdaModeBinName))
+}

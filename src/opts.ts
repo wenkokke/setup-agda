@@ -1,7 +1,6 @@
 import * as core from '@actions/core'
 import * as yaml from 'js-yaml'
 import * as fs from 'node:fs'
-import * as http from 'node:http'
 import {homedir, EOL} from 'node:os'
 import * as Mustache from 'mustache'
 import * as path from 'node:path'
@@ -9,11 +8,14 @@ import * as process from 'node:process'
 import * as semver from 'semver'
 import distAgdaStdLibInfo from './package-info/Agda.stdlib.json'
 import distHaskellInfo from './package-info/Haskell.json'
-import distPackageIndex from './package-info/index.json'
 import distPackageInfoCache from './package-info/Agda.json'
+import distPackageIndex from './package-info/index.json'
 import * as simver from './util/simver'
+import * as hackage from './util/hackage'
 import ensureError from 'ensure-error'
 import assert from 'node:assert'
+
+export const packageInfoCache = distPackageInfoCache as hackage.PackageInfoCache
 
 // Setup options for haskell/actions/setup:
 
@@ -64,7 +66,7 @@ export interface BuildOptions extends SetupAgdaInputs {
   'extra-include-dirs': string[]
   'extra-lib-dirs': string[]
   'icu-version'?: string
-  'package-info-cache'?: PackageInfoCache
+  'package-info-cache'?: hackage.PackageInfoCache
   'upx-version'?: string
 }
 
@@ -143,34 +145,6 @@ export function supportsUPX(): boolean {
 }
 
 // Package info for Hackage:
-
-export type PackageStatus = 'normal' | 'deprecated'
-
-export type PackageInfo = Record<string, PackageStatus | undefined>
-
-export interface PackageInfoCache {
-  packageInfo: PackageInfo
-  lastModified: string
-}
-
-export interface PackageInfoOptions {
-  fetchPackageInfo?: boolean
-  packageInfoCache?: PackageInfoCache
-  packageInfoHeaders?: http.OutgoingHttpHeaders
-  returnCacheOnError?: boolean
-}
-
-export interface PackageSourceOptions extends PackageInfoOptions {
-  packageVersion?: 'latest' | string
-  archivePath?: string
-  downloadAuth?: string
-  downloadHeaders?: http.OutgoingHttpHeaders
-  extractToPath?: string
-  tarFlags?: string[]
-  validateVersion?: boolean
-}
-
-export const packageInfoCache = distPackageInfoCache as PackageInfoCache
 
 // Helpers for finding binary distributions:
 

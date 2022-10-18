@@ -1,7 +1,6 @@
 import * as artifact from '@actions/artifact'
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
-import * as tc from '@actions/tool-cache'
 import ensureError from 'ensure-error'
 import * as Mustache from 'mustache'
 import * as os from 'node:os'
@@ -12,27 +11,7 @@ import * as icu from '../setup-icu'
 import setupUpx from '../setup-upx'
 import * as util from '../util'
 
-export async function download(
-  options: opts.BuildOptions
-): Promise<string | null> {
-  // Get the name for the distribution:
-  try {
-    const bdistUrl = opts.findPkgUrl('agda', options['agda-version'])
-    core.info(`Found package for Agda ${options['agda-version']}`)
-    try {
-      core.info(`Downloading package from ${bdistUrl}`)
-      return await tc.downloadTool(bdistUrl)
-    } catch (error) {
-      core.warning(`Failed to download package: ${ensureError(error).message}`)
-      return null
-    }
-  } catch (error) {
-    core.warning(ensureError(error))
-    return null
-  }
-}
-
-export async function upload(
+export default async function uploadBdist(
   installDir: string,
   options: opts.BuildOptions
 ): Promise<string> {
@@ -105,11 +84,11 @@ export async function upload(
 
 async function compressBin(upxExe: string, binPath: string): Promise<void> {
   // Print the needed libraries before compressing:
-  await printNeededLibs(binPath)
+  await util.printNeeded(binPath)
   // Compress with UPX:
   await util.getOutput(upxExe, ['--best', binPath])
   // Print the needed libraries after compressing:
-  await printNeededLibs(binPath)
+  await util.printNeeded(binPath)
 }
 
 export function renderName(
@@ -129,29 +108,4 @@ export function renderName(
     platform: os.platform(),
     release: os.release()
   })
-}
-
-// Helpers for patching executables
-
-async function printNeededLibs(binPath: string): Promise<void> {
-  try {
-    let output = ''
-    switch (opts.os) {
-      case 'linux': {
-        output = await util.patchelf('--print-needed', binPath)
-        break
-      }
-      case 'macos': {
-        output = await util.otool('-L', binPath)
-        break
-      }
-      case 'windows': {
-        output = await util.dumpbin('/imports', binPath)
-        break
-      }
-    }
-    core.info(`Needed libraries:${os.EOL}${output}`)
-  } catch (error) {
-    core.debug(ensureError(error).message)
-  }
 }

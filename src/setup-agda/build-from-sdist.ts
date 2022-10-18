@@ -4,9 +4,25 @@ import * as opts from '../opts'
 import setupHaskell from '../setup-haskell'
 import * as icu from '../setup-icu'
 import * as util from '../util'
-import * as bdist from './bdist'
-import * as cabal from './build-from-source/cabal'
-import * as stack from './build-from-source/stack'
+import * as cabal from './build-from-sdist/cabal'
+import * as stack from './build-from-sdist/stack'
+import uploadBdist from './upload-bdist'
+
+interface BuildTool {
+  name: string
+  build: (
+    sourceDir: string,
+    installDir: string,
+    options: opts.BuildOptions
+  ) => Promise<void>
+  supportedGhcVersions: (sourceDir: string) => Promise<string[]>
+}
+
+interface BuildInfo {
+  buildTool: BuildTool
+  sourceDir: string
+  requireSetup: boolean
+}
 
 export default async function buildFromSource(
   options: opts.BuildOptions
@@ -94,25 +110,9 @@ export default async function buildFromSource(
   // 7. If 'bdist-upload' is specified, upload as a package:
   if (options['bdist-upload']) {
     await core.group('📦 Upload package', async () => {
-      const bdistName = await bdist.upload(agdaDir, options)
+      const bdistName = await uploadBdist(agdaDir, options)
       core.info(`Uploaded package as '${bdistName}'`)
     })
   }
   return agdaDir
-}
-
-interface BuildTool {
-  name: string
-  build: (
-    sourceDir: string,
-    installDir: string,
-    options: opts.BuildOptions
-  ) => Promise<void>
-  supportedGhcVersions: (sourceDir: string) => Promise<string[]>
-}
-
-interface BuildInfo {
-  buildTool: BuildTool
-  sourceDir: string
-  requireSetup: boolean
 }

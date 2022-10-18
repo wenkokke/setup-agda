@@ -5,8 +5,37 @@ import assert from 'node:assert'
 import * as http from 'node:http'
 import * as os from 'node:os'
 import * as path from 'node:path'
-import * as opts from '../opts'
 import * as simver from './simver'
+
+// Types:
+
+export type PackageStatus = 'normal' | 'deprecated'
+
+export type PackageInfo = Record<string, PackageStatus | undefined>
+
+export interface PackageInfoCache {
+  packageInfo: PackageInfo
+  lastModified: string
+}
+
+export interface PackageInfoOptions {
+  fetchPackageInfo?: boolean
+  packageInfoCache?: PackageInfoCache
+  packageInfoHeaders?: http.OutgoingHttpHeaders
+  returnCacheOnError?: boolean
+}
+
+export interface PackageSourceOptions extends PackageInfoOptions {
+  packageVersion?: 'latest' | string
+  archivePath?: string
+  downloadAuth?: string
+  downloadHeaders?: http.OutgoingHttpHeaders
+  extractToPath?: string
+  tarFlags?: string[]
+  validateVersion?: boolean
+}
+
+// Functions for getting package information:
 
 function packageInfoUrl(packageName: string): string {
   return `https://hackage.haskell.org/package/${packageName}.json`
@@ -18,8 +47,8 @@ function packageUrl(packageName: string, packageVersion: string): string {
 
 export async function getPackageInfo(
   packageName: string,
-  options?: opts.PackageInfoOptions
-): Promise<opts.PackageInfoCache> {
+  options?: PackageInfoOptions
+): Promise<PackageInfoCache> {
   const fetchPackageInfo = options?.fetchPackageInfo ?? true
   const returnCacheOnError = options?.returnCacheOnError ?? true
   const packageInfoCache = options?.packageInfoCache
@@ -45,7 +74,7 @@ export async function getPackageInfo(
     )
     if (resp.message.statusCode === 200) {
       const respBody = await resp.readBody()
-      const packageInfo = JSON.parse(respBody) as opts.PackageInfo
+      const packageInfo = JSON.parse(respBody) as PackageInfo
       return {
         packageInfo,
         lastModified: new Date(Date.now()).toUTCString()
@@ -72,7 +101,7 @@ export async function getPackageInfo(
 
 async function getPackageLatestVersion(
   packageName: string,
-  options?: opts.PackageInfoOptions
+  options?: PackageInfoOptions
 ): Promise<string> {
   const updatedPackageInfo = await getPackageInfo(packageName, options)
   const versions = Object.keys(updatedPackageInfo.packageInfo)
@@ -91,7 +120,7 @@ async function getPackageLatestVersion(
 async function validatePackageVersion(
   packageName: string,
   packageVersion: string,
-  options?: opts.PackageInfoOptions
+  options?: PackageInfoOptions
 ): Promise<string> {
   const packageInfo = await getPackageInfo(packageName, options)
   const packageVersionStatus = packageInfo.packageInfo[packageVersion]
@@ -111,7 +140,7 @@ async function validatePackageVersion(
 export async function resolvePackageVersion(
   packageName: string,
   packageVersion: string,
-  options?: opts.PackageInfoOptions
+  options?: PackageInfoOptions
 ): Promise<string> {
   if (packageVersion === 'latest') {
     return await getPackageLatestVersion(packageName, options)
@@ -122,7 +151,7 @@ export async function resolvePackageVersion(
 
 export async function getPackageSource(
   packageName: string,
-  options?: opts.PackageSourceOptions
+  options?: PackageSourceOptions
 ): Promise<{packageVersion: string; packageDir: string}> {
   let packageVersion = options?.packageVersion ?? 'latest'
   const validateVersion = options?.validateVersion ?? true

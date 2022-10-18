@@ -1,45 +1,17 @@
 import * as core from '@actions/core'
 import assert from 'node:assert'
-import * as path from 'node:path'
 import * as opts from './opts'
-import * as agda from './util/agda'
 import * as hackage from './util/hackage'
 
-export {
-  agdaBinName,
-  agdaBinNames,
-  agdaModeBinName,
-  AgdaOptions,
-  agdaTest
-} from './util/agda'
-
+export * from './util/agda'
 export * from './util/exec'
-
-export {
-  ghc,
-  ghcGetVersion,
-  ghcMaybeGetVersion,
-  cabal,
-  cabalGetVersion,
-  cabalMaybeGetVersion,
-  stack,
-  stackGetVersion,
-  stackGetLocalBin
-} from './util/haskell'
-
-export * from './util/io'
-
+export * from './util/haskell'
+export * from './util/homebrew'
+export * from './util/pacman'
+export * from './util/patch-binary'
+export * from './util/patch-permissions'
+export * from './util/pkg-config'
 export * as simver from './util/simver'
-
-export function addPkgConfigPath(pkgConfigDir: string): void {
-  const pathSep = opts.os === 'windows' ? ';' : ':'
-  const pkgConfigPath = process.env.PKG_CONFIG_PATH ?? ''
-  const pkgConfigDirs = pkgConfigPath.split(pathSep).filter(dir => dir !== '')
-  core.exportVariable(
-    'PKG_CONFIG_PATH',
-    [pkgConfigDir, ...pkgConfigDirs].join(pathSep)
-  )
-}
 
 // Agda utilities
 
@@ -47,13 +19,13 @@ export async function resolveAgdaVersion(
   options: opts.BuildOptions
 ): Promise<void> {
   // Ensure that we cache the package info:
-  await cachePackageInfo(options)
+  await cacheAgdaPackageInfo(options)
 
   // Resolve the given version against Hackage's package versions:
   const agdaVersion = await hackage.resolvePackageVersion(
     'Agda',
     options['agda-version'],
-    packageInfoOptions(options)
+    agdaPackageInfoOptions(options)
   )
   if (options['agda-version'] !== agdaVersion) {
     core.info(
@@ -74,12 +46,12 @@ export async function getAgdaSource(
   )
 
   // Ensure that we cache the package info:
-  await cachePackageInfo(options)
+  await cacheAgdaPackageInfo(options)
 
   // Get the package source:
   const {packageVersion, packageDir} = await hackage.getPackageSource('Agda', {
     packageVersion: options['agda-version'],
-    ...packageInfoOptions(options)
+    ...agdaPackageInfoOptions(options)
   })
   assert(
     options['agda-version'] === packageVersion,
@@ -88,24 +60,9 @@ export async function getAgdaSource(
   return packageDir
 }
 
-export async function setupAgdaEnv(installDir: string): Promise<void> {
-  const dataDir = path.join(installDir, 'data')
-  core.info(`Set Agda_datadir to ${dataDir}`)
-  core.exportVariable('Agda_datadir', dataDir)
-  core.setOutput('agda-data-path', dataDir)
-  const binDir = path.join(installDir, 'bin')
-  core.info(`Add ${binDir} to PATH`)
-  core.addPath(binDir)
-  core.setOutput('agda-path', binDir)
-  core.setOutput('agda-exe', path.join(binDir, agda.agdaBinName))
-  core.setOutput('agda-mode-exe', path.join(binDir, agda.agdaModeBinName))
-}
-
-// Helpers for caching package info
-
-function packageInfoOptions(
+function agdaPackageInfoOptions(
   options: opts.BuildOptions
-): opts.PackageInfoOptions {
+): hackage.PackageInfoOptions {
   if (options['package-info-cache'] !== undefined) {
     return {
       fetchPackageInfo: false,
@@ -118,7 +75,7 @@ function packageInfoOptions(
   }
 }
 
-async function cachePackageInfo(options: opts.BuildOptions): Promise<void> {
+async function cacheAgdaPackageInfo(options: opts.BuildOptions): Promise<void> {
   if (options['package-info-cache'] === undefined) {
     options['package-info-cache'] = await hackage.getPackageInfo('Agda', {
       packageInfoCache: opts.packageInfoCache

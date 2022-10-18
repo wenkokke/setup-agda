@@ -1,6 +1,5 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
-import * as io from '../../util/io'
 import * as path from 'node:path'
 import * as os from 'node:os'
 import * as semver from 'semver'
@@ -16,7 +15,7 @@ export async function build(
   options: opts.BuildOptions
 ): Promise<void> {
   // Configure, Build, and Install:
-  await io.mkdirP(path.join(installDir, 'bin'))
+  await util.mkdirP(path.join(installDir, 'bin'))
   await util.stack(['build', ...buildFlags(options), '--copy-bins'], {
     cwd: sourceDir
   })
@@ -25,12 +24,16 @@ export async function build(
     pick(options, ['ghc-version'])
   )
   const installBinDir = path.join(installDir, 'bin')
-  await io.mkdirP(installBinDir)
+  await util.mkdirP(installBinDir)
   for (const binName of util.agdaBinNames) {
-    await io.mv(
-      path.join(localBinDir, binName),
-      path.join(installBinDir, binName)
-    )
+    const localBinPath = path.join(localBinDir, binName)
+    const installBinPath = path.join(installBinDir, binName)
+    await util.cp(localBinPath, installBinPath)
+    try {
+      await util.rmRF(localBinPath)
+    } catch (error) {
+      core.debug(`Could not clean up executable at ${localBinPath}`)
+    }
   }
 }
 

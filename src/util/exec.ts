@@ -1,7 +1,8 @@
 import * as exec from '@actions/exec'
 import * as os from 'node:os'
-
-// Helpers for system calls
+import * as core from '@actions/core'
+import * as io from '@actions/io'
+import * as opts from '../opts'
 
 export {ExecOptions} from '@actions/exec'
 
@@ -32,7 +33,73 @@ export async function getOutput(
   }
 }
 
-// Helpers for getting versions
+// Wrappers for filesystem functions
+
+export {CopyOptions, MoveOptions} from '@actions/io'
+
+export async function cp(
+  source: string,
+  dest: string,
+  options?: io.CopyOptions
+): Promise<void> {
+  source = escape(source)
+  dest = escape(dest)
+  core.debug(`cp ${source} ${dest}`)
+  return await io.cp(source, dest, options)
+}
+
+export async function cpR(
+  source: string,
+  dest: string,
+  options?: io.CopyOptions
+): Promise<void> {
+  return await cp(source, dest, {
+    ...options,
+    recursive: true
+  })
+}
+
+export async function mv(
+  source: string,
+  dest: string,
+  options?: io.MoveOptions
+): Promise<void> {
+  source = escape(source)
+  dest = escape(dest)
+  core.debug(`mv ${source} ${dest}`)
+  return await io.mv(source, dest, options)
+}
+
+export async function mkdirP(dir: string): Promise<void> {
+  dir = escape(dir)
+  core.debug(`mkdir -p ${dir}`)
+  return await io.mkdirP(dir)
+}
+
+export async function rmRF(path: string): Promise<void> {
+  path = escape(path)
+  core.debug(`rm -rf ${path}`)
+  return await io.rmRF(path)
+}
+
+export async function lsR(path: string): Promise<string> {
+  path = escape(path)
+  core.debug(`ls -R ${path}`)
+  return await getOutput('ls', ['-R', path])
+}
+
+function escape(filePath: string): string {
+  switch (opts.os) {
+    case 'macos':
+    case 'linux':
+      return filePath.replace(/(?<!\\) /g, '\\ ')
+    case 'windows':
+    default:
+      return filePath
+  }
+}
+
+// Helper for getting the version number from an executable
 
 export interface VersionOptions extends exec.ExecOptions {
   versionFlag?: string
@@ -49,93 +116,4 @@ export async function getVersion(
   return options?.parseOutput !== undefined
     ? options?.parseOutput(progOutput)
     : progOutput
-}
-
-// System utilities
-
-export async function brew(...args: string[]): Promise<string> {
-  return await getOutput('brew', args)
-}
-
-export async function brewGetVersion(
-  formula: string
-): Promise<string | undefined> {
-  const formulaVersionRegExp = new RegExp(`${formula} (?<version>[\\d._]+)`)
-  const formulaVersions = await brew('list', '--formula', '--versions')
-  return formulaVersions.match(formulaVersionRegExp)?.groups?.version?.trim()
-}
-
-export async function chmod(...args: string[]): Promise<string> {
-  return await getOutput('chmod', args)
-}
-
-export async function dumpbin(...args: string[]): Promise<string> {
-  return await getOutput('dumpbin', args)
-}
-
-export async function installNameTool(...args: string[]): Promise<string> {
-  return await getOutput('install_name_tool', args)
-}
-
-export async function otool(...args: string[]): Promise<string> {
-  return await getOutput('otool', args)
-}
-
-export async function pacman(...args: string[]): Promise<string> {
-  return await getOutput('pacman', args)
-}
-
-export async function pacmanGetVersion(
-  pkg: string
-): Promise<string | undefined> {
-  const pkgInfo = await pacman('--noconfirm', '-Qs', pkg)
-  const pkgVersionRegExp = /(?<version>\d[\d.]+\d)/
-  const pkgVersion = pkgInfo.match(pkgVersionRegExp)?.groups?.version?.trim()
-  if (pkgVersion !== undefined) return pkgVersion
-  else throw Error(`Could not determine version of ${pkg}`)
-}
-
-export async function patchelf(...args: string[]): Promise<string> {
-  return await getOutput('patchelf', args)
-}
-
-export async function pkgConfig(...args: string[]): Promise<string> {
-  return await getOutput('pkg-config', args)
-}
-
-export interface PkgConfig {
-  name: string
-  variables: Partial<Record<string, string>>
-  requires: PkgConfig[]
-}
-
-async function pkgConfigGetList(
-  name: string,
-  listName: string
-): Promise<string[]> {
-  return (await pkgConfig(`--print-${listName}`, name))
-    .split(os.EOL)
-    .map(variableName => variableName.trim())
-    .filter(variableName => variableName !== '')
-}
-
-export async function pkgConfigGetInfo(
-  name: string,
-  seen?: string[]
-): Promise<PkgConfig> {
-  if (seen?.includes(name)) {
-    throw Error(`Cyclic dependency: ${seen.join(', ')}`)
-  } else {
-    const variables: Partial<Record<string, string>> = {}
-    for (const vn of await pkgConfigGetList(name, 'variables'))
-      variables[vn] = await pkgConfig('--variable', vn, name)
-    const requires: PkgConfig[] = []
-    for (const rn of await pkgConfigGetList(name, 'requires'))
-      requires.push(await pkgConfigGetInfo(rn, [...(seen ?? []), name]))
-    return {name, variables, requires}
-  }
-}
-
-export async function xattr(...args: string[]): Promise<string> {
-  return await getOutput('xattr', args)
 }
