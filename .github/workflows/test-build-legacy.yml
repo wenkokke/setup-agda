@@ -5,15 +5,15 @@ on:
 
 jobs:
   test-build-legacy-stack:
-    name: Build Agda (latest) on ${{ matrix.os }} with Stack
+    name: Build Agda (${{ matrix.agda-version }}) on ${{ matrix.os }} with Stack
     runs-on: ${{ matrix.os }}
     continue-on-error: true
     steps:
       - uses: actions/checkout@v3
-      - name: Build Agda (latest)
+      - name: Build Agda (${{ matrix.agda-version }})
         uses: ./
         with:
-          agda-version: 'latest'
+          agda-version: ${{ matrix.agda-version }}
           bdist-upload: true
           bdist-name: |
             agda-{{{agda-version}}}
