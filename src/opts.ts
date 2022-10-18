@@ -301,8 +301,6 @@ function getDefault(
 function validateOptions(options: BuildOptions): void {
   if (options['agda-version'] === 'nightly')
     throw Error('Value "nightly" for input "agda-version" is unupported')
-  if (options['ghc-version'] !== 'latest')
-    throw Error('Input "ghc-version" is unsupported. Use "ghc-version-range"')
   if (!semver.validRange(options['ghc-version-range']))
     throw Error('Input "ghc-version-range" is not a valid version range')
   // If contradictory options are specified, throw an error:
@@ -347,6 +345,9 @@ export function resolveGhcVersion(
   core.info(
     [
       'Resolving GHC version:',
+      options['ghc-version'] === 'latest'
+        ? `- selecting latest supported GHC version`
+        : `- GHC version must be exactly ${options['ghc-version']}`,
       `- GHC version must match ${options['ghc-version-range']}`,
       options['ghc-version-match-exact']
         ? '- GHC version must match exactly'
@@ -371,6 +372,28 @@ export function resolveGhcVersion(
     vs.some(v2 => match(v1, v2))
   const canBuildAgda = (v: string): boolean =>
     someMatch(versionsThatCanBuildAgda, v)
+  const canBeSetUp = (v: string): boolean =>
+    someMatch(versionsThatCanBeSetUp, v)
+
+  // If exact version was specified, emit warnings:
+  if (options['ghc-version'] !== 'latest') {
+    // Check if Agda version supports specified version:
+    if (!canBuildAgda(options['ghc-version']))
+      core.warning(
+        `User-specified GHC ${options['ghc-version']} is not supported by Agda ${options['agda-version']}`
+      )
+    // Check if haskell/actions/setup supports specified version:
+    if (
+      !canBeSetUp(options['ghc-version']) &&
+      (currentVersion === null ||
+        !match(options['ghc-version'], currentVersion))
+    )
+      core.warning(
+        `User-specified GHC ${options['ghc-version']} is not supported by haskell/actions/setup`
+      )
+    core.info(`Selecting GHC ${options['ghc-version']}: user-specified`)
+    return options['ghc-version']
+  }
 
   // Check if the currently installed version matches:
   if (currentVersion !== null && canBuildAgda(currentVersion)) {
@@ -417,6 +440,7 @@ export function resolveGhcVersion(
       .map(v => `'${v}'`)
       .join(', ')}], '*') returned null`
   )
+  core.info(`Selecting GHC ${selected}: latest supported version`)
   return selected
 }
 
