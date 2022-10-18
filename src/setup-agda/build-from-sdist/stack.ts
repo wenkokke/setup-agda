@@ -70,7 +70,7 @@ function buildFlags(sourceDir: string, options: opts.BuildOptions): string[] {
     opts.supportsClusterCounting(options)
   ) {
     flags.push('--flag=Agda:enable-cluster-counting')
-    fixTextIcuDependency(sourceDir, stackYamlName, options)
+    fixDependencies(sourceDir, stackYamlName, options)
   }
   // If supported, pass Agda flag --optimise-heavily
   if (opts.supportsOptimiseHeavily(options)) {
@@ -118,7 +118,7 @@ export async function supportedGhcVersions(
   }
 }
 
-function fixTextIcuDependency(
+function fixDependencies(
   sourceDir: string,
   stackYamlName: string,
   options: opts.BuildOptions
@@ -134,14 +134,14 @@ function fixTextIcuDependency(
     ) as StackYaml
     core.info(`read ${stackYamlName}: ${JSON.stringify(stackYaml)}`)
     // Add 'text-icu-0.7.1.0' to extra dependencies:
-    if (stackYaml?.['extra-deps'] === undefined) stackYaml['extra-deps'] = []
+    stackYaml['extra-deps'] = stackYaml?.['extra-deps'] ?? []
     stackYaml['extra-deps'].push('text-icu-0.7.1.0')
     core.info(`${stackYamlName}: add 'text-icu-0.7.1.0' to 'extra-deps'`)
     // Pass 'text-icu>=0.7.1.0' constraint to Cabal:
-    if (stackYaml?.['configure-options'] === undefined)
-      stackYaml['configure-options'] = {}
-    if (stackYaml['configure-options']?.['Agda'] === undefined)
-      stackYaml['configure-options']['Agda'] = []
+    stackYaml['configure-options'] = stackYaml?.['configure-options'] ?? {}
+    stackYaml['configure-options']['Agda'] =
+      stackYaml['configure-options']?.['Agda'] ?? []
+    stackYaml['configure-options']['Agda'].push('--allow-newer=text-icu')
     stackYaml['configure-options']['Agda'].push(
       '--constraint=text-icu>=0.7.1.0'
     )

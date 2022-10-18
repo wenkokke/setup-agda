@@ -56,12 +56,15 @@ function buildFlags(options: opts.BuildOptions): string[] {
     //   Agda versions 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
     //   versions 0.7.0.0 - 0.7.1.0 do not compile with icu68+:
     if (util.simver.lte(options['agda-version'], '2.6.2')) {
+      flags.push('--allow-newer=text-icu')
       flags.push('--constraint=text-icu>=0.7.1.0')
     }
   }
   // Fix EdisonCore dependency for Agda 2.5.2:
-  if (util.simver.eq(options['agda-version'], '2.5.2'))
+  if (util.simver.eq(options['agda-version'], '2.5.2')) {
+    flags.push('--allow-newer=EdisonCore')
     flags.push('--constraint=EdisonCore==1.3.3')
+  }
   // If supported, pass Agda flag --optimise-heavily
   if (opts.supportsOptimiseHeavily(options)) {
     flags.push('--flags=+optimise-heavily')

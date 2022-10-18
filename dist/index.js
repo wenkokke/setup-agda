@@ -877,12 +877,15 @@ function buildFlags(options) {
         //   Agda versions 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
         //   versions 0.7.0.0 - 0.7.1.0 do not compile with icu68+:
         if (util.simver.lte(options['agda-version'], '2.6.2')) {
+            flags.push('--allow-newer=text-icu');
             flags.push('--constraint=text-icu>=0.7.1.0');
         }
     }
     // Fix EdisonCore dependency for Agda 2.5.2:
-    if (util.simver.eq(options['agda-version'], '2.5.2'))
+    if (util.simver.eq(options['agda-version'], '2.5.2')) {
+        flags.push('--allow-newer=EdisonCore');
         flags.push('--constraint=EdisonCore==1.3.3');
+    }
     // If supported, pass Agda flag --optimise-heavily
     if (opts.supportsOptimiseHeavily(options)) {
         flags.push('--flags=+optimise-heavily');
@@ -1049,7 +1052,7 @@ function buildFlags(sourceDir, options) {
     if (!options['force-no-cluster-counting'] &&
         opts.supportsClusterCounting(options)) {
         flags.push('--flag=Agda:enable-cluster-counting');
-        fixTextIcuDependency(sourceDir, stackYamlName, options);
+        fixDependencies(sourceDir, stackYamlName, options);
     }
     // If supported, pass Agda flag --optimise-heavily
     if (opts.supportsOptimiseHeavily(options)) {
@@ -1092,8 +1095,8 @@ function supportedGhcVersions(sourceDir) {
     });
 }
 exports.supportedGhcVersions = supportedGhcVersions;
-function fixTextIcuDependency(sourceDir, stackYamlName, options) {
-    var _a;
+function fixDependencies(sourceDir, stackYamlName, options) {
+    var _a, _b, _c, _d;
     // NOTE:
     //   Agda versions 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
     //   versions 0.7.0.0 - 0.7.1.0 do not compile with icu68+:
@@ -1103,15 +1106,14 @@ function fixTextIcuDependency(sourceDir, stackYamlName, options) {
         const stackYaml = yaml.load(fs.readFileSync(stackYamlPath, 'utf-8'));
         core.info(`read ${stackYamlName}: ${JSON.stringify(stackYaml)}`);
         // Add 'text-icu-0.7.1.0' to extra dependencies:
-        if ((stackYaml === null || stackYaml === void 0 ? void 0 : stackYaml['extra-deps']) === undefined)
-            stackYaml['extra-deps'] = [];
+        stackYaml['extra-deps'] = (_a = stackYaml === null || stackYaml === void 0 ? void 0 : stackYaml['extra-deps']) !== null && _a !== void 0 ? _a : [];
         stackYaml['extra-deps'].push('text-icu-0.7.1.0');
         core.info(`${stackYamlName}: add 'text-icu-0.7.1.0' to 'extra-deps'`);
         // Pass 'text-icu>=0.7.1.0' constraint to Cabal:
-        if ((stackYaml === null || stackYaml === void 0 ? void 0 : stackYaml['configure-options']) === undefined)
-            stackYaml['configure-options'] = {};
-        if (((_a = stackYaml['configure-options']) === null || _a === void 0 ? void 0 : _a['Agda']) === undefined)
-            stackYaml['configure-options']['Agda'] = [];
+        stackYaml['configure-options'] = (_b = stackYaml === null || stackYaml === void 0 ? void 0 : stackYaml['configure-options']) !== null && _b !== void 0 ? _b : {};
+        stackYaml['configure-options']['Agda'] =
+            (_d = (_c = stackYaml['configure-options']) === null || _c === void 0 ? void 0 : _c['Agda']) !== null && _d !== void 0 ? _d : [];
+        stackYaml['configure-options']['Agda'].push('--allow-newer=text-icu');
         stackYaml['configure-options']['Agda'].push('--constraint=text-icu>=0.7.1.0');
         core.info(`${stackYamlName}: add '--constraint=text-icu>=0.7.1.0' to 'configure-options.Agda'`);
         core.info(`write ${stackYamlName}: ${JSON.stringify(stackYaml)}`);
@@ -31177,7 +31179,7 @@ function ensureError(input) {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"agda-2.6.2.2-x64-darwin":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-macos-11-icu71.1-ghc9.2.2-cabal3.6.2.0.zip","agda-2.6.2.2-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04-icu66.1-ghc9.2.2-cabal3.6.2.0.zip","agda-2.6.2.2-x64-win32":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022-icu71.1-ghc9.2.2-cabal3.6.2.0.zip","agda-2.6.2.1-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-ubuntu-20.04-icu66.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip","agda-2.6.2-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-ubuntu-20.04-icu66.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip","agda-2.6.1.3-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-20.04-icu66.1-ghc8.10.3-cabal2.4.1.0-stack2.7.5.zip","agda-2.6.0.1-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-20.04-icu66.1-ghc8.6.5-cabal2.4.1.0-stack2.7.5.zip","agda-2.5.4.2-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-ubuntu-20.04-icu66.1-ghc8.4.4-cabal2.4.1.0-stack2.7.5.zip"}');
+module.exports = JSON.parse('{"agda-2.6.2.2-x64-darwin":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-macos-11-icu71.1-ghc9.2.2-cabal3.6.2.0.zip","agda-2.6.2.2-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04-icu66.1-ghc9.2.2-cabal3.6.2.0.zip","agda-2.6.2.2-x64-win32":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022-icu71.1-ghc9.2.2-cabal3.6.2.0.zip","agda-2.6.2.1-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-ubuntu-20.04-icu66.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip","agda-2.6.2-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-ubuntu-20.04-icu66.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip","agda-2.6.1.3-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-20.04-icu66.1-ghc8.10.3-cabal2.4.1.0-stack2.7.5.zip","agda-2.6.0.1-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-20.04-icu66.1-ghc8.6.5-cabal2.4.1.0-stack2.7.5.zip","agda-2.5.4.2-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-ubuntu-20.04-icu66.1-ghc8.4.4-cabal2.4.1.0-stack2.7.5.zip","agda-2.6.2.1-x64-darwin":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-macos-11-icu71.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip","agda-2.6.2-x64-darwin":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-macos-11-icu71.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip","agda-2.6.1.3-x64-darwin":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-macos-11-icu71.1-ghc8.10.3-cabal2.4.1.0-stack2.7.5.zip","agda-2.6.0.1-x64-darwin":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-macos-11-icu71.1-ghc8.6.5-cabal2.4.1.0-stack2.7.5.zip","agda-2.5.4.2-x64-darwin":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-macos-11-icu71.1-ghc8.4.4-cabal2.4.1.0-stack2.7.5.zip"}');
 
 /***/ }),
 
