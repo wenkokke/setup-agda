@@ -287,7 +287,7 @@ function validateOptions(options) {
     }
 }
 // Helper for comparing GHC versions respecting 'ghc-version-match-exact'
-function ghcVersionMatch(options, v1, v2) {
+function ghcVersionMatch(v1, v2, options) {
     if (shouldIgnoreGhcPatchVersion(options)) {
         return simver.eq(simver.majorMinor(v1), simver.majorMinor(v2));
     }
@@ -847,7 +847,7 @@ function requireSetup(options) {
             const cabalVersion = yield util.cabalGetVersion();
             core.info(`Found pre-installed Cabal version ${cabalVersion}`);
             // Filter compatible GHC versions to those matching pre-installed version:
-            const compatibleGhcVersions = options['ghc-supported-versions'].filter(compatibleGhcVersion => opts.ghcVersionMatch(options, ghcVersion, compatibleGhcVersion));
+            const compatibleGhcVersions = options['ghc-supported-versions'].filter(compatibleGhcVersion => opts.ghcVersionMatch(ghcVersion, compatibleGhcVersion, options));
             if (compatibleGhcVersions.length === 0) {
                 core.info(`Installed GHC ${ghcVersion} is incompatible with Agda ${options['agda-version']}`);
                 return true;
@@ -1195,13 +1195,31 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
+const node_os_1 = __importDefault(__nccwpck_require__(612));
 const object_pick_1 = __importDefault(__nccwpck_require__(9962));
 const semver = __importStar(__nccwpck_require__(1383));
 const setup_haskell_1 = __importDefault(__nccwpck_require__(6501));
 const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
+const Haskell_json_1 = __importDefault(__nccwpck_require__(8712));
+const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
+        // Filter GHC versions by those supported by haskell/actions/setup:
+        try {
+            options['ghc-supported-versions'] = supportedGhcVersions(options);
+        }
+        catch (error) {
+            // If no supported versions are found, try 'stack-setup-ghc':
+            if (options['enable-stack']) {
+                core.info((0, ensure_error_1.default)(error).message);
+                core.info('Trying with "stack-setup-ghc"');
+                options['stack-setup-ghc'] = true;
+            }
+            else {
+                throw error;
+            }
+        }
         // Select GHC version:
         options['ghc-version'] = maxSatisfyingGhcVersion(options);
         // Run haskell/actions/setup:
@@ -1218,8 +1236,9 @@ function setup(options) {
         // Update the Cabal version:
         options['cabal-version'] = yield util.cabalGetVersion((0, object_pick_1.default)(options, ['enable-stack', 'stack-no-global']));
         // Update the Stack version:
-        if (options['enable-stack'])
+        if (options['enable-stack']) {
             options['stack-version'] = yield util.stackGetVersion();
+        }
     });
 }
 exports["default"] = setup;
@@ -1235,6 +1254,33 @@ function maxSatisfyingGhcVersion(options) {
             maybeGhcVersion = util.simver.majorMinor(maybeGhcVersion);
         core.info(`Select GHC ${maybeGhcVersion}`);
         return maybeGhcVersion;
+    }
+}
+// Compute the GHC versions supported by BOTH the requested Agda version,
+// passed in via options['ghc-supported-versions'], and haskell/actions/setup:
+function supportedGhcVersions(options) {
+    // Unless we're setting up GHC via Stack:
+    if (options['stack-setup-ghc']) {
+        // NOTE: I don't know what versions Stack still supports.
+        return options['ghc-supported-versions'];
+    }
+    else {
+        // NOTE: We cannot use a simple Set intersection, as we need to be able to
+        //       use ghcVersionMatch, which ignores the patch version:
+        const byAgda = options['ghc-supported-versions'];
+        const bySetupHaskell = Haskell_json_1.default.ghc;
+        const byBoth = bySetupHaskell.filter(ghcVersion => byAgda.reduce((foundCompatible, supportedGhcVersion) => foundCompatible ||
+            opts.ghcVersionMatch(ghcVersion, supportedGhcVersion, options), false));
+        if (byBoth.length === 0) {
+            throw Error([
+                `Could not find a GHC version supported by Agda and haskell/actions/setup.`,
+                `- Agda ${options['agda-version']} supports: ${byAgda.join(', ')}`,
+                `- haskell/actions/setup supports: ${bySetupHaskell.join(', ')}`
+            ].join(node_os_1.default.EOL));
+        }
+        else {
+            return byBoth;
+        }
     }
 }
 function pickSetupHaskellInputs(options) {
@@ -30569,6 +30615,14 @@ module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal",
 
 "use strict";
 module.exports = JSON.parse('{"2.6.2.2":["1.7.1"],"2.6.2.1":["1.7.1"],"2.6.2":["1.7","1.7.1"],"2.6.1.3":["1.5","1.6"],"2.6.1.2":["1.5"],"2.6.1.1":["1.4","1.5"],"2.6.1":["1.3","1.4","1.5","1.6"],"2.6.0.1":["1.0.1","1.1","1.2"],"2.6.0":["1.0","1.0.1"],"2.5.4.2":["0.17"],"2.5.4.1":["0.16","0.16.1","0.17"],"2.5.4":["0.16","0.16.1","0.17"],"2.5.3":["0.14","0.15"],"2.5.2":["0.13"],"2.5.1.2":["0.12"],"2.5.1.1":["0.12"],"2.5.1":["0.12"],"2.4.2.5":["0.11"],"2.4.2.4":["0.11"],"2.4.2.3":["0.10"],"2.4.2.2":["0.9"],"2.4.2.1":["0.9"],"2.4.2":["0.8.1"],"2.4.0.2":["0.8"],"2.4.0.1":["0.8"],"2.4.0":["0.8"],"2.3.2.2":["0.7"],"2.3.2.1":["0.7"],"2.3.2":["0.7"],"2.3.0":["0.6"],"2.2.10":["0.5"],"2.2.8":["0.4"],"2.2.6":["0.3"],"2.2.4":["0.2"],"2.2.2":["0.1"]}');
+
+/***/ }),
+
+/***/ 8712:
+/***/ ((module) => {
+
+"use strict";
+module.exports = JSON.parse('{"ghc":["9.4.1","9.2.4","9.2.3","9.2.2","9.2.1","9.0.2","9.0.1","8.10.7","8.10.6","8.10.5","8.10.4","8.10.3","8.10.2","8.10.1","8.8.4","8.8.3","8.8.2","8.8.1","8.6.5","8.6.4","8.6.3","8.6.2","8.6.1","8.4.4","8.4.3","8.4.2","8.4.1","8.2.2","8.0.2","7.10.3"],"cabal":["3.8.1.0","3.6.2.0","3.6.0.0","3.4.1.0","3.4.0.0","3.2.0.0","3.0.0.0","2.4.1.0"],"stack":["2.7.5","2.7.3","2.7.1","2.5.1","2.3.3","2.3.1","2.1.3","2.1.1","1.9.3","1.9.1","1.7.1","1.6.5","1.6.3","1.6.1","1.5.1","1.5.0","1.4.0","1.3.2","1.3.0","1.2.0"],"ghcup":["0.1.18.0"]}');
 
 /***/ }),
 

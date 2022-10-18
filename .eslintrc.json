@@ -5,7 +5,11 @@
   "parserOptions": {
     "ecmaVersion": 9,
     "sourceType": "module",
-    "project": "./tsconfig.json"
+    "project": [
+      "./tsconfig.json",
+      "./tsconfig-lib.json",
+      "./tsconfig-script.json"
+    ]
   },
   "rules": {
     "i18n-text/no-en": "off",

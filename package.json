@@ -10,7 +10,8 @@
     "format-check": "prettier --check '**/*.ts'",
     "lint": "eslint src/**/*.ts",
     "package": "ncc build --source-map --license licenses.txt",
-    "update-package-info": "ts-node ./src/package-info/update-package-info.ts",
+    "update-agda-info": "ts-node ./src/package-info/update-agda-info.ts",
+    "update-ghc-info": "cp ./vendor/haskell/actions/setup/src/versions.json ./src/package-info/Haskell.json",
     "all": "npm run build && npm run format && npm run lint && npm run package"
   },
   "repository": {

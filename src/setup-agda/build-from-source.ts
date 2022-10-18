@@ -126,7 +126,7 @@ async function requireSetup(options: opts.BuildOptions): Promise<boolean> {
     // Filter compatible GHC versions to those matching pre-installed version:
     const compatibleGhcVersions = options['ghc-supported-versions'].filter(
       compatibleGhcVersion =>
-        opts.ghcVersionMatch(options, ghcVersion, compatibleGhcVersion)
+        opts.ghcVersionMatch(ghcVersion, compatibleGhcVersion, options)
     )
     if (compatibleGhcVersions.length === 0) {
       core.info(

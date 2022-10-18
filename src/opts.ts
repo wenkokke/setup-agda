@@ -343,9 +343,9 @@ function validateOptions(options: BuildOptions): void {
 // Helper for comparing GHC versions respecting 'ghc-version-match-exact'
 
 export function ghcVersionMatch(
-  options: BuildOptions,
   v1: string,
-  v2: string
+  v2: string,
+  options: BuildOptions
 ): boolean {
   if (shouldIgnoreGhcPatchVersion(options)) {
     return simver.eq(simver.majorMinor(v1), simver.majorMinor(v2))

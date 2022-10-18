@@ -1,12 +1,29 @@
 import * as core from '@actions/core'
 import assert from 'node:assert'
+import os from 'node:os'
 import pick from 'object.pick'
 import * as semver from 'semver'
 import setupHaskell from 'setup-haskell'
 import * as opts from './opts'
 import * as util from './util'
+import distHaskellVersionInfo from './package-info/Haskell.json'
+import ensureError from 'ensure-error'
 
 export default async function setup(options: opts.BuildOptions): Promise<void> {
+  // Filter GHC versions by those supported by haskell/actions/setup:
+  try {
+    options['ghc-supported-versions'] = supportedGhcVersions(options)
+  } catch (error) {
+    // If no supported versions are found, try 'stack-setup-ghc':
+    if (options['enable-stack']) {
+      core.info(ensureError(error).message)
+      core.info('Trying with "stack-setup-ghc"')
+      options['stack-setup-ghc'] = true
+    } else {
+      throw error
+    }
+  }
+
   // Select GHC version:
   options['ghc-version'] = maxSatisfyingGhcVersion(options)
 
@@ -33,8 +50,9 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
   )
 
   // Update the Stack version:
-  if (options['enable-stack'])
+  if (options['enable-stack']) {
     options['stack-version'] = await util.stackGetVersion()
+  }
 }
 
 function maxSatisfyingGhcVersion(options: opts.BuildOptions): string {
@@ -53,6 +71,40 @@ function maxSatisfyingGhcVersion(options: opts.BuildOptions): string {
       maybeGhcVersion = util.simver.majorMinor(maybeGhcVersion)
     core.info(`Select GHC ${maybeGhcVersion}`)
     return maybeGhcVersion
+  }
+}
+
+// Compute the GHC versions supported by BOTH the requested Agda version,
+// passed in via options['ghc-supported-versions'], and haskell/actions/setup:
+function supportedGhcVersions(options: opts.BuildOptions): string[] {
+  // Unless we're setting up GHC via Stack:
+  if (options['stack-setup-ghc']) {
+    // NOTE: I don't know what versions Stack still supports.
+    return options['ghc-supported-versions']
+  } else {
+    // NOTE: We cannot use a simple Set intersection, as we need to be able to
+    //       use ghcVersionMatch, which ignores the patch version:
+    const byAgda = options['ghc-supported-versions']
+    const bySetupHaskell = distHaskellVersionInfo.ghc
+    const byBoth = bySetupHaskell.filter(ghcVersion =>
+      byAgda.reduce(
+        (foundCompatible: boolean, supportedGhcVersion: string) =>
+          foundCompatible ||
+          opts.ghcVersionMatch(ghcVersion, supportedGhcVersion, options),
+        false
+      )
+    )
+    if (byBoth.length === 0) {
+      throw Error(
+        [
+          `Could not find a GHC version supported by Agda and haskell/actions/setup.`,
+          `- Agda ${options['agda-version']} supports: ${byAgda.join(', ')}`,
+          `- haskell/actions/setup supports: ${bySetupHaskell.join(', ')}`
+        ].join(os.EOL)
+      )
+    } else {
+      return byBoth
+    }
   }
 }
 

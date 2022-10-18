@@ -10,7 +10,7 @@
     "esModuleInterop": true
   },
   "exclude": [
-    "src/package-info/update.ts",
+    "src/package-info/update-agda-info.ts",
     "node_modules",
     "**/*.test.ts",
     "vendor"
