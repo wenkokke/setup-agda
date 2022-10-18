@@ -2,7 +2,7 @@ import * as core from '@actions/core'
 import assert from 'node:assert'
 import * as opts from './opts'
 import * as hackage from './util/hackage'
-import bundledAgdaPackageInfoCache from './package-info/Agda.versions.json'
+import bundledAgdaPackageInfoCache from './package-info/Agda.package-info.json'
 
 export * from './util/agda'
 export {default as ensureError} from './util/ensure-error'

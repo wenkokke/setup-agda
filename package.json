@@ -11,7 +11,7 @@
     "lint": "eslint src/**/*.ts",
     "package": "ncc build --source-map --license licenses.txt",
     "update-agda-info": "ts-node ./src/package-info/update-agda-info.ts",
-    "update-haskell-info": "cp ./vendor/haskell/actions/setup/src/versions.json ./src/package-info/Haskell.json",
+    "update-haskell-info": "make -q update-haskell-info",
     "all": "npm run build && npm run format && npm run lint && npm run package"
   },
   "repository": {

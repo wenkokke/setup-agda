@@ -30,15 +30,14 @@ export default async function buildFromSource(
   const buildInfo = await core.group(
     '🛠 Preparing to build Agda from source',
     async (): Promise<BuildInfo> => {
-      const ret: Partial<BuildInfo> = {}
       // Download the source:
       core.info('Download source distribution from Hackage')
-      ret.sourceDir = await util.getAgdaSource(options)
-      core.debug(`Downloaded source distribution to ${ret.sourceDir}`)
+      const sourceDir = await util.getAgdaSource(options)
+      core.debug(`Downloaded source distribution to ${sourceDir}`)
 
       // Determine the build tool:
-      ret.buildTool = options['enable-stack'] ? stack : cabal
-      core.info(`Set build tool to ${ret.buildTool.name}`)
+      const buildTool = options['enable-stack'] ? stack : cabal
+      core.info(`Set build tool to ${buildTool.name}`)
 
       // Determine the GHC version:
       const currentGhcVersion = await util.ghcMaybeGetVersion()
@@ -46,28 +45,35 @@ export default async function buildFromSource(
       options['ghc-version'] = opts.resolveGhcVersion(
         options,
         currentGhcVersion,
-        await ret.buildTool.supportedGhcVersions(ret.sourceDir)
+        await buildTool.supportedGhcVersions(sourceDir)
       )
 
       // Determine whether or not we can use the pre-installed build tools:
-      core.info('Search for compatible build tools')
-      const requireSetup =
-        // Require different GHC version:
-        (options['ghc-version'] !== 'recommended' &&
-          options['ghc-version'] !== 'latest' &&
-          options['ghc-version'] !== currentGhcVersion) ||
-        // Require different Cabal version:
-        (options['cabal-version'] !== 'latest' &&
-          options['cabal-version'] !== currentCabalVersion) ||
-        // Require Stack:
-        options['enable-stack']
-      if (requireSetup) {
-        core.info('Could not find supported versions of GHC and Cabal')
-        return ret as BuildInfo
-      } else {
-        core.info('Found supported versions of GHC and Cabal')
-        return ret as BuildInfo
+      let requireSetup = false
+      if (
+        options['ghc-version'] !== 'recommended' &&
+        options['ghc-version'] !== 'latest' &&
+        options['ghc-version'] !== currentGhcVersion
+      ) {
+        core.info(
+          `Building with specified options requires a different GHC version`
+        )
+        requireSetup = true
       }
+      if (
+        options['cabal-version'] !== 'latest' &&
+        options['cabal-version'] !== currentCabalVersion
+      ) {
+        core.info(
+          `Building with specified options requires a different Cabal version`
+        )
+        requireSetup = true
+      }
+      if (options['enable-stack']) {
+        core.info(`Building with specified options requires Stack`)
+        requireSetup = true
+      }
+      return {sourceDir, buildTool, requireSetup}
     }
   )
 

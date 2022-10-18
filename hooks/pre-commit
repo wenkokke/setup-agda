@@ -8,16 +8,17 @@
 # Propagate failures:
 set -euxo pipefail
 
-# To enable this hook, rename this file to "pre-commit".
-
-# Build & add generated files:
+# Run formatters and linters:
+npm run format
 pre-commit run --all-files
-make
-git add dist/index.js
-git add dist/index.js.map
-git add dist/licenses.txt
-git add dist/sourcemap-register.js
-git add src/package-info/Agda.versions.json
+npm run lint
+
+# Build dist
+make package
+
+# Add dist to commit
+git add dist/*
+git add src/package-info/Agda.package-info.json
 git add src/package-info/Haskell.versions.json
 
 # Delete 'latest' tag locally:

@@ -713,38 +713,35 @@ const upload_bdist_1 = __importDefault(__nccwpck_require__(3888));
 function buildFromSource(options) {
     return __awaiter(this, void 0, void 0, function* () {
         const buildInfo = yield core.group('🛠 Preparing to build Agda from source', () => __awaiter(this, void 0, void 0, function* () {
-            const ret = {};
             // Download the source:
             core.info('Download source distribution from Hackage');
-            ret.sourceDir = yield util.getAgdaSource(options);
-            core.debug(`Downloaded source distribution to ${ret.sourceDir}`);
+            const sourceDir = yield util.getAgdaSource(options);
+            core.debug(`Downloaded source distribution to ${sourceDir}`);
             // Determine the build tool:
-            ret.buildTool = options['enable-stack'] ? stack : cabal;
-            core.info(`Set build tool to ${ret.buildTool.name}`);
+            const buildTool = options['enable-stack'] ? stack : cabal;
+            core.info(`Set build tool to ${buildTool.name}`);
             // Determine the GHC version:
             const currentGhcVersion = yield util.ghcMaybeGetVersion();
             const currentCabalVersion = yield util.cabalMaybeGetVersion();
-            options['ghc-version'] = opts.resolveGhcVersion(options, currentGhcVersion, yield ret.buildTool.supportedGhcVersions(ret.sourceDir));
+            options['ghc-version'] = opts.resolveGhcVersion(options, currentGhcVersion, yield buildTool.supportedGhcVersions(sourceDir));
             // Determine whether or not we can use the pre-installed build tools:
-            core.info('Search for compatible build tools');
-            const requireSetup = 
-            // Require different GHC version:
-            (options['ghc-version'] !== 'recommended' &&
+            let requireSetup = false;
+            if (options['ghc-version'] !== 'recommended' &&
                 options['ghc-version'] !== 'latest' &&
-                options['ghc-version'] !== currentGhcVersion) ||
-                // Require different Cabal version:
-                (options['cabal-version'] !== 'latest' &&
-                    options['cabal-version'] !== currentCabalVersion) ||
-                // Require Stack:
-                options['enable-stack'];
-            if (requireSetup) {
-                core.info('Could not find supported versions of GHC and Cabal');
-                return ret;
+                options['ghc-version'] !== currentGhcVersion) {
+                core.info(`Building with specified options requires a different GHC version`);
+                requireSetup = true;
             }
-            else {
-                core.info('Found supported versions of GHC and Cabal');
-                return ret;
+            if (options['cabal-version'] !== 'latest' &&
+                options['cabal-version'] !== currentCabalVersion) {
+                core.info(`Building with specified options requires a different Cabal version`);
+                requireSetup = true;
             }
+            if (options['enable-stack']) {
+                core.info(`Building with specified options requires Stack`);
+                requireSetup = true;
+            }
+            return { sourceDir, buildTool, requireSetup };
         }));
         // 3. Setup GHC via <haskell/actions/setup>:
         if (buildInfo.requireSetup) {
@@ -2131,7 +2128,7 @@ exports.getAgdaSource = exports.resolveAgdaVersion = exports.simver = exports.en
 const core = __importStar(__nccwpck_require__(2186));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const hackage = __importStar(__nccwpck_require__(903));
-const Agda_versions_json_1 = __importDefault(__nccwpck_require__(4962));
+const Agda_package_info_json_1 = __importDefault(__nccwpck_require__(9788));
 __exportStar(__nccwpck_require__(9552), exports);
 var ensure_error_1 = __nccwpck_require__(1151);
 Object.defineProperty(exports, "ensureError", ({ enumerable: true, get: function () { return __importDefault(ensure_error_1).default; } }));
@@ -2144,7 +2141,7 @@ __exportStar(__nccwpck_require__(1311), exports);
 __exportStar(__nccwpck_require__(7066), exports);
 exports.simver = __importStar(__nccwpck_require__(7609));
 // Agda utilities
-const agdaPackageInfoCache = Agda_versions_json_1.default;
+const agdaPackageInfoCache = Agda_package_info_json_1.default;
 function resolveAgdaVersion(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Ensure that we cache the package info:
@@ -31154,11 +31151,11 @@ module.exports = JSON.parse('{"agda-2.6.2.2-x64-darwin":"https://github.com/wenk
 
 /***/ }),
 
-/***/ 4962:
+/***/ 9788:
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4":"deprecated","2.5.4.1":"deprecated","2.5.4.2":"normal","2.6.0":"deprecated","2.6.0.1":"normal","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Sat, 08 Oct 2022 14:35:51 GMT"}');
+module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4":"deprecated","2.5.4.1":"deprecated","2.5.4.2":"normal","2.6.0":"deprecated","2.6.0.1":"normal","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Tue, 18 Oct 2022 17:32:16 GMT"}');
 
 /***/ }),
 
