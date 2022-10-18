@@ -1,3 +1,5 @@
+import * as core from '@actions/core'
+import ensureError from 'ensure-error'
 import * as exec from './exec'
 
 export async function getGhcInfo(
@@ -57,6 +59,20 @@ export async function ghcGetVersion(using?: {
   }
 }
 
+export async function ghcMaybeGetVersion(using?: {
+  'enable-stack': boolean
+  'stack-no-global': boolean
+}): Promise<string | null> {
+  try {
+    return await ghcGetVersion(using)
+  } catch (error) {
+    core.debug(
+      `Could not get installed GHC version: ${ensureError(error).message}`
+    )
+    return null
+  }
+}
+
 export async function cabalGetVersion(using?: {
   'enable-stack': boolean
   'stack-no-global': boolean
@@ -75,6 +91,20 @@ export async function cabalGetVersion(using?: {
       versionFlag: '--numeric-version',
       silent: true
     })
+  }
+}
+
+export async function cabalMaybeGetVersion(using?: {
+  'enable-stack': boolean
+  'stack-no-global': boolean
+}): Promise<string | null> {
+  try {
+    return await cabalGetVersion(using)
+  } catch (error) {
+    core.debug(
+      `Could not get installed Cabal version: ${ensureError(error).message}`
+    )
+    return null
   }
 }
 

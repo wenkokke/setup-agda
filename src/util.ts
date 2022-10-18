@@ -18,8 +18,10 @@ export * from './util/exec'
 export {
   ghc,
   ghcGetVersion,
+  ghcMaybeGetVersion,
   cabal,
   cabalGetVersion,
+  cabalMaybeGetVersion,
   stack,
   stackGetVersion,
   stackGetLocalBin

@@ -2,6 +2,7 @@ import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as io from '../../util/io'
 import * as path from 'node:path'
+import * as os from 'node:os'
 import * as semver from 'semver'
 import * as opts from '../../opts'
 import * as util from '../../util'
@@ -14,19 +15,6 @@ export async function build(
   installDir: string,
   options: opts.BuildOptions
 ): Promise<void> {
-  // Install Alex & Happy for versions <=2.5.3:
-  if (util.simver.lte(options['agda-version'], '2.5.3')) {
-    const stackSystemGhc = options['stack-setup-ghc']
-      ? []
-      : ['--system-ghc', '--no-install-ghc']
-    await util.stack([
-      ...stackSystemGhc,
-      `--compiler=${options['ghc-version']}`,
-      'install',
-      'alex',
-      'happy'
-    ])
-  }
   // Configure, Build, and Install:
   await io.mkdirP(path.join(installDir, 'bin'))
   await util.stack(['build', ...buildFlags(options), '--copy-bins'], {
@@ -101,5 +89,14 @@ export async function supportedGhcVersions(
       )
     }
   }
-  return versions
+  if (versions.length === 0) {
+    throw Error(
+      [
+        `Could not determine supported GHC versions for building with Stack:`,
+        `No files matching 'stack-*.yaml' in ${sourceDir}.`
+      ].join(os.EOL)
+    )
+  } else {
+    return versions
+  }
 }

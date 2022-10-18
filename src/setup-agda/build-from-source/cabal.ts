@@ -97,7 +97,12 @@ export async function supportedGhcVersions(
     }
   }
   if (versions.length === 0) {
-    throw Error('Could not find any compatible GHC versions')
+    throw Error(
+      [
+        `Could not determine supported GHC versions for building with Cabal:`,
+        `${path.basename(cabalFilePath)} does not sepecify 'tested-with'.`
+      ].join(os.EOL)
+    )
   } else {
     return versions
   }
