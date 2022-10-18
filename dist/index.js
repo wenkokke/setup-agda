@@ -2037,8 +2037,7 @@ function setup(options) {
 exports["default"] = setup;
 function setupLinux(options) {
     return __awaiter(this, void 0, void 0, function* () {
-        const upxVersion = '3.96';
-        const upxPkgUrl = opts.findBdist('upx', upxVersion);
+        const upxPkgUrl = 'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz';
         const upxTar = yield tc.downloadTool(upxPkgUrl);
         const upxDir = yield tc.extractTar(upxTar, undefined, [
             '--extract',
@@ -2068,8 +2067,7 @@ function setupMacOS(options) {
 }
 function setupWindows(options) {
     return __awaiter(this, void 0, void 0, function* () {
-        const upxVersion = '3.96';
-        const upxPkgUrl = opts.findBdist('upx', upxVersion);
+        const upxPkgUrl = 'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-win64.zip';
         const upxZip = yield tc.downloadTool(upxPkgUrl);
         const upxDir = yield tc.extractZip(upxZip);
         options['upx-version'] = '3.96';
@@ -31147,7 +31145,7 @@ function ensureError(input) {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"agda-2.6.2.2-x64-darwin":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-macos-11-icu71.1.zip","agda-2.6.2.2-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04-icu66.1.zip","agda-2.6.2.2-x64-win32":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022-icu71.1.zip","icu-67.1-x64-linux":"https://github.com/unicode-org/icu/releases/download/release-67-1/icu4c-67_1-Ubuntu18.04-x64.tgz","icu-67.1-x64-win32":"https://github.com/unicode-org/icu/releases/download/release-67-1/icu4c-67_1-Win64-MSVC2017.zip","icu-71.1-x64-linux":"https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-Ubuntu20.04-x64.tgz","icu-71.1-x64-win32":"https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-Win64-MSVC2019.zip","upx-3.96-x64-linux":"https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz","upx-3.96-x64-win32":"https://github.com/upx/upx/releases/download/v3.96/upx-3.96-win64.zip"}');
+module.exports = JSON.parse('{"agda-2.6.2.2-x64-darwin":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-macos-11-icu71.1-ghc9.2.2-cabal3.6.2.0.zip","agda-2.6.2.2-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04-icu66.1-ghc9.2.2-cabal3.6.2.0.zip","agda-2.6.2.2-x64-win32":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022-icu71.1-ghc9.2.2-cabal3.6.2.0.zip","agda-2.6.2.1-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-ubuntu-20.04-icu66.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip","agda-2.6.2-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-ubuntu-20.04-icu66.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip","agda-2.6.1.3-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-20.04-icu66.1-ghc8.10.3-cabal2.4.1.0-stack2.7.5.zip","agda-2.6.0.1-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-20.04-icu66.1-ghc8.6.5-cabal2.4.1.0-stack2.7.5.zip","agda-2.5.4.2-x64-linux":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-ubuntu-20.04-icu66.1-ghc8.4.4-cabal2.4.1.0-stack2.7.5.zip"}');
 
 /***/ }),
 

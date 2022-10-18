@@ -8,15 +8,14 @@
 # Propagate failures:
 set -euxo pipefail
 
-# Run formatters and linters:
-npm run format
+# Build dist:
 pre-commit run --all-files
+make build
+npm run format
 npm run lint
-
-# Build dist
 make package
 
-# Add dist to commit
+# Add dist to commit:
 git add dist/*
 git add src/package-info/Agda.package-info.json
 git add src/package-info/Haskell.versions.json
