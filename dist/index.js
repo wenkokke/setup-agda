@@ -287,7 +287,7 @@ function resolveGhcVersion(options, currentVersion, versionsThatCanBuildAgda) {
     const versionsThatCanBeSetUp = Haskell_json_1.default.ghc;
     core.info([
         'Resolving GHC version:',
-        options['ghc-version'] === 'latest'
+        options['ghc-version'] === 'recommended'
             ? `- selecting latest supported GHC version`
             : `- GHC version must be exactly ${options['ghc-version']}`,
         `- GHC version must match ${options['ghc-version-range']}`,
@@ -311,7 +311,7 @@ function resolveGhcVersion(options, currentVersion, versionsThatCanBuildAgda) {
     const canBuildAgda = (v) => someMatch(versionsThatCanBuildAgda, v);
     const canBeSetUp = (v) => someMatch(versionsThatCanBeSetUp, v);
     // If exact version was specified, emit warnings:
-    if (options['ghc-version'] !== 'latest') {
+    if (options['ghc-version'] !== 'recommended') {
         // Check if Agda version supports specified version:
         if (!canBuildAgda(options['ghc-version']))
             core.warning(`User-specified GHC ${options['ghc-version']} is not supported by Agda ${options['agda-version']}`);
@@ -853,7 +853,8 @@ function buildFromSource(options) {
             core.info('Search for compatible build tools');
             const requireSetup = 
             // Require different GHC version:
-            (options['ghc-version'] !== 'latest' &&
+            (options['ghc-version'] !== 'recommended' &&
+                options['ghc-version'] !== 'latest' &&
                 options['ghc-version'] !== currentGhcVersion) ||
                 // Require different Cabal version:
                 (options['cabal-version'] !== 'latest' &&
@@ -1250,11 +1251,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const object_pick_1 = __importDefault(__nccwpck_require__(9962));
 const setup_haskell_1 = __importDefault(__nccwpck_require__(6501));
 const util = __importStar(__nccwpck_require__(4024));
 function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
+        (0, node_assert_1.default)(options['ghc-version'] !== 'recommended');
         // Run haskell/actions/setup:
         yield (0, setup_haskell_1.default)(Object.fromEntries(Object.entries(pickSetupHaskellInputs(options)).map(e => {
             const [k, v] = e;

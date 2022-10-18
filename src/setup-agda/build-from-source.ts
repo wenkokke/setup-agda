@@ -37,7 +37,8 @@ export default async function buildFromSource(
       core.info('Search for compatible build tools')
       const requireSetup =
         // Require different GHC version:
-        (options['ghc-version'] !== 'latest' &&
+        (options['ghc-version'] !== 'recommended' &&
+          options['ghc-version'] !== 'latest' &&
           options['ghc-version'] !== currentGhcVersion) ||
         // Require different Cabal version:
         (options['cabal-version'] !== 'latest' &&

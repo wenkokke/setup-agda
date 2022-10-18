@@ -345,7 +345,7 @@ export function resolveGhcVersion(
   core.info(
     [
       'Resolving GHC version:',
-      options['ghc-version'] === 'latest'
+      options['ghc-version'] === 'recommended'
         ? `- selecting latest supported GHC version`
         : `- GHC version must be exactly ${options['ghc-version']}`,
       `- GHC version must match ${options['ghc-version-range']}`,
@@ -376,7 +376,7 @@ export function resolveGhcVersion(
     someMatch(versionsThatCanBeSetUp, v)
 
   // If exact version was specified, emit warnings:
-  if (options['ghc-version'] !== 'latest') {
+  if (options['ghc-version'] !== 'recommended') {
     // Check if Agda version supports specified version:
     if (!canBuildAgda(options['ghc-version']))
       core.warning(

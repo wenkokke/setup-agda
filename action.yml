@@ -5,8 +5,25 @@ inputs:
   agda-version:
     default: 'latest'
     description: |
-      The Agda version. Can be "latest" or a specific version number (e.g., 2.6.2.2).
-    required: true
+      The Agda version.
+
+      Can be "latest" or a specific version number (e.g., 2.6.2.2).
+    required: false
+  agda-stdlib-version:
+    default: ''
+    description: |
+      The Agda standard library version.
+
+      Can be "recommended", "latest", or a specific version number (e.g., 1.7.1).
+
+      If set to "recommended", it will install the latest version of the Agda
+      standard library compatible with the specified Agda version, see:
+      https://wiki.portal.chalmers.se/agda/Libraries/StandardLibrary
+
+      If set to "latest" or a specific version number, it will install the
+      latest or that specific version, regardless of compatibility with the
+      specified Agda version.
+    required: false
   bdist-compress-exe:
     description: |
       If specified, the executables are compressed with UPX (https://upx.github.io).
@@ -69,17 +86,19 @@ inputs:
 
   # If it is called, following inputs are passed to haskell/actions/setup:
   ghc-version:
-    default: 'latest'
+    default: 'recommended'
     description: |
       Version of GHC to use.
 
-      If set to "latest", it will get the latest version which is supported by
-      haskell/actions/setup and which the Agda version is tested-with.
+      Can be "recommended", "latest", or a specific version number (e.g., 9.4.2).
+
+      If set to "recommended", it will get the latest version supported by
+      haskell/actions/setup which the Agda version is tested-with.
       If "ghc-version-match-exact" is set to false, it will favour versions
       which are supported by haskell/actions/setup.
 
-      If set to a specific GHC version, this version will be used even if it is
-      incompatible with the Agda version.
+      If set "latest" or to a specific GHC version, this version will be used
+      even if it is incompatible with the Agda version.
       If "enable-stack" is specified, this may result in errors, as there may
       not be a "stack-XYZ.yaml" file for the specified GHC version.
     required: false
