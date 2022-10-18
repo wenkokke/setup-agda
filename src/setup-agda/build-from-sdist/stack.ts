@@ -1,8 +1,10 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as path from 'node:path'
+import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as semver from 'semver'
+import * as yaml from 'js-yaml'
 import * as opts from '../../opts'
 import * as util from '../../util'
 import pick from 'object.pick'
@@ -15,10 +17,12 @@ export async function build(
   options: opts.BuildOptions
 ): Promise<void> {
   // Configure, Build, and Install:
-  await util.mkdirP(path.join(installDir, 'bin'))
-  await util.stack(['build', ...buildFlags(options), '--copy-bins'], {
-    cwd: sourceDir
-  })
+  await util.stack(
+    ['build', ...buildFlags(sourceDir, options), '--copy-bins'],
+    {
+      cwd: sourceDir
+    }
+  )
   // Copy binaries from local bin
   const localBinDir = await util.stackGetLocalBin(
     pick(options, ['ghc-version'])
@@ -37,7 +41,13 @@ export async function build(
   }
 }
 
-function buildFlags(options: opts.BuildOptions): string[] {
+interface StackYaml {
+  'extra-deps'?: string[]
+  'configure-options'?: Partial<Record<string, string[]>>
+}
+
+function buildFlags(sourceDir: string, options: opts.BuildOptions): string[] {
+  const stackYamlName = `stack-${options['ghc-version']}.yaml`
   // NOTE:
   //   We set the build flags following Agda's deploy workflow, which builds
   //   the nightly distributions, except that we disable --cluster-counting
@@ -45,7 +55,7 @@ function buildFlags(options: opts.BuildOptions): string[] {
   //   https://github.com/agda/agda/blob/d5b5d90a3e34cf8cbae838bc20e94b74a20fea9c/src/github/workflows/deploy.yml#L37-L47
   const flags: string[] = []
   // Load default configuration from 'stack-<agda-version>.yaml':
-  flags.push(`--stack-yaml=stack-${options['ghc-version']}.yaml`)
+  flags.push(`--stack-yaml=${stackYamlName}`)
   // Disable Stack managed GHC:
   if (!options['stack-setup-ghc']) {
     flags.push('--no-install-ghc')
@@ -60,6 +70,29 @@ function buildFlags(options: opts.BuildOptions): string[] {
     opts.supportsClusterCounting(options)
   ) {
     flags.push('--flag=Agda:enable-cluster-counting')
+    // NOTE:
+    //   Agda versions 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
+    //   versions 0.7.0.0 - 0.7.1.0 do not compile with icu68+:
+    if (util.simver.lte(options['agda-version'], '2.6.2')) {
+      // Read stack-XYZ.yaml
+      const stackYamlPath = path.join(sourceDir, stackYamlName)
+      const stackYaml = yaml.load(
+        fs.readFileSync(stackYamlPath, 'utf-8')
+      ) as StackYaml
+      // Add 'text-icu-0.7.1.0' to extra dependencies:
+      if (stackYaml?.['extra-deps'] === undefined) stackYaml['extra-deps'] = []
+      stackYaml['extra-deps'].push('text-icu-0.7.1.0')
+      // Pass 'text-icu>=0.7.1.0' constraint to Cabal:
+      if (stackYaml?.['configure-options'] === undefined)
+        stackYaml['configure-options'] = {}
+      if (stackYaml['configure-options']?.['Agda'] === undefined)
+        stackYaml['configure-options']['Agda'] = []
+      stackYaml['configure-options']['Agda'].push(
+        '--constraint=text-icu>=0.7.1.0'
+      )
+      // Write stack-XYZ.yaml
+      fs.writeFileSync(stackYamlPath, yaml.dump(stackYaml))
+    }
   }
   // If supported, pass Agda flag --optimise-heavily
   if (opts.supportsOptimiseHeavily(options)) {
