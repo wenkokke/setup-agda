@@ -1,0 +1,124 @@
+name: Setup Legacy
+
+on:
+  workflow_run:
+    branches: [main]
+    workflows: ['Setup Latest']
+    types: [completed]
+
+jobs:
+  test-setup-2_6_2_2:
+    # Run 'test-setup-2_6_2_2' if 'test-setup-latest' succeeded:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    name: Setup Agda (2.6.2.2) on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: setup-agda
+        name: Setup Agda-2.6.2.2
+        uses: ./
+        with:
+          force-no-build: true
+          agda-version: '2.6.2.2'
+    strategy:
+      matrix:
+        os:
+          [
+            ubuntu-22.04,
+            ubuntu-20.04,
+            macos-11,
+            macos-12,
+            windows-2019,
+            windows-2022
+          ]
+
+  test-setup-2_6_2_1:
+    # Run 'test-setup-2_6_2_1' if 'test-setup-latest' succeeded:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    name: Setup Agda (2.6.2.1) on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: setup-agda
+        name: Setup Agda-2.6.2.1
+        uses: ./
+        with:
+          force-no-build: true
+          agda-version: '2.6.2.1'
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-20.04]
+
+  test-setup-2_6_2:
+    # Run 'test-setup-2_6_2' if 'test-setup-latest' succeeded:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    name: Setup Agda (2.6.2) on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: setup-agda
+        name: Setup Agda-2.6.2
+        uses: ./
+        with:
+          force-no-build: true
+          agda-version: '2.6.2'
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-20.04]
+
+  test-setup-2_6_1_3:
+    # Run 'test-setup-2_6_1_3' if 'test-setup-latest' succeeded:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    name: Setup Agda (2.6.1.3) on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: setup-agda
+        name: Setup Agda-2.6.1.3
+        uses: ./
+        with:
+          force-no-build: true
+          agda-version: '2.6.1.3'
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-20.04]
+
+  test-setup-2_6_0_1:
+    # Run 'test-setup-2_6_0_1' if 'test-setup-latest' succeeded:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    name: Setup Agda (2.6.0.1) on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: setup-agda
+        name: Setup Agda-2.6.0.1
+        uses: ./
+        with:
+          force-no-build: true
+          agda-version: '2.6.0.1'
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-20.04]
+
+  test-setup-2_5_4_2:
+    # Run 'test-setup-2_5_4_2' if 'test-setup-latest' succeeded:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    name: Setup Agda (2.5.4.2) on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: setup-agda
+        name: Setup Agda-2.5.4.2
+        uses: ./
+        with:
+          force-no-build: true
+          agda-version: '2.5.4.2'
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-20.04]
