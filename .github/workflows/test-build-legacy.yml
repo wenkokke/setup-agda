@@ -21,6 +21,7 @@ jobs:
                 -${{ matrix.os }}
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
+                -cabal{{{cabal-version}}}
                 -stack{{{stack-version}}}
           cabal-version: ${{ matrix.cabal-version }}
           enable-stack: true
