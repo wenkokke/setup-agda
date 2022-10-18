@@ -778,6 +778,8 @@ function buildFromSource(options) {
             (0, node_assert_1.default)(options['ghc-supported-versions'].length === 0, `Option 'ghc-supported-versions' is not empty: ${options['ghc-supported-versions']}`);
             options['ghc-supported-versions'] =
                 yield ret.buildTool.supportedGhcVersions(ret.sourceDir);
+            if (options['ghc-supported-versions'].length === 0)
+                throw Error(`No supported GHC versions recorded for Agda ${options['agda-version']}`);
             core.info(`Supported GHC versions: ${options['ghc-supported-versions']}`);
             // Determine whether or not we can use the pre-installed build tools:
             core.info('Search for compatible build tools');
