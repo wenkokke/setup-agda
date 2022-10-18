@@ -59,6 +59,9 @@ function buildFlags(options: opts.BuildOptions): string[] {
       flags.push('--constraint=text-icu>=0.7.1.0')
     }
   }
+  // Fix EdisonCore dependency for Agda 2.5.2:
+  if (util.simver.eq(options['agda-version'], '2.5.2'))
+    flags.push('--constraint=EdisonCore==1.3.3')
   // If supported, pass Agda flag --optimise-heavily
   if (opts.supportsOptimiseHeavily(options)) {
     flags.push('--flags=+optimise-heavily')

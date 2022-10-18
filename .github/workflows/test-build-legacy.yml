@@ -75,6 +75,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Setup Alex & Happy
         run: |
+          cabal update
           cabal install alex
           cabal install happy
         shell: bash
@@ -205,7 +206,7 @@ jobs:
           ghc-version-match-exact: true
     strategy:
       matrix:
-        os: [macos-11, windows-2022] # Previously built: ubuntu-20.04
+        os: [windows-2022] # Previously built: ubuntu-20.04, macos-11
 
   test-build-2_6_2_1:
     name: Build Agda (2.6.2.1) on ${{ matrix.os }} with Stack
@@ -232,4 +233,4 @@ jobs:
           ghc-version-match-exact: true
     strategy:
       matrix:
-        os: [macos-11, windows-2022] # Previously built: ubuntu-20.04
+        os: [windows-2022] # Previously built: ubuntu-20.04, macos-11
