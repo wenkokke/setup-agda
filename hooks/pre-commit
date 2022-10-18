@@ -10,10 +10,9 @@ set -euxo pipefail
 
 # To enable this hook, rename this file to "pre-commit".
 
-# Build dist/:
-npm run all
-
-# Commit generated files:
+# Build & add generated files:
+pre-commit run --all-files
+make
 git add dist/index.js
 git add dist/index.js.map
 git add dist/licenses.txt
@@ -23,6 +22,3 @@ git add src/package-info/Haskell.versions.json
 
 # Delete 'latest' tag locally:
 git tag --delete latest || true
-
-# Run pre-commit:
-pre-commit run --all-files
