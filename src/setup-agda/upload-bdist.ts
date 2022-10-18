@@ -1,7 +1,6 @@
 import * as artifact from '@actions/artifact'
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
-import ensureError from 'ensure-error'
 import * as Mustache from 'mustache'
 import * as os from 'node:os'
 import * as path from 'node:path'
@@ -38,7 +37,7 @@ export default async function uploadBdist(
       for (const binName of util.agdaBinNames)
         await compressBin(upxExe, path.join(bdistDir, 'bin', binName))
     } catch (error) {
-      core.debug(ensureError(error).message)
+      core.debug(util.ensureError(error).message)
     }
   }
 

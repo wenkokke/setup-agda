@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
-import ensureError from 'ensure-error'
+
 import * as os from 'node:os'
 import * as path from 'node:path'
 import * as opts from '../opts'
@@ -22,7 +22,7 @@ export async function setupForLinux(options: opts.BuildOptions): Promise<void> {
   try {
     core.info(JSON.stringify(await util.pkgConfigGetInfo('icu-i18n')))
   } catch (error) {
-    core.debug(ensureError(error).message)
+    core.debug(util.ensureError(error).message)
   }
 }
 

@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
-import ensureError from 'ensure-error'
 import * as os from 'node:os'
 import * as opts from '../opts'
+import ensureError from './ensure-error'
 import * as exec from './exec'
 
 export async function printNeeded(binPath: string): Promise<void> {

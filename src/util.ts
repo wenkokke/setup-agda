@@ -5,6 +5,7 @@ import * as hackage from './util/hackage'
 import bundledAgdaPackageInfoCache from './package-info/Agda.versions.json'
 
 export * from './util/agda'
+export {default as ensureError} from './util/ensure-error'
 export * from './util/exec'
 export * from './util/haskell'
 export * from './util/homebrew'

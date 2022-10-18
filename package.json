@@ -11,7 +11,7 @@
     "lint": "eslint src/**/*.ts",
     "package": "ncc build --source-map --license licenses.txt",
     "update-agda-info": "ts-node ./src/package-info/update-agda-info.ts",
-    "update-ghc-info": "cp ./vendor/haskell/actions/setup/src/versions.json ./src/package-info/Haskell.json",
+    "update-haskell-info": "cp ./vendor/haskell/actions/setup/src/versions.json ./src/package-info/Haskell.json",
     "all": "npm run build && npm run format && npm run lint && npm run package"
   },
   "repository": {
@@ -35,7 +35,6 @@
     "@actions/tool-cache": "^2.0.1",
     "@types/mustache": "^4.2.1",
     "@types/semver": "^7.3.12",
-    "ensure-error": "^4.0.0",
     "mustache": "^4.2.0",
     "object.pick": "^1.3.0",
     "semver": "^7.3.8",

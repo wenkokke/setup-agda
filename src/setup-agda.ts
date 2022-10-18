@@ -1,5 +1,4 @@
 import * as core from '@actions/core'
-import ensureError from 'ensure-error'
 import assert from 'node:assert'
 import * as path from 'node:path'
 import * as opts from './opts'
@@ -49,7 +48,9 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
         try {
           await util.rmRF(agdaDir)
         } catch (error) {
-          core.debug(`Failed to clean up build: ${ensureError(error).message}`)
+          core.debug(
+            `Failed to clean up build: ${util.ensureError(error).message}`
+          )
         }
       }
       await util.installAgda(installDir)
@@ -61,6 +62,6 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
       async () => await util.agdaTest()
     )
   } catch (error) {
-    core.setFailed(ensureError(error))
+    core.setFailed(util.ensureError(error))
   }
 }

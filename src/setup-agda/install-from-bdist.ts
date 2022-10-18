@@ -1,7 +1,6 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as tc from '@actions/tool-cache'
-import ensureError from 'ensure-error'
 import * as path from 'node:path'
 import * as opts from '../opts'
 import * as util from '../util'
@@ -21,7 +20,7 @@ export default async function installFromBdist(
       try {
         util.rmRF(bdistZip)
       } catch (error) {
-        core.debug(`Could not clean up: ${ensureError(error).message}`)
+        core.debug(`Could not clean up: ${util.ensureError(error).message}`)
       }
       // If needed, repair file permissions:
       await repairPermissions(bdistDir)
@@ -34,17 +33,19 @@ export default async function installFromBdist(
         })
         return bdistDir
       } catch (error) {
-        const warning = ensureError(error)
+        const warning = util.ensureError(error)
         warning.message = `Rejecting Agda ${options['agda-version']} package: ${warning.message}`
         core.warning(warning)
         return null
       }
     } catch (error) {
-      core.warning(`Failed to download package: ${ensureError(error).message}`)
+      core.warning(
+        `Failed to download package: ${util.ensureError(error).message}`
+      )
       return null
     }
   } catch (error) {
-    core.warning(ensureError(error))
+    core.warning(util.ensureError(error))
     return null
   }
 }

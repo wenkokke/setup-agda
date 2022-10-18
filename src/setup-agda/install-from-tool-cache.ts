@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 import * as tc from '@actions/tool-cache'
-import ensureError from 'ensure-error'
+
 import * as path from 'node:path'
 import * as opts from '../opts'
 import * as util from '../util'
@@ -27,7 +27,7 @@ export default async function installFromToolCache(
       })
       return agdaDirTC
     } catch (error) {
-      const warning = ensureError(error)
+      const warning = util.ensureError(error)
       warning.message = `Rejecting cached Agda ${options['agda-version']}: ${warning.message}`
       core.warning(warning)
       return null

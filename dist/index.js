@@ -529,10 +529,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 const mustache_1 = __importDefault(__nccwpck_require__(8272));
 const os = __importStar(__nccwpck_require__(612));
 const semver = __importStar(__nccwpck_require__(1383));
+const ensure_error_1 = __importDefault(__nccwpck_require__(1151));
 function validateOptions(options) {
     if (options['agda-version'] === 'nightly')
         throw Error('Value "nightly" for input "agda-version" is unupported');
@@ -603,7 +603,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
-const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
@@ -643,7 +642,7 @@ function setup(options) {
                         yield util.rmRF(agdaDir);
                     }
                     catch (error) {
-                        core.debug(`Failed to clean up build: ${(0, ensure_error_1.default)(error).message}`);
+                        core.debug(`Failed to clean up build: ${util.ensureError(error).message}`);
                     }
                 }
                 yield util.installAgda(installDir);
@@ -652,7 +651,7 @@ function setup(options) {
             yield core.group('👩🏾‍🔬 Testing Agda installation', () => __awaiter(this, void 0, void 0, function* () { return yield util.agdaTest(); }));
         }
         catch (error) {
-            core.setFailed((0, ensure_error_1.default)(error));
+            core.setFailed(util.ensureError(error));
         }
     });
 }
@@ -1139,14 +1138,10 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
     function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
     function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const tc = __importStar(__nccwpck_require__(7784));
-const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
@@ -1165,7 +1160,7 @@ function installFromBdist(options) {
                     util.rmRF(bdistZip);
                 }
                 catch (error) {
-                    core.debug(`Could not clean up: ${(0, ensure_error_1.default)(error).message}`);
+                    core.debug(`Could not clean up: ${util.ensureError(error).message}`);
                 }
                 // If needed, repair file permissions:
                 yield repairPermissions(bdistDir);
@@ -1179,19 +1174,19 @@ function installFromBdist(options) {
                     return bdistDir;
                 }
                 catch (error) {
-                    const warning = (0, ensure_error_1.default)(error);
+                    const warning = util.ensureError(error);
                     warning.message = `Rejecting Agda ${options['agda-version']} package: ${warning.message}`;
                     core.warning(warning);
                     return null;
                 }
             }
             catch (error) {
-                core.warning(`Failed to download package: ${(0, ensure_error_1.default)(error).message}`);
+                core.warning(`Failed to download package: ${util.ensureError(error).message}`);
                 return null;
             }
         }
         catch (error) {
-            core.warning((0, ensure_error_1.default)(error));
+            core.warning(util.ensureError(error));
             return null;
         }
     });
@@ -1280,13 +1275,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const tc = __importStar(__nccwpck_require__(7784));
-const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 const path = __importStar(__nccwpck_require__(9411));
 const util = __importStar(__nccwpck_require__(4024));
 // Helper to install from GitHub Runner tool cache
@@ -1310,7 +1301,7 @@ function installFromToolCache(options) {
                 return agdaDirTC;
             }
             catch (error) {
-                const warning = (0, ensure_error_1.default)(error);
+                const warning = util.ensureError(error);
                 warning.message = `Rejecting cached Agda ${options['agda-version']}: ${warning.message}`;
                 core.warning(warning);
                 return null;
@@ -1368,7 +1359,6 @@ exports.renderName = void 0;
 const artifact = __importStar(__nccwpck_require__(2605));
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
-const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 const Mustache = __importStar(__nccwpck_require__(8272));
 const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
@@ -1397,7 +1387,7 @@ function uploadBdist(installDir, options) {
                     yield compressBin(upxExe, path.join(bdistDir, 'bin', binName));
             }
             catch (error) {
-                core.debug((0, ensure_error_1.default)(error).message);
+                core.debug(util.ensureError(error).message);
             }
         }
         // Bundle libraries:
@@ -1658,14 +1648,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.bundleForLinux = exports.setupForLinux = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
-const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
 const util = __importStar(__nccwpck_require__(4024));
@@ -1681,7 +1667,7 @@ function setupForLinux(options) {
             core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-i18n')));
         }
         catch (error) {
-            core.debug((0, ensure_error_1.default)(error).message);
+            core.debug(util.ensureError(error).message);
         }
     });
 }
@@ -1797,7 +1783,6 @@ const core = __importStar(__nccwpck_require__(2186));
 const path = __importStar(__nccwpck_require__(9411));
 const util = __importStar(__nccwpck_require__(4024));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
-const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 // MacOS
 function installDirForMacOS() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -1833,7 +1818,7 @@ function setupForMacOS(options) {
             core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-i18n')));
         }
         catch (error) {
-            core.debug((0, ensure_error_1.default)(error).message);
+            core.debug(util.ensureError(error).message);
         }
     });
 }
@@ -1930,14 +1915,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.bundleForWindows = exports.setupForWindows = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
-const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
 const util = __importStar(__nccwpck_require__(4024));
@@ -1961,7 +1942,7 @@ function setupForWindows(options) {
             core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-io')));
         }
         catch (error) {
-            core.debug((0, ensure_error_1.default)(error).message);
+            core.debug(util.ensureError(error).message);
         }
     });
 }
@@ -2146,12 +2127,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getAgdaSource = exports.resolveAgdaVersion = exports.simver = void 0;
+exports.getAgdaSource = exports.resolveAgdaVersion = exports.simver = exports.ensureError = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const hackage = __importStar(__nccwpck_require__(903));
 const Agda_versions_json_1 = __importDefault(__nccwpck_require__(4962));
 __exportStar(__nccwpck_require__(9552), exports);
+var ensure_error_1 = __nccwpck_require__(1151);
+Object.defineProperty(exports, "ensureError", ({ enumerable: true, get: function () { return __importDefault(ensure_error_1).default; } }));
 __exportStar(__nccwpck_require__(4369), exports);
 __exportStar(__nccwpck_require__(1310), exports);
 __exportStar(__nccwpck_require__(6295), exports);
@@ -2370,6 +2353,78 @@ function installAgda(installDir) {
     });
 }
 exports.installAgda = installAgda;
+
+
+/***/ }),
+
+/***/ 1151:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const node_util_1 = __nccwpck_require__(7261);
+// Adapted from 'ensure-error' with license:
+//
+// MIT License
+//
+// Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+// sell copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+// IN THE SOFTWARE.
+class Unknown extends Error {
+    constructor(message) {
+        super((0, node_util_1.inspect)(message));
+        this.name = 'Unknown';
+    }
+}
+function ensureError(input) {
+    var _a;
+    if (!(input instanceof Error)) {
+        return new Unknown(input);
+    }
+    else {
+        const error = input;
+        if (!error.name) {
+            Object.defineProperty(error, 'name', {
+                value: (error.constructor && error.constructor.name) || 'Error',
+                configurable: true,
+                writable: true
+            });
+        }
+        if (!error.message) {
+            Object.defineProperty(error, 'message', {
+                value: '<No error message>',
+                configurable: true,
+                writable: true
+            });
+        }
+        if (!error.stack) {
+            Object.defineProperty(error, 'stack', {
+                value: (_a = new Error(error.message).stack) === null || _a === void 0 ? void 0 : _a.replace(/\n {4}at /, '\n<Original stack missing>$&'),
+                configurable: true,
+                writable: true
+            });
+        }
+        return error;
+    }
+}
+exports["default"] = ensureError;
 
 
 /***/ }),
@@ -2728,8 +2783,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.stackGetLocalBin = exports.stackGetVersion = exports.cabalMaybeGetVersion = exports.cabalGetVersion = exports.ghcMaybeGetVersion = exports.ghcGetVersion = exports.stack = exports.cabal = exports.ghc = exports.getGhcInfo = void 0;
 const core = __importStar(__nccwpck_require__(2186));
-const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 const exec = __importStar(__nccwpck_require__(4369));
+const ensure_error_1 = __importDefault(__nccwpck_require__(1151));
 function getGhcInfo(execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         let ghcInfoString = yield ghc(['--info'], execOptions);
@@ -3014,9 +3069,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.dumpbin = exports.installNameTool = exports.otool = exports.patchelf = exports.printNeeded = void 0;
 const core = __importStar(__nccwpck_require__(2186));
-const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
 const os = __importStar(__nccwpck_require__(612));
 const opts = __importStar(__nccwpck_require__(1352));
+const ensure_error_1 = __importDefault(__nccwpck_require__(1151));
 const exec = __importStar(__nccwpck_require__(4369));
 function printNeeded(binPath) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -26382,7 +26437,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
-const ensure_error_1 = __importDefault(__nccwpck_require__(1056));
+const ensure_error_1 = __importDefault(__nccwpck_require__(4578));
 const fs = __importStar(__nccwpck_require__(7147));
 const path = __importStar(__nccwpck_require__(1017));
 const os_1 = __nccwpck_require__(2037);
@@ -30933,6 +30988,14 @@ module.exports = require("node:path");
 
 /***/ }),
 
+/***/ 7261:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("node:util");
+
+/***/ }),
+
 /***/ 2037:
 /***/ ((module) => {
 
@@ -31021,26 +31084,20 @@ module.exports = require("zlib");
 
 /***/ }),
 
-/***/ 1056:
+/***/ 4578:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __nccwpck_require__) => {
 
 "use strict";
-// ESM COMPAT FLAG
 __nccwpck_require__.r(__webpack_exports__);
-
-// EXPORTS
-__nccwpck_require__.d(__webpack_exports__, {
-  "default": () => (/* binding */ ensureError)
-});
-
-;// CONCATENATED MODULE: external "node:util"
-const external_node_util_namespaceObject = require("node:util");
-;// CONCATENATED MODULE: ./node_modules/ensure-error/index.js
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ensureError)
+/* harmony export */ });
+/* harmony import */ var node_util__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(7261);
 
 
 class NonError extends Error {
 	constructor(message) {
-		super((0,external_node_util_namespaceObject.inspect)(message));
+		super((0,node_util__WEBPACK_IMPORTED_MODULE_0__.inspect)(message));
 
 		Object.defineProperty(this, 'name', {
 			value: 'NonError',

@@ -1,8 +1,8 @@
-import ensureError from 'ensure-error'
 import Mustache from 'mustache'
 import * as os from 'node:os'
 import * as semver from 'semver'
 import {BuildOptions} from './types'
+import ensureError from '../util/ensure-error'
 
 export default function validateOptions(options: BuildOptions): void {
   if (options['agda-version'] === 'nightly')
