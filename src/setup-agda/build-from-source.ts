@@ -38,7 +38,11 @@ export default async function buildFromSource(
         throw Error(
           `No supported GHC versions recorded for Agda ${options['agda-version']}`
         )
-      core.info(`Supported GHC versions: ${options['ghc-supported-versions']}`)
+      core.info(
+        `Supported GHC versions: ${options['ghc-supported-versions'].join(
+          ', '
+        )}`
+      )
       // Determine whether or not we can use the pre-installed build tools:
       core.info('Search for compatible build tools')
       ret.requireSetup = await requireSetup(options)
