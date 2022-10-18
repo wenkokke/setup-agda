@@ -876,8 +876,7 @@ function buildFlags(options) {
         // NOTE:
         //   Agda versions 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
         //   versions 0.7.0.0 - 0.7.1.0 do not compile with icu68+:
-        if (util.simver.gte(options['agda-version'], '2.5.3') &&
-            util.simver.lte(options['agda-version'], '2.6.2')) {
+        if (util.simver.lte(options['agda-version'], '2.6.2')) {
             flags.push('--constraint=text-icu>=0.7.1.0');
         }
     }
@@ -993,8 +992,10 @@ exports.supportedGhcVersions = exports.build = exports.name = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const path = __importStar(__nccwpck_require__(9411));
+const fs = __importStar(__nccwpck_require__(7561));
 const os = __importStar(__nccwpck_require__(612));
 const semver = __importStar(__nccwpck_require__(1383));
+const yaml = __importStar(__nccwpck_require__(1917));
 const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
 const object_pick_1 = __importDefault(__nccwpck_require__(9962));
@@ -1002,8 +1003,7 @@ exports.name = 'stack';
 function build(sourceDir, installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Configure, Build, and Install:
-        yield util.mkdirP(path.join(installDir, 'bin'));
-        yield util.stack(['build', ...buildFlags(options), '--copy-bins'], {
+        yield util.stack(['build', ...buildFlags(sourceDir, options), '--copy-bins'], {
             cwd: sourceDir
         });
         // Copy binaries from local bin
@@ -1024,7 +1024,9 @@ function build(sourceDir, installDir, options) {
     });
 }
 exports.build = build;
-function buildFlags(options) {
+function buildFlags(sourceDir, options) {
+    var _a;
+    const stackYamlName = `stack-${options['ghc-version']}.yaml`;
     // NOTE:
     //   We set the build flags following Agda's deploy workflow, which builds
     //   the nightly distributions, except that we disable --cluster-counting
@@ -1032,7 +1034,7 @@ function buildFlags(options) {
     //   https://github.com/agda/agda/blob/d5b5d90a3e34cf8cbae838bc20e94b74a20fea9c/src/github/workflows/deploy.yml#L37-L47
     const flags = [];
     // Load default configuration from 'stack-<agda-version>.yaml':
-    flags.push(`--stack-yaml=stack-${options['ghc-version']}.yaml`);
+    flags.push(`--stack-yaml=${stackYamlName}`);
     // Disable Stack managed GHC:
     if (!options['stack-setup-ghc']) {
         flags.push('--no-install-ghc');
@@ -1045,6 +1047,30 @@ function buildFlags(options) {
     if (!options['force-no-cluster-counting'] &&
         opts.supportsClusterCounting(options)) {
         flags.push('--flag=Agda:enable-cluster-counting');
+        // NOTE:
+        //   Agda versions 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
+        //   versions 0.7.0.0 - 0.7.1.0 do not compile with icu68+:
+        if (util.simver.lte(options['agda-version'], '2.6.2')) {
+            // Read stack-XYZ.yaml
+            const stackYamlPath = path.join(sourceDir, stackYamlName);
+            const stackYaml = yaml.load(fs.readFileSync(stackYamlPath, 'utf-8'));
+            core.info(`read ${stackYamlName}: ${JSON.stringify(stackYaml)}`);
+            // Add 'text-icu-0.7.1.0' to extra dependencies:
+            if ((stackYaml === null || stackYaml === void 0 ? void 0 : stackYaml['extra-deps']) === undefined)
+                stackYaml['extra-deps'] = [];
+            stackYaml['extra-deps'].push('text-icu-0.7.1.0');
+            core.info(`${stackYamlName}: add 'text-icu-0.7.1.0' to 'extra-deps'`);
+            // Pass 'text-icu>=0.7.1.0' constraint to Cabal:
+            if ((stackYaml === null || stackYaml === void 0 ? void 0 : stackYaml['configure-options']) === undefined)
+                stackYaml['configure-options'] = {};
+            if (((_a = stackYaml['configure-options']) === null || _a === void 0 ? void 0 : _a['Agda']) === undefined)
+                stackYaml['configure-options']['Agda'] = [];
+            stackYaml['configure-options']['Agda'].push('--constraint=text-icu>=0.7.1.0');
+            core.info(`${stackYamlName}: add '--constraint=text-icu>=0.7.1.0' to 'configure-options.Agda'`);
+            core.info(`write ${stackYamlName}: ${JSON.stringify(stackYaml)}`);
+            // Write stack-XYZ.yaml
+            fs.writeFileSync(stackYamlPath, yaml.dump(stackYaml));
+        }
     }
     // If supported, pass Agda flag --optimise-heavily
     if (opts.supportsOptimiseHeavily(options)) {

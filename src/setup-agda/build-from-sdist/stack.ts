@@ -79,9 +79,11 @@ function buildFlags(sourceDir: string, options: opts.BuildOptions): string[] {
       const stackYaml = yaml.load(
         fs.readFileSync(stackYamlPath, 'utf-8')
       ) as StackYaml
+      core.info(`read ${stackYamlName}: ${JSON.stringify(stackYaml)}`)
       // Add 'text-icu-0.7.1.0' to extra dependencies:
       if (stackYaml?.['extra-deps'] === undefined) stackYaml['extra-deps'] = []
       stackYaml['extra-deps'].push('text-icu-0.7.1.0')
+      core.info(`${stackYamlName}: add 'text-icu-0.7.1.0' to 'extra-deps'`)
       // Pass 'text-icu>=0.7.1.0' constraint to Cabal:
       if (stackYaml?.['configure-options'] === undefined)
         stackYaml['configure-options'] = {}
@@ -90,6 +92,10 @@ function buildFlags(sourceDir: string, options: opts.BuildOptions): string[] {
       stackYaml['configure-options']['Agda'].push(
         '--constraint=text-icu>=0.7.1.0'
       )
+      core.info(
+        `${stackYamlName}: add '--constraint=text-icu>=0.7.1.0' to 'configure-options.Agda'`
+      )
+      core.info(`write ${stackYamlName}: ${JSON.stringify(stackYaml)}`)
       // Write stack-XYZ.yaml
       fs.writeFileSync(stackYamlPath, yaml.dump(stackYaml))
     }
