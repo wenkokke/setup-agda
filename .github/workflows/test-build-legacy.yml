@@ -30,31 +30,40 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04]
-        agda-version:
-          [
-            '2.2.0',
-            '2.2.10',
-            '2.2.2',
-            '2.2.4',
-            '2.2.6',
-            '2.2.8',
-            '2.3.0',
-            '2.3.0.1',
-            '2.3.2',
-            '2.3.2.1',
-            '2.3.2.2',
-            '2.4.0',
-            '2.4.0.1',
-            '2.4.0.2',
-            '2.4.2',
-            '2.4.2.1',
-            '2.4.2.2',
-            '2.4.2.3',
-            '2.4.2.4',
-            '2.4.2.5',
-            '2.5.1.2',
-            '2.5.2',
-            '2.5.3',
+        agda-version: [
+            # '2.2.0',   # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+            # '2.2.10',  # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+            # '2.2.2',   # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+            # '2.2.4',   # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+            # '2.2.6',   # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+            # '2.2.8',   # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+            # '2.3.0',   # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+            # '2.3.0.1', # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+            # '2.3.2',   # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+            # '2.3.2.1', # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+            # '2.3.2.2', # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+            # '2.4.0',   # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+            # '2.4.0.1', # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+            # '2.4.0.2', # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+            # '2.4.2',   # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+            # '2.4.2.1', # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+            # '2.4.2.2', # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+            # '2.4.2.3', # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+            # '2.4.2.4', # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+            # '2.4.2.5', # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+            # '2.5.1.2', # Error: No compatible GHC versions recorded, no stack-XYZ.yaml.
+
+            # '2.5.2',   # Error: All install methods for ghc 8.0.1 failed
+            #            #
+            #            # TODO: Try with `stack-setup-ghc`?
+
+            # '2.5.3',   # Error: Could not build package happy-1.19.5:
+            #            # > Building happy-1.19.5...
+            #            # > Preprocessing executable 'happy' for happy-1.19.5...
+            #            # > setup: The program 'happy' is required but it could not be found
+            #            #
+            #            # TODO: Try explicitly calling `stack install alex` & `stack install happy`?
+
             '2.5.4.2',
             '2.6.0.1',
             '2.6.1.3',
