@@ -28,6 +28,10 @@ inputs:
     description: |
       If specified, the executables are compressed with UPX (https://upx.github.io).
 
+      Beware that on MacOS and Windows the resulting executables are unsigned,
+      and therefore will cause problems with security. There is a workaround
+      for this on MacOS, see 'setup-agda.install-from-bdist.repairPermissions'.
+
       Only used when "bdist-upload" is specified.
     required: false
   bdist-name:

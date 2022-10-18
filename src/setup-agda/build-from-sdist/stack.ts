@@ -55,11 +55,14 @@ function buildFlags(options: opts.BuildOptions): string[] {
   flags.push('--no-executable-profiling')
   flags.push('--no-library-profiling')
   // If supported, pass Agda flag --cluster-counting
-  if (opts.shouldEnableClusterCounting(options)) {
+  if (
+    !options['force-no-cluster-counting'] &&
+    opts.supportsClusterCounting(options)
+  ) {
     flags.push('--flag=Agda:enable-cluster-counting')
   }
   // If supported, pass Agda flag --optimise-heavily
-  if (opts.shouldEnableOptimiseHeavily(options)) {
+  if (opts.supportsOptimiseHeavily(options)) {
     flags.push('--flag=Agda:optimise-heavily')
   }
   // Add extra-{include,lib}-dirs:

@@ -11,7 +11,7 @@ export default async function installFromBdist(
 ): Promise<string | null> {
   // Download & extract package:
   try {
-    const bdistUrl = opts.findPkgUrl('agda', options['agda-version'])
+    const bdistUrl = opts.findBdist('agda', options['agda-version'])
     core.info(`Found package for Agda ${options['agda-version']}`)
     try {
       core.info(`Downloading package from ${bdistUrl}`)

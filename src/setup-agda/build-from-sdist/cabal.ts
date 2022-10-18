@@ -47,7 +47,10 @@ function buildFlags(options: opts.BuildOptions): string[] {
   flags.push('--disable-executable-profiling')
   flags.push('--disable-library-profiling')
   // If supported, pass Agda flag --cluster-counting
-  if (opts.shouldEnableClusterCounting(options)) {
+  if (
+    !options['force-no-cluster-counting'] &&
+    opts.supportsClusterCounting(options)
+  ) {
     flags.push('--flags=+enable-cluster-counting')
     // NOTE:
     //   Agda versions 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
@@ -60,7 +63,7 @@ function buildFlags(options: opts.BuildOptions): string[] {
     }
   }
   // If supported, pass Agda flag --optimise-heavily
-  if (opts.shouldEnableOptimiseHeavily(options)) {
+  if (opts.supportsOptimiseHeavily(options)) {
     flags.push('--flags=+optimise-heavily')
   }
   // If supported, set --split-sections.

@@ -18,7 +18,7 @@ export default async function setup(
 
 async function setupLinux(options: opts.BuildOptions): Promise<string> {
   const upxVersion = '3.96'
-  const upxPkgUrl = opts.findPkgUrl('upx', upxVersion)
+  const upxPkgUrl = opts.findBdist('upx', upxVersion)
   const upxTar = await tc.downloadTool(upxPkgUrl)
   const upxDir = await tc.extractTar(upxTar, undefined, [
     '--extract',
@@ -45,7 +45,7 @@ async function setupMacOS(options: opts.BuildOptions): Promise<string> {
 
 async function setupWindows(options: opts.BuildOptions): Promise<string> {
   const upxVersion = '3.96'
-  const upxPkgUrl = opts.findPkgUrl('upx', upxVersion)
+  const upxPkgUrl = opts.findBdist('upx', upxVersion)
   const upxZip = await tc.downloadTool(upxPkgUrl)
   const upxDir = await tc.extractZip(upxZip)
   options['upx-version'] = '3.96'

@@ -2,6 +2,7 @@ import * as core from '@actions/core'
 import assert from 'node:assert'
 import * as opts from './opts'
 import * as hackage from './util/hackage'
+import bundledAgdaPackageInfoCache from './package-info/Agda.versions.json'
 
 export * from './util/agda'
 export * from './util/exec'
@@ -14,6 +15,9 @@ export * from './util/pkg-config'
 export * as simver from './util/simver'
 
 // Agda utilities
+
+const agdaPackageInfoCache =
+  bundledAgdaPackageInfoCache as hackage.PackageInfoCache
 
 export async function resolveAgdaVersion(
   options: opts.BuildOptions
@@ -78,7 +82,7 @@ function agdaPackageInfoOptions(
 async function cacheAgdaPackageInfo(options: opts.BuildOptions): Promise<void> {
   if (options['package-info-cache'] === undefined) {
     options['package-info-cache'] = await hackage.getPackageInfo('Agda', {
-      packageInfoCache: opts.packageInfoCache
+      packageInfoCache: agdaPackageInfoCache
     })
   }
 }

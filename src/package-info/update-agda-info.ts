@@ -1,9 +1,9 @@
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
-import * as opts from '../opts'
 import * as hackage from '../util/hackage'
 import ensureError from 'ensure-error'
+import bundledAgdaPackageInfoCache from './Agda.versions.json'
 
 async function run(): Promise<void> {
   try {
@@ -12,9 +12,10 @@ async function run(): Promise<void> {
       '..',
       'src',
       'package-info',
-      'Agda.json'
+      'Agda.package-info.json'
     )
-    const oldPackageInfoCache = opts.packageInfoCache
+    const oldPackageInfoCache =
+      bundledAgdaPackageInfoCache as hackage.PackageInfoCache
     const newPackageInfoCache = await hackage.getPackageInfo('Agda')
     const oldTime = new Date(oldPackageInfoCache.lastModified).getTime()
     const newTime = new Date(newPackageInfoCache.lastModified).getTime()
@@ -37,15 +38,10 @@ async function run(): Promise<void> {
             version,
             oldPackageInfoCache.packageInfo[version],
             newPackageInfoCache.packageInfo[version]
-          ) &&
-          // Every normal version should have a known compatible version of
-          // the Agda standard library. If this raises an error, see:
-          // https://wiki.portal.chalmers.se/agda/Libraries/StandardLibrary
-          (newPackageInfoCache.packageInfo[version] === 'deprecated' ||
-            versionHasStdlib(version))
+          )
       }
       if (success) {
-        process.stdout.write(`Updated Agda.json${os.EOL}`)
+        process.stdout.write(`Updated Agda package info${os.EOL}`)
         fs.writeFileSync(packageInfoPath, JSON.stringify(newPackageInfoCache))
       } else {
         process.stdout.write(`refusing to update${os.EOL}`)
@@ -58,20 +54,10 @@ async function run(): Promise<void> {
   }
 }
 
-function versionHasStdlib(version: string): boolean {
-  if (opts.stdlibVersionsFor(version).length === 0) {
-    process.stderr.write(
-      `WARNING: no known version of agda-stdlib for Agda ${version}`
-    )
-    return false
-  }
-  return true
-}
-
 function versionStatusChangeOK(
   version: string,
-  oldStatus?: opts.PackageStatus,
-  newStatus?: opts.PackageStatus
+  oldStatus?: hackage.PackageStatus,
+  newStatus?: hackage.PackageStatus
 ): boolean {
   if (oldStatus === 'normal' && newStatus === undefined) {
     process.stderr.write(

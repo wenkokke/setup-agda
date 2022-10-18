@@ -32,7 +32,7 @@ export default async function uploadBdist(
   await util.cpR(path.join(installDir, 'data'), bdistDir)
 
   // Compress binaries:
-  if (opts.shouldCompressExe(options)) {
+  if (options['bdist-compress-exe']) {
     try {
       const upxExe = await setupUpx(options)
       for (const binName of util.agdaBinNames)

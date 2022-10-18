@@ -18,7 +18,8 @@ git add dist/index.js
 git add dist/index.js.map
 git add dist/licenses.txt
 git add dist/sourcemap-register.js
-git add src/package-info/Agda.json
+git add src/package-info/Agda.versions.json
+git add src/package-info/Haskell.versions.json
 
 # Delete 'latest' tag locally:
 git tag --delete latest || true
