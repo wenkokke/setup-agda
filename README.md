@@ -8,9 +8,7 @@ This action sets up an Agda environment for use in actions by installing or buil
 
 For [supported versions](#supported-versions), this action uses [custom binary distributions][custom binary distributions][^0].
 
-For all other versions, this action attempts to build Agda from source. 
-
-If an older version of GHC is needed to build the specified version, this action will set it up using [`haskell/actions/setup`].
+For all other versions, this action attempts to build Agda from source. If an older version of GHC is needed to build the specified version, this action will set it up using [`haskell/actions/setup`].
 
 [^0]: All binary distributions support [cluster counting].
 
