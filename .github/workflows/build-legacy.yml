@@ -14,10 +14,6 @@ on:
     - cron: '30 1 1 1 *'
   workflow_dispatch:
 
-env:
-  BUMP_TEXT_ICU: |
-    yq -i '. *+ {"extra-deps": ["text-icu-0.7.1.0"], "configure-options": {"Agda": ["--constraint=text-icu>=0.7.1.0"]}}' $STACK_YAML
-
 jobs:
   build-legacy-2_6_2_1:
     name: Build Agda (2.6.2.1)  on ${{ matrix.os }} with Stack
@@ -98,7 +94,9 @@ jobs:
           force-build: true
           ghc-version-match-exact: true
           pre-build-hook: |
-            ${{ env.BUMP_TEXT_ICU }}
+            yq -i '. *+ {"extra-deps": ["text-icu-0.7.1.0"],
+                         "configure-options": {"Agda": ["--constraint=text-icu>=0.7.1.0"]}}
+                  ' $STACK_YAML
             cat $STACK_YAML
 
     strategy:
@@ -129,7 +127,9 @@ jobs:
           force-build: true
           ghc-version-match-exact: true
           pre-build-hook: |
-            ${{ env.BUMP_TEXT_ICU }}
+            yq -i '. *+ {"extra-deps": ["text-icu-0.7.1.0"],
+                         "configure-options": {"Agda": ["--constraint=text-icu>=0.7.1.0"]}}
+                  ' $STACK_YAML
             cat $STACK_YAML
 
     strategy:
@@ -160,7 +160,9 @@ jobs:
           force-build: true
           ghc-version-match-exact: true
           pre-build-hook: |
-            ${{ env.BUMP_TEXT_ICU }}
+            yq -i '. *+ {"extra-deps": ["text-icu-0.7.1.0"],
+                         "configure-options": {"Agda": ["--constraint=text-icu>=0.7.1.0"]}}
+                  ' $STACK_YAML
             cat $STACK_YAML
 
     strategy:
