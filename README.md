@@ -75,7 +75,7 @@ The binary distributions bundle [icu][icu], and as such are subject to the [icu 
 
 [custom binary distributions]: https://github.com/wenkokke/setup-agda/releases/tag/latest
 [cluster counting]: https://agda.readthedocs.io/en/latest/tools/generating-latex.html#counting-extended-grapheme-clusters
-[`haskell/actions/setup`]: https://github.com/haskell/actions/tree/main/setup
+[`haskell/actions/setup`]: https://github.com/haskell/actions/tree/main/setup#README
 [test-build-legacy]: .github/workflows/test-build-legacy.yml
 [icu]: https://github.com/unicode-org/icu/tree/main/icu4c
 [icu license]: https://github.com/unicode-org/icu/blob/main/icu4c/LICENSE
