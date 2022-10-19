@@ -4,7 +4,13 @@
 [![Build Latest](https://github.com/wenkokke/setup-agda/actions/workflows/test-build-latest.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/test-build-latest.yml)
 [![Setup Legacy](https://github.com/wenkokke/setup-agda/actions/workflows/test-setup-legacy.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/test-setup-legacy.yml)
 
-This action sets up an Agda environment for use in actions by installing or building a version of Agda and adding it to PATH. For [supported versions](#supported-versions), this action uses [custom binary distributions]. For all other versions, this action attempts to build Agda from source. If an older version of GHC is needed to build the specified version, this action will set it up using [`haskell/actions/setup`].
+This action sets up an Agda environment for use in actions by installing or building a version of Agda and adding it to PATH. 
+
+For [supported versions](#supported-versions), this action uses [custom binary distributions]. 
+
+For all other versions, this action attempts to build Agda from source. 
+
+If an older version of GHC is needed to build the specified version, this action will set it up using [`haskell/actions/setup`].
 
 [^0]: All binary distributions support [cluster counting].
 
