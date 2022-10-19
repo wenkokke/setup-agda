@@ -17,9 +17,7 @@ export async function build(
   matchingGhcVersionsThatCanBuildAgda: string[]
 ): Promise<void> {
   const execOptions: util.ExecOptions = {cwd: sourceDir}
-
   // TODO: run pre-build-hook
-
   // Configure:
   core.info(`Configure Agda-${options['agda-version']}`)
   await util.cabal(['v2-configure', ...buildFlags(options)], execOptions)
@@ -57,18 +55,6 @@ function buildFlags(options: opts.BuildOptions): string[] {
     opts.supportsClusterCounting(options)
   ) {
     flags.push('--flags=+enable-cluster-counting')
-    // NOTE:
-    //   Agda versions 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
-    //   versions 0.7.0.0 - 0.7.1.0 do not compile with icu68+:
-    if (util.simver.lte(options['agda-version'], '2.6.2')) {
-      flags.push('--allow-newer=text-icu')
-      flags.push('--constraint=text-icu>=0.7.1.0')
-    }
-  }
-  // Fix EdisonCore dependency for Agda 2.5.2:
-  if (util.simver.eq(options['agda-version'], '2.5.2')) {
-    flags.push('--allow-newer=EdisonCore')
-    flags.push('--constraint=EdisonCore==1.3.3')
   }
   // If supported, pass Agda flag --optimise-heavily
   if (opts.supportsOptimiseHeavily(options)) {
@@ -86,6 +72,7 @@ function buildFlags(options: opts.BuildOptions): string[] {
     flags.push(`--extra-lib-dirs=${libDir}`)
   }
   for (const configureOption of opts.getConfigureOptions(options)) {
+    core.info(`cabal: Add configure option ${configureOption}`)
     flags.push(configureOption)
   }
   return flags

@@ -148,9 +148,7 @@ async function writeStackYaml(
 
   // Did we get any 'configure-options'?
   if (options['configure-options'] !== '') {
-    const configureOptions = options['configure-options']
-      .split(/\s+/g)
-      .filter(opt => opt !== '')
+    const configureOptions = opts.getConfigureOptions(options)
     core.info(
       [
         `stack: Adding 'configure-options' for package 'Agda':`,
@@ -160,7 +158,7 @@ async function writeStackYaml(
     stackYaml['configure-options'] = stackYaml?.['configure-options'] ?? {}
     stackYaml['configure-options']['Agda'] =
       stackYaml['configure-options']?.['Agda'] ?? []
-    for (const configureOption of opts.getConfigureOptions(options)) {
+    for (const configureOption of configureOptions) {
       stackYaml['configure-options']['Agda'].push(configureOption)
     }
   }

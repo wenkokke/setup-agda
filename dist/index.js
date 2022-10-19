@@ -907,18 +907,6 @@ function buildFlags(options) {
     if (!options['force-no-cluster-counting'] &&
         opts.supportsClusterCounting(options)) {
         flags.push('--flags=+enable-cluster-counting');
-        // NOTE:
-        //   Agda versions 2.5.3 - 2.6.2 depend on text-icu ^0.7, but
-        //   versions 0.7.0.0 - 0.7.1.0 do not compile with icu68+:
-        if (util.simver.lte(options['agda-version'], '2.6.2')) {
-            flags.push('--allow-newer=text-icu');
-            flags.push('--constraint=text-icu>=0.7.1.0');
-        }
-    }
-    // Fix EdisonCore dependency for Agda 2.5.2:
-    if (util.simver.eq(options['agda-version'], '2.5.2')) {
-        flags.push('--allow-newer=EdisonCore');
-        flags.push('--constraint=EdisonCore==1.3.3');
     }
     // If supported, pass Agda flag --optimise-heavily
     if (opts.supportsOptimiseHeavily(options)) {
@@ -936,6 +924,7 @@ function buildFlags(options) {
         flags.push(`--extra-lib-dirs=${libDir}`);
     }
     for (const configureOption of opts.getConfigureOptions(options)) {
+        core.info(`cabal: Add configure option ${configureOption}`);
         flags.push(configureOption);
     }
     return flags;
@@ -1149,9 +1138,7 @@ function writeStackYaml(sourceDir, options, matchingGhcVersionsThatCanBuildAgda)
         }
         // Did we get any 'configure-options'?
         if (options['configure-options'] !== '') {
-            const configureOptions = options['configure-options']
-                .split(/\s+/g)
-                .filter(opt => opt !== '');
+            const configureOptions = opts.getConfigureOptions(options);
             core.info([
                 `stack: Adding 'configure-options' for package 'Agda':`,
                 ...configureOptions.map(opt => `- ${opt}`)
@@ -1159,7 +1146,7 @@ function writeStackYaml(sourceDir, options, matchingGhcVersionsThatCanBuildAgda)
             stackYaml['configure-options'] = (_a = stackYaml === null || stackYaml === void 0 ? void 0 : stackYaml['configure-options']) !== null && _a !== void 0 ? _a : {};
             stackYaml['configure-options']['Agda'] =
                 (_c = (_b = stackYaml['configure-options']) === null || _b === void 0 ? void 0 : _b['Agda']) !== null && _c !== void 0 ? _c : [];
-            for (const configureOption of opts.getConfigureOptions(options)) {
+            for (const configureOption of configureOptions) {
                 stackYaml['configure-options']['Agda'].push(configureOption);
             }
         }

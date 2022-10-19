@@ -35,6 +35,8 @@ jobs:
                 -cabal{{{cabal-version}}}
                 -stack{{{stack-version}}}
           cabal-version: '2.4'
+          configure-options: |
+            --constraint=text-icu>=0.7.1.0
           enable-stack: true
           force-build: true
           ghc-version-match-exact: true
