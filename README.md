@@ -76,7 +76,7 @@ If you find a configuration for this action which builds a legacy version not li
 
 This action is subject to [its license] as well as [the licenses of its dependencies].
 
-The binary distributions bundle binaries for [icu4c], and as such are subject to the [icu4c licence] in addition to the [Agda license] and the licenses of its depencencies.
+The binary distributions bundle binaries for [icu4c], and as such are subject to the [icu4c license] in addition to the [Agda license] and the licenses of its depencencies.
 
 
 [custom binary distributions]: https://github.com/wenkokke/setup-agda/releases/tag/latest
