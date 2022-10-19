@@ -23,7 +23,7 @@ env:
     }
   YQ_SCRIPT_ADD_MEMORY: |
     . *+ {
-      "ghc-options": {"Agda": ["+RTS -M6G -RTS"]}
+      "ghc-options": {"Agda": "+RTS -M6G -RTS"}
     }
 
 jobs:
