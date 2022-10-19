@@ -47,7 +47,7 @@ jobs:
 
 ## Supported versions
 
-| Agda    | Release | Ubuntu        | macOS |       | Windows       |
+| Agda    | Release | Ubuntu | Ubuntu | macOS | macOS | Windows | Windows |
 |         |         | 20.04 | 22.04 | 11    | 12    | 2019  | 2022  |
 | ------- | ------- | ----- | ----- | ----- | ----- | ----- | ----- |
 | 2.6.2.2 | source  | ☑️    | ☑️   | ☑️    | ☑️    | -     | -     |
