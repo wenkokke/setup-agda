@@ -38,7 +38,7 @@ jobs:
           force-build: true
           ghc-version-match-exact: true
           pre-build-hook: |
-            yq -i '(.extra-deps // (.extra-deps = [])) += "text-icu-0.7.1.0" | with((.configure-options // (.configure-options = {}); (.Agda // (.Agda = [])) += "--constraint=text-icu>=0.7.1.0")' stack.yaml
+            yq -i '. * {"extra-deps": ["text-icu-0.7.1.0"], "configure-options": {"Agda": ["--constraint=text-icu>=0.7.1.0"]}}' stack.yaml
             
     strategy:
       matrix:
