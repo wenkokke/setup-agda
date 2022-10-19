@@ -17,14 +17,19 @@ export async function build(
   matchingGhcVersionsThatCanBuildAgda: string[]
 ): Promise<void> {
   const execOptions: util.ExecOptions = {cwd: sourceDir}
-  // TODO: run pre-build-hook
-  // Configure:
+
+  // Run the pre-build hook:
+  await opts.runPreBuildHook(options, execOptions)
+
+  // Run `cabal configure`:
   core.info(`Configure Agda-${options['agda-version']}`)
   await util.cabal(['v2-configure', ...buildFlags(options)], execOptions)
-  // Build:
+
+  // Run `cabal build`:
   core.info(`Build Agda-${options['agda-version']}`)
   await util.cabal(['v2-build', 'exe:agda', 'exe:agda-mode'], execOptions)
-  // Install:
+
+  // Run `cabal install`:
   core.info(`Install Agda-${options['agda-version']} to ${installDir}`)
   await util.mkdirP(path.join(installDir, 'bin'))
   await util.cabal(

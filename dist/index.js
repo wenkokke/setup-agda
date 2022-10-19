@@ -107,14 +107,37 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.getConfigureOptions = void 0;
+exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = exports.getConfigureOptions = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const exec = __importStar(__nccwpck_require__(1514));
+const os = __importStar(__nccwpck_require__(612));
 const util_1 = __nccwpck_require__(4024);
 const opts = __importStar(__nccwpck_require__(2695));
 function getConfigureOptions(options) {
     return options['configure-options'].split(/\s+/g).filter(opt => opt !== '');
 }
 exports.getConfigureOptions = getConfigureOptions;
+function runPreBuildHook(options, execOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (options['pre-build-hook'] !== '') {
+            core.info(`Running pre-build hook:${os.EOL}${options['pre-build-hook']}`);
+            execOptions = execOptions !== null && execOptions !== void 0 ? execOptions : {};
+            execOptions.input = Buffer.from(options['pre-build-hook'], 'utf-8');
+            yield exec.exec('bash', [], execOptions);
+        }
+    });
+}
+exports.runPreBuildHook = runPreBuildHook;
 function supportsSplitSections(options) {
     // NOTE:
     //   We only set --split-sections on Linux and Windows, as it does nothing on MacOS:
@@ -873,14 +896,15 @@ function build(sourceDir, installDir, options,
 matchingGhcVersionsThatCanBuildAgda) {
     return __awaiter(this, void 0, void 0, function* () {
         const execOptions = { cwd: sourceDir };
-        // TODO: run pre-build-hook
-        // Configure:
+        // Run the pre-build hook:
+        yield opts.runPreBuildHook(options, execOptions);
+        // Run `cabal configure`:
         core.info(`Configure Agda-${options['agda-version']}`);
         yield util.cabal(['v2-configure', ...buildFlags(options)], execOptions);
-        // Build:
+        // Run `cabal build`:
         core.info(`Build Agda-${options['agda-version']}`);
         yield util.cabal(['v2-build', 'exe:agda', 'exe:agda-mode'], execOptions);
-        // Install:
+        // Run `cabal install`:
         core.info(`Install Agda-${options['agda-version']} to ${installDir}`);
         yield util.mkdirP(path.join(installDir, 'bin'));
         yield util.cabal([
@@ -1035,13 +1059,13 @@ const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 exports.name = 'stack';
 function build(sourceDir, installDir, options, matchingGhcVersionsThatCanBuildAgda) {
     return __awaiter(this, void 0, void 0, function* () {
+        const execOptions = { cwd: sourceDir };
         // Create the stack.yaml file:
-        writeStackYaml(sourceDir, options, matchingGhcVersionsThatCanBuildAgda);
-        // TODO: run pre-build-hook
+        yield writeStackYaml(sourceDir, options, matchingGhcVersionsThatCanBuildAgda);
+        // Run the pre-build hook:
+        yield opts.runPreBuildHook(options, execOptions);
         // Configure, Build, and Install:
-        yield util.stack(['build', ...buildFlags(sourceDir, options), '--copy-bins'], {
-            cwd: sourceDir
-        });
+        yield util.stack(['build', ...buildFlags(options)], execOptions);
         // Copy binaries from local bin
         const localBinDir = yield util.stackGetLocalBin((0, object_pick_1.default)(options, ['ghc-version']));
         const installBinDir = path.join(installDir, 'bin');
@@ -1060,7 +1084,7 @@ function build(sourceDir, installDir, options, matchingGhcVersionsThatCanBuildAg
     });
 }
 exports.build = build;
-function buildFlags(sourceDir, options) {
+function buildFlags(options) {
     // NOTE:
     //   We set the build flags following Agda's deploy workflow, which builds
     //   the nightly distributions, except that we disable --cluster-counting
@@ -1095,6 +1119,7 @@ function buildFlags(sourceDir, options) {
     for (const libDir of options['extra-lib-dirs']) {
         flags.push(`--extra-lib-dirs=${libDir}`);
     }
+    flags.push('--copy-bins');
     return flags;
 }
 function supportedGhcVersions(sourceDir) {

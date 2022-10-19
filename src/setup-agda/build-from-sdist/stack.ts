@@ -18,18 +18,17 @@ export async function build(
   options: opts.BuildOptions,
   matchingGhcVersionsThatCanBuildAgda: string[]
 ): Promise<void> {
-  // Create the stack.yaml file:
-  writeStackYaml(sourceDir, options, matchingGhcVersionsThatCanBuildAgda)
+  const execOptions: util.ExecOptions = {cwd: sourceDir}
 
-  // TODO: run pre-build-hook
+  // Create the stack.yaml file:
+  await writeStackYaml(sourceDir, options, matchingGhcVersionsThatCanBuildAgda)
+
+  // Run the pre-build hook:
+  await opts.runPreBuildHook(options, execOptions)
 
   // Configure, Build, and Install:
-  await util.stack(
-    ['build', ...buildFlags(sourceDir, options), '--copy-bins'],
-    {
-      cwd: sourceDir
-    }
-  )
+  await util.stack(['build', ...buildFlags(options)], execOptions)
+
   // Copy binaries from local bin
   const localBinDir = await util.stackGetLocalBin(
     pick(options, ['ghc-version'])
@@ -48,7 +47,7 @@ export async function build(
   }
 }
 
-function buildFlags(sourceDir: string, options: opts.BuildOptions): string[] {
+function buildFlags(options: opts.BuildOptions): string[] {
   // NOTE:
   //   We set the build flags following Agda's deploy workflow, which builds
   //   the nightly distributions, except that we disable --cluster-counting
@@ -84,6 +83,7 @@ function buildFlags(sourceDir: string, options: opts.BuildOptions): string[] {
   for (const libDir of options['extra-lib-dirs']) {
     flags.push(`--extra-lib-dirs=${libDir}`)
   }
+  flags.push('--copy-bins')
   return flags
 }
 

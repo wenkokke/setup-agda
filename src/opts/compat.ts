@@ -1,9 +1,24 @@
+import * as core from '@actions/core'
+import * as exec from '@actions/exec'
+import * as os from 'node:os'
 import {simver} from '../util'
 import * as opts from './os'
 import {BuildOptions} from './types'
 
 export function getConfigureOptions(options: BuildOptions): string[] {
   return options['configure-options'].split(/\s+/g).filter(opt => opt !== '')
+}
+
+export async function runPreBuildHook(
+  options: BuildOptions,
+  execOptions?: exec.ExecOptions
+): Promise<void> {
+  if (options['pre-build-hook'] !== '') {
+    core.info(`Running pre-build hook:${os.EOL}${options['pre-build-hook']}`)
+    execOptions = execOptions ?? {}
+    execOptions.input = Buffer.from(options['pre-build-hook'], 'utf-8')
+    await exec.exec('bash', [], execOptions)
+  }
 }
 
 export function supportsSplitSections(options: BuildOptions): boolean {
