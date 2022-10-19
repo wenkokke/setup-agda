@@ -1,5 +1,4 @@
 import * as core from '@actions/core'
-import * as io from '@actions/io'
 import * as glob from '@actions/glob'
 import * as path from 'node:path'
 import * as opts from '../opts'
@@ -78,7 +77,7 @@ export async function agdaGetDataDir(
   } else {
     const agdaDataDir = agdaOptions?.agdaDataDir ?? options?.env?.Agda_datadir
     if (agdaDataDir !== undefined) return agdaDataDir
-    const agdaBin = agdaOptions?.agdaBin ?? (await io.which('agda'))
+    const agdaBin = agdaOptions?.agdaBin ?? (await exec.which(agdaBinName))
     return path.join(agdaBin, '..', 'data')
   }
 }

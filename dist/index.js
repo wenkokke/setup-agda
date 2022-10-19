@@ -2316,7 +2316,6 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.installAgda = exports.agdaTest = exports.agda = exports.agdaGetDataDir = exports.agdaGetVersion = exports.agdaBinNames = exports.agdaModeBinName = exports.agdaBinName = void 0;
 const core = __importStar(__nccwpck_require__(2186));
-const io = __importStar(__nccwpck_require__(7436));
 const glob = __importStar(__nccwpck_require__(8090));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
@@ -2367,7 +2366,7 @@ function agdaGetDataDir(agdaOptions, options) {
             const agdaDataDir = (_a = agdaOptions === null || agdaOptions === void 0 ? void 0 : agdaOptions.agdaDataDir) !== null && _a !== void 0 ? _a : (_b = options === null || options === void 0 ? void 0 : options.env) === null || _b === void 0 ? void 0 : _b.Agda_datadir;
             if (agdaDataDir !== undefined)
                 return agdaDataDir;
-            const agdaBin = (_c = agdaOptions === null || agdaOptions === void 0 ? void 0 : agdaOptions.agdaBin) !== null && _c !== void 0 ? _c : (yield io.which('agda'));
+            const agdaBin = (_c = agdaOptions === null || agdaOptions === void 0 ? void 0 : agdaOptions.agdaBin) !== null && _c !== void 0 ? _c : (yield exec.which(exports.agdaBinName));
             return path.join(agdaBin, '..', 'data');
         }
     });
@@ -2538,12 +2537,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getVersion = exports.lsR = exports.rmRF = exports.mkdirP = exports.mv = exports.cpR = exports.cp = exports.getOutput = void 0;
+exports.getVersion = exports.lsR = exports.rmRF = exports.mkdirP = exports.mv = exports.cpR = exports.cp = exports.getOutput = exports.which = exports.findInPath = void 0;
 const exec = __importStar(__nccwpck_require__(1514));
 const os = __importStar(__nccwpck_require__(612));
 const core = __importStar(__nccwpck_require__(2186));
 const io = __importStar(__nccwpck_require__(7436));
 const opts = __importStar(__nccwpck_require__(1352));
+var io_1 = __nccwpck_require__(7436);
+Object.defineProperty(exports, "findInPath", ({ enumerable: true, get: function () { return io_1.findInPath; } }));
+Object.defineProperty(exports, "which", ({ enumerable: true, get: function () { return io_1.which; } }));
 function getOutput(prog, args, execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         let progOutput = '';

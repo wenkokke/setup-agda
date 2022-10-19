@@ -5,6 +5,7 @@ import * as io from '@actions/io'
 import * as opts from '../opts'
 
 export {ExecOptions} from '@actions/exec'
+export {findInPath, which} from '@actions/io'
 
 export async function getOutput(
   prog: string,
