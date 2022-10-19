@@ -42,12 +42,14 @@ export default function getOptions(
     'bdist-compress-exe': getFlag('bdist-compress-exe'),
     'bdist-name': getOption('bdist-name'),
     'bdist-upload': getFlag('bdist-upload'),
+    'configure-options': getOption('configure-options'),
     'force-build': getFlag('force-build'),
     'force-no-build': getFlag('force-no-build'),
     'force-cluster-counting': getFlag('force-cluster-counting'),
     'force-no-cluster-counting': getFlag('force-no-cluster-counting'),
     'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
     'ghc-version-range': getOption('ghc-version-range'),
+    'pre-build-hook': getOption('pre-build-hook'),
 
     // Specified in HaskellSetupInputs
     'cabal-version': getOption('cabal-version'),

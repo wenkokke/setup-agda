@@ -17,6 +17,9 @@ export async function build(
   matchingGhcVersionsThatCanBuildAgda: string[]
 ): Promise<void> {
   const execOptions: util.ExecOptions = {cwd: sourceDir}
+
+  // TODO: run pre-build-hook
+
   // Configure:
   core.info(`Configure Agda-${options['agda-version']}`)
   await util.cabal(['v2-configure', ...buildFlags(options)], execOptions)
@@ -81,6 +84,9 @@ function buildFlags(options: opts.BuildOptions): string[] {
   }
   for (const libDir of options['extra-lib-dirs']) {
     flags.push(`--extra-lib-dirs=${libDir}`)
+  }
+  for (const configureOption of opts.getConfigureOptions(options)) {
+    flags.push(configureOption)
   }
   return flags
 }

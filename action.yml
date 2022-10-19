@@ -23,6 +23,8 @@ inputs:
       If set to "latest" or a specific version number, it will install the
       latest or that specific version, regardless of compatibility with the
       specified Agda version.
+
+      NOTE: not yet supported.
     required: false
   bdist-compress-exe:
     description: |
@@ -52,6 +54,10 @@ inputs:
   bdist-upload:
     description: |
       If specified, will upload a binary distribution for the specified Agda version.
+    required: false
+  configure-options:
+    description: |
+      If specified, will be passed to `cabal configure`.
     required: false
   force-cluster-counting:
     description: |
@@ -86,6 +92,13 @@ inputs:
       the "tested-with" field in Agda.cabal (if building with Cabal) or from the
       set of "stack-*.yaml" files (if building with Stack). If specified, this
       inferred set of is then filtered by "ghc-version-range".
+    required: false
+  pre-build-hook:
+    default: ''
+    description: |
+      A Bash script to be run before starting the build.
+
+      NOTE: not yet supported.
     required: false
 
   # If it is called, following inputs are passed to haskell/actions/setup:

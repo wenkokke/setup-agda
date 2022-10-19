@@ -2,6 +2,10 @@ import {simver} from '../util'
 import * as opts from './os'
 import {BuildOptions} from './types'
 
+export function getConfigureOptions(options: BuildOptions): string[] {
+  return options['configure-options'].split(/\s+/g).filter(opt => opt !== '')
+}
+
 export function supportsSplitSections(options: BuildOptions): boolean {
   // NOTE:
   //   We only set --split-sections on Linux and Windows, as it does nothing on MacOS:
