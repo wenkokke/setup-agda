@@ -6,7 +6,7 @@
 
 This action sets up an Agda environment for use in actions by installing or building a version of Agda and adding it to PATH. 
 
-For [supported versions](#supported-versions), this action uses [custom binary distributions]. 
+For [supported versions](#supported-versions), this action uses [custom binary distributions].[^0]
 
 For all other versions, this action attempts to build Agda from source. 
 
