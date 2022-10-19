@@ -5,9 +5,10 @@
 [![Setup Legacy](https://github.com/wenkokke/setup-agda/actions/workflows/test-setup-legacy.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/test-setup-legacy.yml)
 
 This action sets up an Agda environment for use in actions by installing or building a version of Agda and adding it to PATH.
-
 For supported versions, this action uses [custom binary distributions][custom-binary-distributions].
 For all other versions, this action attempts to build Agda from source.
+
+If an older version of GHC is needed, this action will call [`haskell/actions/setup`][haskell/actions/setup]. Any inputs supported by [`haskell/actions/setup`][haskell/actions/setup] is supported by this action, and will be passed along in the event that it is called.
 
 ## Usage
 
@@ -75,6 +76,7 @@ The binary distributions bundle [icu][icu], and as such are subject to the [icu 
 
 
 [custom-binary-distributions]: https://github.com/wenkokke/setup-agda/releases/tag/latest
+[haskell/actions/setup]: https://github.com/haskell/actions/tree/main/setup
 [test-build-legacy]: .github/workflows/test-build-legacy.yml
 [icu]: https://github.com/unicode-org/icu/tree/main/icu4c
 [icu-license]: https://github.com/unicode-org/icu/blob/main/icu4c/LICENSE
