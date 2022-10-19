@@ -72,7 +72,7 @@ If you find a configuration for this action which builds a legacy version not li
 [^1]: This version can only be built with Stack. Set the input `enable-stack` to build with Stack.
 
 
-## License
+## Licenses
 
 This action is subject to [its license] as well as [the licenses of its dependencies].
 
