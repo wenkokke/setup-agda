@@ -22,7 +22,6 @@ export interface SetupHaskellInputs
 export type SetupAgdaOption =
   | 'agda-version'
   | 'bdist-name'
-  | 'configure-options'
   | 'ghc-version-range'
   | 'pre-build-hook'
   | SetupHaskellOption

@@ -4,7 +4,6 @@ import * as path from 'node:path'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as semver from 'semver'
-import * as yaml from 'js-yaml'
 import * as opts from '../../opts'
 import * as util from '../../util'
 import pick from 'object.pick'
@@ -18,10 +17,25 @@ export async function build(
   options: opts.BuildOptions,
   matchingGhcVersionsThatCanBuildAgda: string[]
 ): Promise<void> {
-  const execOptions: util.ExecOptions = {cwd: sourceDir}
-
   // Create the stack.yaml file:
-  await writeStackYaml(sourceDir, options, matchingGhcVersionsThatCanBuildAgda)
+  const stackYaml = await findStackYaml(
+    sourceDir,
+    options,
+    matchingGhcVersionsThatCanBuildAgda
+  )
+  const execOptions: util.ExecOptions = {
+    cwd: sourceDir,
+    env: {...process.env, STACK_YAML: stackYaml}
+  }
+
+  // Set whether or not to use a system GHC:
+  if (options['stack-setup-ghc']) {
+    await util.stack(['config', 'set', 'system-ghc', 'false'], execOptions)
+    await util.stack(['config', 'set', 'install-ghc', 'true'], execOptions)
+  } else {
+    await util.stack(['config', 'set', 'system-ghc', 'true'], execOptions)
+    await util.stack(['config', 'set', 'install-ghc', 'false'], execOptions)
+  }
 
   // Run the pre-build hook:
   await opts.runPreBuildHook(options, execOptions)
@@ -54,14 +68,6 @@ function buildFlags(options: opts.BuildOptions): string[] {
   //   for all builds. See:
   //   https://github.com/agda/agda/blob/d5b5d90a3e34cf8cbae838bc20e94b74a20fea9c/src/github/workflows/deploy.yml#L37-L47
   const flags: string[] = []
-  // Disable Stack managed GHC:
-  if (options['stack-setup-ghc']) {
-    flags.push('--no-system-ghc')
-    flags.push('--install-ghc')
-  } else {
-    flags.push('--no-install-ghc')
-    flags.push('--system-ghc')
-  }
   // Disable profiling:
   flags.push('--no-executable-profiling')
   flags.push('--no-library-profiling')
@@ -119,57 +125,6 @@ export async function supportedGhcVersions(
   }
 }
 
-interface StackYaml {
-  'extra-deps'?: string[]
-  'configure-options'?: Partial<Record<string, string[]>>
-  'compiler-check': 'match-minor' | 'match-exact' | 'newer-minor'
-}
-
-async function writeStackYaml(
-  sourceDir: string,
-  options: opts.BuildOptions,
-  matchingGhcVersionsThatCanBuildAgda: string[]
-): Promise<void> {
-  // Find and load stack.yml:
-  const stackYamlFrom = await findStackYaml(
-    sourceDir,
-    options,
-    matchingGhcVersionsThatCanBuildAgda
-  )
-  const stackYaml = yaml.load(
-    fs.readFileSync(stackYamlFrom, 'utf-8')
-  ) as StackYaml
-
-  // Did we get an exact match? If not, allow 'newer-minor':
-  if (!ghcVersionMatchExact(options, matchingGhcVersionsThatCanBuildAgda)) {
-    core.info(`stack: Setting 'compiler-check' to 'newer-minor'`)
-    stackYaml['compiler-check'] = 'newer-minor'
-  }
-
-  // Did we get any 'configure-options'?
-  if (options['configure-options'] !== '') {
-    const configureOptions = opts.getConfigureOptions(options)
-    core.info(
-      [
-        `stack: Adding 'configure-options' for package 'Agda':`,
-        ...configureOptions.map(opt => `- ${opt}`)
-      ].join(os.EOL)
-    )
-    stackYaml['configure-options'] = stackYaml?.['configure-options'] ?? {}
-    stackYaml['configure-options']['Agda'] =
-      stackYaml['configure-options']?.['Agda'] ?? []
-    for (const configureOption of configureOptions) {
-      stackYaml['configure-options']['Agda'].push(configureOption)
-    }
-  }
-
-  // Write the resulting file to stack.yaml:
-  const stackYamlTo = path.join(sourceDir, 'stack.yaml')
-  const stackYamlString = yaml.dump(stackYaml)
-  core.info(`stack: Writing 'stack.yaml':${os.EOL}${stackYamlString}`)
-  fs.writeFileSync(stackYamlTo, stackYamlString)
-}
-
 async function findStackYaml(
   sourceDir: string,
   options: opts.BuildOptions,
@@ -187,10 +142,9 @@ async function findStackYaml(
     assert(ghcVersionWithStackYaml !== null)
   }
   const stackYamlName = `stack-${ghcVersionWithStackYaml}.yaml`
-  const stackYaml = path.join(sourceDir, stackYamlName)
-  core.info(`stack: Loading ${stackYamlName}`)
-  assert(fs.existsSync(stackYaml))
-  return stackYaml
+  core.info(`stack: Using ${stackYamlName}`)
+  assert(fs.existsSync(path.join(sourceDir, stackYamlName)))
+  return stackYamlName
 }
 
 function ghcVersionMatchExact(

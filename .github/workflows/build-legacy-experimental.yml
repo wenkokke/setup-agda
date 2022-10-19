@@ -61,14 +61,14 @@ jobs:
                 -cabal{{{cabal-version}}}
                 -stack{{{stack-version}}}
           cabal-version: '2.4'
-          configure-options: |
-            --allow-newer=text-icu
-            --constraint=text-icu>=0.7.1.0
-            --ghc-options='+RTS -M6G -RTS'
           enable-stack: true
           force-build: true
           ghc-version: '8.0.2'
           ghc-version-match-exact: false
+          # TODO: add to cabal.project.local:
+          # * --allow-newer=text-icu
+          # * --constraint=text-icu>=0.7.1.0
+          # * --ghc-options='+RTS -M6G -RTS'
           pre-build-hook: |
             stack install alex-3.2.5
             stack install happy-1.19.12
@@ -96,16 +96,14 @@ jobs:
                 -cabal{{{cabal-version}}}
                 -stack{{{stack-version}}}
           cabal-version: '2.4'
-          configure-options: |
-            --allow-newer=text-icu
-            --constraint=text-icu>=0.7.1.0
-            --ghc-options='+RTS -M6G -RTS'
           enable-stack: true
           force-build: true
           ghc-version-match-exact: true
           pre-build-hook: |
             stack install alex-3.2.5
             stack install happy-1.19.12
+            yq -i '. *+ {"allow-newer": true, "extra-deps": ["text-icu-0.7.1.0"], "configure-options": {"Agda": ["--constraint=text-icu>=0.7.1.0"]}, "ghc-options": {"Agda": ["+RTS -M6G -RTS"]}}' $STACK_YAML
+            cat $STACK_YAML
     strategy:
       matrix:
         os: [ubuntu-20.04]
@@ -130,12 +128,12 @@ jobs:
                 -cabal{{{cabal-version}}}
                 -stack{{{stack-version}}}
           cabal-version: '2.4'
-          configure-options: |
-            --constraint=text-icu>=0.7.1.0
-            --ghc-options='+RTS -M6G -RTS'
           enable-stack: true
           force-build: true
           ghc-version-match-exact: true
+          pre-build-hook: |
+            yq -i '. *+ {"allow-newer": true, "extra-deps": ["text-icu-0.7.1.0"], "configure-options": {"Agda": ["--constraint=text-icu>=0.7.1.0"]}, "ghc-options": {"Agda": ["+RTS -M6G -RTS"]}}' $STACK_YAML
+            cat $STACK_YAML
     strategy:
       matrix:
         os: [windows-2022]

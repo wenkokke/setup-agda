@@ -55,10 +55,6 @@ inputs:
     description: |
       If specified, will upload a binary distribution for the specified Agda version.
     required: false
-  configure-options:
-    description: |
-      If specified, will be passed to `cabal configure`.
-    required: false
   force-cluster-counting:
     description: |
       If specified, build with cluster counting.
@@ -97,8 +93,6 @@ inputs:
     default: ''
     description: |
       A Bash script to be run before starting the build.
-
-      NOTE: not yet supported.
     required: false
 
   # If it is called, following inputs are passed to haskell/actions/setup:

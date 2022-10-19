@@ -117,19 +117,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = exports.getConfigureOptions = void 0;
+exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
 const os = __importStar(__nccwpck_require__(612));
 const util_1 = __nccwpck_require__(4024);
 const opts = __importStar(__nccwpck_require__(2695));
-function getConfigureOptions(options) {
-    return options['configure-options']
-        .split(/\r?\n/g)
-        .map(opt => opt.trim())
-        .filter(opt => opt !== '');
-}
-exports.getConfigureOptions = getConfigureOptions;
 function runPreBuildHook(options, execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         if (options['pre-build-hook'] !== '') {
@@ -267,7 +260,6 @@ function getOptions(inputs, actionYml) {
         'bdist-compress-exe': getFlag('bdist-compress-exe'),
         'bdist-name': getOption('bdist-name'),
         'bdist-upload': getFlag('bdist-upload'),
-        'configure-options': getOption('configure-options'),
         'force-build': getFlag('force-build'),
         'force-no-build': getFlag('force-no-build'),
         'force-cluster-counting': getFlag('force-cluster-counting'),
@@ -899,11 +891,11 @@ function build(sourceDir, installDir, options,
 matchingGhcVersionsThatCanBuildAgda) {
     return __awaiter(this, void 0, void 0, function* () {
         const execOptions = { cwd: sourceDir };
-        // Run the pre-build hook:
-        yield opts.runPreBuildHook(options, execOptions);
         // Run `cabal configure`:
         core.info(`Configure Agda-${options['agda-version']}`);
         yield util.cabal(['v2-configure', ...buildFlags(options)], execOptions);
+        // Run the pre-build hook:
+        yield opts.runPreBuildHook(options, execOptions);
         // Run `cabal build`:
         core.info(`Build Agda-${options['agda-version']}`);
         yield util.cabal(['v2-build', 'exe:agda', 'exe:agda-mode'], execOptions);
@@ -949,10 +941,6 @@ function buildFlags(options) {
     }
     for (const libDir of options['extra-lib-dirs']) {
         flags.push(`--extra-lib-dirs=${libDir}`);
-    }
-    for (const configureOption of opts.getConfigureOptions(options)) {
-        core.info(`cabal: Add configure option ${configureOption}`);
-        flags.push(configureOption);
     }
     return flags;
 }
@@ -1054,7 +1042,6 @@ const path = __importStar(__nccwpck_require__(9411));
 const fs = __importStar(__nccwpck_require__(7561));
 const os = __importStar(__nccwpck_require__(612));
 const semver = __importStar(__nccwpck_require__(1383));
-const yaml = __importStar(__nccwpck_require__(1917));
 const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
 const object_pick_1 = __importDefault(__nccwpck_require__(9962));
@@ -1062,9 +1049,21 @@ const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 exports.name = 'stack';
 function build(sourceDir, installDir, options, matchingGhcVersionsThatCanBuildAgda) {
     return __awaiter(this, void 0, void 0, function* () {
-        const execOptions = { cwd: sourceDir };
         // Create the stack.yaml file:
-        yield writeStackYaml(sourceDir, options, matchingGhcVersionsThatCanBuildAgda);
+        const stackYaml = yield findStackYaml(sourceDir, options, matchingGhcVersionsThatCanBuildAgda);
+        const execOptions = {
+            cwd: sourceDir,
+            env: Object.assign(Object.assign({}, process.env), { STACK_YAML: stackYaml })
+        };
+        // Set whether or not to use a system GHC:
+        if (options['stack-setup-ghc']) {
+            yield util.stack(['config', 'set', 'system-ghc', 'false'], execOptions);
+            yield util.stack(['config', 'set', 'install-ghc', 'true'], execOptions);
+        }
+        else {
+            yield util.stack(['config', 'set', 'system-ghc', 'true'], execOptions);
+            yield util.stack(['config', 'set', 'install-ghc', 'false'], execOptions);
+        }
         // Run the pre-build hook:
         yield opts.runPreBuildHook(options, execOptions);
         // Configure, Build, and Install:
@@ -1094,15 +1093,6 @@ function buildFlags(options) {
     //   for all builds. See:
     //   https://github.com/agda/agda/blob/d5b5d90a3e34cf8cbae838bc20e94b74a20fea9c/src/github/workflows/deploy.yml#L37-L47
     const flags = [];
-    // Disable Stack managed GHC:
-    if (options['stack-setup-ghc']) {
-        flags.push('--no-system-ghc');
-        flags.push('--install-ghc');
-    }
-    else {
-        flags.push('--no-install-ghc');
-        flags.push('--system-ghc');
-    }
     // Disable profiling:
     flags.push('--no-executable-profiling');
     flags.push('--no-library-profiling');
@@ -1153,38 +1143,6 @@ function supportedGhcVersions(sourceDir) {
     });
 }
 exports.supportedGhcVersions = supportedGhcVersions;
-function writeStackYaml(sourceDir, options, matchingGhcVersionsThatCanBuildAgda) {
-    var _a, _b, _c;
-    return __awaiter(this, void 0, void 0, function* () {
-        // Find and load stack.yml:
-        const stackYamlFrom = yield findStackYaml(sourceDir, options, matchingGhcVersionsThatCanBuildAgda);
-        const stackYaml = yaml.load(fs.readFileSync(stackYamlFrom, 'utf-8'));
-        // Did we get an exact match? If not, allow 'newer-minor':
-        if (!ghcVersionMatchExact(options, matchingGhcVersionsThatCanBuildAgda)) {
-            core.info(`stack: Setting 'compiler-check' to 'newer-minor'`);
-            stackYaml['compiler-check'] = 'newer-minor';
-        }
-        // Did we get any 'configure-options'?
-        if (options['configure-options'] !== '') {
-            const configureOptions = opts.getConfigureOptions(options);
-            core.info([
-                `stack: Adding 'configure-options' for package 'Agda':`,
-                ...configureOptions.map(opt => `- ${opt}`)
-            ].join(os.EOL));
-            stackYaml['configure-options'] = (_a = stackYaml === null || stackYaml === void 0 ? void 0 : stackYaml['configure-options']) !== null && _a !== void 0 ? _a : {};
-            stackYaml['configure-options']['Agda'] =
-                (_c = (_b = stackYaml['configure-options']) === null || _b === void 0 ? void 0 : _b['Agda']) !== null && _c !== void 0 ? _c : [];
-            for (const configureOption of configureOptions) {
-                stackYaml['configure-options']['Agda'].push(configureOption);
-            }
-        }
-        // Write the resulting file to stack.yaml:
-        const stackYamlTo = path.join(sourceDir, 'stack.yaml');
-        const stackYamlString = yaml.dump(stackYaml);
-        core.info(`stack: Writing 'stack.yaml':${os.EOL}${stackYamlString}`);
-        fs.writeFileSync(stackYamlTo, stackYamlString);
-    });
-}
 function findStackYaml(sourceDir, options, matchingGhcVersionsThatCanBuildAgda) {
     return __awaiter(this, void 0, void 0, function* () {
         (0, node_assert_1.default)(matchingGhcVersionsThatCanBuildAgda.length > 0);
@@ -1197,10 +1155,9 @@ function findStackYaml(sourceDir, options, matchingGhcVersionsThatCanBuildAgda) 
             (0, node_assert_1.default)(ghcVersionWithStackYaml !== null);
         }
         const stackYamlName = `stack-${ghcVersionWithStackYaml}.yaml`;
-        const stackYaml = path.join(sourceDir, stackYamlName);
-        core.info(`stack: Loading ${stackYamlName}`);
-        (0, node_assert_1.default)(fs.existsSync(stackYaml));
-        return stackYaml;
+        core.info(`stack: Using ${stackYamlName}`);
+        (0, node_assert_1.default)(fs.existsSync(path.join(sourceDir, stackYamlName)));
+        return stackYamlName;
     });
 }
 function ghcVersionMatchExact(options, matchingGhcVersionsThatCanBuildAgda) {

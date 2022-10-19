@@ -42,7 +42,6 @@ export default function getOptions(
     'bdist-compress-exe': getFlag('bdist-compress-exe'),
     'bdist-name': getOption('bdist-name'),
     'bdist-upload': getFlag('bdist-upload'),
-    'configure-options': getOption('configure-options'),
     'force-build': getFlag('force-build'),
     'force-no-build': getFlag('force-no-build'),
     'force-cluster-counting': getFlag('force-cluster-counting'),

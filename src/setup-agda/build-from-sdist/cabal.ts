@@ -18,12 +18,12 @@ export async function build(
 ): Promise<void> {
   const execOptions: util.ExecOptions = {cwd: sourceDir}
 
-  // Run the pre-build hook:
-  await opts.runPreBuildHook(options, execOptions)
-
   // Run `cabal configure`:
   core.info(`Configure Agda-${options['agda-version']}`)
   await util.cabal(['v2-configure', ...buildFlags(options)], execOptions)
+
+  // Run the pre-build hook:
+  await opts.runPreBuildHook(options, execOptions)
 
   // Run `cabal build`:
   core.info(`Build Agda-${options['agda-version']}`)
@@ -75,10 +75,6 @@ function buildFlags(options: opts.BuildOptions): string[] {
   }
   for (const libDir of options['extra-lib-dirs']) {
     flags.push(`--extra-lib-dirs=${libDir}`)
-  }
-  for (const configureOption of opts.getConfigureOptions(options)) {
-    core.info(`cabal: Add configure option ${configureOption}`)
-    flags.push(configureOption)
   }
   return flags
 }
