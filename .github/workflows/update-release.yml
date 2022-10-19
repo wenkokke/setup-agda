@@ -1,14 +1,16 @@
 name: Update Release
 
 on:
+  # Run 'update-latest-release' if 'setup-legacy' completed:
   workflow_run:
     branches: [main]
     workflows: ['Setup Legacy']
     types: [completed]
+  workflow_dispatch:
 
 jobs:
   update-latest-release:
-    # Run 'update-release' if 'test-setup-legacy' succeeded:
+    # Skip 'update-latest-release' if 'setup-legacy' did not succeed:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     runs-on: ubuntu-latest

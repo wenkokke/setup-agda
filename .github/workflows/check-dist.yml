@@ -9,7 +9,6 @@ on:
       - '**.js'
       - '**.json'
       - '.github/workflows/*.yml'
-
   workflow_dispatch:
 
 jobs:

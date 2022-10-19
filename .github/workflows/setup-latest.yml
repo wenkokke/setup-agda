@@ -1,14 +1,16 @@
 name: Setup Latest
 
 on:
+  # Run 'setup-legacy' if 'check-dist' completed:
   workflow_run:
     branches: [main]
     workflows: ['Check Dist']
     types: [completed]
+  workflow_dispatch:
 
 jobs:
-  test-setup-latest:
-    # Run 'test-setup-latest' if 'check-dist' succeeded:
+  setup-latest:
+    # Skip 'setup-latest' if 'check-dist' did not succeed:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     name: Setup Agda (latest) on ${{ matrix.os }}
@@ -32,5 +34,3 @@ jobs:
             windows-2019,
             windows-2022
           ]
-    outputs:
-      agda-latest-version: ${{ steps.setup-agda.outputs.agda-version }}
