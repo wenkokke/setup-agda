@@ -13,7 +13,8 @@ interface BuildTool {
   build: (
     sourceDir: string,
     installDir: string,
-    options: opts.BuildOptions
+    options: opts.BuildOptions,
+    matchingGhcVersionsThatCanBuildAgda: string[]
   ) => Promise<void>
   supportedGhcVersions: (sourceDir: string) => Promise<string[]>
 }
@@ -22,6 +23,7 @@ interface BuildInfo {
   buildTool: BuildTool
   sourceDir: string
   requireSetup: boolean
+  matchingGhcVersionsThatCanBuildAgda: string[]
 }
 
 export default async function buildFromSource(
@@ -42,11 +44,12 @@ export default async function buildFromSource(
       // Determine the GHC version:
       const currentGhcVersion = await util.ghcMaybeGetVersion()
       const currentCabalVersion = await util.cabalMaybeGetVersion()
-      options['ghc-version'] = opts.resolveGhcVersion(
+      const selectedGhc = opts.resolveGhcVersion(
         options,
         currentGhcVersion,
         await buildTool.supportedGhcVersions(sourceDir)
       )
+      options['ghc-version'] = selectedGhc.version
 
       // Determine whether or not we can use the pre-installed build tools:
       let requireSetup = false
@@ -73,7 +76,13 @@ export default async function buildFromSource(
         core.info(`Building with specified options requires Stack`)
         requireSetup = true
       }
-      return {sourceDir, buildTool, requireSetup}
+      return {
+        sourceDir,
+        buildTool,
+        requireSetup,
+        matchingGhcVersionsThatCanBuildAgda:
+          selectedGhc.matchingVersionsThatCanBuildAgda
+      }
     }
   )
 
@@ -98,8 +107,14 @@ export default async function buildFromSource(
   // 5. Build:
   const agdaDir = opts.installDir(options['agda-version'])
   await core.group('🏗 Building Agda', async () => {
-    const {buildTool, sourceDir} = buildInfo
-    await buildTool.build(sourceDir, agdaDir, options)
+    const {buildTool, sourceDir, matchingGhcVersionsThatCanBuildAgda} =
+      buildInfo
+    await buildTool.build(
+      sourceDir,
+      agdaDir,
+      options,
+      matchingGhcVersionsThatCanBuildAgda
+    )
     await util.cpR(path.join(sourceDir, 'src', 'data'), agdaDir)
   })
 

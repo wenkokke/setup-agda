@@ -11,7 +11,7 @@ export default function resolveGhcVersion(
   options: BuildOptions,
   currentVersion: string | null,
   versionsThatCanBuildAgda: string[]
-): string {
+): {version: string; matchingVersionsThatCanBuildAgda: string[]} {
   assert(versionsThatCanBuildAgda.length > 0)
   // Print configuration:
   const versionsThatCanBeSetUp = bundledHaskellVersionInfo.ghc
@@ -41,19 +41,26 @@ export default function resolveGhcVersion(
     : (v1: string, v2: string): boolean =>
         semver.major(v1) === semver.major(v2) &&
         semver.minor(v1) === semver.minor(v2)
-  const someMatch = (vs: string[], v1: string): boolean =>
-    vs.some(v2 => match(v1, v2))
-  const canBuildAgda = (v: string): boolean =>
-    someMatch(versionsThatCanBuildAgda, v)
-  const canBeSetUp = (v: string): boolean =>
-    someMatch(versionsThatCanBeSetUp, v)
+  const canBuildAgda = (version: string): string[] =>
+    versionsThatCanBuildAgda.filter(versionThatCanBuildAgda =>
+      match(version, versionThatCanBuildAgda)
+    )
+  const canBeSetUp = (version: string): string[] =>
+    versionsThatCanBeSetUp.filter(versionThatCanBeSetUp =>
+      match(version, versionThatCanBeSetUp)
+    )
 
   // If exact version was specified, emit warnings:
   if (options['ghc-version'] !== 'recommended') {
-    // Check if Agda version supports specified version:
-    if (!canBuildAgda(options['ghc-version']))
+    const matchingVersionsThatCanBuildAgda = canBuildAgda(
+      options['ghc-version']
+    )
+    if (!matchingVersionsThatCanBuildAgda)
       core.warning(
-        `User-specified GHC ${options['ghc-version']} is not supported by Agda ${options['agda-version']}`
+        [
+          `User-specified GHC ${options['ghc-version']}`,
+          `is not supported by Agda ${options['agda-version']}`
+        ].join(' ')
       )
     // Check if haskell/actions/setup supports specified version:
     if (
@@ -62,21 +69,33 @@ export default function resolveGhcVersion(
         !match(options['ghc-version'], currentVersion))
     )
       core.warning(
-        `User-specified GHC ${options['ghc-version']} is not supported by haskell/actions/setup`
+        [
+          `User-specified GHC ${options['ghc-version']}`,
+          'is not supported by haskell/actions/setup'
+        ].join(' ')
       )
     core.info(`Selecting GHC ${options['ghc-version']}: user-specified`)
-    return options['ghc-version']
+    return {
+      version: options['ghc-version'],
+      matchingVersionsThatCanBuildAgda
+    }
   }
 
   // Check if the currently installed version matches:
-  if (currentVersion !== null && canBuildAgda(currentVersion)) {
-    core.info(`Selecting GHC ${currentVersion}: it is currently installed`)
-    return currentVersion
+  if (currentVersion !== null) {
+    const matchingVersionsThatCanBuildAgda = canBuildAgda(currentVersion)
+    if (matchingVersionsThatCanBuildAgda.length > 0) {
+      core.info(`Selecting GHC ${currentVersion}: it is currently installed`)
+      return {version: currentVersion, matchingVersionsThatCanBuildAgda}
+    }
   }
 
   // Find which versions are supported:
   core.info('Compiling list of GHC version candidates...')
-  const versionCandidates = []
+  const candidates: {
+    version: string
+    matchingVersionsThatCanBuildAgda: string[]
+  }[] = []
   if (
     options['enable-stack'] &&
     options['stack-setup-ghc'] &&
@@ -88,31 +107,41 @@ export default function resolveGhcVersion(
     for (const version of versionsThatCanBuildAgda)
       if (!semver.satisfies(version, options['ghc-version-range']))
         core.info(`Reject GHC ${version}: excluded by user-provided range`)
-      else versionCandidates.push(version)
+      else
+        candidates.push({
+          version,
+          matchingVersionsThatCanBuildAgda: [version]
+        })
   } else {
     // NOTE: We start from the list of versions that can be set up, and allow
     //       any version that matches a version that can build Agda.
     // NOTE: This potentially returns a version that does not have a matching
     //       stack-<version>.yaml file, which the stack build code has to
     //       account for.
-    for (const version of versionsThatCanBeSetUp)
-      if (!canBuildAgda(version))
+    for (const version of versionsThatCanBeSetUp) {
+      const matchingVersionsThatCanBuildAgda = canBuildAgda(version)
+      if (matchingVersionsThatCanBuildAgda.length === 0)
         core.info(`Reject GHC ${version}: unsupported by Agda`)
       else if (!semver.satisfies(version, options['ghc-version-range']))
         core.info(`Reject GHC ${version}: excluded by user-provided range`)
-      else versionCandidates.push(version)
+      else
+        candidates.push({
+          version,
+          matchingVersionsThatCanBuildAgda
+        })
+    }
   }
-  if (versionCandidates.length === 0) throw Error('No GHC version candidates')
-  else core.info(`GHC version candidates: ${versionCandidates.join(', ')}`)
+  if (candidates.length === 0) {
+    throw Error('No GHC version candidates')
+  } else {
+    const versions = candidates.map(info => info.version)
+    core.info(`GHC version candidates: ${versions.join(', ')}`)
+  }
 
   // Select the latest GHC version from the list of candidates:
-  const selected = semver.maxSatisfying(versionCandidates, '*')
-  assert(
-    selected !== null,
-    `Call to semver.maxSatisfying([${versionCandidates
-      .map(v => `'${v}'`)
-      .join(', ')}], '*') returned null`
+  const selected = candidates.reduce((latest, current) =>
+    semver.gte(latest.version, current.version) ? latest : current
   )
-  core.info(`Selecting GHC ${selected}: latest supported version`)
+  core.info(`Selecting GHC ${selected.version}: latest supported version`)
   return selected
 }

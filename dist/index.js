@@ -420,30 +420,41 @@ function resolveGhcVersion(options, currentVersion, versionsThatCanBuildAgda) {
         ? (v1, v2) => semver_1.default.eq(v1, v2)
         : (v1, v2) => semver_1.default.major(v1) === semver_1.default.major(v2) &&
             semver_1.default.minor(v1) === semver_1.default.minor(v2);
-    const someMatch = (vs, v1) => vs.some(v2 => match(v1, v2));
-    const canBuildAgda = (v) => someMatch(versionsThatCanBuildAgda, v);
-    const canBeSetUp = (v) => someMatch(versionsThatCanBeSetUp, v);
+    const canBuildAgda = (version) => versionsThatCanBuildAgda.filter(versionThatCanBuildAgda => match(version, versionThatCanBuildAgda));
+    const canBeSetUp = (version) => versionsThatCanBeSetUp.filter(versionThatCanBeSetUp => match(version, versionThatCanBeSetUp));
     // If exact version was specified, emit warnings:
     if (options['ghc-version'] !== 'recommended') {
-        // Check if Agda version supports specified version:
-        if (!canBuildAgda(options['ghc-version']))
-            core.warning(`User-specified GHC ${options['ghc-version']} is not supported by Agda ${options['agda-version']}`);
+        const matchingVersionsThatCanBuildAgda = canBuildAgda(options['ghc-version']);
+        if (!matchingVersionsThatCanBuildAgda)
+            core.warning([
+                `User-specified GHC ${options['ghc-version']}`,
+                `is not supported by Agda ${options['agda-version']}`
+            ].join(' '));
         // Check if haskell/actions/setup supports specified version:
         if (!canBeSetUp(options['ghc-version']) &&
             (currentVersion === null ||
                 !match(options['ghc-version'], currentVersion)))
-            core.warning(`User-specified GHC ${options['ghc-version']} is not supported by haskell/actions/setup`);
+            core.warning([
+                `User-specified GHC ${options['ghc-version']}`,
+                'is not supported by haskell/actions/setup'
+            ].join(' '));
         core.info(`Selecting GHC ${options['ghc-version']}: user-specified`);
-        return options['ghc-version'];
+        return {
+            version: options['ghc-version'],
+            matchingVersionsThatCanBuildAgda
+        };
     }
     // Check if the currently installed version matches:
-    if (currentVersion !== null && canBuildAgda(currentVersion)) {
-        core.info(`Selecting GHC ${currentVersion}: it is currently installed`);
-        return currentVersion;
+    if (currentVersion !== null) {
+        const matchingVersionsThatCanBuildAgda = canBuildAgda(currentVersion);
+        if (matchingVersionsThatCanBuildAgda.length > 0) {
+            core.info(`Selecting GHC ${currentVersion}: it is currently installed`);
+            return { version: currentVersion, matchingVersionsThatCanBuildAgda };
+        }
     }
     // Find which versions are supported:
     core.info('Compiling list of GHC version candidates...');
-    const versionCandidates = [];
+    const candidates = [];
     if (options['enable-stack'] &&
         options['stack-setup-ghc'] &&
         options['stack-no-global']) {
@@ -454,7 +465,10 @@ function resolveGhcVersion(options, currentVersion, versionsThatCanBuildAgda) {
             if (!semver_1.default.satisfies(version, options['ghc-version-range']))
                 core.info(`Reject GHC ${version}: excluded by user-provided range`);
             else
-                versionCandidates.push(version);
+                candidates.push({
+                    version,
+                    matchingVersionsThatCanBuildAgda: [version]
+                });
     }
     else {
         // NOTE: We start from the list of versions that can be set up, and allow
@@ -462,24 +476,29 @@ function resolveGhcVersion(options, currentVersion, versionsThatCanBuildAgda) {
         // NOTE: This potentially returns a version that does not have a matching
         //       stack-<version>.yaml file, which the stack build code has to
         //       account for.
-        for (const version of versionsThatCanBeSetUp)
-            if (!canBuildAgda(version))
+        for (const version of versionsThatCanBeSetUp) {
+            const matchingVersionsThatCanBuildAgda = canBuildAgda(version);
+            if (matchingVersionsThatCanBuildAgda.length === 0)
                 core.info(`Reject GHC ${version}: unsupported by Agda`);
             else if (!semver_1.default.satisfies(version, options['ghc-version-range']))
                 core.info(`Reject GHC ${version}: excluded by user-provided range`);
             else
-                versionCandidates.push(version);
+                candidates.push({
+                    version,
+                    matchingVersionsThatCanBuildAgda
+                });
+        }
     }
-    if (versionCandidates.length === 0)
+    if (candidates.length === 0) {
         throw Error('No GHC version candidates');
-    else
-        core.info(`GHC version candidates: ${versionCandidates.join(', ')}`);
+    }
+    else {
+        const versions = candidates.map(info => info.version);
+        core.info(`GHC version candidates: ${versions.join(', ')}`);
+    }
     // Select the latest GHC version from the list of candidates:
-    const selected = semver_1.default.maxSatisfying(versionCandidates, '*');
-    (0, node_assert_1.default)(selected !== null, `Call to semver.maxSatisfying([${versionCandidates
-        .map(v => `'${v}'`)
-        .join(', ')}], '*') returned null`);
-    core.info(`Selecting GHC ${selected}: latest supported version`);
+    const selected = candidates.reduce((latest, current) => semver_1.default.gte(latest.version, current.version) ? latest : current);
+    core.info(`Selecting GHC ${selected.version}: latest supported version`);
     return selected;
 }
 exports["default"] = resolveGhcVersion;
@@ -723,7 +742,8 @@ function buildFromSource(options) {
             // Determine the GHC version:
             const currentGhcVersion = yield util.ghcMaybeGetVersion();
             const currentCabalVersion = yield util.cabalMaybeGetVersion();
-            options['ghc-version'] = opts.resolveGhcVersion(options, currentGhcVersion, yield buildTool.supportedGhcVersions(sourceDir));
+            const selectedGhc = opts.resolveGhcVersion(options, currentGhcVersion, yield buildTool.supportedGhcVersions(sourceDir));
+            options['ghc-version'] = selectedGhc.version;
             // Determine whether or not we can use the pre-installed build tools:
             let requireSetup = false;
             if (options['ghc-version'] !== 'recommended' &&
@@ -741,7 +761,12 @@ function buildFromSource(options) {
                 core.info(`Building with specified options requires Stack`);
                 requireSetup = true;
             }
-            return { sourceDir, buildTool, requireSetup };
+            return {
+                sourceDir,
+                buildTool,
+                requireSetup,
+                matchingGhcVersionsThatCanBuildAgda: selectedGhc.matchingVersionsThatCanBuildAgda
+            };
         }));
         // 3. Setup GHC via <haskell/actions/setup>:
         if (buildInfo.requireSetup) {
@@ -763,8 +788,8 @@ function buildFromSource(options) {
         // 5. Build:
         const agdaDir = opts.installDir(options['agda-version']);
         yield core.group('🏗 Building Agda', () => __awaiter(this, void 0, void 0, function* () {
-            const { buildTool, sourceDir } = buildInfo;
-            yield buildTool.build(sourceDir, agdaDir, options);
+            const { buildTool, sourceDir, matchingGhcVersionsThatCanBuildAgda } = buildInfo;
+            yield buildTool.build(sourceDir, agdaDir, options, matchingGhcVersionsThatCanBuildAgda);
             yield util.cpR(path.join(sourceDir, 'src', 'data'), agdaDir);
         }));
         // 6. Test:
@@ -837,7 +862,9 @@ const semver = __importStar(__nccwpck_require__(1383));
 const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
 exports.name = 'cabal';
-function build(sourceDir, installDir, options) {
+function build(sourceDir, installDir, options, 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+matchingGhcVersionsThatCanBuildAgda) {
     return __awaiter(this, void 0, void 0, function* () {
         const execOptions = { cwd: sourceDir };
         // Configure:
@@ -1006,7 +1033,9 @@ const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
 const object_pick_1 = __importDefault(__nccwpck_require__(9962));
 exports.name = 'stack';
-function build(sourceDir, installDir, options) {
+function build(sourceDir, installDir, options, 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+matchingGhcVersionsThatCanBuildAgda) {
     return __awaiter(this, void 0, void 0, function* () {
         // Configure, Build, and Install:
         yield util.stack(['build', ...buildFlags(sourceDir, options), '--copy-bins'], {

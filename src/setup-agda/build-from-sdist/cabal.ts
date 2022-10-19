@@ -12,7 +12,9 @@ export const name = 'cabal'
 export async function build(
   sourceDir: string,
   installDir: string,
-  options: opts.BuildOptions
+  options: opts.BuildOptions,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  matchingGhcVersionsThatCanBuildAgda: string[]
 ): Promise<void> {
   const execOptions: util.ExecOptions = {cwd: sourceDir}
   // Configure:
