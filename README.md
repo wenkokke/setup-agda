@@ -60,7 +60,7 @@ If 📦 is specified, the platform supports setting up the Agda version from a b
 
 If 🏗 is specified, the platform supports building the Agda version from source.
 
-You can find the configuration for legacy builds in the [test-build-legacy][test-build-legacy] workflow. These builds are not regularly tested, and the maintainers do not intent to fix them if they break. Please report any failing build *that is listed as working*.
+You can find the configuration for legacy builds in the [test-build-legacy][test-build-legacy] workflow. These builds are not regularly tested. Please report any failing build *that is listed as working*, and we will update the table.
 
 [^1]: This version can only be built with Stack. Set the input `enable-stack` to build with Stack.
 
