@@ -47,16 +47,22 @@ jobs:
 
 ## Supported versions
 
+| Agda    | Ubuntu 20.04 | Ubuntu 22.04 | macOS 11    | macOS 12    | Windows 2019 | Windows 2022 |
+| ------- | ------------ | ------------ | ----------- | ----------- | ------------ | ------------ |
+| 2.6.2.2 | 📦 & 🏗      | 📦 & 🏗     | 📦 & 🏗     | 📦 & 🏗     | 📦 only      | 📦 & 🏗      |
+| 2.6.2.1 | 📦 & 🏗[^1]  | 📦 & 🏗[^1] | 📦 & 🏗[^1] | 📦 & 🏗[^1] |              |               |
+| 2.6.2   | 📦 & 🏗      | 📦 & 🏗     | 📦 & 🏗     | 📦 & 🏗     |              |               |
+| 2.6.1.3 | 📦 & 🏗[^1]  | 📦 & 🏗[^1] | 📦 & 🏗[^1] | 📦 & 🏗[^1] |              |               |
+| 2.6.0.1 | 📦 & 🏗[^1]  | 📦 & 🏗[^1] | 📦 & 🏗[^1] | 📦 & 🏗[^1] |              |               |
+| 2.5.4.2 | 📦 & 🏗[^1]  | 📦 & 🏗[^1] | 📦 & 🏗[^1] | 📦 & 🏗[^1] |              |               |
 
-| Agda | Type | Ubuntu 20.04 | Ubuntu 22.04 | macOS 11 | macOS 12 | Windows 2019 | Windows 2022 |
-| ------- | ------- | ------ | ----- | ----- | ----- | ----- | ----- |
-| 2.6.2.2 | source  | ☑️     | ☑️    | ☑️    | ☑️    | -     | ☑️     |
-| 2.6.2.2 | binary  | ☑️     | ☑️    | ☑️    | ☑️    | ☑️    | ☑️    |
-| 2.6.2.1 | binary  | ☑️     | ☑️    | ☑️    | ☑️    | -     | -     |
-| 2.6.2   | binary  | ☑️     | ☑️    | ☑️    | ☑️    | -     | -     |
-| 2.6.1.3 | binary  | ☑️     | ☑️    | ☑️    | ☑️    | -     | -     |
-| 2.6.0.1 | binary  | ☑️     | ☑️    | ☑️    | ☑️    | -     | -     |
-| 2.5.4.2 | binary  | ☑️     | ☑️    | ☑️    | ☑️    | -     | -     |
+If 📦 is specified, the platform supports setting up the Agda version from a binary distribution.
+
+If 🏗 is specified, the platform supports building the Agda version from source.
+
+You can find the configuration for legacy builds in <.github/workflows/test-build-legacy.yml>. These builds are not regularly tested, and the maintainers do not intent to fix them if they break. Please report any failing build *that is listed as working*.
+
+[^1]: This version can only be built with Stack. Set the input `enable-stack` to build with Stack.
 
 If you find a configuration for this action which can build legacy versions not listed here, please open an issue.
 
