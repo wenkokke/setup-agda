@@ -6,7 +6,10 @@ import * as opts from './os'
 import {BuildOptions} from './types'
 
 export function getConfigureOptions(options: BuildOptions): string[] {
-  return options['configure-options'].split(/\s+/g).filter(opt => opt !== '')
+  return options['configure-options']
+    .split(/\r?\n/g)
+    .map(opt => opt.trim())
+    .filter(opt => opt !== '')
 }
 
 export async function runPreBuildHook(

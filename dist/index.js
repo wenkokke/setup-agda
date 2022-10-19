@@ -124,7 +124,10 @@ const os = __importStar(__nccwpck_require__(612));
 const util_1 = __nccwpck_require__(4024);
 const opts = __importStar(__nccwpck_require__(2695));
 function getConfigureOptions(options) {
-    return options['configure-options'].split(/\s+/g).filter(opt => opt !== '');
+    return options['configure-options']
+        .split(/\r?\n/g)
+        .map(opt => opt.trim())
+        .filter(opt => opt !== '');
 }
 exports.getConfigureOptions = getConfigureOptions;
 function runPreBuildHook(options, execOptions) {
