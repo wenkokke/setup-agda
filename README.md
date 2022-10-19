@@ -60,10 +60,11 @@ If 📦 is specified, the platform supports setting up the Agda version from a b
 
 If 🏗 is specified, the platform supports building the Agda version from source.
 
-You can find the configuration for legacy builds in <.github/workflows/test-build-legacy.yml>. These builds are not regularly tested, and the maintainers do not intent to fix them if they break. Please report any failing build *that is listed as working*.
+You can find the configuration for legacy builds in the [test-build-legacy][test-build-legacy] workflow. These builds are not regularly tested, and the maintainers do not intent to fix them if they break. Please report any failing build *that is listed as working*.
 
 [^1]: This version can only be built with Stack. Set the input `enable-stack` to build with Stack.
 
 If you find a configuration for this action which can build legacy versions not listed here, please open an issue.
 
 [custom-binary-distributions]: https://github.com/wenkokke/setup-agda/releases/tag/latest
+[test-build-legacy]: .github/workflows/test-build-legacy.yml
