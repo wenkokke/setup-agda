@@ -60,9 +60,9 @@ If 📦 is specified, the platform supports setting up the Agda version from a b
 
 If 🏗 is specified, the platform supports building the Agda version from source.
 
-If you find a configuration for this action which can build legacy versions not listed here, please open an issue.
+We encourage using the binary distributions. The binary distributions are tested on every commit. Building the latest Agda version is tested weekly on all platforms except Windows 2019. Please do not rely on the legacy builds, as these are not regularly tested. Please report any failing build *that is listed as working*, and we will update the table.
 
-You can find the configuration for legacy builds in the [test-build-legacy][test-build-legacy] workflow. These builds are not regularly tested. Please report any failing build *that is listed as working*, and we will update the table.
+If you find a configuration for this action which builds a legacy version not listed here, please open an issue and include the GitHub workflow. You can find the configuration for the current legacy builds in the [test-build-legacy][test-build-legacy] workflow. 
 
 [^1]: This version can only be built with Stack. Set the input `enable-stack` to build with Stack.
 
