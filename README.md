@@ -58,4 +58,6 @@ jobs:
 | 2.6.0.1 | binary  | ☑️     | ☑️    | ☑️    | ☑️    | -     | -     |
 | 2.5.4.2 | binary  | ☑️     | ☑️    | ☑️    | ☑️    | -     | -     |
 
+If you find a configuration for this action which can build legacy versions not listed here, please open an issue.
+
 [custom-binary-distributions]: https://github.com/wenkokke/setup-agda/releases/tag/latest
