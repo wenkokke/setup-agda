@@ -51,5 +51,10 @@ jobs:
 | ------- | ------- | ------ | ----- | ------- |
 | 2.6.2.2 | source  | \*     | \*    | >=2022  |
 | 2.6.2.2 | binary  | \*     | \*    | \*      |
+| 2.6.2.1 | binary  | \*     | \*    | -       |
+| 2.6.2   | binary  | \*     | \*    | -       |
+| 2.6.1.3 | binary  | \*     | \*    | -       |
+| 2.6.0.1 | binary  | \*     | \*    | -       |
+| 2.5.4.2 | binary  | \*     | \*    | -       |
 
 [custom-binary-distributions]: https://github.com/wenkokke/setup-agda/releases/tag/latest
