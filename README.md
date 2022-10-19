@@ -8,7 +8,7 @@ This action sets up an Agda environment for use in actions by installing or buil
 For supported versions, this action uses [custom binary distributions][custom-binary-distributions].
 For all other versions, this action attempts to build Agda from source.
 
-If an older version of GHC is needed, this action will call [`haskell/actions/setup`][haskell/actions/setup]. Any inputs supported by [`haskell/actions/setup`][haskell/actions/setup] is supported by this action, and will be passed along in the event that it is called.
+If an older version of GHC is needed, this action will call [`haskell/actions/setup`][haskell/actions/setup]. Any inputs supported by that action can be passed to this action, and will be passed along in the event that it is called.
 
 ## Usage
 
