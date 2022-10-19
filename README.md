@@ -62,9 +62,14 @@ If 🏗 is specified, the platform supports building the Agda version from sourc
 
 You can find the configuration for legacy builds in the [test-build-legacy][test-build-legacy] workflow. These builds are not regularly tested. Please report any failing build *that is listed as working*, and we will update the table.
 
+The binary distributions bundle [icu][icu], and as such are subject to the [icu licence][icu-license] in addition to the [Agda license][agda-license] and the licenses of all of Agda's depencencies.
+
 [^1]: This version can only be built with Stack. Set the input `enable-stack` to build with Stack.
 
 If you find a configuration for this action which can build legacy versions not listed here, please open an issue.
 
 [custom-binary-distributions]: https://github.com/wenkokke/setup-agda/releases/tag/latest
 [test-build-legacy]: .github/workflows/test-build-legacy.yml
+[icu]: https://github.com/unicode-org/icu/tree/main/icu4c
+[icu-license]: https://github.com/unicode-org/icu/blob/main/icu4c/LICENSE
+[agda-license]: https://github.com/agda/agda/blob/master/LICENSE
