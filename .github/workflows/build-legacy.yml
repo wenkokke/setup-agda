@@ -18,7 +18,6 @@ jobs:
   build-legacy:
     name: Build Agda (${{ matrix.agda-version }})  on ${{ matrix.os }} with Stack
     runs-on: ${{ matrix.os }}
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v3
       - name: Build Agda (${{ matrix.agda-version }})
@@ -39,7 +38,7 @@ jobs:
           force-build: true
           ghc-version-match-exact: true
           pre-build-hook: |
-            yq -i '(.extra-deps // (.extra-deps = [])) += "text-icu-0.7.1.0"' stack.yaml
+            yq -i '(.extra-deps // (.extra-deps = [])) += "text-icu-0.7.1.0" | with((.configure-options // (.configure-options = {}); (.Agda // (.Agda = [])) += "--constraint=text-icu>=0.7.1.0")' stack.yaml
             
     strategy:
       matrix:
