@@ -70,15 +70,15 @@ If you find a configuration for this action which builds a legacy version not li
 
 This action is subject to [its license] as well as [the licenses of its dependencies].
 
-The binary distributions bundle [icu][icu], and as such are subject to the [icu licence][icu-license] in addition to the [Agda license] and the licenses of its depencencies.
+The binary distributions bundle binaries for [icu4c], and as such are subject to the [icu4c licence] in addition to the [Agda license] and the licenses of its depencencies.
 
 
 [custom binary distributions]: https://github.com/wenkokke/setup-agda/releases/tag/latest
 [cluster counting]: https://agda.readthedocs.io/en/latest/tools/generating-latex.html#counting-extended-grapheme-clusters
 [`haskell/actions/setup`]: https://github.com/haskell/actions/tree/main/setup#readme
 [test-build-legacy]: .github/workflows/test-build-legacy.yml
-[icu]: https://github.com/unicode-org/icu/tree/main/icu4c#readme
-[icu license]: https://github.com/unicode-org/icu/blob/main/icu4c/LICENSE
+[icu4c]: https://unicode-org.github.io/icu/userguide/icu4c
+[icu4c license]: https://github.com/unicode-org/icu/blob/main/icu4c/LICENSE
 [Agda license]: https://github.com/agda/agda/blob/master/LICENSE
 [its license]: https://github.com/wenkokke/setup-agda/blob/main/LICENSE
 [the licenses of its dependencies]: https://github.com/wenkokke/setup-agda/blob/main/dist/licenses.txt
