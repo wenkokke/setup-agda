@@ -2032,7 +2032,7 @@ function icuGetLibDirs() {
         const icuUcLibDir = yield util.pkgConfig('--variable', 'libdir', 'icu-uc');
         const icuIoLibDir = yield util.pkgConfig('--variable', 'libdir', 'icu-io');
         return new Set([
-            'C:\\msys64\\mingw64\\bin[',
+            'C:\\msys64\\mingw64\\bin',
             'C:\\msys64\\usr\\bin',
             core.toPlatformPath(icuInLibDir),
             core.toPlatformPath(icuUcLibDir),

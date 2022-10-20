@@ -83,7 +83,7 @@ async function icuGetLibDirs(): Promise<Set<string>> {
   const icuUcLibDir = await util.pkgConfig('--variable', 'libdir', 'icu-uc')
   const icuIoLibDir = await util.pkgConfig('--variable', 'libdir', 'icu-io')
   return new Set<string>([
-    'C:\\msys64\\mingw64\\bin[',
+    'C:\\msys64\\mingw64\\bin',
     'C:\\msys64\\usr\\bin',
     core.toPlatformPath(icuInLibDir),
     core.toPlatformPath(icuUcLibDir),
