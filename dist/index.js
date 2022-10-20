@@ -758,7 +758,7 @@ function buildFromSource(options) {
         const buildInfo = yield core.group('🛠 Preparing to build Agda from source', () => __awaiter(this, void 0, void 0, function* () {
             // Download the source:
             core.info('Download source distribution from Hackage');
-            const sourceDir = yield util.getAgdaSource(options);
+            const sourceDir = yield util.getAgdaSdist(options);
             core.debug(`Downloaded source distribution to ${sourceDir}`);
             // Determine the build tool:
             const buildTool = options['enable-stack'] ? stack : cabal;
@@ -2185,6 +2185,9 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -2192,27 +2195,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getAgdaSource = exports.resolveAgdaVersion = exports.simver = exports.ensureError = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const node_assert_1 = __importDefault(__nccwpck_require__(8061));
-const hackage = __importStar(__nccwpck_require__(903));
-const Agda_package_info_json_1 = __importDefault(__nccwpck_require__(9788));
+exports.simver = exports.ensureError = void 0;
 __exportStar(__nccwpck_require__(9552), exports);
 var ensure_error_1 = __nccwpck_require__(1151);
 Object.defineProperty(exports, "ensureError", ({ enumerable: true, get: function () { return __importDefault(ensure_error_1).default; } }));
@@ -2224,57 +2211,6 @@ __exportStar(__nccwpck_require__(8398), exports);
 __exportStar(__nccwpck_require__(1311), exports);
 __exportStar(__nccwpck_require__(7066), exports);
 exports.simver = __importStar(__nccwpck_require__(7609));
-// Agda utilities
-const agdaPackageInfoCache = Agda_package_info_json_1.default;
-function resolveAgdaVersion(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Ensure that we cache the package info:
-        yield cacheAgdaPackageInfo(options);
-        // Resolve the given version against Hackage's package versions:
-        const agdaVersion = yield hackage.resolvePackageVersion('Agda', options['agda-version'], agdaPackageInfoOptions(options));
-        if (options['agda-version'] !== agdaVersion) {
-            core.info(`Resolved Agda version ${options['agda-version']} to ${agdaVersion}`);
-            options['agda-version'] = agdaVersion;
-        }
-    });
-}
-exports.resolveAgdaVersion = resolveAgdaVersion;
-function getAgdaSource(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Version number should be resolved by now:
-        (0, node_assert_1.default)(options['agda-version'] !== 'latest' &&
-            options['agda-version'] !== 'nightly', `getAgdaSource: agdaVersion should be resolved`);
-        // Ensure that we cache the package info:
-        yield cacheAgdaPackageInfo(options);
-        // Get the package source:
-        const { packageVersion, packageDir } = yield hackage.getPackageSource('Agda', Object.assign({ packageVersion: options['agda-version'] }, agdaPackageInfoOptions(options)));
-        (0, node_assert_1.default)(options['agda-version'] === packageVersion, `getAgdaSource: ${options['agda-version']} was resolved to ${packageVersion}`);
-        return packageDir;
-    });
-}
-exports.getAgdaSource = getAgdaSource;
-function agdaPackageInfoOptions(options) {
-    if (options['package-info-cache'] !== undefined) {
-        return {
-            fetchPackageInfo: false,
-            packageInfoCache: options['package-info-cache']
-        };
-    }
-    else {
-        return {
-            fetchPackageInfo: true
-        };
-    }
-}
-function cacheAgdaPackageInfo(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (options['package-info-cache'] === undefined) {
-            options['package-info-cache'] = yield hackage.getPackageInfo('Agda', {
-                packageInfoCache: agdaPackageInfoCache
-            });
-        }
-    });
-}
 
 
 /***/ }),
@@ -2323,14 +2259,72 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
     function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
     function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installAgda = exports.agdaTest = exports.agda = exports.agdaGetDataDir = exports.agdaGetVersion = exports.agdaBinNames = exports.agdaModeBinName = exports.agdaBinName = void 0;
+exports.installAgda = exports.agdaTest = exports.agda = exports.agdaGetDataDir = exports.agdaGetVersion = exports.agdaBinNames = exports.agdaModeBinName = exports.agdaBinName = exports.getAgdaSdist = exports.resolveAgdaVersion = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const exec = __importStar(__nccwpck_require__(4369));
 const simver = __importStar(__nccwpck_require__(7609));
+const hackage = __importStar(__nccwpck_require__(903));
+const Agda_package_info_json_1 = __importDefault(__nccwpck_require__(9788));
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
+// Hackage helpers
+// Agda utilities
+const agdaPackageInfoCache = Agda_package_info_json_1.default;
+function resolveAgdaVersion(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Ensure that we cache the package info:
+        yield cacheAgdaPackageInfo(options);
+        // Resolve the given version against Hackage's package versions:
+        const agdaVersion = yield hackage.resolvePackageVersion('Agda', options['agda-version'], agdaPackageInfoOptions(options));
+        if (options['agda-version'] !== agdaVersion) {
+            core.info(`Resolved Agda version ${options['agda-version']} to ${agdaVersion}`);
+            options['agda-version'] = agdaVersion;
+        }
+    });
+}
+exports.resolveAgdaVersion = resolveAgdaVersion;
+function getAgdaSdist(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Version number should be resolved by now:
+        (0, node_assert_1.default)(options['agda-version'] !== 'latest' &&
+            options['agda-version'] !== 'nightly', `getAgdaSgetAgdaSdistource: agdaVersion should be resolved`);
+        // Ensure that we cache the package info:
+        yield cacheAgdaPackageInfo(options);
+        // Get the package source:
+        const { packageVersion, packageDir } = yield hackage.getPackageSource('Agda', Object.assign({ packageVersion: options['agda-version'] }, agdaPackageInfoOptions(options)));
+        (0, node_assert_1.default)(options['agda-version'] === packageVersion, `getAgdaSdist: ${options['agda-version']} was resolved to ${packageVersion}`);
+        return packageDir;
+    });
+}
+exports.getAgdaSdist = getAgdaSdist;
+function agdaPackageInfoOptions(options) {
+    if (options['package-info-cache'] !== undefined) {
+        return {
+            fetchPackageInfo: false,
+            packageInfoCache: options['package-info-cache']
+        };
+    }
+    else {
+        return {
+            fetchPackageInfo: true
+        };
+    }
+}
+function cacheAgdaPackageInfo(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (options['package-info-cache'] === undefined) {
+            options['package-info-cache'] = yield hackage.getPackageInfo('Agda', {
+                packageInfoCache: agdaPackageInfoCache
+            });
+        }
+    });
+}
 // Executable names
 exports.agdaBinName = opts.os === 'windows' ? 'agda.exe' : 'agda';
 exports.agdaModeBinName = opts.os === 'windows' ? 'agda-mode.exe' : 'agda-mode';

@@ -34,7 +34,7 @@ export default async function buildFromSource(
     async (): Promise<BuildInfo> => {
       // Download the source:
       core.info('Download source distribution from Hackage')
-      const sourceDir = await util.getAgdaSource(options)
+      const sourceDir = await util.getAgdaSdist(options)
       core.debug(`Downloaded source distribution to ${sourceDir}`)
 
       // Determine the build tool:
