@@ -78,7 +78,7 @@ export async function agdaGetDataDir(
     const agdaDataDir = agdaOptions?.agdaDataDir ?? options?.env?.Agda_datadir
     if (agdaDataDir !== undefined) return agdaDataDir
     const agdaBin = agdaOptions?.agdaBin ?? (await exec.which(agdaBinName))
-    return path.join(agdaBin, '..', 'data')
+    return path.join(path.basename(agdaBin), '..', 'data')
   }
 }
 

@@ -2377,7 +2377,7 @@ function agdaGetDataDir(agdaOptions, options) {
             if (agdaDataDir !== undefined)
                 return agdaDataDir;
             const agdaBin = (_c = agdaOptions === null || agdaOptions === void 0 ? void 0 : agdaOptions.agdaBin) !== null && _c !== void 0 ? _c : (yield exec.which(exports.agdaBinName));
-            return path.join(agdaBin, '..', 'data');
+            return path.join(path.basename(agdaBin), '..', 'data');
         }
     });
 }
