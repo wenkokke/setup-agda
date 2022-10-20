@@ -51,7 +51,7 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
           )
         }
       }
-      await util.installAgda(installDir)
+      await util.configureEnvFor(installDir)
     })
 
     // 3. Test:
