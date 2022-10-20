@@ -27,9 +27,6 @@ export default function resolveAgdaVersion(
     return latest
   } else if (versionSpec === 'nightly') {
     throw Error('Unsupported Agda version: "nightly"')
-  } else if (versionSpec === 'HEAD') {
-    // NOTE: defer setting version spec until after we get the source
-    return versionSpec
   } else {
     core.setOutput('agda-version', versionSpec)
     return versionSpec

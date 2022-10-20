@@ -12,6 +12,9 @@ import * as util from '../util'
 export default async function installFromToolCache(
   options: opts.BuildOptions
 ): Promise<string | null> {
+  // If 'agda-version' is 'HEAD' we must build from source:
+  if (options['agda-version'] === 'HEAD') return null
+
   const agdaDirTC = tc.find('agda', options['agda-version'])
   // NOTE: tc.find returns '' if the tool is not found
   if (agdaDirTC === '') {

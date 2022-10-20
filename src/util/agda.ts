@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
+import * as tc from '@actions/tool-cache'
 import * as path from 'node:path'
 import * as opts from '../opts'
 import * as exec from './exec'
@@ -11,18 +12,41 @@ import assert from 'node:assert'
 
 // Agda utilities
 
-export async function getAgdaSdistFromHackage(
+type Ref = 'HEAD'
+
+const agdaHeadSdistUrl =
+  'https://github.com/agda/agda-stdlib/archive/refs/heads/master.zip'
+
+export async function getAgdaSdist(
   options: opts.BuildOptions
+): Promise<string> {
+  const agdaVersion = options['agda-version']
+  if (opts.isAgdaVersion(agdaVersion)) {
+    return await getAgdaSdistFromHackage(agdaVersion)
+  } else {
+    return await getAgdaSdistFromGitHub(agdaVersion)
+  }
+}
+
+async function getAgdaSdistFromGitHub(ref: Ref): Promise<string> {
+  assert(ref === 'HEAD', `getAgdaSdistFromGitHub: unsupported ref '${ref}'`)
+  const packageZip = await tc.downloadTool(agdaHeadSdistUrl)
+  const packageDir = await tc.extractZip(packageZip)
+  return packageDir
+}
+
+async function getAgdaSdistFromHackage(
+  agdaVersion: opts.AgdaVersion
 ): Promise<string> {
   // Get the package source:
   const {packageVersion, packageDir} = await hackage.getPackageSource('Agda', {
-    packageVersion: options['agda-version'],
+    packageVersion: agdaVersion,
     fetchPackageInfo: false,
     packageInfoCache: opts.agdaPackageInfoCache
   })
   assert(
-    options['agda-version'] === packageVersion,
-    `getAgdaSdist: ${options['agda-version']} was resolved to ${packageVersion}`
+    agdaVersion === packageVersion,
+    `getAgdaSdist: ${agdaVersion} was resolved to ${packageVersion}`
   )
   return packageDir
 }

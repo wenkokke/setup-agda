@@ -50,7 +50,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.installDir = exports.agdaDir = exports.arch = exports.platform = exports.getOptions = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
+exports.isAgdaStdlibVersion = exports.isAgdaVersion = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.installDir = exports.agdaDir = exports.arch = exports.platform = exports.getOptions = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
 var compat_1 = __nccwpck_require__(4021);
 Object.defineProperty(exports, "runPreBuildHook", ({ enumerable: true, get: function () { return compat_1.runPreBuildHook; } }));
 Object.defineProperty(exports, "supportsSplitSections", ({ enumerable: true, get: function () { return compat_1.supportsSplitSections; } }));
@@ -73,6 +73,8 @@ var types_1 = __nccwpck_require__(9150);
 Object.defineProperty(exports, "agdaPackageInfoCache", ({ enumerable: true, get: function () { return types_1.agdaPackageInfoCache; } }));
 Object.defineProperty(exports, "agdaBdistIndex", ({ enumerable: true, get: function () { return types_1.agdaBdistIndex; } }));
 Object.defineProperty(exports, "agdaStdlibSdistIndex", ({ enumerable: true, get: function () { return types_1.agdaStdlibSdistIndex; } }));
+Object.defineProperty(exports, "isAgdaVersion", ({ enumerable: true, get: function () { return types_1.isAgdaVersion; } }));
+Object.defineProperty(exports, "isAgdaStdlibVersion", ({ enumerable: true, get: function () { return types_1.isAgdaStdlibVersion; } }));
 
 
 /***/ }),
@@ -120,7 +122,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
 const os = __importStar(__nccwpck_require__(612));
 const util_1 = __nccwpck_require__(4024);
-const opts = __importStar(__nccwpck_require__(542));
+const platform_1 = __nccwpck_require__(542);
 function runPreBuildHook(options, execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         if (options['pre-build-hook'] !== '') {
@@ -136,13 +138,13 @@ function supportsSplitSections(options) {
     // NOTE:
     //   We only set --split-sections on Linux and Windows, as it does nothing on MacOS:
     //   https://github.com/agda/agda/issues/5940
-    const osOK = opts.platform === 'linux' || opts.platform === 'win32';
+    const platformOK = platform_1.platform === 'linux' || platform_1.platform === 'win32';
     // NOTE:
     //   We only set --split-sections if Ghc >=8.0 and Cabal >=2.2, when the flag was added:
     //   https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-split-sections
     const ghcVersionOK = util_1.simver.gte(options['ghc-version'], '8.0');
     const cabalVersionOK = util_1.simver.gte(options['cabal-version'], '2.2');
-    return osOK && ghcVersionOK && cabalVersionOK;
+    return platformOK && ghcVersionOK && cabalVersionOK;
 }
 exports.supportsSplitSections = supportsSplitSections;
 function supportsOptimiseHeavily(options) {
@@ -150,7 +152,8 @@ function supportsOptimiseHeavily(options) {
     //   We only enable --optimise-heavily on versions which support it,
     //   i.e., versions after 2.6.2:
     //   https://github.com/agda/agda/blob/1175c41210716074340da4bd4caa09f4dfe2cc1d/doc/release-notes/2.6.2.md
-    return util_1.simver.gte(options['agda-version'], '2.6.2');
+    return (options['agda-version'] === 'HEAD' ||
+        util_1.simver.gte(options['agda-version'], '2.6.2'));
 }
 exports.supportsOptimiseHeavily = supportsOptimiseHeavily;
 function supportsClusterCounting(options) {
@@ -161,7 +164,8 @@ function supportsClusterCounting(options) {
     //   Agda versions 2.5.3 - 2.6.2 depend on text-icu ^0.7, but versions
     //   0.7.0.0 - 0.7.1.0 do not compile with icu68+, which can be solved
     //   by passing '--constraint="text-icu >= 0.7.1.0"'
-    return util_1.simver.gte(options['agda-version'], '2.5.3');
+    return (options['agda-version'] === 'HEAD' ||
+        util_1.simver.gte(options['agda-version'], '2.5.3'));
 }
 exports.supportsClusterCounting = supportsClusterCounting;
 function needsIcu(options) {
@@ -567,10 +571,6 @@ function resolveAgdaVersion(versionSpec) {
     }
     else if (versionSpec === 'nightly') {
         throw Error('Unsupported Agda version: "nightly"');
-    }
-    else if (versionSpec === 'HEAD') {
-        // NOTE: defer setting version spec until after we get the source
-        return versionSpec;
     }
     else {
         core.setOutput('agda-version', versionSpec);
@@ -978,7 +978,7 @@ function buildFromSource(options) {
         const buildInfo = yield core.group('🛠 Preparing to build Agda from source', () => __awaiter(this, void 0, void 0, function* () {
             // Download the source:
             core.info('Download source distribution from Hackage');
-            const sourceDir = yield util.getAgdaSdistFromHackage(options);
+            const sourceDir = yield util.getAgdaSdist(options);
             core.info(`Downloaded source distribution to ${sourceDir}`);
             // Determine the build tool:
             const buildTool = options['enable-stack'] ? stack : cabal;
@@ -1582,6 +1582,9 @@ const util = __importStar(__nccwpck_require__(4024));
 // NOTE: We can hope, can't we?
 function installFromToolCache(options) {
     return __awaiter(this, void 0, void 0, function* () {
+        // If 'agda-version' is 'HEAD' we must build from source:
+        if (options['agda-version'] === 'HEAD')
+            return null;
         const agdaDirTC = tc.find('agda', options['agda-version']);
         // NOTE: tc.find returns '' if the tool is not found
         if (agdaDirTC === '') {
@@ -2488,30 +2491,49 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installAgda = exports.agdaTest = exports.agda = exports.agdaGetDataDir = exports.agdaGetVersion = exports.agdaBinNames = exports.agdaModeBinName = exports.agdaBinName = exports.getAgdaSdistFromHackage = void 0;
+exports.installAgda = exports.agdaTest = exports.agda = exports.agdaGetDataDir = exports.agdaGetVersion = exports.agdaBinNames = exports.agdaModeBinName = exports.agdaBinName = exports.getAgdaSdist = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
+const tc = __importStar(__nccwpck_require__(7784));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const exec = __importStar(__nccwpck_require__(4369));
 const simver = __importStar(__nccwpck_require__(7609));
 const hackage = __importStar(__nccwpck_require__(903));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
-// Hackage helpers
-// Agda utilities
-function getAgdaSdistFromHackage(options) {
+const agdaHeadSdistUrl = 'https://github.com/agda/agda-stdlib/archive/refs/heads/master.zip';
+function getAgdaSdist(options) {
     return __awaiter(this, void 0, void 0, function* () {
-        // Get the package source:
-        const { packageVersion, packageDir } = yield hackage.getPackageSource('Agda', {
-            packageVersion: options['agda-version'],
-            fetchPackageInfo: false,
-            packageInfoCache: opts.agdaPackageInfoCache
-        });
-        (0, node_assert_1.default)(options['agda-version'] === packageVersion, `getAgdaSdist: ${options['agda-version']} was resolved to ${packageVersion}`);
+        const agdaVersion = options['agda-version'];
+        if (opts.isAgdaVersion(agdaVersion)) {
+            return yield getAgdaSdistFromHackage(agdaVersion);
+        }
+        else {
+            return yield getAgdaSdistFromGitHub(agdaVersion);
+        }
+    });
+}
+exports.getAgdaSdist = getAgdaSdist;
+function getAgdaSdistFromGitHub(ref) {
+    return __awaiter(this, void 0, void 0, function* () {
+        (0, node_assert_1.default)(ref === 'HEAD', `getAgdaSdistFromGitHub: unsupported ref '${ref}'`);
+        const packageZip = yield tc.downloadTool(agdaHeadSdistUrl);
+        const packageDir = yield tc.extractZip(packageZip);
         return packageDir;
     });
 }
-exports.getAgdaSdistFromHackage = getAgdaSdistFromHackage;
+function getAgdaSdistFromHackage(agdaVersion) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Get the package source:
+        const { packageVersion, packageDir } = yield hackage.getPackageSource('Agda', {
+            packageVersion: agdaVersion,
+            fetchPackageInfo: false,
+            packageInfoCache: opts.agdaPackageInfoCache
+        });
+        (0, node_assert_1.default)(agdaVersion === packageVersion, `getAgdaSdist: ${agdaVersion} was resolved to ${packageVersion}`);
+        return packageDir;
+    });
+}
 // Executable names
 exports.agdaBinName = opts.platform === 'win32' ? 'agda.exe' : 'agda';
 exports.agdaModeBinName = opts.platform === 'win32' ? 'agda-mode.exe' : 'agda-mode';
