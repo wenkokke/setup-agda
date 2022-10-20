@@ -46,35 +46,28 @@ const setup_agda_1 = __importDefault(__nccwpck_require__(8021));
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.resolveGhcVersion = exports.getOptions = exports.findBdist = void 0;
-__exportStar(__nccwpck_require__(4021), exports);
+exports.resolveGhcVersion = exports.installDir = exports.agdaDir = exports.os = exports.getOptions = exports.findBdist = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
+var compat_1 = __nccwpck_require__(4021);
+Object.defineProperty(exports, "runPreBuildHook", ({ enumerable: true, get: function () { return compat_1.runPreBuildHook; } }));
+Object.defineProperty(exports, "supportsSplitSections", ({ enumerable: true, get: function () { return compat_1.supportsSplitSections; } }));
+Object.defineProperty(exports, "supportsOptimiseHeavily", ({ enumerable: true, get: function () { return compat_1.supportsOptimiseHeavily; } }));
+Object.defineProperty(exports, "supportsClusterCounting", ({ enumerable: true, get: function () { return compat_1.supportsClusterCounting; } }));
+Object.defineProperty(exports, "needsIcu", ({ enumerable: true, get: function () { return compat_1.needsIcu; } }));
 var find_bdist_1 = __nccwpck_require__(184);
 Object.defineProperty(exports, "findBdist", ({ enumerable: true, get: function () { return __importDefault(find_bdist_1).default; } }));
 var get_options_1 = __nccwpck_require__(1665);
 Object.defineProperty(exports, "getOptions", ({ enumerable: true, get: function () { return __importDefault(get_options_1).default; } }));
-__exportStar(__nccwpck_require__(2695), exports);
-__exportStar(__nccwpck_require__(4059), exports);
+var os_1 = __nccwpck_require__(2695);
+Object.defineProperty(exports, "os", ({ enumerable: true, get: function () { return os_1.os; } }));
+var path_1 = __nccwpck_require__(4059);
+Object.defineProperty(exports, "agdaDir", ({ enumerable: true, get: function () { return path_1.agdaDir; } }));
+Object.defineProperty(exports, "installDir", ({ enumerable: true, get: function () { return path_1.installDir; } }));
 var resolve_ghc_version_1 = __nccwpck_require__(7530);
 Object.defineProperty(exports, "resolveGhcVersion", ({ enumerable: true, get: function () { return __importDefault(resolve_ghc_version_1).default; } }));
-__exportStar(__nccwpck_require__(9150), exports);
 
 
 /***/ }),
@@ -231,6 +224,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
+const opts = __importStar(__nccwpck_require__(2695));
 const os = __importStar(__nccwpck_require__(612));
 const fs = __importStar(__nccwpck_require__(7561));
 const path = __importStar(__nccwpck_require__(9411));
@@ -282,7 +276,7 @@ function getOptions(inputs, actionYml) {
     // Print options:
     core.info([
         'Options:',
-        ...Object.entries(options).map(entry => {
+        ...Object.entries(Object.assign({ os: opts.os }, options)).map(entry => {
             const [key, value] = entry;
             if (Array.isArray(value))
                 return `- ${key}: [${value.join(', ')}]`;
@@ -526,16 +520,6 @@ function resolveGhcVersion(options, currentVersion, versionsThatCanBuildAgda) {
     return selected;
 }
 exports["default"] = resolveGhcVersion;
-
-
-/***/ }),
-
-/***/ 9150:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 
 /***/ }),
@@ -1076,12 +1060,6 @@ function build(sourceDir, installDir, options, matchingGhcVersionsThatCanBuildAg
             const localBinPath = path.join(localBinDir, binName);
             const installBinPath = path.join(installBinDir, binName);
             yield util.cp(localBinPath, installBinPath);
-            try {
-                yield util.rmRF(localBinPath);
-            }
-            catch (error) {
-                core.debug(`Could not clean up executable at ${localBinPath}`);
-            }
         }
     });
 }

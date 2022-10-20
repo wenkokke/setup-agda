@@ -1,4 +1,5 @@
 import * as core from '@actions/core'
+import * as opts from './os'
 import * as os from 'node:os'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
@@ -67,7 +68,7 @@ export default function getOptions(
   core.info(
     [
       'Options:',
-      ...Object.entries(options).map(entry => {
+      ...Object.entries({os: opts.os, ...options}).map(entry => {
         const [key, value] = entry
         if (Array.isArray(value)) return `- ${key}: [${value.join(', ')}]`
         else return `- ${key}: ${value}`

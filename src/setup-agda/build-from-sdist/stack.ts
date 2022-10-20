@@ -53,11 +53,6 @@ export async function build(
     const localBinPath = path.join(localBinDir, binName)
     const installBinPath = path.join(installBinDir, binName)
     await util.cp(localBinPath, installBinPath)
-    try {
-      await util.rmRF(localBinPath)
-    } catch (error) {
-      core.debug(`Could not clean up executable at ${localBinPath}`)
-    }
   }
 }
 
