@@ -4,12 +4,12 @@ import {setupForMacOS, bundleForMacOS} from './setup-icu/macos'
 import {setupForWindows, bundleForWindows} from './setup-icu/windows'
 
 export async function setup(options: opts.BuildOptions): Promise<void> {
-  switch (opts.os) {
+  switch (opts.platform) {
     case 'linux':
       return await setupForLinux(options)
-    case 'macos':
+    case 'darwin':
       return await setupForMacOS(options)
-    case 'windows':
+    case 'win32':
       return await setupForWindows(options)
   }
 }
@@ -28,12 +28,12 @@ export async function bundle(
   distDir: string,
   options: opts.BuildOptions
 ): Promise<void> {
-  switch (opts.os) {
+  switch (opts.platform) {
     case 'linux':
       return await bundleForLinux(distDir, options)
-    case 'macos':
+    case 'darwin':
       return await bundleForMacOS(distDir, options)
-    case 'windows':
+    case 'win32':
       return await bundleForWindows(distDir, options)
   }
 }

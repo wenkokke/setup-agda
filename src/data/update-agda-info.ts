@@ -4,28 +4,25 @@ import * as os from 'node:os'
 import * as path from 'node:path'
 import * as hackage from '../util/hackage'
 import ensureError from '../util/ensure-error'
-
-import bundledAgdaPackageInfoCache from './Agda.package-info.json'
+import {agdaPackageInfoCache as oldCache} from '../opts/types'
+import pick from 'object.pick'
 
 async function run(): Promise<void> {
   try {
-    const packageInfoPath = path.join(__dirname, 'Agda.package-info.json')
-    const oldPackageInfoCache =
-      bundledAgdaPackageInfoCache as hackage.PackageInfoCache
-    const newPackageInfoCache = await hackage.getPackageInfo('Agda')
-    const oldTime = new Date(oldPackageInfoCache.lastModified).getTime()
-    const newTime = new Date(newPackageInfoCache.lastModified).getTime()
+    const newCache = await hackage.getPackageInfo('Agda')
+    const oldLastModifiedTime = new Date(oldCache.lastModified).getTime()
+    const newLastModifiedTime = new Date(newCache.lastModified).getTime()
     let failed = false
     let changed = false
-    if (oldTime < newTime) {
+    if (oldLastModifiedTime < newLastModifiedTime) {
       // Check if old versions are still available:`
       const versions: string[] = [
-        ...Object.keys(oldPackageInfoCache.packageInfo),
-        ...Object.keys(newPackageInfoCache.packageInfo)
+        ...Object.keys(oldCache.packageInfo),
+        ...Object.keys(newCache.packageInfo)
       ]
       for (const version of versions) {
-        const oldStatus = oldPackageInfoCache.packageInfo?.[version]
-        const newStatus = newPackageInfoCache.packageInfo?.[version]
+        const oldStatus = oldCache.packageInfo?.[version]
+        const newStatus = newCache.packageInfo?.[version]
         // Only the following automatic version status changes are allowed:
         // - undefined  -> normal
         // - normal     -> deprecated
@@ -35,8 +32,29 @@ async function run(): Promise<void> {
         changed = changed || oldStatus === newStatus
       }
       if (!failed) {
+        // To help the TypeScript type inference,
+        // we save the deprecated and normal versions separately
         core.info(`Updated Agda package info${os.EOL}`)
-        fs.writeFileSync(packageInfoPath, JSON.stringify(newPackageInfoCache))
+        fs.writeFileSync(
+          path.join(__dirname, 'Agda.versions.deprecated.json'),
+          JSON.stringify({
+            packageInfo: pick(
+              newCache.packageInfo,
+              versions.filter(v => newCache[v] === 'deprecated')
+            ),
+            lastModified: newCache.lastModified
+          })
+        )
+        fs.writeFileSync(
+          path.join(__dirname, 'Agda.versions.normal.json'),
+          JSON.stringify({
+            packageInfo: pick(
+              newCache.packageInfo,
+              versions.filter(v => newCache[v] === 'normal')
+            ),
+            lastModified: newCache.lastModified
+          })
+        )
       } else {
         core.error(`refusing to update${os.EOL}`)
       }

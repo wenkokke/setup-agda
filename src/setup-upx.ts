@@ -6,12 +6,12 @@ import * as util from './util'
 export default async function setup(
   options: opts.BuildOptions
 ): Promise<string> {
-  switch (opts.os) {
+  switch (opts.platform) {
     case 'linux':
       return await setupLinux(options)
-    case 'macos':
+    case 'darwin':
       return await setupMacOS(options)
-    case 'windows':
+    case 'win32':
       return await setupWindows(options)
   }
 }

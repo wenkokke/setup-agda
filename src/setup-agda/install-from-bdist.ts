@@ -8,10 +8,24 @@ import * as util from '../util'
 export default async function installFromBdist(
   options: opts.BuildOptions
 ): Promise<string | null> {
+  // If 'agda-version' is 'HEAD' we must build from source:
+  if (options['agda-version'] === 'HEAD') return null
+
   // Download & extract package:
   try {
-    const bdistUrl = opts.findBdist('agda', options['agda-version'])
-    core.info(`Found package for Agda ${options['agda-version']}`)
+    const bdistUrl =
+      opts.agdaBdistIndex?.[opts.platform]?.[opts.arch]?.[
+        options['agda-version']
+      ]
+    if (bdistUrl === undefined) {
+      core.info(
+        [
+          `Could not find binary distribution for`,
+          `Agda ${options['agda-version']} on ${opts.arch}-${opts.platform}`
+        ].join(' ')
+      )
+      return null
+    }
     try {
       core.info(`Downloading package from ${bdistUrl}`)
       const bdistZip = await tc.downloadTool(bdistUrl)
@@ -51,7 +65,7 @@ export default async function installFromBdist(
 }
 
 async function repairPermissions(bdistDir: string): Promise<void> {
-  switch (opts.os) {
+  switch (opts.platform) {
     case 'linux': {
       // Repair file permissions
       core.info('Repairing file permissions')
@@ -60,7 +74,7 @@ async function repairPermissions(bdistDir: string): Promise<void> {
       }
       break
     }
-    case 'macos': {
+    case 'darwin': {
       // Repair file permissions
       core.info('Repairing file permissions')
       // Repair file permissions on executables

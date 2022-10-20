@@ -18,6 +18,24 @@ export interface PackageInfoCache {
   lastModified: string
 }
 
+export function mergePackageInfoCache(
+  packageInfoCache1: PackageInfoCache,
+  packageInfoCache2: PackageInfoCache
+): PackageInfoCache {
+  const lastModifiedDate1 = new Date(packageInfoCache1.lastModified)
+  const lastModifiedDate2 = new Date(packageInfoCache2.lastModified)
+  return {
+    packageInfo: {
+      ...packageInfoCache1.packageInfo,
+      ...packageInfoCache2.packageInfo
+    },
+    lastModified:
+      lastModifiedDate1.getTime() > lastModifiedDate2.getTime()
+        ? packageInfoCache1.lastModified
+        : packageInfoCache2.lastModified
+  }
+}
+
 export interface PackageInfoOptions {
   fetchPackageInfo?: boolean
   packageInfoCache?: PackageInfoCache

@@ -7,16 +7,16 @@ import * as exec from './exec'
 export async function printNeeded(binPath: string): Promise<void> {
   try {
     let output = ''
-    switch (opts.os) {
+    switch (opts.platform) {
       case 'linux': {
         output = await patchelf('--print-needed', binPath)
         break
       }
-      case 'macos': {
+      case 'darwin': {
         output = await otool('-L', binPath)
         break
       }
-      case 'windows': {
+      case 'win32': {
         output = await dumpbin('/imports', binPath)
         break
       }

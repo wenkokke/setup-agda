@@ -5,53 +5,20 @@ import * as opts from '../opts'
 import * as exec from './exec'
 import * as simver from './simver'
 import * as hackage from './hackage'
-import bundledAgdaPackageInfoCache from '../package-info/Agda.package-info.json'
 import assert from 'node:assert'
 
 // Hackage helpers
 
 // Agda utilities
 
-const agdaPackageInfoCache =
-  bundledAgdaPackageInfoCache as hackage.PackageInfoCache
-
-export async function resolveAgdaVersion(
-  options: opts.BuildOptions
-): Promise<void> {
-  // Ensure that we cache the package info:
-  await cacheAgdaPackageInfo(options)
-
-  // Resolve the given version against Hackage's package versions:
-  const agdaVersion = await hackage.resolvePackageVersion(
-    'Agda',
-    options['agda-version'],
-    agdaPackageInfoOptions(options)
-  )
-  if (options['agda-version'] !== agdaVersion) {
-    core.info(
-      `Resolved Agda version ${options['agda-version']} to ${agdaVersion}`
-    )
-    options['agda-version'] = agdaVersion
-  }
-}
-
-export async function getAgdaSdist(
+export async function getAgdaSdistFromHackage(
   options: opts.BuildOptions
 ): Promise<string> {
-  // Version number should be resolved by now:
-  assert(
-    options['agda-version'] !== 'latest' &&
-      options['agda-version'] !== 'nightly',
-    `getAgdaSgetAgdaSdistource: agdaVersion should be resolved`
-  )
-
-  // Ensure that we cache the package info:
-  await cacheAgdaPackageInfo(options)
-
   // Get the package source:
   const {packageVersion, packageDir} = await hackage.getPackageSource('Agda', {
     packageVersion: options['agda-version'],
-    ...agdaPackageInfoOptions(options)
+    fetchPackageInfo: false,
+    packageInfoCache: opts.agdaPackageInfoCache
   })
   assert(
     options['agda-version'] === packageVersion,
@@ -60,35 +27,13 @@ export async function getAgdaSdist(
   return packageDir
 }
 
-function agdaPackageInfoOptions(
-  options: opts.BuildOptions
-): hackage.PackageInfoOptions {
-  if (options['package-info-cache'] !== undefined) {
-    return {
-      fetchPackageInfo: false,
-      packageInfoCache: options['package-info-cache']
-    }
-  } else {
-    return {
-      fetchPackageInfo: true
-    }
-  }
-}
-
-async function cacheAgdaPackageInfo(options: opts.BuildOptions): Promise<void> {
-  if (options['package-info-cache'] === undefined) {
-    options['package-info-cache'] = await hackage.getPackageInfo('Agda', {
-      packageInfoCache: agdaPackageInfoCache
-    })
-  }
-}
-
 // Executable names
 
-export const agdaBinName: string = opts.os === 'windows' ? 'agda.exe' : 'agda'
+export const agdaBinName: string =
+  opts.platform === 'win32' ? 'agda.exe' : 'agda'
 
 export const agdaModeBinName: string =
-  opts.os === 'windows' ? 'agda-mode.exe' : 'agda-mode'
+  opts.platform === 'win32' ? 'agda-mode.exe' : 'agda-mode'
 
 export const agdaBinNames: string[] = [agdaBinName, agdaModeBinName]
 

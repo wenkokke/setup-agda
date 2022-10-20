@@ -41,7 +41,7 @@ export async function pkgConfigGetInfo(
 }
 
 export function addPkgConfigPath(pkgConfigDir: string): void {
-  const pathSep = opts.os === 'windows' ? ';' : ':'
+  const pathSep = opts.platform === 'win32' ? ';' : ':'
   const pkgConfigPath = process.env.PKG_CONFIG_PATH ?? ''
   const pkgConfigDirs = pkgConfigPath.split(pathSep).filter(dir => dir !== '')
   core.exportVariable(

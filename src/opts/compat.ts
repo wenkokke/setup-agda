@@ -2,7 +2,7 @@ import * as core from '@actions/core'
 import * as exec from '@actions/exec'
 import * as os from 'node:os'
 import {simver} from '../util'
-import * as opts from './os'
+import * as opts from './platform'
 import {BuildOptions} from './types'
 
 export async function runPreBuildHook(
@@ -21,7 +21,7 @@ export function supportsSplitSections(options: BuildOptions): boolean {
   // NOTE:
   //   We only set --split-sections on Linux and Windows, as it does nothing on MacOS:
   //   https://github.com/agda/agda/issues/5940
-  const osOK = opts.os === 'linux' || opts.os === 'windows'
+  const osOK = opts.platform === 'linux' || opts.platform === 'win32'
   // NOTE:
   //   We only set --split-sections if Ghc >=8.0 and Cabal >=2.2, when the flag was added:
   //   https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-split-sections

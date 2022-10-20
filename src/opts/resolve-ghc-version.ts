@@ -2,7 +2,7 @@ import * as core from '@actions/core'
 import assert from 'node:assert'
 import os from 'node:os'
 import semver from 'semver'
-import bundledHaskellVersionInfo from '../package-info/Haskell.versions.json'
+import bundledHaskellVersionInfo from '../data/Haskell.versions.json'
 import {BuildOptions} from './types'
 
 // Resolving the GHC version to use:

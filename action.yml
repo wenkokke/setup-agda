@@ -10,11 +10,11 @@ inputs:
       Can be "latest" or a specific version number (e.g., 2.6.2.2).
     required: false
   agda-stdlib-version:
-    default: ''
+    default: 'none'
     description: |
       The Agda standard library version.
 
-      Can be "recommended", "latest", or a specific version number (e.g., 1.7.1).
+      Can be "none", "recommended", "latest", or a specific version number (e.g., 1.7.1).
 
       If set to "recommended", it will install the latest version of the Agda
       standard library compatible with the specified Agda version, see:
@@ -23,8 +23,6 @@ inputs:
       If set to "latest" or a specific version number, it will install the
       latest or that specific version, regardless of compatibility with the
       specified Agda version.
-
-      NOTE: not yet supported.
     required: false
   bdist-compress-exe:
     description: |

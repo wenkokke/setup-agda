@@ -12,10 +12,9 @@ set -euxo pipefail
 pre-commit run --all-files
 npm run all
 
-# Add dist to commit:
+# Add dist & data to commit:
 git add dist/*
-git add src/package-info/Agda.package-info.json
-git add src/package-info/Haskell.versions.json
+git add src/data/*.json
 
 # Delete 'latest' tag locally:
 git tag --delete latest || true

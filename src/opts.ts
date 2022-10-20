@@ -5,9 +5,16 @@ export {
   supportsClusterCounting,
   needsIcu
 } from './opts/compat'
-export {default as findBdist} from './opts/find-bdist'
 export {default as getOptions} from './opts/get-options'
-export {os} from './opts/os'
+export {Platform, platform, Arch, arch} from './opts/platform'
 export {agdaDir, installDir} from './opts/path'
 export {default as resolveGhcVersion} from './opts/resolve-ghc-version'
-export {BuildOptions, SetupAgdaInputs, SetupHaskellInputs} from './opts/types'
+export {default as resolveAgdaStdlibVersion} from './opts/resolve-agda-stdlib-version'
+export {
+  BuildOptions,
+  SetupAgdaInputs,
+  SetupHaskellInputs,
+  agdaPackageInfoCache,
+  agdaBdistIndex,
+  agdaStdlibSdistIndex
+} from './opts/types'

@@ -115,11 +115,11 @@ export async function lsR(inputPath: string): Promise<string> {
 }
 
 function escape(filePath: string): string {
-  switch (opts.os) {
-    case 'macos':
+  switch (opts.platform) {
+    case 'darwin':
     case 'linux':
       return filePath.replace(/(?<!\\) /g, '\\ ')
-    case 'windows':
+    case 'win32':
     default:
       return filePath
   }

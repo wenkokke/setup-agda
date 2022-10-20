@@ -1,13 +1,13 @@
-import * as opts from './os'
+import * as opts from './platform'
 import * as path from 'node:path'
 import * as os from 'node:os'
 
 export function agdaDir(): string {
-  switch (opts.os) {
+  switch (opts.platform) {
     case 'linux':
-    case 'macos':
+    case 'darwin':
       return path.join(os.homedir(), '.agda')
-    case 'windows':
+    case 'win32':
       return path.join(os.homedir(), 'AppData', 'Roaming', 'agda')
   }
 }
