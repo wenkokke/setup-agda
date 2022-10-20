@@ -91,15 +91,6 @@ function resolveAgdaOptions(
   }
   return [agdaBin, options]
 }
-
-function parseAgdaVersionOutput(progOutput: string): string {
-  if (progOutput.startsWith('Agda version ')) {
-    return progOutput.substring('Agda version '.length).trim()
-  } else {
-    throw Error(`Could not parse Agda version: '${progOutput}'`)
-  }
-}
-
 export async function agdaGetVersion(
   agdaOptions?: Partial<AgdaOptions>,
   options?: exec.ExecOptions
@@ -107,7 +98,11 @@ export async function agdaGetVersion(
   const [agdaBin, optionsWithDataDir] = resolveAgdaOptions(agdaOptions, options)
   const versionOptions = {
     ...optionsWithDataDir,
-    parseOutput: parseAgdaVersionOutput
+    parseOutput: (progOutput: string): string => {
+      if (progOutput.startsWith('Agda version '))
+        return progOutput.substring('Agda version '.length).trim()
+      else throw Error(`Could not parse Agda version: '${progOutput}'`)
+    }
   }
   return await exec.getVersion(agdaBin, versionOptions)
 }
@@ -163,7 +158,7 @@ export async function agdaTest(
   }
 }
 
-export async function installAgda(installDir: string): Promise<void> {
+export async function configureEnvFor(installDir: string): Promise<void> {
   const dataDir = path.join(installDir, 'data')
   core.info(`Set Agda_datadir to ${dataDir}`)
   core.exportVariable('Agda_datadir', dataDir)
