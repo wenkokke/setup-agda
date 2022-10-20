@@ -82,9 +82,9 @@ export const agdaPackageInfoCache = hackage.mergePackageInfoCache(
 //
 // NOTE: The type ensures that all binary distributions are indexed under valid
 //       platform, architecture, and Agda version keys.
-export const agdaBdistIndex = bundledAgdaBdistIndex as Partial<
+export const agdaBdistIndex: Partial<
   Record<Platform, Partial<Record<Arch, Partial<Record<AgdaVersion, string>>>>>
->
+> = bundledAgdaBdistIndex
 
 // List of agda-stdlib source distributions on GitHub:
 //
