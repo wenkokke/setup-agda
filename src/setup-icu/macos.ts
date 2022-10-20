@@ -13,17 +13,17 @@ async function installDirForMacOS(): Promise<string> {
 export async function setupForMacOS(options: opts.BuildOptions): Promise<void> {
   // Ensure ICU is installed:
   let icuVersion = await util.brewGetVersion('icu4c')
-  core.debug(`Found ICU version: ${icuVersion}`)
+  core.info(`Found ICU version: ${icuVersion}`)
   if (icuVersion === undefined) {
     await util.brew('install', 'icu4c')
     icuVersion = await util.brewGetVersion('icu4c')
-    core.debug(`Installed ICU version: ${icuVersion}`)
+    core.info(`Installed ICU version: ${icuVersion}`)
   }
   if (icuVersion === undefined) throw Error('Could not install icu4c')
 
   // Find the ICU installation location:
   const prefix = await installDirForMacOS()
-  core.debug(`Found ICU version ${icuVersion} at ${prefix}`)
+  core.info(`Found ICU version ${icuVersion} at ${prefix}`)
 
   // Add to PKG_CONFIG_PATH:
   const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig')
@@ -52,7 +52,7 @@ export async function setupForMacOS(options: opts.BuildOptions): Promise<void> {
   try {
     core.info(JSON.stringify(await util.pkgConfigGetInfo('icu-i18n')))
   } catch (error) {
-    core.debug(util.ensureError(error).message)
+    core.info(util.ensureError(error).message)
   }
 }
 
@@ -65,12 +65,12 @@ export async function bundleForMacOS(
   // Gather information
   core.info(`Bundle ICU version ${options['icu-version']}`)
   const prefix = await installDirForMacOS()
-  core.debug(`Found ICU version ${options['icu-version']} at ${prefix}`)
+  core.info(`Found ICU version ${options['icu-version']} at ${prefix}`)
   const distLibDir = path.join(distDir, 'lib')
   const distBinDir = path.join(distDir, 'bin')
 
   // Copy library files & change their IDs
-  core.debug(`Copy ICU ${options['icu-version']} in ${distLibDir}`)
+  core.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`)
   await util.mkdirP(distLibDir)
   for (const libName of ['libicui18n', 'libicuuc', 'libicudata']) {
     const libNameFrom = `${libName}.${options['icu-version']}.dylib`

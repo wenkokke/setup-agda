@@ -23,7 +23,7 @@ export async function printNeeded(binPath: string): Promise<void> {
     }
     core.info(`Needed libraries:${os.EOL}${output}`)
   } catch (error) {
-    core.debug(ensureError(error).message)
+    core.info(ensureError(error).message)
   }
 }
 

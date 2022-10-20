@@ -45,7 +45,7 @@ export async function cp(
 ): Promise<void> {
   source = escape(source)
   dest = escape(dest)
-  core.debug(`cp ${source} ${dest}`)
+  core.info(`cp ${source} ${dest}`)
   return await io.cp(source, dest, options)
 }
 
@@ -67,25 +67,25 @@ export async function mv(
 ): Promise<void> {
   source = escape(source)
   dest = escape(dest)
-  core.debug(`mv ${source} ${dest}`)
+  core.info(`mv ${source} ${dest}`)
   return await io.mv(source, dest, options)
 }
 
 export async function mkdirP(dir: string): Promise<void> {
   dir = escape(dir)
-  core.debug(`mkdir -p ${dir}`)
+  core.info(`mkdir -p ${dir}`)
   return await io.mkdirP(dir)
 }
 
 export async function rmRF(path: string): Promise<void> {
   path = escape(path)
-  core.debug(`rm -rf ${path}`)
+  core.info(`rm -rf ${path}`)
   return await io.rmRF(path)
 }
 
 export async function lsR(path: string): Promise<string> {
   path = escape(path)
-  core.debug(`ls -R ${path}`)
+  core.info(`ls -R ${path}`)
   return await getOutput('ls', ['-R', path])
 }
 

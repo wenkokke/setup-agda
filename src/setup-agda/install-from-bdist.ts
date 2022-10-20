@@ -20,7 +20,7 @@ export default async function installFromBdist(
       try {
         util.rmRF(bdistZip)
       } catch (error) {
-        core.debug(`Could not clean up: ${util.ensureError(error).message}`)
+        core.info(`Could not clean up: ${util.ensureError(error).message}`)
       }
       // If needed, repair file permissions:
       await repairPermissions(bdistDir)

@@ -37,7 +37,7 @@ export default async function uploadBdist(
       for (const binName of util.agdaBinNames)
         await compressBin(upxExe, path.join(bdistDir, 'bin', binName))
     } catch (error) {
-      core.debug(util.ensureError(error).message)
+      core.info(util.ensureError(error).message)
     }
   }
 

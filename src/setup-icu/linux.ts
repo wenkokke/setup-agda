@@ -26,7 +26,7 @@ export async function setupForLinux(options: opts.BuildOptions): Promise<void> {
   try {
     core.info(JSON.stringify(await util.pkgConfigGetInfo('icu-i18n')))
   } catch (error) {
-    core.debug(util.ensureError(error).message)
+    core.info(util.ensureError(error).message)
   }
 }
 
@@ -53,12 +53,12 @@ export async function bundleForLinux(
   const libsFrom = await libFromGlobber.glob()
   core.info(`Found libraries:${os.EOL}${libsFrom.join(os.EOL)}`)
 
-  // core.debug(`Found ICU version ${options['icu-version']} at ${prefix}`)
+  // core.info(`Found ICU version ${options['icu-version']} at ${prefix}`)
   const distLibDir = path.join(distDir, 'lib')
   const distBinDir = path.join(distDir, 'bin')
 
   // Copy library files & change their IDs
-  core.debug(`Copy ICU ${options['icu-version']} in ${distLibDir}`)
+  core.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`)
   await util.mkdirP(distLibDir)
   for (const libFrom of libsFrom) {
     const libName = path.basename(libFrom, `.so.${options['icu-version']}`)

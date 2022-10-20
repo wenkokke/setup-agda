@@ -69,7 +69,7 @@ export async function getPackageInfo(
       headers['if-modified-since'] = packageInfoCache.lastModified
     }
     const resp = await httpClient.get(packageInfoUrl(packageName), headers)
-    core.debug(
+    core.info(
       `getPackageInfo: received '${resp.message.statusCode}: ${resp.message.statusMessage}' for package ${packageName}`
     )
     if (resp.message.statusCode === 200) {

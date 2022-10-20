@@ -66,7 +66,7 @@ export async function ghcMaybeGetVersion(using?: {
   try {
     return await ghcGetVersion(using)
   } catch (error) {
-    core.debug(
+    core.info(
       `Could not get installed GHC version: ${ensureError(error).message}`
     )
     return null
@@ -101,7 +101,7 @@ export async function cabalMaybeGetVersion(using?: {
   try {
     return await cabalGetVersion(using)
   } catch (error) {
-    core.debug(
+    core.info(
       `Could not get installed Cabal version: ${ensureError(error).message}`
     )
     return null

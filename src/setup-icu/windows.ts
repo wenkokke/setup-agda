@@ -41,7 +41,7 @@ export async function setupForWindows(
   try {
     core.info(JSON.stringify(await util.pkgConfigGetInfo('icu-io')))
   } catch (error) {
-    core.debug(util.ensureError(error).message)
+    core.info(util.ensureError(error).message)
   }
 }
 
@@ -68,7 +68,7 @@ export async function bundleForWindows(
 
   // Copy library files
   const libDirTo = path.join(distDir, 'bin')
-  core.debug(`Copy ICU ${options['icu-version']} in ${libDirTo}`)
+  core.info(`Copy ICU ${options['icu-version']} in ${libDirTo}`)
   await util.mkdirP(libDirTo)
   for (const libFrom of libsFrom) {
     const libName = path.basename(libFrom)

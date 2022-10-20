@@ -48,7 +48,7 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
         try {
           await util.rmRF(agdaDir)
         } catch (error) {
-          core.debug(
+          core.info(
             `Failed to clean up build: ${util.ensureError(error).message}`
           )
         }

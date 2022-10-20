@@ -235,7 +235,7 @@ function getOptions(inputs, actionYml) {
         var _a, _b;
         const rawInputValue = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
         const inputValue = (_b = (_a = rawInputValue === null || rawInputValue === void 0 ? void 0 : rawInputValue.trim()) !== null && _a !== void 0 ? _a : getDefault(k, actionYml)) !== null && _b !== void 0 ? _b : '';
-        core.debug(`Input ${k}: ${rawInputValue} => ${inputValue}`);
+        core.info(`Input ${k}: ${rawInputValue} => ${inputValue}`);
         return inputValue;
     }
     function getFlag(k) {
@@ -245,7 +245,7 @@ function getOptions(inputs, actionYml) {
             rawInputValue === undefined ||
             rawInputValue === '' ||
             rawInputValue === 'false');
-        core.debug(`Input ${k}: ${rawInputValue} => ${inputValue}`);
+        core.info(`Input ${k}: ${rawInputValue} => ${inputValue}`);
         return inputValue;
     }
     const options = {
@@ -669,7 +669,7 @@ function setup(options) {
                         yield util.rmRF(agdaDir);
                     }
                     catch (error) {
-                        core.debug(`Failed to clean up build: ${util.ensureError(error).message}`);
+                        core.info(`Failed to clean up build: ${util.ensureError(error).message}`);
                     }
                 }
                 yield util.installAgda(installDir);
@@ -743,7 +743,7 @@ function buildFromSource(options) {
             // Download the source:
             core.info('Download source distribution from Hackage');
             const sourceDir = yield util.getAgdaSdist(options);
-            core.debug(`Downloaded source distribution to ${sourceDir}`);
+            core.info(`Downloaded source distribution to ${sourceDir}`);
             // Determine the build tool:
             const buildTool = options['enable-stack'] ? stack : cabal;
             core.info(`Set build tool to ${buildTool.name}`);
@@ -1211,7 +1211,7 @@ function installFromBdist(options) {
                     util.rmRF(bdistZip);
                 }
                 catch (error) {
-                    core.debug(`Could not clean up: ${util.ensureError(error).message}`);
+                    core.info(`Could not clean up: ${util.ensureError(error).message}`);
                 }
                 // If needed, repair file permissions:
                 yield repairPermissions(bdistDir);
@@ -1438,7 +1438,7 @@ function uploadBdist(installDir, options) {
                     yield compressBin(upxExe, path.join(bdistDir, 'bin', binName));
             }
             catch (error) {
-                core.debug(util.ensureError(error).message);
+                core.info(util.ensureError(error).message);
             }
         }
         // Bundle libraries:
@@ -1718,7 +1718,7 @@ function setupForLinux(options) {
             core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-i18n')));
         }
         catch (error) {
-            core.debug(util.ensureError(error).message);
+            core.info(util.ensureError(error).message);
         }
     });
 }
@@ -1739,11 +1739,11 @@ function bundleForLinux(distDir, options) {
         const libFromGlobber = yield glob.create(libFromPatterns);
         const libsFrom = yield libFromGlobber.glob();
         core.info(`Found libraries:${os.EOL}${libsFrom.join(os.EOL)}`);
-        // core.debug(`Found ICU version ${options['icu-version']} at ${prefix}`)
+        // core.info(`Found ICU version ${options['icu-version']} at ${prefix}`)
         const distLibDir = path.join(distDir, 'lib');
         const distBinDir = path.join(distDir, 'bin');
         // Copy library files & change their IDs
-        core.debug(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
+        core.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
         yield util.mkdirP(distLibDir);
         for (const libFrom of libsFrom) {
             const libName = path.basename(libFrom, `.so.${options['icu-version']}`);
@@ -1844,17 +1844,17 @@ function setupForMacOS(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Ensure ICU is installed:
         let icuVersion = yield util.brewGetVersion('icu4c');
-        core.debug(`Found ICU version: ${icuVersion}`);
+        core.info(`Found ICU version: ${icuVersion}`);
         if (icuVersion === undefined) {
             yield util.brew('install', 'icu4c');
             icuVersion = yield util.brewGetVersion('icu4c');
-            core.debug(`Installed ICU version: ${icuVersion}`);
+            core.info(`Installed ICU version: ${icuVersion}`);
         }
         if (icuVersion === undefined)
             throw Error('Could not install icu4c');
         // Find the ICU installation location:
         const prefix = yield installDirForMacOS();
-        core.debug(`Found ICU version ${icuVersion} at ${prefix}`);
+        core.info(`Found ICU version ${icuVersion} at ${prefix}`);
         // Add to PKG_CONFIG_PATH:
         const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig');
         util.addPkgConfigPath(pkgConfigDir);
@@ -1869,7 +1869,7 @@ function setupForMacOS(options) {
             core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-i18n')));
         }
         catch (error) {
-            core.debug(util.ensureError(error).message);
+            core.info(util.ensureError(error).message);
         }
     });
 }
@@ -1881,11 +1881,11 @@ function bundleForMacOS(distDir, options) {
         // Gather information
         core.info(`Bundle ICU version ${options['icu-version']}`);
         const prefix = yield installDirForMacOS();
-        core.debug(`Found ICU version ${options['icu-version']} at ${prefix}`);
+        core.info(`Found ICU version ${options['icu-version']} at ${prefix}`);
         const distLibDir = path.join(distDir, 'lib');
         const distBinDir = path.join(distDir, 'bin');
         // Copy library files & change their IDs
-        core.debug(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
+        core.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
         yield util.mkdirP(distLibDir);
         for (const libName of ['libicui18n', 'libicuuc', 'libicudata']) {
             const libNameFrom = `${libName}.${options['icu-version']}.dylib`;
@@ -1994,7 +1994,7 @@ function setupForWindows(options) {
             core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-io')));
         }
         catch (error) {
-            core.debug(util.ensureError(error).message);
+            core.info(util.ensureError(error).message);
         }
     });
 }
@@ -2015,7 +2015,7 @@ function bundleForWindows(distDir, options) {
         core.info(`Found libraries:${os.EOL}${libsFrom.join(os.EOL)}`);
         // Copy library files
         const libDirTo = path.join(distDir, 'bin');
-        core.debug(`Copy ICU ${options['icu-version']} in ${libDirTo}`);
+        core.info(`Copy ICU ${options['icu-version']} in ${libDirTo}`);
         yield util.mkdirP(libDirTo);
         for (const libFrom of libsFrom) {
             const libName = path.basename(libFrom);
@@ -2556,7 +2556,7 @@ function cp(source, dest, options) {
     return __awaiter(this, void 0, void 0, function* () {
         source = escape(source);
         dest = escape(dest);
-        core.debug(`cp ${source} ${dest}`);
+        core.info(`cp ${source} ${dest}`);
         return yield io.cp(source, dest, options);
     });
 }
@@ -2571,7 +2571,7 @@ function mv(source, dest, options) {
     return __awaiter(this, void 0, void 0, function* () {
         source = escape(source);
         dest = escape(dest);
-        core.debug(`mv ${source} ${dest}`);
+        core.info(`mv ${source} ${dest}`);
         return yield io.mv(source, dest, options);
     });
 }
@@ -2579,7 +2579,7 @@ exports.mv = mv;
 function mkdirP(dir) {
     return __awaiter(this, void 0, void 0, function* () {
         dir = escape(dir);
-        core.debug(`mkdir -p ${dir}`);
+        core.info(`mkdir -p ${dir}`);
         return yield io.mkdirP(dir);
     });
 }
@@ -2587,7 +2587,7 @@ exports.mkdirP = mkdirP;
 function rmRF(path) {
     return __awaiter(this, void 0, void 0, function* () {
         path = escape(path);
-        core.debug(`rm -rf ${path}`);
+        core.info(`rm -rf ${path}`);
         return yield io.rmRF(path);
     });
 }
@@ -2595,7 +2595,7 @@ exports.rmRF = rmRF;
 function lsR(path) {
     return __awaiter(this, void 0, void 0, function* () {
         path = escape(path);
-        core.debug(`ls -R ${path}`);
+        core.info(`ls -R ${path}`);
         return yield getOutput('ls', ['-R', path]);
     });
 }
@@ -2704,7 +2704,7 @@ function getPackageInfo(packageName, options) {
                 headers['if-modified-since'] = packageInfoCache.lastModified;
             }
             const resp = yield httpClient.get(packageInfoUrl(packageName), headers);
-            core.debug(`getPackageInfo: received '${resp.message.statusCode}: ${resp.message.statusMessage}' for package ${packageName}`);
+            core.info(`getPackageInfo: received '${resp.message.statusCode}: ${resp.message.statusMessage}' for package ${packageName}`);
             if (resp.message.statusCode === 200) {
                 const respBody = yield resp.readBody();
                 const packageInfo = JSON.parse(respBody);
@@ -2896,7 +2896,7 @@ function ghcMaybeGetVersion(using) {
             return yield ghcGetVersion(using);
         }
         catch (error) {
-            core.debug(`Could not get installed GHC version: ${(0, ensure_error_1.default)(error).message}`);
+            core.info(`Could not get installed GHC version: ${(0, ensure_error_1.default)(error).message}`);
             return null;
         }
     });
@@ -2927,7 +2927,7 @@ function cabalMaybeGetVersion(using) {
             return yield cabalGetVersion(using);
         }
         catch (error) {
-            core.debug(`Could not get installed Cabal version: ${(0, ensure_error_1.default)(error).message}`);
+            core.info(`Could not get installed Cabal version: ${(0, ensure_error_1.default)(error).message}`);
             return null;
         }
     });
@@ -3149,7 +3149,7 @@ function printNeeded(binPath) {
             core.info(`Needed libraries:${os.EOL}${output}`);
         }
         catch (error) {
-            core.debug((0, ensure_error_1.default)(error).message);
+            core.info((0, ensure_error_1.default)(error).message);
         }
     });
 }

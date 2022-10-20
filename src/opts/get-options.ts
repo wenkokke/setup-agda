@@ -22,7 +22,7 @@ export default function getOptions(
   function getOption(k: SetupAgdaOption): string {
     const rawInputValue = typeof inputs === 'function' ? inputs(k) : inputs?.[k]
     const inputValue = rawInputValue?.trim() ?? getDefault(k, actionYml) ?? ''
-    core.debug(`Input ${k}: ${rawInputValue} => ${inputValue}`)
+    core.info(`Input ${k}: ${rawInputValue} => ${inputValue}`)
     return inputValue
   }
   function getFlag(k: SetupAgdaFlag): boolean {
@@ -34,7 +34,7 @@ export default function getOptions(
       rawInputValue === '' ||
       rawInputValue === 'false'
     )
-    core.debug(`Input ${k}: ${rawInputValue} => ${inputValue}`)
+    core.info(`Input ${k}: ${rawInputValue} => ${inputValue}`)
     return inputValue
   }
   const options: BuildOptions = {
