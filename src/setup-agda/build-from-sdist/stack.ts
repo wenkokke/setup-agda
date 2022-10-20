@@ -52,6 +52,7 @@ export async function build(
   for (const binName of util.agdaBinNames) {
     const localBinPath = path.join(localBinDir, binName)
     const installBinPath = path.join(installBinDir, binName)
+    core.info(`Copy ${binName}: ${localBinDir} -> ${installBinDir}`)
     await util.cp(localBinPath, installBinPath)
   }
 }

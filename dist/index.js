@@ -1059,6 +1059,7 @@ function build(sourceDir, installDir, options, matchingGhcVersionsThatCanBuildAg
         for (const binName of util.agdaBinNames) {
             const localBinPath = path.join(localBinDir, binName);
             const installBinPath = path.join(installBinDir, binName);
+            core.info(`Copy ${binName}: ${localBinDir} -> ${installBinDir}`);
             yield util.cp(localBinPath, installBinPath);
         }
     });
@@ -2518,13 +2519,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getVersion = exports.lsR = exports.rmRF = exports.mkdirP = exports.mv = exports.cpR = exports.cp = exports.getOutput = exports.which = exports.findInPath = void 0;
 const exec = __importStar(__nccwpck_require__(1514));
 const os = __importStar(__nccwpck_require__(612));
+const path = __importStar(__nccwpck_require__(9411));
 const core = __importStar(__nccwpck_require__(2186));
 const io = __importStar(__nccwpck_require__(7436));
 const opts = __importStar(__nccwpck_require__(1352));
+const ensure_error_1 = __importDefault(__nccwpck_require__(1151));
 var io_1 = __nccwpck_require__(7436);
 Object.defineProperty(exports, "findInPath", ({ enumerable: true, get: function () { return io_1.findInPath; } }));
 Object.defineProperty(exports, "which", ({ enumerable: true, get: function () { return io_1.which; } }));
@@ -2557,7 +2563,33 @@ function cp(source, dest, options) {
         source = escape(source);
         dest = escape(dest);
         core.info(`cp ${source} ${dest}`);
-        return yield io.cp(source, dest, options);
+        try {
+            return yield io.cp(source, dest, options);
+        }
+        catch (error) {
+            const theError = (0, ensure_error_1.default)(error);
+            let sourceDesc = '';
+            try {
+                sourceDesc = yield lsR(path.dirname(source));
+            }
+            catch (lsError) {
+                sourceDesc = (0, ensure_error_1.default)(lsError).message;
+            }
+            let destDesc = '';
+            try {
+                destDesc = yield lsR(path.dirname(dest));
+            }
+            catch (lsError) {
+                destDesc = (0, ensure_error_1.default)(lsError).message;
+            }
+            theError.message = [
+                theError.message,
+                `- sourceDir: ${sourceDesc}`,
+                `- destDir: ${destDesc}`,
+                `- options: ${JSON.stringify(options)}`
+            ].join(os.EOL);
+            throw theError;
+        }
     });
 }
 exports.cp = cp;
@@ -2584,19 +2616,19 @@ function mkdirP(dir) {
     });
 }
 exports.mkdirP = mkdirP;
-function rmRF(path) {
+function rmRF(inputPath) {
     return __awaiter(this, void 0, void 0, function* () {
-        path = escape(path);
-        core.info(`rm -rf ${path}`);
-        return yield io.rmRF(path);
+        inputPath = escape(inputPath);
+        core.info(`rm -rf ${inputPath}`);
+        return yield io.rmRF(inputPath);
     });
 }
 exports.rmRF = rmRF;
-function lsR(path) {
+function lsR(inputPath) {
     return __awaiter(this, void 0, void 0, function* () {
-        path = escape(path);
-        core.info(`ls -R ${path}`);
-        return yield getOutput('ls', ['-R', path]);
+        inputPath = escape(inputPath);
+        core.info(`ls -R ${inputPath}`);
+        return yield getOutput('ls', ['-R', inputPath]);
     });
 }
 exports.lsR = lsR;

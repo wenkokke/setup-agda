@@ -1,8 +1,10 @@
 import * as exec from '@actions/exec'
 import * as os from 'node:os'
+import * as path from 'node:path'
 import * as core from '@actions/core'
 import * as io from '@actions/io'
 import * as opts from '../opts'
+import ensureError from './ensure-error'
 
 export {ExecOptions} from '@actions/exec'
 export {findInPath, which} from '@actions/io'
@@ -46,7 +48,30 @@ export async function cp(
   source = escape(source)
   dest = escape(dest)
   core.info(`cp ${source} ${dest}`)
-  return await io.cp(source, dest, options)
+  try {
+    return await io.cp(source, dest, options)
+  } catch (error) {
+    const theError = ensureError(error)
+    let sourceDesc = ''
+    try {
+      sourceDesc = await lsR(path.dirname(source))
+    } catch (lsError) {
+      sourceDesc = ensureError(lsError).message
+    }
+    let destDesc = ''
+    try {
+      destDesc = await lsR(path.dirname(dest))
+    } catch (lsError) {
+      destDesc = ensureError(lsError).message
+    }
+    theError.message = [
+      theError.message,
+      `- sourceDir: ${sourceDesc}`,
+      `- destDir: ${destDesc}`,
+      `- options: ${JSON.stringify(options)}`
+    ].join(os.EOL)
+    throw theError
+  }
 }
 
 export async function cpR(
@@ -77,16 +102,16 @@ export async function mkdirP(dir: string): Promise<void> {
   return await io.mkdirP(dir)
 }
 
-export async function rmRF(path: string): Promise<void> {
-  path = escape(path)
-  core.info(`rm -rf ${path}`)
-  return await io.rmRF(path)
+export async function rmRF(inputPath: string): Promise<void> {
+  inputPath = escape(inputPath)
+  core.info(`rm -rf ${inputPath}`)
+  return await io.rmRF(inputPath)
 }
 
-export async function lsR(path: string): Promise<string> {
-  path = escape(path)
-  core.info(`ls -R ${path}`)
-  return await getOutput('ls', ['-R', path])
+export async function lsR(inputPath: string): Promise<string> {
+  inputPath = escape(inputPath)
+  core.info(`ls -R ${inputPath}`)
+  return await getOutput('ls', ['-R', inputPath])
 }
 
 function escape(filePath: string): string {
