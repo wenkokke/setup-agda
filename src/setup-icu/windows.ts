@@ -27,14 +27,15 @@ export async function setupForWindows(
 
   // Add extra-{include,lib}-dirs:
   options['extra-include-dirs'].push(
-    await util.pkgConfig('--variable', 'includedir', 'icu-i18n')
+    core.toPlatformPath(
+      await util.pkgConfig('--variable', 'includedir', 'icu-i18n')
+    )
   )
-  // TODO: 'C:\msys64\mingw64\lib' only contains 'libicu*.dll.a'
-  options['extra-lib-dirs'].push(
-    await util.pkgConfig('--variable', 'libdir', 'icu-i18n')
-  )
-  options['extra-lib-dirs'].push('C:\\msys64\\mingw64\\bin')
-  options['extra-lib-dirs'].push('C:\\msys64\\usr\\bin')
+  // NOTE:
+  //   The libdir (C:\msys64\mingw64\lib) only contains libicu*.dll.a,
+  //   not libicu*.dll. I'm not sure what the .dll.a files are?
+  for (const libDir of await icuGetLibDirs())
+    options['extra-lib-dirs'].push(libDir)
 
   // Print ICU package info:
   try {
@@ -52,12 +53,7 @@ export async function bundleForWindows(
 
   core.info(`Bundle ICU version ${options['icu-version']}`)
   const libVerMaj = util.simver.major(options['icu-version'])
-  const libDirsFrom = new Set<string>()
-  libDirsFrom.add('C:\\msys64\\mingw64\\bin')
-  libDirsFrom.add('C:\\msys64\\usr\\bin')
-  libDirsFrom.add(await util.pkgConfig('--variable', 'libdir', 'icu-i18n'))
-  libDirsFrom.add(await util.pkgConfig('--variable', 'libdir', 'icu-uc'))
-  libDirsFrom.add(await util.pkgConfig('--variable', 'libdir', 'icu-io'))
+  const libDirsFrom = await icuGetLibDirs()
   const libFromPatterns = [...libDirsFrom]
     .flatMap<string>(libDir =>
       ['libicuin', 'libicuuc', 'libicudt', 'libicuio'].flatMap<string>(
@@ -80,4 +76,17 @@ export async function bundleForWindows(
     // Copy the library:
     await util.cp(libFrom, libTo)
   }
+}
+
+async function icuGetLibDirs(): Promise<Set<string>> {
+  const icuInLibDir = await util.pkgConfig('--variable', 'libdir', 'icu-i18n')
+  const icuUcLibDir = await util.pkgConfig('--variable', 'libdir', 'icu-uc')
+  const icuIoLibDir = await util.pkgConfig('--variable', 'libdir', 'icu-io')
+  return new Set<string>([
+    'C:\\msys64\\mingw64\\bin[',
+    'C:\\msys64\\usr\\bin',
+    core.toPlatformPath(icuInLibDir),
+    core.toPlatformPath(icuUcLibDir),
+    core.toPlatformPath(icuIoLibDir)
+  ])
 }

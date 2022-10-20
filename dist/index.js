@@ -1733,8 +1733,8 @@ function setupForLinux(options) {
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
         // Add extra-{include,lib}-dirs:
-        options['extra-include-dirs'].push(yield util.pkgConfig('--variable', 'includedir', 'icu-i18n'));
-        options['extra-lib-dirs'].push(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n'));
+        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfig('--variable', 'includedir', 'icu-i18n')));
+        options['extra-lib-dirs'].push(core.toPlatformPath(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n')));
         // Print ICU package info:
         try {
             core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-i18n')));
@@ -1884,8 +1884,8 @@ function setupForMacOS(options) {
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
         (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version reported by Homebrew differs from ICU version reported by pkg-config');
         // Add extra-{include,lib}-dirs:
-        options['extra-include-dirs'].push(yield util.pkgConfig('--variable', 'includedir', 'icu-i18n'));
-        options['extra-lib-dirs'].push(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n'));
+        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfig('--variable', 'includedir', 'icu-i18n')));
+        options['extra-lib-dirs'].push(core.toPlatformPath(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n')));
         // Print ICU package info:
         try {
             core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-i18n')));
@@ -2005,11 +2005,12 @@ function setupForWindows(options) {
         // Find the ICU version:
         options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
         // Add extra-{include,lib}-dirs:
-        options['extra-include-dirs'].push(yield util.pkgConfig('--variable', 'includedir', 'icu-i18n'));
-        // TODO: 'C:\msys64\mingw64\lib' only contains 'libicu*.dll.a'
-        options['extra-lib-dirs'].push(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n'));
-        options['extra-lib-dirs'].push('C:\\msys64\\mingw64\\bin');
-        options['extra-lib-dirs'].push('C:\\msys64\\usr\\bin');
+        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfig('--variable', 'includedir', 'icu-i18n')));
+        // NOTE:
+        //   The libdir (C:\msys64\mingw64\lib) only contains libicu*.dll.a,
+        //   not libicu*.dll. I'm not sure what the .dll.a files are?
+        for (const libDir of yield icuGetLibDirs())
+            options['extra-lib-dirs'].push(libDir);
         // Print ICU package info:
         try {
             core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-io')));
@@ -2026,12 +2027,7 @@ function bundleForWindows(distDir, options) {
             throw Error('No ICU version');
         core.info(`Bundle ICU version ${options['icu-version']}`);
         const libVerMaj = util.simver.major(options['icu-version']);
-        const libDirsFrom = new Set();
-        libDirsFrom.add('C:\\msys64\\mingw64\\bin');
-        libDirsFrom.add('C:\\msys64\\usr\\bin');
-        libDirsFrom.add(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n'));
-        libDirsFrom.add(yield util.pkgConfig('--variable', 'libdir', 'icu-uc'));
-        libDirsFrom.add(yield util.pkgConfig('--variable', 'libdir', 'icu-io'));
+        const libDirsFrom = yield icuGetLibDirs();
         const libFromPatterns = [...libDirsFrom]
             .flatMap(libDir => ['libicuin', 'libicuuc', 'libicudt', 'libicuio'].flatMap(libName => path.join(libDir, `${libName}${libVerMaj}.dll`)))
             .join(os.EOL);
@@ -2052,6 +2048,20 @@ function bundleForWindows(distDir, options) {
     });
 }
 exports.bundleForWindows = bundleForWindows;
+function icuGetLibDirs() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const icuInLibDir = yield util.pkgConfig('--variable', 'libdir', 'icu-i18n');
+        const icuUcLibDir = yield util.pkgConfig('--variable', 'libdir', 'icu-uc');
+        const icuIoLibDir = yield util.pkgConfig('--variable', 'libdir', 'icu-io');
+        return new Set([
+            'C:\\msys64\\mingw64\\bin[',
+            'C:\\msys64\\usr\\bin',
+            core.toPlatformPath(icuInLibDir),
+            core.toPlatformPath(icuUcLibDir),
+            core.toPlatformPath(icuIoLibDir)
+        ]);
+    });
+}
 
 
 /***/ }),
