@@ -1364,7 +1364,8 @@ function supportedGhcVersions(sourceDir) {
         if (versions.length === 0) {
             throw Error([
                 `Could not determine supported GHC versions for building with Stack:`,
-                `No files matching 'stack-*.yaml' in ${sourceDir}.`
+                `No files matching 'stack-*.yaml' in ${sourceDir}:`,
+                yield util.lsR(sourceDir)
             ].join(os.EOL));
         }
         else {
@@ -2815,24 +2816,10 @@ function cp(source, dest, options) {
         }
         catch (error) {
             const theError = (0, ensure_error_1.default)(error);
-            let sourceDesc = '';
-            try {
-                sourceDesc = yield lsR(path.dirname(source));
-            }
-            catch (lsError) {
-                sourceDesc = (0, ensure_error_1.default)(lsError).message;
-            }
-            let destDesc = '';
-            try {
-                destDesc = yield lsR(path.dirname(dest));
-            }
-            catch (lsError) {
-                destDesc = (0, ensure_error_1.default)(lsError).message;
-            }
             theError.message = [
                 theError.message,
-                `- sourceDir: ${sourceDesc}`,
-                `- destDir: ${destDesc}`,
+                `- sourceDir: ${yield lsR(path.dirname(source))}`,
+                `- destDir: ${yield lsR(path.dirname(dest))}`,
                 `- options: ${JSON.stringify(options)}`
             ].join(os.EOL);
             throw theError;
@@ -2873,9 +2860,14 @@ function rmRF(inputPath) {
 exports.rmRF = rmRF;
 function lsR(inputPath) {
     return __awaiter(this, void 0, void 0, function* () {
-        inputPath = escape(inputPath);
-        core.info(`ls -R ${inputPath}`);
-        return yield getOutput('ls', ['-R', inputPath]);
+        try {
+            inputPath = escape(inputPath);
+            core.info(`ls -R ${inputPath}`);
+            return yield getOutput('ls', ['-R', inputPath]);
+        }
+        catch (error) {
+            return (0, ensure_error_1.default)(error).message;
+        }
     });
 }
 exports.lsR = lsR;

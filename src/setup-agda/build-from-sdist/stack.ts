@@ -113,7 +113,8 @@ export async function supportedGhcVersions(
     throw Error(
       [
         `Could not determine supported GHC versions for building with Stack:`,
-        `No files matching 'stack-*.yaml' in ${sourceDir}.`
+        `No files matching 'stack-*.yaml' in ${sourceDir}:`,
+        await util.lsR(sourceDir)
       ].join(os.EOL)
     )
   } else {

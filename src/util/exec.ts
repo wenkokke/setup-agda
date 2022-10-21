@@ -52,22 +52,10 @@ export async function cp(
     return await io.cp(source, dest, options)
   } catch (error) {
     const theError = ensureError(error)
-    let sourceDesc = ''
-    try {
-      sourceDesc = await lsR(path.dirname(source))
-    } catch (lsError) {
-      sourceDesc = ensureError(lsError).message
-    }
-    let destDesc = ''
-    try {
-      destDesc = await lsR(path.dirname(dest))
-    } catch (lsError) {
-      destDesc = ensureError(lsError).message
-    }
     theError.message = [
       theError.message,
-      `- sourceDir: ${sourceDesc}`,
-      `- destDir: ${destDesc}`,
+      `- sourceDir: ${await lsR(path.dirname(source))}`,
+      `- destDir: ${await lsR(path.dirname(dest))}`,
       `- options: ${JSON.stringify(options)}`
     ].join(os.EOL)
     throw theError
@@ -109,9 +97,13 @@ export async function rmRF(inputPath: string): Promise<void> {
 }
 
 export async function lsR(inputPath: string): Promise<string> {
-  inputPath = escape(inputPath)
-  core.info(`ls -R ${inputPath}`)
-  return await getOutput('ls', ['-R', inputPath])
+  try {
+    inputPath = escape(inputPath)
+    core.info(`ls -R ${inputPath}`)
+    return await getOutput('ls', ['-R', inputPath])
+  } catch (error) {
+    return ensureError(error).message
+  }
 }
 
 function escape(filePath: string): string {
