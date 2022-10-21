@@ -50,7 +50,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.isAgdaStdlibVersion = exports.isAgdaVersion = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.installDir = exports.agdaDir = exports.arch = exports.platform = exports.getOptions = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
+exports.isAgdaStdlibVersion = exports.isAgdaGitRef = exports.isAgdaVersion = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.installDir = exports.agdaDir = exports.arch = exports.platform = exports.getOptions = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
 var compat_1 = __nccwpck_require__(4021);
 Object.defineProperty(exports, "runPreBuildHook", ({ enumerable: true, get: function () { return compat_1.runPreBuildHook; } }));
 Object.defineProperty(exports, "supportsSplitSections", ({ enumerable: true, get: function () { return compat_1.supportsSplitSections; } }));
@@ -74,6 +74,7 @@ Object.defineProperty(exports, "agdaPackageInfoCache", ({ enumerable: true, get:
 Object.defineProperty(exports, "agdaBdistIndex", ({ enumerable: true, get: function () { return types_1.agdaBdistIndex; } }));
 Object.defineProperty(exports, "agdaStdlibSdistIndex", ({ enumerable: true, get: function () { return types_1.agdaStdlibSdistIndex; } }));
 Object.defineProperty(exports, "isAgdaVersion", ({ enumerable: true, get: function () { return types_1.isAgdaVersion; } }));
+Object.defineProperty(exports, "isAgdaGitRef", ({ enumerable: true, get: function () { return types_1.isAgdaGitRef; } }));
 Object.defineProperty(exports, "isAgdaStdlibVersion", ({ enumerable: true, get: function () { return types_1.isAgdaStdlibVersion; } }));
 
 
@@ -241,7 +242,10 @@ function getOptions(inputs, actionYml) {
     // Resolve Agda version:
     const agdaVersionSpec = getOption('agda-version');
     if (!opts.isAgdaVersionSpec(agdaVersionSpec))
-        throw Error(`Unsupported value for input 'agda-version': '${agdaVersionSpec}'`);
+        if (opts.isDeprecatedAgdaVersion(agdaVersionSpec))
+            throw Error(`Agda version ${agdaVersionSpec} is deprecated`);
+        else
+            throw Error(`Could not parse Agda version ${agdaVersionSpec}`);
     const agdaVersion = (0, resolve_agda_version_1.default)(agdaVersionSpec);
     // Resolve agda-stdlib version:
     const agdaStdlibVersionSpec = getOption('agda-stdlib-version');
@@ -764,7 +768,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.agdaVersionToCompatibleAgdaStdlibVersions = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.isAgdaStdlibVersionSpec = exports.isAgdaStdlibVersion = exports.agdaStdlibVersions = exports.isAgdaVersionSpec = exports.isAgdaVersion = exports.agdaVersions = void 0;
+exports.agdaVersionToCompatibleAgdaStdlibVersions = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.isAgdaStdlibVersionSpec = exports.isAgdaStdlibVersion = exports.agdaStdlibVersions = exports.isAgdaVersionSpec = exports.isAgdaGitRef = exports.isDeprecatedAgdaVersion = exports.agdaDeprecatedVersions = exports.isAgdaVersion = exports.agdaVersions = void 0;
 const hackage = __importStar(__nccwpck_require__(903));
 const Agda_bdist_json_1 = __importDefault(__nccwpck_require__(7951));
 const agda_stdlib_sdist_json_1 = __importDefault(__nccwpck_require__(5324));
@@ -778,12 +782,23 @@ function isAgdaVersion(version) {
     return exports.agdaVersions.includes(version);
 }
 exports.isAgdaVersion = isAgdaVersion;
+exports.agdaDeprecatedVersions = Object.keys(Agda_versions_deprecated_json_1.default.packageInfo);
+// Type guard for deprecated Agda versions:
+function isDeprecatedAgdaVersion(version) {
+    return exports.agdaDeprecatedVersions.includes(version);
+}
+exports.isDeprecatedAgdaVersion = isDeprecatedAgdaVersion;
+// Type guard for Agda git refs:
+function isAgdaGitRef(version) {
+    return version === 'HEAD';
+}
+exports.isAgdaGitRef = isAgdaGitRef;
 // Type guard for Agda version specifications:
 function isAgdaVersionSpec(versionSpec) {
     return (isAgdaVersion(versionSpec) ||
+        isAgdaGitRef(versionSpec) ||
         versionSpec === 'latest' ||
-        versionSpec === 'nightly' ||
-        versionSpec === 'HEAD');
+        versionSpec === 'nightly');
 }
 exports.isAgdaVersionSpec = isAgdaVersionSpec;
 exports.agdaStdlibVersions = Object.keys(agda_stdlib_sdist_json_1.default);
@@ -977,7 +992,7 @@ function buildFromSource(options) {
     return __awaiter(this, void 0, void 0, function* () {
         const buildInfo = yield core.group('🛠 Preparing to build Agda from source', () => __awaiter(this, void 0, void 0, function* () {
             // Download the source:
-            core.info('Download source distribution from Hackage');
+            core.info('Download source distribution');
             const sourceDir = yield util.getAgdaSdist(options);
             core.info(`Downloaded source distribution to ${sourceDir}`);
             // Determine the build tool:
@@ -2498,25 +2513,33 @@ const exec = __importStar(__nccwpck_require__(4369));
 const simver = __importStar(__nccwpck_require__(7609));
 const hackage = __importStar(__nccwpck_require__(903));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
-const agdaHeadSdistUrl = 'https://github.com/agda/agda-stdlib/archive/refs/heads/master.zip';
+// Hackage helpers
+// Agda utilities
 function getAgdaSdist(options) {
     return __awaiter(this, void 0, void 0, function* () {
         const agdaVersion = options['agda-version'];
         if (opts.isAgdaVersion(agdaVersion)) {
+            core.info(`Downloading source distribution for Agda ${agdaVersion} from Hackage`);
             return yield getAgdaSdistFromHackage(agdaVersion);
         }
         else {
+            core.info(`Downloading source distribution for Agda ${agdaVersion} from GitHub`);
             return yield getAgdaSdistFromGitHub(agdaVersion);
         }
     });
 }
 exports.getAgdaSdist = getAgdaSdist;
-function getAgdaSdistFromGitHub(ref) {
+const agdaHeadSdistUrl = 'https://github.com/agda/agda-stdlib/archive/refs/heads/master.zip';
+function getAgdaSdistFromGitHub(agdaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
-        (0, node_assert_1.default)(ref === 'HEAD', `getAgdaSdistFromGitHub: unsupported ref '${ref}'`);
-        const packageZip = yield tc.downloadTool(agdaHeadSdistUrl);
-        const packageDir = yield tc.extractZip(packageZip);
-        return packageDir;
+        if (agdaVersion === 'HEAD') {
+            core.info(`Downloading from ${agdaHeadSdistUrl}`);
+            const packageZip = yield tc.downloadTool(agdaHeadSdistUrl);
+            return yield tc.extractZip(packageZip);
+        }
+        else {
+            throw Error(`getAgdaSdistFromGitHub: unsupported ref '${agdaVersion}'`);
+        }
     });
 }
 function getAgdaSdistFromHackage(agdaVersion) {

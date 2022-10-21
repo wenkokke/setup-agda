@@ -12,27 +12,36 @@ import assert from 'node:assert'
 
 // Agda utilities
 
-type Ref = 'HEAD'
-
-const agdaHeadSdistUrl =
-  'https://github.com/agda/agda-stdlib/archive/refs/heads/master.zip'
-
 export async function getAgdaSdist(
   options: opts.BuildOptions
 ): Promise<string> {
   const agdaVersion = options['agda-version']
   if (opts.isAgdaVersion(agdaVersion)) {
+    core.info(
+      `Downloading source distribution for Agda ${agdaVersion} from Hackage`
+    )
     return await getAgdaSdistFromHackage(agdaVersion)
   } else {
+    core.info(
+      `Downloading source distribution for Agda ${agdaVersion} from GitHub`
+    )
     return await getAgdaSdistFromGitHub(agdaVersion)
   }
 }
 
-async function getAgdaSdistFromGitHub(ref: Ref): Promise<string> {
-  assert(ref === 'HEAD', `getAgdaSdistFromGitHub: unsupported ref '${ref}'`)
-  const packageZip = await tc.downloadTool(agdaHeadSdistUrl)
-  const packageDir = await tc.extractZip(packageZip)
-  return packageDir
+const agdaHeadSdistUrl =
+  'https://github.com/agda/agda-stdlib/archive/refs/heads/master.zip'
+
+async function getAgdaSdistFromGitHub(
+  agdaVersion: opts.AgdaGitRef
+): Promise<string> {
+  if (agdaVersion === 'HEAD') {
+    core.info(`Downloading from ${agdaHeadSdistUrl}`)
+    const packageZip = await tc.downloadTool(agdaHeadSdistUrl)
+    return await tc.extractZip(packageZip)
+  } else {
+    throw Error(`getAgdaSdistFromGitHub: unsupported ref '${agdaVersion}'`)
+  }
 }
 
 async function getAgdaSdistFromHackage(

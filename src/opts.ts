@@ -19,6 +19,8 @@ export {
   agdaStdlibSdistIndex,
   AgdaVersion,
   isAgdaVersion,
+  AgdaGitRef,
+  isAgdaGitRef,
   AgdaStdlibVersion,
   isAgdaStdlibVersion
 } from './opts/types'

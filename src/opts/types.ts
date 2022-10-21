@@ -22,8 +22,31 @@ export function isAgdaVersion(version: string): version is AgdaVersion {
   return (agdaVersions as string[]).includes(version)
 }
 
+// Type of deprecated Agda versions:
+export type AgdaDeprecatedVersion =
+  keyof typeof bundledAgdaPackageInfoCacheForDeprecatedVersions.packageInfo
+
+export const agdaDeprecatedVersions = Object.keys(
+  bundledAgdaPackageInfoCacheForDeprecatedVersions.packageInfo
+) as AgdaVersion[]
+
+// Type guard for deprecated Agda versions:
+export function isDeprecatedAgdaVersion(
+  version: string
+): version is AgdaDeprecatedVersion {
+  return (agdaDeprecatedVersions as string[]).includes(version)
+}
+
+// Type of Agda git refs:
+export type AgdaGitRef = 'HEAD'
+
+// Type guard for Agda git refs:
+export function isAgdaGitRef(version: string): version is AgdaGitRef {
+  return version === 'HEAD'
+}
+
 // Type of Agda version specifications, i.e., valid inputs to the action:
-export type AgdaVersionSpec = AgdaVersion | 'latest' | 'nightly' | 'HEAD'
+export type AgdaVersionSpec = AgdaVersion | AgdaGitRef | 'latest' | 'nightly'
 
 // Type guard for Agda version specifications:
 export function isAgdaVersionSpec(
@@ -31,9 +54,9 @@ export function isAgdaVersionSpec(
 ): versionSpec is AgdaVersionSpec {
   return (
     isAgdaVersion(versionSpec) ||
+    isAgdaGitRef(versionSpec) ||
     versionSpec === 'latest' ||
-    versionSpec === 'nightly' ||
-    versionSpec === 'HEAD'
+    versionSpec === 'nightly'
   )
 }
 

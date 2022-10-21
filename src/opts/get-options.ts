@@ -40,9 +40,9 @@ export default function getOptions(
   // Resolve Agda version:
   const agdaVersionSpec = getOption('agda-version')
   if (!opts.isAgdaVersionSpec(agdaVersionSpec))
-    throw Error(
-      `Unsupported value for input 'agda-version': '${agdaVersionSpec}'`
-    )
+    if (opts.isDeprecatedAgdaVersion(agdaVersionSpec))
+      throw Error(`Agda version ${agdaVersionSpec} is deprecated`)
+    else throw Error(`Could not parse Agda version ${agdaVersionSpec}`)
   const agdaVersion: opts.AgdaVersion | 'HEAD' =
     resolveAgdaVersion(agdaVersionSpec)
 
