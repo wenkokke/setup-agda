@@ -150,3 +150,79 @@ function ghcVersionMatchExact(
 ): boolean {
   return matchingGhcVersionsThatCanBuildAgda.includes(options['ghc-version'])
 }
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function findAgdaBins(
+  sourceDir: string
+): Promise<{agdaBinPath: string; agdaModeBinPath: string}> {
+  if (opts.platform === 'win32') {
+    // Find agda.exe:
+    const agdaBinGlobber = await glob.create(
+      path.join(
+        sourceDir,
+        '.stack-work\\dist\\*\\Cabal-*\\build\\Agda\\agda.exe'
+      ),
+      {matchDirectories: false}
+    )
+    const agdaBinPaths = await agdaBinGlobber.glob()
+    if (agdaBinPaths.length === 0) throw Error(`Could not find Agda binary`)
+    else if (agdaBinPaths.length > 1)
+      core.warning(
+        `Found multiple Agda binaries:${os.EOL}${agdaBinPaths
+          .map(p => `- ${p}`)
+          .join(os.EOL)}`
+      )
+    // Find agda-mode.exe:
+    const agdaModeBinGlobber = await glob.create(
+      path.join(
+        sourceDir,
+        '.stack-work\\dist\\*\\Cabal-*\\build\\agda-mode\\agda-mode.exe'
+      ),
+      {matchDirectories: false}
+    )
+    const agdaModeBinPaths = await agdaModeBinGlobber.glob()
+    if (agdaModeBinPaths.length === 0) throw Error(`Could not find Agda binary`)
+    else if (agdaModeBinPaths.length > 1)
+      core.warning(
+        `Found multiple Agda binaries:${os.EOL}${agdaModeBinPaths
+          .map(p => `- ${p}`)
+          .join(os.EOL)}`
+      )
+    const [agdaBinPath] = agdaBinPaths
+    const [agdaModeBinPath] = agdaModeBinPaths
+    return {agdaBinPath, agdaModeBinPath}
+  } else {
+    // Find agda:
+    const agdaBinGlobber = await glob.create(
+      path.join(sourceDir, '.stack-work/dist/*/Cabal-*/build/Agda/agda'),
+      {matchDirectories: false}
+    )
+    const agdaBinPaths = await agdaBinGlobber.glob()
+    if (agdaBinPaths.length === 0) throw Error(`Could not find Agda binary`)
+    else if (agdaBinPaths.length > 1)
+      core.warning(
+        `Found multiple Agda binaries:${os.EOL}${agdaBinPaths
+          .map(p => `- ${p}`)
+          .join(os.EOL)}`
+      )
+    // Find agda-mode:
+    const agdaModeBinGlobber = await glob.create(
+      path.join(
+        sourceDir,
+        '.stack-work/dist/*/Cabal-*/build/agda-mode/agda-mode'
+      ),
+      {matchDirectories: false}
+    )
+    const agdaModeBinPaths = await agdaModeBinGlobber.glob()
+    if (agdaModeBinPaths.length === 0) throw Error(`Could not find Agda binary`)
+    else if (agdaModeBinPaths.length > 1)
+      core.warning(
+        `Found multiple Agda binaries:${os.EOL}${agdaModeBinPaths
+          .map(p => `- ${p}`)
+          .join(os.EOL)}`
+      )
+    const [agdaBinPath] = agdaBinPaths
+    const [agdaModeBinPath] = agdaModeBinPaths
+    return {agdaBinPath, agdaModeBinPath}
+  }
+}
