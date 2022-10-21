@@ -6,7 +6,6 @@
 [![Build Latest](https://github.com/wenkokke/setup-agda/actions/workflows/build-latest.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/build-latest.yml)
 [![Build Legacy](https://github.com/wenkokke/setup-agda/actions/workflows/build-legacy.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/build-legacy.yml)
 
-
 This action sets up an Agda environment for use in actions by installing or building a version of Agda and adding it to PATH.
 
 For [supported versions](#supported-versions), this action uses [custom binary distributions][custom binary distributions][^0].
