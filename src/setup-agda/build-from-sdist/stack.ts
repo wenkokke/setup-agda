@@ -6,7 +6,6 @@ import * as os from 'node:os'
 import * as semver from 'semver'
 import * as opts from '../../opts'
 import * as util from '../../util'
-import pick from 'object.pick'
 import assert from 'node:assert'
 
 export const name = 'stack'
@@ -43,18 +42,12 @@ export async function build(
   // Configure, Build, and Install:
   await util.stack(['build', ...buildFlags(options)], execOptions)
 
-  // Copy binaries from local bin
-  const localBinDir = await util.stackGetLocalBin(
-    pick(options, ['ghc-version'])
-  )
+  // Copy binaries from .stack-work:
   const installBinDir = path.join(installDir, 'bin')
+  const {agdaBinPath, agdaModeBinPath} = await findAgdaBins(sourceDir)
   await util.mkdirP(installBinDir)
-  for (const binName of util.agdaBinNames) {
-    const localBinPath = path.join(localBinDir, binName)
-    const installBinPath = path.join(installBinDir, binName)
-    core.info(`Copy ${binName}: ${localBinDir} -> ${installBinDir}`)
-    await util.cp(localBinPath, installBinPath)
-  }
+  await util.cp(agdaBinPath, installBinDir)
+  await util.cp(agdaModeBinPath, installBinDir)
 }
 
 function buildFlags(options: opts.BuildOptions): string[] {
@@ -85,7 +78,6 @@ function buildFlags(options: opts.BuildOptions): string[] {
   for (const libDir of options['extra-lib-dirs']) {
     flags.push(`--extra-lib-dirs=${libDir}`)
   }
-  flags.push('--copy-bins')
   return flags
 }
 
@@ -151,7 +143,6 @@ function ghcVersionMatchExact(
   return matchingGhcVersionsThatCanBuildAgda.includes(options['ghc-version'])
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function findAgdaBins(
   sourceDir: string
 ): Promise<{agdaBinPath: string; agdaModeBinPath: string}> {

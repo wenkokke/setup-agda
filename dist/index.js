@@ -1279,7 +1279,6 @@ const os = __importStar(__nccwpck_require__(612));
 const semver = __importStar(__nccwpck_require__(1383));
 const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
-const object_pick_1 = __importDefault(__nccwpck_require__(9962));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 exports.name = 'stack';
 function build(sourceDir, installDir, options, matchingGhcVersionsThatCanBuildAgda) {
@@ -1303,16 +1302,12 @@ function build(sourceDir, installDir, options, matchingGhcVersionsThatCanBuildAg
         yield opts.runPreBuildHook(options, execOptions);
         // Configure, Build, and Install:
         yield util.stack(['build', ...buildFlags(options)], execOptions);
-        // Copy binaries from local bin
-        const localBinDir = yield util.stackGetLocalBin((0, object_pick_1.default)(options, ['ghc-version']));
+        // Copy binaries from .stack-work:
         const installBinDir = path.join(installDir, 'bin');
+        const { agdaBinPath, agdaModeBinPath } = yield findAgdaBins(sourceDir);
         yield util.mkdirP(installBinDir);
-        for (const binName of util.agdaBinNames) {
-            const localBinPath = path.join(localBinDir, binName);
-            const installBinPath = path.join(installBinDir, binName);
-            core.info(`Copy ${binName}: ${localBinDir} -> ${installBinDir}`);
-            yield util.cp(localBinPath, installBinPath);
-        }
+        yield util.cp(agdaBinPath, installBinDir);
+        yield util.cp(agdaModeBinPath, installBinDir);
     });
 }
 exports.build = build;
@@ -1342,7 +1337,6 @@ function buildFlags(options) {
     for (const libDir of options['extra-lib-dirs']) {
         flags.push(`--extra-lib-dirs=${libDir}`);
     }
-    flags.push('--copy-bins');
     return flags;
 }
 function supportedGhcVersions(sourceDir) {
@@ -1394,7 +1388,6 @@ function findStackYaml(sourceDir, options, matchingGhcVersionsThatCanBuildAgda) 
 function ghcVersionMatchExact(options, matchingGhcVersionsThatCanBuildAgda) {
     return matchingGhcVersionsThatCanBuildAgda.includes(options['ghc-version']);
 }
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function findAgdaBins(sourceDir) {
     return __awaiter(this, void 0, void 0, function* () {
         if (opts.platform === 'win32') {
