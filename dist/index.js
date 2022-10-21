@@ -1674,11 +1674,8 @@ function uploadBdist(installDir, options) {
         const bdistName = renderName(options['bdist-name'], options);
         const bdistDir = path.join(opts.agdaDir(), 'bdist', bdistName);
         yield util.mkdirP(bdistDir);
-        // Copy binaries:
-        yield util.mkdirP(path.join(bdistDir, 'bin'));
-        for (const binName of util.agdaBinNames)
-            yield util.cp(path.join(installDir, 'bin', binName), path.join(bdistDir, 'bin', binName));
-        // Copy data:
+        // Copy binaries & data:
+        yield util.cpR(path.join(installDir, 'bin'), bdistDir);
         yield util.cpR(path.join(installDir, 'data'), bdistDir);
         // Compress binaries:
         if (options['bdist-compress-exe']) {

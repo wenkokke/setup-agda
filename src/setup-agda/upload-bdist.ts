@@ -19,15 +19,8 @@ export default async function uploadBdist(
   const bdistDir = path.join(opts.agdaDir(), 'bdist', bdistName)
   await util.mkdirP(bdistDir)
 
-  // Copy binaries:
-  await util.mkdirP(path.join(bdistDir, 'bin'))
-  for (const binName of util.agdaBinNames)
-    await util.cp(
-      path.join(installDir, 'bin', binName),
-      path.join(bdistDir, 'bin', binName)
-    )
-
-  // Copy data:
+  // Copy binaries & data:
+  await util.cpR(path.join(installDir, 'bin'), bdistDir)
   await util.cpR(path.join(installDir, 'data'), bdistDir)
 
   // Compress binaries:
