@@ -146,6 +146,7 @@ function ghcVersionMatchExact(
   return matchingGhcVersionsThatCanBuildAgda.includes(options['ghc-version'])
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function findAgdaBins(
   sourceDir: string
 ): Promise<{agdaBinPath: string; agdaModeBinPath: string}> {

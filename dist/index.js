@@ -1389,6 +1389,7 @@ function findStackYaml(sourceDir, options, matchingGhcVersionsThatCanBuildAgda) 
 function ghcVersionMatchExact(options, matchingGhcVersionsThatCanBuildAgda) {
     return matchingGhcVersionsThatCanBuildAgda.includes(options['ghc-version']);
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function findAgdaBins(sourceDir) {
     return __awaiter(this, void 0, void 0, function* () {
         if (opts.platform === 'win32') {
