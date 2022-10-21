@@ -1,0 +1,32 @@
+name: 'Setup yq'
+description: 'Setup yq'
+inputs:
+  yq-version:
+    description: 'The version of yq to install.'
+    default: '4.28.2'
+outputs:
+  yq-path:
+    description: 'Path to the downloaded yq binary.'
+    value: ${{ steps.setup-yq.outputs.yq-path }}
+runs:
+  using: 'composite'
+  steps:
+    - name: Cache yq
+      uses: actions/cache@v3
+      if: runner.os == 'windows'
+      id: cache-yq
+      with:
+        path: ${{ github.workspace }}/yq/yq-${{ inputs.yq-version }}
+        key: yq-${{ runner.os }}-${{ inputs.yq-version }}
+
+    - name: Setup yq
+      if: runner.os == 'windows' && steps.cache-yq.outputs.cache-hit != 'true'
+      run: |
+        Invoke-WebRequest -Uri "https://github.com/mikefarah/yq/releases/download/v${{ inputs.yq-version }}/yq_windows_amd64.zip" -OutFile "${{ runner.temp }}/yq.zip"
+        Expand-Archive "${{ runner.temp }}/yq.zip" -DestinationPath "${{ github.workspace }}/yq/"
+      shell: pwsh
+
+    - name: Set yq-path
+      id: setup-yq
+      run: Add-Content $Env:GITHUB_OUTPUT "yq-path=${{ github.workspace }}/yq/yq_windows_amd64.exe"
+      shell: pwsh
