@@ -40,14 +40,17 @@ export async function build(
   await opts.runPreBuildHook(options, execOptions)
 
   // Configure, Build, and Install:
-  await util.stack(['build', ...buildFlags(options)], execOptions)
-
-  // Copy binaries from .stack-work:
   const installBinDir = path.join(installDir, 'bin')
-  const {agdaBinPath, agdaModeBinPath} = await findAgdaBins(sourceDir)
   await util.mkdirP(installBinDir)
-  await util.cp(agdaBinPath, installBinDir)
-  await util.cp(agdaModeBinPath, installBinDir)
+  await util.stack(
+    [
+      'build',
+      ...buildFlags(options),
+      '--copy-bins',
+      `--local-bin-path=${installBinDir}`
+    ],
+    execOptions
+  )
 }
 
 function buildFlags(options: opts.BuildOptions): string[] {

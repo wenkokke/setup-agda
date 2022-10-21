@@ -1301,13 +1301,14 @@ function build(sourceDir, installDir, options, matchingGhcVersionsThatCanBuildAg
         // Run the pre-build hook:
         yield opts.runPreBuildHook(options, execOptions);
         // Configure, Build, and Install:
-        yield util.stack(['build', ...buildFlags(options)], execOptions);
-        // Copy binaries from .stack-work:
         const installBinDir = path.join(installDir, 'bin');
-        const { agdaBinPath, agdaModeBinPath } = yield findAgdaBins(sourceDir);
         yield util.mkdirP(installBinDir);
-        yield util.cp(agdaBinPath, installBinDir);
-        yield util.cp(agdaModeBinPath, installBinDir);
+        yield util.stack([
+            'build',
+            ...buildFlags(options),
+            '--copy-bins',
+            `--local-bin-path=${installBinDir}`
+        ], execOptions);
     });
 }
 exports.build = build;
