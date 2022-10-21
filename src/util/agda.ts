@@ -1,6 +1,5 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
-import * as tc from '@actions/tool-cache'
 import * as path from 'node:path'
 import * as opts from '../opts'
 import * as exec from './exec'
@@ -29,17 +28,26 @@ export async function getAgdaSdist(
   }
 }
 
-const agdaHeadSdistUrl =
-  'https://github.com/agda/agda/archive/refs/heads/master.zip'
+const agdaGitUrl = 'https://github.com/agda/agda.git'
 
 async function getAgdaSdistFromGitHub(
   agdaVersion: opts.AgdaGitRef
 ): Promise<string> {
   if (agdaVersion === 'HEAD') {
-    core.info(`Downloading from ${agdaHeadSdistUrl}`)
-    const packageZip = await tc.downloadTool(agdaHeadSdistUrl)
-    const packageDir = await tc.extractZip(packageZip)
-    return path.join(packageDir, 'agda-master')
+    core.info(`Cloning from ${agdaGitUrl}`)
+    const sourceDir = path.join(process.env.RUNNER_TEMP, 'agda-HEAD')
+    await exec.getOutput('git', [
+      'clone',
+      '--single-branch',
+      '--depth=1',
+      agdaGitUrl,
+      sourceDir
+    ])
+    await exec.getOutput('git', ['submodule', 'init'], {cwd: sourceDir})
+    await exec.getOutput('git', ['submodule', 'update', '--depth=1'], {
+      cwd: sourceDir
+    })
+    return sourceDir
   } else {
     throw Error(`getAgdaSdistFromGitHub: unsupported ref '${agdaVersion}'`)
   }

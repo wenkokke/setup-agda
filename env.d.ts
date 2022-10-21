@@ -83,5 +83,8 @@ declare namespace NodeJS {
 
     /** Only set for forked repositories. The branch of the base repository. */
     GITHUB_BASE_REF: string
+
+    /** Temporary director. Gets cleared after each job. */
+    RUNNER_TEMP: string
   }
 }

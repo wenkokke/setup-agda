@@ -2553,7 +2553,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.configureEnvFor = exports.agdaTest = exports.agda = exports.agdaGetDataDir = exports.agdaGetVersion = exports.agdaBinNames = exports.agdaModeBinName = exports.agdaBinName = exports.getAgdaSdist = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
-const tc = __importStar(__nccwpck_require__(7784));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const exec = __importStar(__nccwpck_require__(4369));
@@ -2576,14 +2575,24 @@ function getAgdaSdist(options) {
     });
 }
 exports.getAgdaSdist = getAgdaSdist;
-const agdaHeadSdistUrl = 'https://github.com/agda/agda/archive/refs/heads/master.zip';
+const agdaGitUrl = 'https://github.com/agda/agda.git';
 function getAgdaSdistFromGitHub(agdaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         if (agdaVersion === 'HEAD') {
-            core.info(`Downloading from ${agdaHeadSdistUrl}`);
-            const packageZip = yield tc.downloadTool(agdaHeadSdistUrl);
-            const packageDir = yield tc.extractZip(packageZip);
-            return path.join(packageDir, 'agda-master');
+            core.info(`Cloning from ${agdaGitUrl}`);
+            const sourceDir = path.join(process.env.RUNNER_TEMP, 'agda-HEAD');
+            yield exec.getOutput('git', [
+                'clone',
+                '--single-branch',
+                '--depth=1',
+                agdaGitUrl,
+                sourceDir
+            ]);
+            yield exec.getOutput('git', ['submodule', 'init'], { cwd: sourceDir });
+            yield exec.getOutput('git', ['submodule', 'update', '--depth=1'], {
+                cwd: sourceDir
+            });
+            return sourceDir;
         }
         else {
             throw Error(`getAgdaSdistFromGitHub: unsupported ref '${agdaVersion}'`);
