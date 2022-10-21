@@ -2574,13 +2574,14 @@ function getAgdaSdist(options) {
     });
 }
 exports.getAgdaSdist = getAgdaSdist;
-const agdaHeadSdistUrl = 'https://github.com/agda/agda-stdlib/archive/refs/heads/master.zip';
+const agdaHeadSdistUrl = 'https://github.com/agda/agda/archive/refs/heads/master.zip';
 function getAgdaSdistFromGitHub(agdaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         if (agdaVersion === 'HEAD') {
             core.info(`Downloading from ${agdaHeadSdistUrl}`);
             const packageZip = yield tc.downloadTool(agdaHeadSdistUrl);
-            return yield tc.extractZip(packageZip);
+            const packageDir = yield tc.extractZip(packageZip);
+            return path.join(packageDir, 'agda-master');
         }
         else {
             throw Error(`getAgdaSdistFromGitHub: unsupported ref '${agdaVersion}'`);

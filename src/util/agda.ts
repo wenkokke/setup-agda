@@ -30,7 +30,7 @@ export async function getAgdaSdist(
 }
 
 const agdaHeadSdistUrl =
-  'https://github.com/agda/agda-stdlib/archive/refs/heads/master.zip'
+  'https://github.com/agda/agda/archive/refs/heads/master.zip'
 
 async function getAgdaSdistFromGitHub(
   agdaVersion: opts.AgdaGitRef
@@ -38,7 +38,8 @@ async function getAgdaSdistFromGitHub(
   if (agdaVersion === 'HEAD') {
     core.info(`Downloading from ${agdaHeadSdistUrl}`)
     const packageZip = await tc.downloadTool(agdaHeadSdistUrl)
-    return await tc.extractZip(packageZip)
+    const packageDir = await tc.extractZip(packageZip)
+    return path.join(packageDir, 'agda-master')
   } else {
     throw Error(`getAgdaSdistFromGitHub: unsupported ref '${agdaVersion}'`)
   }
