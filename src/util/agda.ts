@@ -14,6 +14,10 @@ import assert from 'node:assert'
 export async function getAgdaSdist(
   options: opts.BuildOptions
 ): Promise<string> {
+  // Throw an error if the 'agda-version' is 'nightly':
+  if (options['agda-version'] === 'nightly')
+    throw Error('Cannot get source distribution for Agda version "nightly"')
+
   const agdaVersion = options['agda-version']
   if (opts.isAgdaVersion(agdaVersion)) {
     core.info(
