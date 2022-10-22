@@ -28,11 +28,17 @@ export default async function installFromBdist(
     }
     try {
       core.info(`Downloading package from ${bdistUrl}`)
-      const bdistZip = await tc.downloadTool(bdistUrl)
-      const bdistDir = await tc.extractZip(bdistZip)
+      // TODO: check URL:
+      // - .zip? use extractZip
+      // - .tar.gz? use extractTar
+      // - .tgz? use extractTar
+      // - .tar.xz? use extractTar with --xz
+      // - .txz? use extractTar with --xz
+      const bdistArchive = await tc.downloadTool(bdistUrl)
+      const bdistDir = await tc.extractZip(bdistArchive)
       // Try to clean up .zip archive:
       try {
-        util.rmRF(bdistZip)
+        util.rmRF(bdistArchive)
       } catch (error) {
         core.info(`Could not clean up: ${util.ensureError(error).message}`)
       }

@@ -28,7 +28,10 @@ interface BuildInfo {
 
 export default async function buildFromSource(
   options: opts.BuildOptions
-): Promise<string> {
+): Promise<string | null> {
+  // If 'agda-version' is 'nightly' we must install from bdist:
+  if (options['agda-version'] === 'nightly') return null
+
   const buildInfo = await core.group(
     '🛠 Preparing to build Agda from source',
     async (): Promise<BuildInfo> => {
