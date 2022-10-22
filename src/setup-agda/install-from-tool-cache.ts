@@ -14,6 +14,8 @@ export default async function installFromToolCache(
 ): Promise<string | null> {
   // If 'agda-version' is 'HEAD' we must build from source:
   if (options['agda-version'] === 'HEAD') return null
+  // If 'agda-version' is 'nightly' we must install from bdist:
+  if (options['agda-version'] === 'nightly') return null
 
   const agdaDirTC = tc.find('agda', options['agda-version'])
   // NOTE: tc.find returns '' if the tool is not found

@@ -990,6 +990,9 @@ const stack = __importStar(__nccwpck_require__(5674));
 const upload_bdist_1 = __importDefault(__nccwpck_require__(3888));
 function buildFromSource(options) {
     return __awaiter(this, void 0, void 0, function* () {
+        // If 'agda-version' is 'nightly' we must install from bdist:
+        if (options['agda-version'] === 'nightly')
+            return null;
         const buildInfo = yield core.group('🛠 Preparing to build Agda from source', () => __awaiter(this, void 0, void 0, function* () {
             // Download the source:
             core.info('Download source distribution');
@@ -1513,11 +1516,17 @@ function installFromBdist(options) {
             }
             try {
                 core.info(`Downloading package from ${bdistUrl}`);
-                const bdistZip = yield tc.downloadTool(bdistUrl);
-                const bdistDir = yield tc.extractZip(bdistZip);
+                // TODO: check URL:
+                // - .zip? use extractZip
+                // - .tar.gz? use extractTar
+                // - .tgz? use extractTar
+                // - .tar.xz? use extractTar with --xz
+                // - .txz? use extractTar with --xz
+                const bdistArchive = yield tc.downloadTool(bdistUrl);
+                const bdistDir = yield tc.extractZip(bdistArchive);
                 // Try to clean up .zip archive:
                 try {
-                    util.rmRF(bdistZip);
+                    util.rmRF(bdistArchive);
                 }
                 catch (error) {
                     core.info(`Could not clean up: ${util.ensureError(error).message}`);
@@ -1646,6 +1655,9 @@ function installFromToolCache(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // If 'agda-version' is 'HEAD' we must build from source:
         if (options['agda-version'] === 'HEAD')
+            return null;
+        // If 'agda-version' is 'nightly' we must install from bdist:
+        if (options['agda-version'] === 'nightly')
             return null;
         const agdaDirTC = tc.find('agda', options['agda-version']);
         // NOTE: tc.find returns '' if the tool is not found
@@ -2563,6 +2575,9 @@ const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 // Agda utilities
 function getAgdaSdist(options) {
     return __awaiter(this, void 0, void 0, function* () {
+        // Throw an error if the 'agda-version' is 'nightly':
+        if (options['agda-version'] === 'nightly')
+            throw Error('Cannot get source distribution for Agda version "nightly"');
         const agdaVersion = options['agda-version'];
         if (opts.isAgdaVersion(agdaVersion)) {
             core.info(`Downloading source distribution for Agda ${agdaVersion} from Hackage`);
@@ -31551,7 +31566,7 @@ module.exports = JSON.parse('{"2.6.2.2":["1.7.1"],"2.6.2.1":["1.7.1"],"2.6.2":["
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"darwin":{"x64":{"2.6.2.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-macos-11-icu71.1-ghc9.2.2-cabal3.6.2.0.zip","2.6.2.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-macos-11-icu71.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip","2.6.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-macos-11-icu71.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip","2.6.1.3":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-macos-11-icu71.1-ghc8.10.3-cabal2.4.1.0-stack2.7.5.zip","2.6.0.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-macos-11-icu71.1-ghc8.6.5-cabal2.4.1.0-stack2.7.5.zip","2.5.4.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-macos-11-icu71.1-ghc8.4.4-cabal2.4.1.0-stack2.7.5.zip"}},"linux":{"x64":{"2.6.2.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04-icu66.1-ghc9.2.2-cabal3.6.2.0.zip","2.6.2.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-ubuntu-20.04-icu66.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip","2.6.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-ubuntu-20.04-icu66.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip","2.6.1.3":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-20.04-icu66.1-ghc8.10.3-cabal2.4.1.0-stack2.7.5.zip","2.6.0.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-20.04-icu66.1-ghc8.6.5-cabal2.4.1.0-stack2.7.5.zip","2.5.4.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-ubuntu-20.04-icu66.1-ghc8.4.4-cabal2.4.1.0-stack2.7.5.zip"}},"win32":{"x64":{"2.6.2.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022-icu71.1-ghc9.2.2-cabal3.6.2.0.zip"}}}');
+module.exports = JSON.parse('{"darwin":{"x64":{"nightly":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz","2.6.2.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-macos-11-icu71.1-ghc9.2.2-cabal3.6.2.0.zip","2.6.2.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-macos-11-icu71.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip","2.6.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-macos-11-icu71.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip","2.6.1.3":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-macos-11-icu71.1-ghc8.10.3-cabal2.4.1.0-stack2.7.5.zip","2.6.0.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-macos-11-icu71.1-ghc8.6.5-cabal2.4.1.0-stack2.7.5.zip","2.5.4.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-macos-11-icu71.1-ghc8.4.4-cabal2.4.1.0-stack2.7.5.zip"}},"linux":{"x64":{"nightly":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz","2.6.2.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04-icu66.1-ghc9.2.2-cabal3.6.2.0.zip","2.6.2.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-ubuntu-20.04-icu66.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip","2.6.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-ubuntu-20.04-icu66.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip","2.6.1.3":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-20.04-icu66.1-ghc8.10.3-cabal2.4.1.0-stack2.7.5.zip","2.6.0.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-20.04-icu66.1-ghc8.6.5-cabal2.4.1.0-stack2.7.5.zip","2.5.4.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-ubuntu-20.04-icu66.1-ghc8.4.4-cabal2.4.1.0-stack2.7.5.zip"}},"win32":{"x64":{"nightly":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip","2.6.2.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022-icu71.1-ghc9.2.2-cabal3.6.2.0.zip"}}}');
 
 /***/ }),
 

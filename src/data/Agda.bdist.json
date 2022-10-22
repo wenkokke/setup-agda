@@ -1,6 +1,7 @@
 {
   "darwin": {
     "x64": {
+      "nightly": "https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz",
       "2.6.2.2": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-macos-11-icu71.1-ghc9.2.2-cabal3.6.2.0.zip",
       "2.6.2.1": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-macos-11-icu71.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip",
       "2.6.2": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-macos-11-icu71.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip",
@@ -11,6 +12,7 @@
   },
   "linux": {
     "x64": {
+      "nightly": "https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz",
       "2.6.2.2": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04-icu66.1-ghc9.2.2-cabal3.6.2.0.zip",
       "2.6.2.1": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-ubuntu-20.04-icu66.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip",
       "2.6.2": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-ubuntu-20.04-icu66.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip",
@@ -21,6 +23,7 @@
   },
   "win32": {
     "x64": {
+      "nightly": "https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip",
       "2.6.2.2": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022-icu71.1-ghc9.2.2-cabal3.6.2.0.zip"
     }
   }
