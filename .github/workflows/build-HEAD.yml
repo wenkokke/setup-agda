@@ -32,7 +32,6 @@ jobs:
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
-          cabal-version: 'latest'
           force-build: true
           ghc-version-match-exact: true
     strategy:
@@ -57,7 +56,6 @@ jobs:
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
                 -stack{{{stack-version}}}
-          cabal-version: '3.4'
           enable-stack: true
           force-build: true
           ghc-version-match-exact: true
