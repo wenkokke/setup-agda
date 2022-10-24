@@ -33,6 +33,7 @@ jobs:
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
           force-build: true
+          ghv-version: latest
           ghc-version-match-exact: true
     strategy:
       matrix:
@@ -58,6 +59,7 @@ jobs:
                 -stack{{{stack-version}}}
           enable-stack: true
           force-build: true
+          ghv-version: latest
           ghc-version-match-exact: true
     strategy:
       matrix:
