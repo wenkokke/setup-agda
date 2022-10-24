@@ -1516,21 +1516,7 @@ function installFromBdist(options) {
             }
             try {
                 core.info(`Downloading package from ${bdistUrl}`);
-                // TODO: check URL:
-                // - .zip? use extractZip
-                // - .tar.gz? use extractTar
-                // - .tgz? use extractTar
-                // - .tar.xz? use extractTar with --xz
-                // - .txz? use extractTar with --xz
-                const bdistArchive = yield tc.downloadTool(bdistUrl);
-                const bdistDir = yield tc.extractZip(bdistArchive);
-                // Try to clean up .zip archive:
-                try {
-                    util.rmRF(bdistArchive);
-                }
-                catch (error) {
-                    core.info(`Could not clean up: ${util.ensureError(error).message}`);
-                }
+                const bdistDir = yield downloadAndExtract(bdistUrl);
                 // If needed, repair file permissions:
                 yield repairPermissions(bdistDir);
                 // Test package:
@@ -1561,6 +1547,23 @@ function installFromBdist(options) {
     });
 }
 exports["default"] = installFromBdist;
+function downloadAndExtract(url, dest, auth, headers) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const archive = yield tc.downloadTool(url, undefined, auth, headers);
+        if (url.match(/\.zip$/)) {
+            return yield tc.extractZip(archive, dest);
+        }
+        else if (url.match(/(\.tar\.gz|\.tgz)$/)) {
+            return yield tc.extractTar(archive, dest, ['--extract', '--gzip']);
+        }
+        else if (url.match(/(\.tar\.xz|\.txz)$/)) {
+            return yield tc.extractTar(archive, dest, ['--extract', '--xz']);
+        }
+        else {
+            throw Error(`Do not know how to extract archive: ${url}`);
+        }
+    });
+}
 function repairPermissions(bdistDir) {
     var e_1, _a;
     return __awaiter(this, void 0, void 0, function* () {
