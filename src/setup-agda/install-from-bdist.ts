@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as tc from '@actions/tool-cache'
+import * as httpm from 'node:http'
 import * as path from 'node:path'
 import * as opts from '../opts'
 import * as util from '../util'
@@ -28,20 +29,7 @@ export default async function installFromBdist(
     }
     try {
       core.info(`Downloading package from ${bdistUrl}`)
-      // TODO: check URL:
-      // - .zip? use extractZip
-      // - .tar.gz? use extractTar
-      // - .tgz? use extractTar
-      // - .tar.xz? use extractTar with --xz
-      // - .txz? use extractTar with --xz
-      const bdistArchive = await tc.downloadTool(bdistUrl)
-      const bdistDir = await tc.extractZip(bdistArchive)
-      // Try to clean up .zip archive:
-      try {
-        util.rmRF(bdistArchive)
-      } catch (error) {
-        core.info(`Could not clean up: ${util.ensureError(error).message}`)
-      }
+      const bdistDir = await downloadAndExtract(bdistUrl)
       // If needed, repair file permissions:
       await repairPermissions(bdistDir)
       // Test package:
@@ -67,6 +55,24 @@ export default async function installFromBdist(
   } catch (error) {
     core.warning(util.ensureError(error))
     return null
+  }
+}
+
+async function downloadAndExtract(
+  url: string,
+  dest?: string,
+  auth?: string | undefined,
+  headers?: httpm.OutgoingHttpHeaders | undefined
+): Promise<string> {
+  const archive = await tc.downloadTool(url, undefined, auth, headers)
+  if (url.match(/\.zip$/)) {
+    return await tc.extractZip(archive, dest)
+  } else if (url.match(/(\.tar\.gz|\.tgz)$/)) {
+    return await tc.extractTar(archive, dest, ['--extract', '--gzip'])
+  } else if (url.match(/(\.tar\.xz|\.txz)$/)) {
+    return await tc.extractTar(archive, dest, ['--extract', '--xz'])
+  } else {
+    throw Error(`Do not know how to extract archive: ${url}`)
   }
 }
 
