@@ -496,7 +496,7 @@ function resolveAgdaStdlibVersion(agdaVersion, agdaStdlibVersionSpec) {
         return latest;
     }
     else if (agdaStdlibVersionSpec === 'recommended') {
-        if (agdaVersion === 'HEAD') {
+        if (agdaVersion === 'HEAD' || agdaVersion === 'nightly') {
             return 'experimental';
         }
         else {
@@ -572,9 +572,6 @@ function resolveAgdaVersion(versionSpec) {
         core.info(`Resolved latest Agda version to ${latest}`);
         core.setOutput('agda-version', latest);
         return latest;
-    }
-    else if (versionSpec === 'nightly') {
-        throw Error('Unsupported Agda version: "nightly"');
     }
     else {
         core.setOutput('agda-version', versionSpec);

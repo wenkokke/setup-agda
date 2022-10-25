@@ -43,7 +43,7 @@ export default function getOptions(
     if (opts.isDeprecatedAgdaVersion(agdaVersionSpec))
       throw Error(`Agda version ${agdaVersionSpec} is deprecated`)
     else throw Error(`Could not parse Agda version ${agdaVersionSpec}`)
-  const agdaVersion: opts.AgdaVersion | 'HEAD' =
+  const agdaVersion: opts.AgdaVersion | 'HEAD' | 'nightly' =
     resolveAgdaVersion(agdaVersionSpec)
 
   // Resolve agda-stdlib version:

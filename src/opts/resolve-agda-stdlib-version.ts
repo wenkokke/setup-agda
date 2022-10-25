@@ -4,7 +4,7 @@ import * as simver from '../util/simver'
 import * as opts from './types'
 
 export default function resolveAgdaStdlibVersion(
-  agdaVersion: opts.AgdaVersion | 'HEAD',
+  agdaVersion: opts.AgdaVersion | 'HEAD' | 'nightly',
   agdaStdlibVersionSpec: opts.AgdaStdlibVersionSpec
 ): opts.AgdaStdlibVersion | 'experimental' | 'none' {
   if (agdaStdlibVersionSpec === 'none') {
@@ -28,7 +28,7 @@ export default function resolveAgdaStdlibVersion(
     core.info(`Resolved latest Agda version to ${latest}`)
     return latest
   } else if (agdaStdlibVersionSpec === 'recommended') {
-    if (agdaVersion === 'HEAD') {
+    if (agdaVersion === 'HEAD' || agdaVersion === 'nightly') {
       return 'experimental'
     } else {
       const compatibleVersions =

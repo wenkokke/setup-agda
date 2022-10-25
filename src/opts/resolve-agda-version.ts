@@ -5,7 +5,7 @@ import * as opts from './types'
 
 export default function resolveAgdaVersion(
   versionSpec: opts.AgdaVersionSpec
-): opts.AgdaVersion | 'HEAD' {
+): opts.AgdaVersion | 'HEAD' | 'nightly' {
   if (versionSpec === 'latest') {
     const latest = simver.max(opts.agdaVersions)
     assert(
@@ -25,8 +25,6 @@ export default function resolveAgdaVersion(
     core.info(`Resolved latest Agda version to ${latest}`)
     core.setOutput('agda-version', latest)
     return latest
-  } else if (versionSpec === 'nightly') {
-    throw Error('Unsupported Agda version: "nightly"')
   } else {
     core.setOutput('agda-version', versionSpec)
     return versionSpec
