@@ -3,6 +3,7 @@
 [![Setup Latest](https://github.com/wenkokke/setup-agda/actions/workflows/setup-latest.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/setup-latest.yml)
 [![Setup Legacy](https://github.com/wenkokke/setup-agda/actions/workflows/setup-legacy.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/setup-legacy.yml)
 [![Setup Nightly](https://github.com/wenkokke/setup-agda/actions/workflows/setup-nightly.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/setup-nightly.yml)
+
 [![Build Latest](https://github.com/wenkokke/setup-agda/actions/workflows/build-latest.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/build-latest.yml)
 [![Build Legacy](https://github.com/wenkokke/setup-agda/actions/workflows/build-legacy.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/build-legacy.yml)
 [![Build Nightly](https://github.com/wenkokke/setup-agda/actions/workflows/build-nightly.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/build-nightly.yml)
