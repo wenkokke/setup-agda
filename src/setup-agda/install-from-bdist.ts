@@ -14,11 +14,11 @@ export default async function installFromBdist(
 
   // Download & extract package:
   try {
-    const bdistUrl =
+    const bdistIndexEntry =
       opts.agdaBdistIndex?.[opts.platform]?.[opts.arch]?.[
         options['agda-version']
       ]
-    if (bdistUrl === undefined) {
+    if (bdistIndexEntry === undefined) {
       core.info(
         [
           `Could not find binary distribution for`,
@@ -28,8 +28,8 @@ export default async function installFromBdist(
       return null
     }
     try {
-      core.info(`Downloading package from ${bdistUrl}`)
-      const bdistDir = await downloadAndExtract(bdistUrl)
+      core.info(`Downloading package from ${bdistIndexEntry}`)
+      const bdistDir = await downloadBdistIndexEntry(bdistIndexEntry)
       // If needed, repair file permissions:
       await repairPermissions(bdistDir)
       // Test package:
@@ -58,22 +58,26 @@ export default async function installFromBdist(
   }
 }
 
-async function downloadAndExtract(
-  url: string,
+async function downloadBdistIndexEntry(
+  entry: opts.BdistIndexEntry,
   dest?: string,
   auth?: string | undefined,
   headers?: httpm.OutgoingHttpHeaders | undefined
 ): Promise<string> {
-  const archive = await tc.downloadTool(url, undefined, auth, headers)
-  if (url.match(/\.zip$/)) {
-    return await tc.extractZip(archive, dest)
-  } else if (url.match(/(\.tar\.gz|\.tgz)$/)) {
-    return await tc.extractTar(archive, dest, ['--extract', '--gzip'])
-  } else if (url.match(/(\.tar\.xz|\.txz)$/)) {
-    return await tc.extractTar(archive, dest, ['--extract', '--xz'])
+  if (typeof entry === 'string') entry = {url: entry}
+  const archive = await tc.downloadTool(entry.url, undefined, auth, headers)
+  let dir: string | undefined = undefined
+  if (entry.url.match(/\.zip$/)) {
+    dir = await tc.extractZip(archive, dest)
+  } else if (entry.url.match(/(\.tar\.gz|\.tgz)$/)) {
+    dir = await tc.extractTar(archive, dest, ['--extract', '--gzip'])
+  } else if (entry.url.match(/(\.tar\.xz|\.txz)$/)) {
+    dir = await tc.extractTar(archive, dest, ['--extract', '--xz'])
   } else {
-    throw Error(`Do not know how to extract archive: ${url}`)
+    throw Error(`Do not know how to extract archive: ${entry.url}`)
   }
+  if (entry.dir !== undefined) dir = path.join(dir, entry.dir)
+  return dir
 }
 
 async function repairPermissions(bdistDir: string): Promise<void> {

@@ -15,6 +15,7 @@ export {
   SetupAgdaInputs,
   SetupHaskellInputs,
   agdaPackageInfoCache,
+  BdistIndexEntry,
   agdaBdistIndex,
   agdaStdlibSdistIndex,
   AgdaVersion,
