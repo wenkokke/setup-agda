@@ -2,6 +2,8 @@ name: Check Dist
 
 on:
   push:
+    branches:
+      - 'main'
     paths:
       - '**.ts'
       - '**.js'
