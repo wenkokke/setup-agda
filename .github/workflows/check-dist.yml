@@ -62,7 +62,7 @@ jobs:
             dist/licenses.txt
             dist/sourcemap-register.js
           commit-message: Update dist
-          committer: Wen Kokke <wenkokke@noreply.users.github.com>
+          committer: Wen Kokke <wenkokke@users.noreply.github.com>
           branch: update-dist
           delete-branch: true
           branch-suffix: timestamp
