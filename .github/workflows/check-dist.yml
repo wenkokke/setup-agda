@@ -1,4 +1,4 @@
-name: Check Dist
+name: Check dist
 
 on:
   push:
@@ -22,7 +22,7 @@ on:
 
 jobs:
   check-dist:
-    name: Check Dist
+    name: Check dist
     runs-on: ubuntu-latest
 
     steps:
@@ -38,12 +38,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Rebuild the dist/ directory
+      - name: Rebuild the dist directory
         run: |
           npm run build
           npm run package
 
-      - name: Compare the expected and actual dist/ directories
+      - name: Compare the expected and actual dist directories
         run: |
           if [ "$(git diff --ignore-space-at-eol dist/ | wc -l)" -gt "0" ]; then
             echo "Detected uncommitted changes after build.  See status below:"
@@ -52,9 +52,23 @@ jobs:
           fi
         id: diff
 
-      # If index.js was different than expected, upload the expected version as an artifact
-      - uses: actions/upload-artifact@v3
+      # If index.js was different than expected, open a pull request:
+      - uses: peter-evans/create-pull-request@v4
         if: ${{ failure() && steps.diff.conclusion == 'failure' }}
         with:
-          name: dist
-          path: dist/
+          add-paths: |
+            dist/index.js
+            dist/index.js.map
+            dist/licenses.txt
+            dist/sourcemap-register.js
+          commit-message: Update dist
+          committer: Wen Kokke <wenkokke@noreply.users.github.com>
+          branch: update-dist
+          delete-branch: true
+          branch-suffix: timestamp
+          title: Update dist
+          body: |
+            Automatic pull request to update dist created by
+            [check-dist.yml](.github/workflows/check-dist.yml).
+          labels: dist
+          assignees: wenkokke
