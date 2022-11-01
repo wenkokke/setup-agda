@@ -8,6 +8,8 @@
 [![Build Legacy](https://github.com/wenkokke/setup-agda/actions/workflows/build-legacy.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/build-legacy.yml)
 [![Build Nightly](https://github.com/wenkokke/setup-agda/actions/workflows/build-nightly.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/build-nightly.yml)
 
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/wenkokke/setup-agda/main.svg)](https://results.pre-commit.ci/latest/github/wenkokke/setup-agda/main)
+
 This action sets up an Agda environment for use in actions by installing or building a version of Agda and adding it to PATH.
 
 For [supported versions](#supported-versions), this action uses [custom binary distributions][custom binary distributions][^0].
