@@ -11,6 +11,11 @@ on:
     types:
       - opened
       - synchronize
+    paths:
+      - '**.ts'
+      - '**.js'
+      - '**.json'
+      - '.github/workflows/*.yml'
   workflow_dispatch:
 
 jobs:

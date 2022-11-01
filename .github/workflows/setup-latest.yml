@@ -1,6 +1,15 @@
 name: Setup Latest
 
 on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    paths:
+      - '**.ts'
+      - '**.js'
+      - '**.json'
+      - '.github/workflows/*.yml'
   # Run 'setup-legacy' if 'check-dist' completed:
   workflow_run:
     workflows: ['Check Dist']
