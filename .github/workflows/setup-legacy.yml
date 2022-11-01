@@ -1,15 +1,6 @@
 name: Setup Legacy
 
 on:
-  pull_request:
-    types:
-      - opened
-      - synchronize
-    paths:
-      - '**.ts'
-      - '**.js'
-      - '**.json'
-      - '.github/workflows/*.yml'
   # Run 'setup-legacy' if 'setup-latest' completed:
   workflow_run:
     workflows: ['Setup Latest']
