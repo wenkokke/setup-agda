@@ -34,6 +34,7 @@ jobs:
                 -cabal{{{cabal-version}}}
           force-build: true
     strategy:
+      fail-fast: true
       matrix:
         os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12, windows-2022]
 
@@ -58,5 +59,6 @@ jobs:
           enable-stack: true
           force-build: true
     strategy:
+      fail-fast: true
       matrix:
         os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12, windows-2022]
