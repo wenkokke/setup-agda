@@ -3,7 +3,6 @@ name: Setup Latest
 on:
   # Run 'setup-legacy' if 'check-dist' completed:
   workflow_run:
-    branches: [main]
     workflows: ['Check Dist']
     types: [completed]
   workflow_dispatch:

@@ -3,7 +3,6 @@ name: Setup Legacy
 on:
   # Run 'setup-legacy' if 'setup-latest' completed:
   workflow_run:
-    branches: [main]
     workflows: ['Setup Latest']
     types: [completed]
   workflow_dispatch:
