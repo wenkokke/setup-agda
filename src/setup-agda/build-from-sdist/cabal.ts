@@ -18,6 +18,9 @@ export async function build(
 ): Promise<void> {
   const execOptions: util.ExecOptions = {cwd: sourceDir}
 
+  // Run `cabal update`
+  await util.cabal(['v2-update'])
+
   // Run `cabal configure`:
   core.info(`Configure Agda-${options['agda-version']}`)
   await util.cabal(['v2-configure', ...buildFlags(options)], execOptions)
