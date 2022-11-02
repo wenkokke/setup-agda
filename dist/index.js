@@ -1122,6 +1122,8 @@ function build(sourceDir, installDir, options,
 matchingGhcVersionsThatCanBuildAgda) {
     return __awaiter(this, void 0, void 0, function* () {
         const execOptions = { cwd: sourceDir };
+        // Run `cabal update`
+        yield util.cabal(['v2-update']);
         // Run `cabal configure`:
         core.info(`Configure Agda-${options['agda-version']}`);
         yield util.cabal(['v2-configure', ...buildFlags(options)], execOptions);
