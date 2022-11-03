@@ -73,6 +73,12 @@ export default function getOptions(
   ]
   if (forceClusterCounting && forceNoClusterCounting)
     throw Error('Cluster counting or not? What do you want from me? 🤷🏻‍♀️')
+  const [forceOptimiseHeavily, forceNoOptimiseHeavily] = [
+    getFlag('force-optimise-heavily'),
+    getFlag('force-no-optimise-heavily')
+  ]
+  if (forceOptimiseHeavily && forceNoOptimiseHeavily)
+    throw Error('Optimise heavily or not? What do you want from me? 🤷🏻‍♀️')
 
   // Validate bdist-name:
   const bdistName = parseBdistName(getOption('bdist-name'))
@@ -89,6 +95,8 @@ export default function getOptions(
     'force-no-build': forceNoBuild,
     'force-cluster-counting': forceClusterCounting,
     'force-no-cluster-counting': forceNoClusterCounting,
+    'force-optimise-heavily': forceOptimiseHeavily,
+    'force-no-optimise-heavily': forceNoOptimiseHeavily,
     'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
     'ghc-version-range': ghcVersionRange,
     'pre-build-hook': getOption('pre-build-hook'),
