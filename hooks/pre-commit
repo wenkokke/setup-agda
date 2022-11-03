@@ -5,15 +5,15 @@
 # exit with non-zero status after issuing an appropriate message if
 # it wants to stop the commit.
 
-set -eux
-
 fail="$(mktemp)"
 
-# Build dist:
+# Check files with pre-commit
+echo "Running pre-commit..."
 { pre-commit run --all-files || echo > "$fail"; }
-{ npm run all || echo > "$fail"; }
 
-# Add dist & data to commit:
+# Build dist and add to commit:
+echo "Building dist..."
+{ npm run all || echo > "$fail"; }
 git add dist/*
 git add src/data/*.json
 
