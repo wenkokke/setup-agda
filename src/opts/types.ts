@@ -180,7 +180,7 @@ export type SetupAgdaFlag =
   | 'force-cluster-counting'
   | 'force-no-cluster-counting'
   | 'force-optimise-heavily'
-  | 'force-no-optimise-heavily' 
+  | 'force-no-optimise-heavily'
   | 'force-build'
   | 'force-no-build'
   | 'ghc-version-match-exact'

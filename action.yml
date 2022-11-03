@@ -68,7 +68,7 @@ inputs:
   force-no-optimise-heavily:
     description: |
       If specified, build without optimise heavily.
-    required: false 
+    required: false
   force-build:
     description: |
       If specified, always build from source.

@@ -78,7 +78,7 @@ export default function getOptions(
     getFlag('force-no-optimise-heavily')
   ]
   if (forceOptimiseHeavily && forceNoOptimiseHeavily)
-    throw Error('Optimise heavily or not? What do you want from me? 🤷🏻‍♀️') 
+    throw Error('Optimise heavily or not? What do you want from me? 🤷🏻‍♀️')
 
   // Validate bdist-name:
   const bdistName = parseBdistName(getOption('bdist-name'))
