@@ -1,4 +1,4 @@
-name: Build Legacy
+name: build legacy
 
 on:
   schedule:
@@ -12,6 +12,7 @@ on:
     #        │  │ │ │ │
     #        *  * * * *
     - cron: '30 1 1 1 *'
+  workflow_call:
   workflow_dispatch:
 
 env:

@@ -1,4 +1,4 @@
-name: Build Nightly
+name: build nightly
 
 on:
   schedule:
@@ -12,6 +12,7 @@ on:
     #        │  │ │ │ │
     #        *  * * * *
     - cron: '30 1 * * *'
+  workflow_call:
   workflow_dispatch:
 
 jobs:
@@ -35,7 +36,6 @@ jobs:
           force-build: true
           force-no-optimise-heavily: true
     strategy:
-      fail-fast: true
       matrix:
         os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12, windows-2022]
 
@@ -61,6 +61,5 @@ jobs:
           force-build: true
           force-no-optimise-heavily: true
     strategy:
-      fail-fast: true
       matrix:
         os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12, windows-2022]

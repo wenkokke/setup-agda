@@ -6,13 +6,14 @@ name: CodeQL
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - '**.ts'
-      - '**.js'
-      - '**.json'
+    branches: ['main']
+    paths: ['**.ts', '**.js', '**.json', '**.yml']
+
   pull_request:
+    branches: ['main']
+    paths: ['**.ts', '**.js', '**.json', '**.yml']
+    types: [opened, synchronize, reopened]
+
   schedule:
     #        ┌───────────── minute (0 - 59)
     #        │  ┌───────────── hour (0 - 23)

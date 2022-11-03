@@ -1,14 +1,8 @@
 name: Check dist
 
 on:
-  push:
-    branches: ['main']
-    paths: ['**.ts', '**.js', '**.json', '**.yml']
-
-  pull_request:
-    branches: ['main']
-    paths: ['**.ts', '**.js', '**.json', '**.yml']
-    types: [opened, synchronize, reopened]
+  workflow_call:
+  workflow_dispatch:
 
 jobs:
   check-dist:

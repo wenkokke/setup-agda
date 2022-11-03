@@ -1,23 +1,16 @@
 name: Setup Latest
 
 on:
-  # Run 'setup-legacy' if 'check-dist' completed:
-  workflow_run:
-    workflows: ['Check dist']
-    types: [completed]
+  workflow_call:
   workflow_dispatch:
 
 jobs:
   setup-latest:
-    # Skip 'setup-latest' if 'check-dist' did not succeed:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-
     name: Setup Agda (latest) on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-      - id: setup-agda
-        name: Setup Agda
+      - name: Setup Agda
         uses: ./
         with:
           force-no-build: true
