@@ -15,7 +15,6 @@ on:
   workflow_call:
   workflow_dispatch:
 
-
 env:
   # A yq script which fixes the text-icu version bounds in stack.yaml.
   # Used by Agda versions 2.5.3 - 2.6.2.
