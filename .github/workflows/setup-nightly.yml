@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
   workflow_run:
     # Run 'setup-nightly' if 'setup' completed:
-    workflows: ['setup nightly']
+    workflows: ['setup']
     types: [completed]
 
 jobs:
