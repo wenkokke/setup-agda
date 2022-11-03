@@ -15,6 +15,14 @@ on:
   workflow_call:
   workflow_dispatch:
 
+env:
+  # A yq script which fixes the amount of memory available for compiling Agda.
+  # Used by almost all legacy Agda versions.
+  YQ_SCRIPT_ADD_MEMORY: |
+    . *+ {
+      "ghc-options": {"Agda": "+RTS -M6G -RTS"}
+    }
+
 jobs:
   build-nightly-cabal:
     name: Build Agda (nightly) on ${{ matrix.os }} with Cabal
