@@ -1,14 +1,23 @@
-name: Setup Nightly
+name: setup nightly
+
+# Setting up nightly versions is brittle, since it depends on the status of
+# the upstream agda/agda repository. It requires both that the HEAD version
+# builds & that deploy.yml succeeds in publishing a nightly release.
+#
+# We only run 'setup-nightly' after the 'setup.yml' completes, and we don't
+# require a successful run of 'setup-nightly' to move the latest tag.
 
 on:
-  workflow_call:
   workflow_dispatch:
+  workflow_run:
+    # Run 'setup-nightly' if 'setup' completed:
+    workflows: ['setup nightly']
+    types: [completed]
 
 jobs:
   setup-nightly:
-    # Unfortunately, nightly releases are somewhat brittle, an they
-    # depend on the agda/agda `deploy.yml` workflow succeeding.
-    continue-on-error: true
+    # Skip 'setup-nightly' if 'setup' did not succeed:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     name: Setup Agda (nightly) on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
