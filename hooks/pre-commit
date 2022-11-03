@@ -1,16 +1,17 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 #
 # An example hook script to verify what is about to be committed.
 # Called by "git commit" with no arguments.  The hook should
 # exit with non-zero status after issuing an appropriate message if
 # it wants to stop the commit.
 
-# Propagate failures:
-set -euxo pipefail
+set -eux
+
+fail="$(mktemp)"
 
 # Build dist:
-pre-commit run --all-files
-npm run all
+{ pre-commit run --all-files || echo > "$fail"; }
+{ npm run all || echo > "$fail"; }
 
 # Add dist & data to commit:
 git add dist/*
@@ -18,3 +19,13 @@ git add src/data/*.json
 
 # Delete 'latest' tag locally:
 git tag --delete latest || true
+
+# Check if any of the previous commands failed:
+if [ ! -s "$fail" ]
+then
+    rm "$fail"
+    exit 0
+else
+    rm "$fail"
+    exit 1
+fi

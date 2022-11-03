@@ -16,11 +16,11 @@ on:
 
 jobs:
   build-nightly-cabal:
-    name: Build Agda (HEAD) on ${{ matrix.os }} with Cabal
+    name: Build Agda (nightly) on ${{ matrix.os }} with Cabal
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-      - name: Build Agda (HEAD)
+      - name: Build Agda (nightly)
         uses: ./
         with:
           agda-version: 'HEAD'
@@ -39,12 +39,12 @@ jobs:
       matrix:
         os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12, windows-2022]
 
-  build-HEAD-stack:
-    name: Build Agda (HEAD) on ${{ matrix.os }} with Stack
+  build-nightly-stack:
+    name: Build Agda (nightly) on ${{ matrix.os }} with Stack
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-      - name: Build Agda (HEAD)
+      - name: Build Agda (nightly)
         uses: ./
         with:
           agda-version: 'HEAD'
