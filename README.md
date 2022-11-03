@@ -2,8 +2,8 @@
 
 [![pre-commit.ci](https://results.pre-commit.ci/badge/github/wenkokke/setup-agda/main.svg)](https://results.pre-commit.ci/latest/github/wenkokke/setup-agda/main)
 [![setup](https://github.com/wenkokke/setup-agda/actions/workflows/setup.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/setup.yml)
-[![build latest](https://github.com/wenkokke/setup-agda/actions/workflows/build-latest.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/build-latest.yml)
-[![build legacy](https://github.com/wenkokke/setup-agda/actions/workflows/build-legacy.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/build-legacy.yml)
+[![build](https://github.com/wenkokke/setup-agda/actions/workflows/build.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/build.yml)
+[![setup nightly](https://github.com/wenkokke/setup-agda/actions/workflows/setup-nightly.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/setup-nightly.yml)
 [![build nightly](https://github.com/wenkokke/setup-agda/actions/workflows/build-nightly.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/build-nightly.yml)
 
 This action sets up an Agda environment for use in actions by installing or building a version of Agda and adding it to PATH.
