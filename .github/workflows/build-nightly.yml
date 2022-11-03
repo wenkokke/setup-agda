@@ -33,6 +33,7 @@ jobs:
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
           force-build: true
+          force-no-optimise-heavily: true
     strategy:
       fail-fast: true
       matrix:
@@ -58,6 +59,7 @@ jobs:
                 -stack{{{stack-version}}}
           enable-stack: true
           force-build: true
+          force-no-optimise-heavily: true
     strategy:
       fail-fast: true
       matrix:

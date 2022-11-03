@@ -269,6 +269,12 @@ function getOptions(inputs, actionYml) {
     ];
     if (forceClusterCounting && forceNoClusterCounting)
         throw Error('Cluster counting or not? What do you want from me? 🤷🏻‍♀️');
+    const [forceOptimiseHeavily, forceNoOptimiseHeavily] = [
+        getFlag('force-optimise-heavily'),
+        getFlag('force-no-optimise-heavily')
+    ];
+    if (forceOptimiseHeavily && forceNoOptimiseHeavily)
+        throw Error('Optimise heavily or not? What do you want from me? 🤷🏻‍♀️');
     // Validate bdist-name:
     const bdistName = parseBdistName(getOption('bdist-name'));
     // Create build options:
@@ -283,6 +289,8 @@ function getOptions(inputs, actionYml) {
         'force-no-build': forceNoBuild,
         'force-cluster-counting': forceClusterCounting,
         'force-no-cluster-counting': forceNoClusterCounting,
+        'force-optimise-heavily': forceOptimiseHeavily,
+        'force-no-optimise-heavily': forceNoOptimiseHeavily,
         'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
         'ghc-version-range': ghcVersionRange,
         'pre-build-hook': getOption('pre-build-hook'),
@@ -1161,7 +1169,8 @@ function buildFlags(options) {
         flags.push('--flags=+enable-cluster-counting');
     }
     // If supported, pass Agda flag --optimise-heavily
-    if (opts.supportsOptimiseHeavily(options)) {
+    if (!options['force-no-optimise-heavily'] &&
+        opts.supportsOptimiseHeavily(options)) {
         flags.push('--flags=+optimise-heavily');
     }
     // If supported, set --split-sections.
@@ -1326,7 +1335,8 @@ function buildFlags(options) {
         flags.push('--flag=Agda:enable-cluster-counting');
     }
     // If supported, pass Agda flag --optimise-heavily
-    if (opts.supportsOptimiseHeavily(options)) {
+    if (!options['force-no-optimise-heavily'] &&
+        opts.supportsOptimiseHeavily(options)) {
         flags.push('--flag=Agda:optimise-heavily');
     }
     // Add extra-{include,lib}-dirs:
