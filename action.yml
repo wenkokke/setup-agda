@@ -61,6 +61,14 @@ inputs:
     description: |
       If specified, build without cluster counting.
     required: false
+  force-optimise-heavily:
+    description: |
+      If specified, build with optimise heavily.
+    required: false
+  force-no-optimise-heavily:
+    description: |
+      If specified, build without optimise heavily.
+    required: false 
   force-build:
     description: |
       If specified, always build from source.

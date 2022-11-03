@@ -65,7 +65,10 @@ function buildFlags(options: opts.BuildOptions): string[] {
     flags.push('--flags=+enable-cluster-counting')
   }
   // If supported, pass Agda flag --optimise-heavily
-  if (opts.supportsOptimiseHeavily(options)) {
+  if (
+    !options['force-no-optimise-heavily'] &&
+    opts.supportsOptimiseHeavily(options)
+  ) {
     flags.push('--flags=+optimise-heavily')
   }
   // If supported, set --split-sections.
