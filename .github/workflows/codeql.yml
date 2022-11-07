@@ -2,7 +2,7 @@
 # source code to find security vulnerabilities. It then automatically uploads
 # the results to GitHub so they can be displayed in the repository's security
 # tab.
-name: CodeQL
+name: codeql
 
 on:
   push:
