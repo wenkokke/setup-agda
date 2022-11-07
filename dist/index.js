@@ -1520,7 +1520,6 @@ function installFromBdist(options) {
                 return null;
             }
             try {
-                core.info(`Downloading package from ${bdistIndexEntry}`);
                 const bdistDir = yield downloadBdistIndexEntry(bdistIndexEntry);
                 // If needed, repair file permissions:
                 yield repairPermissions(bdistDir);
@@ -1556,6 +1555,7 @@ function downloadBdistIndexEntry(entry, dest, auth, headers) {
     return __awaiter(this, void 0, void 0, function* () {
         if (typeof entry === 'string')
             entry = { url: entry };
+        core.info(`Downloading package from ${entry.url}`);
         const archive = yield tc.downloadTool(entry.url, undefined, auth, headers);
         let dir = undefined;
         if (entry.url.match(/\.zip$/)) {

@@ -28,7 +28,6 @@ export default async function installFromBdist(
       return null
     }
     try {
-      core.info(`Downloading package from ${bdistIndexEntry}`)
       const bdistDir = await downloadBdistIndexEntry(bdistIndexEntry)
       // If needed, repair file permissions:
       await repairPermissions(bdistDir)
@@ -65,6 +64,7 @@ async function downloadBdistIndexEntry(
   headers?: httpm.OutgoingHttpHeaders | undefined
 ): Promise<string> {
   if (typeof entry === 'string') entry = {url: entry}
+  core.info(`Downloading package from ${entry.url}`)
   const archive = await tc.downloadTool(entry.url, undefined, auth, headers)
   let dir: string | undefined = undefined
   if (entry.url.match(/\.zip$/)) {
