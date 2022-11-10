@@ -1765,6 +1765,10 @@ function uploadBdist(installDir, options) {
         // Copy binaries & data:
         yield util.cpR(path.join(installDir, 'bin'), bdistDir);
         yield util.cpR(path.join(installDir, 'data'), bdistDir);
+        // Bundle libraries:
+        if (options['icu-version'] !== undefined) {
+            yield icu.bundle(bdistDir, options);
+        }
         // Compress binaries:
         if (options['bdist-compress-exe']) {
             try {
@@ -1775,10 +1779,6 @@ function uploadBdist(installDir, options) {
             catch (error) {
                 core.info(util.ensureError(error).message);
             }
-        }
-        // Bundle libraries:
-        if (options['icu-version'] !== undefined) {
-            yield icu.bundle(bdistDir, options);
         }
         // Test artifact:
         yield util.agdaTest({
