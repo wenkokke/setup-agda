@@ -49,6 +49,14 @@ inputs:
 
       Only used when "bdist-upload" is specified.
     required: false
+  bdist-retention-days:
+    default: '0'
+    description: |
+      Duration after which bdist will expire in days. 0 means using default retention.
+
+      Minimum 1 day.
+      Maximum 90 days unless changed from the repository settings page.
+    required: false
   bdist-upload:
     description: |
       If specified, will upload a binary distribution for the specified Agda version.

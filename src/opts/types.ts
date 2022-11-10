@@ -170,6 +170,7 @@ export type SetupAgdaOption =
   | 'agda-version'
   | 'agda-stdlib-version'
   | 'bdist-name'
+  | 'bdist-retention-days'
   | 'ghc-version-range'
   | 'pre-build-hook'
   | SetupHaskellOption

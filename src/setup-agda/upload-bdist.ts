@@ -61,7 +61,7 @@ export default async function uploadBdist(
     bdistDir,
     {
       continueOnError: true,
-      retentionDays: 90
+      retentionDays: parseInt(options['bdist-retention-days'])
     }
   )
 
