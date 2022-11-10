@@ -3,3 +3,4 @@
 /node_modules/
 /jest.config.js
 /vendor/
+/gulpfile.js
