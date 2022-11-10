@@ -6,10 +6,37 @@ import * as exec from './exec'
 import * as simver from './simver'
 import * as hackage from './hackage'
 import assert from 'node:assert'
-
-// Hackage helpers
+import * as fs from 'node:fs'
+import * as os from 'node:os'
 
 // Agda utilities
+
+export function readLibrariesSync(): path.ParsedPath[] {
+  if (!fs.existsSync(opts.librariesFile())) return []
+  const librariesFileContents = fs.readFileSync(opts.librariesFile()).toString()
+  const libraries = librariesFileContents.split(/\r\n|\r|\n/g)
+  return libraries.map(libraryPath => path.parse(libraryPath))
+}
+
+export function registerAgdaLibrary(libraryFile: string): void {
+  // Check agdaLibraryFile exists & refers to an agda-lib file:
+  assert(fs.existsSync(libraryFile))
+  const newLibrary = path.parse(path.resolve(libraryFile))
+  assert(newLibrary.ext === '.agda-lib')
+  // Load the current libraries file:
+  const oldLibraries = readLibrariesSync()
+  if (oldLibraries.some(oldLibrary => oldLibrary.name === newLibrary.name))
+    core.warning(
+      `Agda libraries file already contains a copy of ${newLibrary.name}`
+    )
+  const newLibraries = [...oldLibraries, newLibrary]
+  fs.writeFileSync(
+    opts.librariesFile(),
+    newLibraries
+      .map(libraryParsedPath => path.format(libraryParsedPath))
+      .join(os.EOL)
+  )
+}
 
 export async function getAgdaSdist(
   options: opts.BuildOptions

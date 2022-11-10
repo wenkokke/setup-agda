@@ -20,6 +20,10 @@ export function installDir(version: string): string {
   return path.join(agdaDir(), 'agda', version)
 }
 
+export function librariesFile(): string {
+  return path.join(agdaDir(), 'libraries')
+}
+
 export function librariesDir(): string {
   return path.join(agdaDir(), 'libraries.d')
 }
