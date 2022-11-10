@@ -101,12 +101,18 @@ export const agdaPackageInfoCache = hackage.mergePackageInfoCache(
   bundledAgdaPackageInfoCacheForNormalVersions as hackage.PackageInfoCache
 )
 
-// List of custom Agda binary distributions:
+// Type of distributions.
+export type DistType = 'zip' | 'tgz' | 'txz' | 'git'
+
+// Type of distributions, e.g., zip files or Git repositories.
+export type DistIndexEntry =
+  | string
+  | {url: string; dir?: string; tag?: string; distType?: DistType}
+
+// Agda binary distributions.
 //
 // NOTE: The type ensures that all binary distributions are indexed under valid
 //       platform, architecture, and Agda version keys.
-export type DistIndexEntry = string | {url: string; dir?: string; tag?: string}
-
 export const agdaBdistIndex: Partial<
   Record<
     Platform,
@@ -197,12 +203,16 @@ export interface SetupAgdaInputs
 // Build options for this action:
 
 export interface BuildOptions extends SetupAgdaInputs {
-  // Type refinements:
+  // Type refinements of 'agda-version' and 'agda-stdlib-version':
   'agda-version': AgdaVersion | 'HEAD' | 'nightly'
   'agda-stdlib-version': AgdaStdlibVersion | 'experimental' | 'none'
-  // Additional options:
+  // Lists of libraries and defaults:
+  'agda-library-list': DistIndexEntry[]
+  'agda-default-list': string[]
+  // Extra include and lib directories for compiling Agda:
   'extra-include-dirs': string[]
   'extra-lib-dirs': string[]
+  // Versions of other software:
   'icu-version'?: string
   'upx-version'?: string
 }

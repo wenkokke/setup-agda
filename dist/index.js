@@ -228,6 +228,7 @@ const path_1 = __nccwpck_require__(4059);
 const path = __importStar(__nccwpck_require__(9411));
 const util = __importStar(__nccwpck_require__(4024));
 function downloadDistIndexEntry(entry, dest, auth, headers) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         // Coerce string to {url: string; dir?: string; tag?: string}
         if (typeof entry === 'string')
@@ -235,7 +236,7 @@ function downloadDistIndexEntry(entry, dest, auth, headers) {
         // Download package depending on the type of URL:
         core.info(`Downloading package from ${entry.url}`);
         let dir = undefined;
-        switch (distType(entry.url)) {
+        switch ((_a = entry.distType) !== null && _a !== void 0 ? _a : inferDistType(entry.url)) {
             case 'zip': {
                 const arc = yield tc.downloadTool(entry.url, undefined, auth, headers);
                 dir = yield tc.extractZip(arc, dest);
@@ -270,7 +271,7 @@ function downloadDistIndexEntry(entry, dest, auth, headers) {
     });
 }
 exports["default"] = downloadDistIndexEntry;
-function distType(url) {
+function inferDistType(url) {
     if (url.match(/\.zip$/))
         return 'zip';
     if (url.match(/\.tgz$|\.tar\.gz$/))
@@ -383,13 +384,33 @@ function getOptions(inputs, actionYml) {
             `Input "bdist-rentention-days" must be a number between 0 and 90.`,
             `Found "${bdistRetentionDays}".`
         ].join(' '));
+    // Parse agda-libraries and agda-defaults:
+    const agdaLibraries = getOption('agda-libraries');
+    const agdaLibraryList = [];
+    for (const agdaLibrary of agdaLibraries.split(/\r?\n/g)) {
+        if (agdaLibrary.match(/^\s*$/))
+            continue;
+        const [agdaLibraryUrl, agdaLibraryTag] = agdaLibrary.trim().split('#', 2);
+        agdaLibraryList.push({
+            url: agdaLibraryUrl,
+            tag: agdaLibraryTag,
+            distType: 'git'
+        });
+    }
+    const agdaDefaults = getOption('agda-defaults');
+    const agdaDefaultList = [];
+    for (const agdaDefault of agdaDefaults.split(/\r?\n/g)) {
+        if (agdaDefault.match(/^\s*$/))
+            continue;
+        agdaDefaultList.push(agdaDefault.trim());
+    }
     // Create build options:
     const options = {
         // Specified in Agdaopts.SetupInputs
         'agda-version': agdaVersion,
         'agda-stdlib-version': agdaStdlibVersion,
         'agda-stdlib-default': getFlag('agda-stdlib-default'),
-        'agda-libraries': getOption('agda-libraries'),
+        'agda-libraries': agdaLibraries,
         'agda-defaults': getOption('agda-defaults'),
         'bdist-compress-exe': getFlag('bdist-compress-exe'),
         'bdist-name': bdistName,
@@ -414,7 +435,9 @@ function getOptions(inputs, actionYml) {
         'stack-version': getOption('stack-version'),
         // Specified in opts.BuildOptions
         'extra-include-dirs': [],
-        'extra-lib-dirs': []
+        'extra-lib-dirs': [],
+        'agda-library-list': agdaLibraryList,
+        'agda-default-list': []
     };
     // Print options:
     core.info([
@@ -970,6 +993,10 @@ function isAgdaStdlibVersionSpec(versionSpec) {
 exports.isAgdaStdlibVersionSpec = isAgdaStdlibVersionSpec;
 // List of Agda source distributions on Hackage:
 exports.agdaPackageInfoCache = hackage.mergePackageInfoCache(Agda_versions_deprecated_json_1.default, Agda_versions_normal_json_1.default);
+// Agda binary distributions.
+//
+// NOTE: The type ensures that all binary distributions are indexed under valid
+//       platform, architecture, and Agda version keys.
 exports.agdaBdistIndex = Agda_bdist_json_1.default;
 // List of agda-stdlib source distributions on GitHub:
 //

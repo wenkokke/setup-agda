@@ -94,13 +94,32 @@ export default function getOptions(
       ].join(' ')
     )
 
+  // Parse agda-libraries and agda-defaults:
+  const agdaLibraries = getOption('agda-libraries')
+  const agdaLibraryList: opts.DistIndexEntry[] = []
+  for (const agdaLibrary of agdaLibraries.split(/\r?\n/g)) {
+    if (agdaLibrary.match(/^\s*$/)) continue
+    const [agdaLibraryUrl, agdaLibraryTag] = agdaLibrary.trim().split('#', 2)
+    agdaLibraryList.push({
+      url: agdaLibraryUrl,
+      tag: agdaLibraryTag,
+      distType: 'git'
+    })
+  }
+  const agdaDefaults = getOption('agda-defaults')
+  const agdaDefaultList: opts.DistIndexEntry[] = []
+  for (const agdaDefault of agdaDefaults.split(/\r?\n/g)) {
+    if (agdaDefault.match(/^\s*$/)) continue
+    agdaDefaultList.push(agdaDefault.trim())
+  }
+
   // Create build options:
   const options: opts.BuildOptions = {
     // Specified in Agdaopts.SetupInputs
     'agda-version': agdaVersion,
     'agda-stdlib-version': agdaStdlibVersion,
     'agda-stdlib-default': getFlag('agda-stdlib-default'),
-    'agda-libraries': getOption('agda-libraries'),
+    'agda-libraries': agdaLibraries,
     'agda-defaults': getOption('agda-defaults'),
     'bdist-compress-exe': getFlag('bdist-compress-exe'),
     'bdist-name': bdistName,
@@ -127,7 +146,9 @@ export default function getOptions(
 
     // Specified in opts.BuildOptions
     'extra-include-dirs': [],
-    'extra-lib-dirs': []
+    'extra-lib-dirs': [],
+    'agda-library-list': agdaLibraryList,
+    'agda-default-list': []
   }
   // Print options:
   core.info(

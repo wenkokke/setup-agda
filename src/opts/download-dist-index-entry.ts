@@ -18,7 +18,7 @@ export default async function downloadDistIndexEntry(
   // Download package depending on the type of URL:
   core.info(`Downloading package from ${entry.url}`)
   let dir: string | undefined = undefined
-  switch (distType(entry.url)) {
+  switch (entry.distType ?? inferDistType(entry.url)) {
     case 'zip': {
       const arc = await tc.downloadTool(entry.url, undefined, auth, headers)
       dir = await tc.extractZip(arc, dest)
@@ -54,9 +54,7 @@ export default async function downloadDistIndexEntry(
   return dir
 }
 
-type DistType = 'zip' | 'tgz' | 'txz' | 'git'
-
-function distType(url: string): DistType {
+function inferDistType(url: string): opts.DistType {
   if (url.match(/\.zip$/)) return 'zip'
   if (url.match(/\.tgz$|\.tar\.gz$/)) return 'tgz'
   if (url.match(/\.txz$|\.tar\.xz/)) return 'txz'
