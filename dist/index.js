@@ -951,6 +951,70 @@ for (const agdaVersion of exports.agdaVersions)
 
 /***/ }),
 
+/***/ 6404:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
+const node_path_1 = __importDefault(__nccwpck_require__(9411));
+const opts = __importStar(__nccwpck_require__(1352));
+const util = __importStar(__nccwpck_require__(4024));
+function setup(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (options['agda-stdlib-version'] === 'none')
+            return;
+        // Setup agda-stdlib:
+        const standardLibraryDir = opts.libraryDir('standard-library', options['agda-stdlib-version'], options['agda-stdlib-version'] === 'experimental');
+        core.info(`Install agda-stdlib ${options['agda-stdlib-version']} to ${standardLibraryDir}`);
+        const standardLibraryDistIndexEntry = opts.agdaStdlibSdistIndex[options['agda-stdlib-version']];
+        if (standardLibraryDistIndexEntry === undefined)
+            throw Error(`Unsupported agda-stdlib version: '${options['agda-stdlib-version']}'`);
+        yield opts.downloadDistIndexEntry(standardLibraryDistIndexEntry, standardLibraryDir);
+        util.registerAgdaLibrary(node_path_1.default.join(standardLibraryDir, 'standard-library.agda-lib'), options['agda-stdlib-default']);
+    });
+}
+exports["default"] = setup;
+
+
+/***/ }),
+
 /***/ 8021:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -999,6 +1063,7 @@ const opts = __importStar(__nccwpck_require__(1352));
 const build_from_sdist_1 = __importDefault(__nccwpck_require__(3350));
 const install_from_bdist_1 = __importDefault(__nccwpck_require__(6577));
 const install_from_tool_cache_1 = __importDefault(__nccwpck_require__(9546));
+const setup_agda_stdlib_1 = __importDefault(__nccwpck_require__(6404));
 const util = __importStar(__nccwpck_require__(4024));
 function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -1035,6 +1100,8 @@ function setup(options) {
             }));
             // 3. Test:
             yield core.group('👩🏾‍🔬 Testing Agda installation', () => __awaiter(this, void 0, void 0, function* () { return yield util.agdaTest(); }));
+            // 4. Setup agda-stdlib:
+            yield (0, setup_agda_stdlib_1.default)(options);
         }
         catch (error) {
             core.setFailed(util.ensureError(error));

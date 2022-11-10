@@ -5,6 +5,7 @@ import * as opts from './opts'
 import buildFromSdist from './setup-agda/build-from-sdist'
 import installFromBdist from './setup-agda/install-from-bdist'
 import installFromToolCache from './setup-agda/install-from-tool-cache'
+import setupAgdaStdlib from './setup-agda-stdlib'
 import * as util from './util'
 
 export default async function setup(options: opts.BuildOptions): Promise<void> {
@@ -59,6 +60,9 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
       '👩🏾‍🔬 Testing Agda installation',
       async () => await util.agdaTest()
     )
+
+    // 4. Setup agda-stdlib:
+    await setupAgdaStdlib(options)
   } catch (error) {
     core.setFailed(util.ensureError(error))
   }
