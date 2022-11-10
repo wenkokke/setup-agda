@@ -40,7 +40,7 @@ async function run(): Promise<void> {
           JSON.stringify({
             packageInfo: pick(
               newCache.packageInfo,
-              versions.filter(v => newCache[v] === 'deprecated')
+              versions.filter(v => newCache.packageInfo[v] === 'deprecated')
             ),
             lastModified: newCache.lastModified
           })
@@ -50,7 +50,7 @@ async function run(): Promise<void> {
           JSON.stringify({
             packageInfo: pick(
               newCache.packageInfo,
-              versions.filter(v => newCache[v] === 'normal')
+              versions.filter(v => newCache.packageInfo[v] === 'normal')
             ),
             lastModified: newCache.lastModified
           })
