@@ -23,6 +23,11 @@ export default async function uploadBdist(
   await util.cpR(path.join(installDir, 'bin'), bdistDir)
   await util.cpR(path.join(installDir, 'data'), bdistDir)
 
+  // Bundle libraries:
+  if (options['icu-version'] !== undefined) {
+    await icu.bundle(bdistDir, options)
+  }
+
   // Compress binaries:
   if (options['bdist-compress-exe']) {
     try {
@@ -32,11 +37,6 @@ export default async function uploadBdist(
     } catch (error) {
       core.info(util.ensureError(error).message)
     }
-  }
-
-  // Bundle libraries:
-  if (options['icu-version'] !== undefined) {
-    await icu.bundle(bdistDir, options)
   }
 
   // Test artifact:
