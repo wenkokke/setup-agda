@@ -89,30 +89,30 @@
   },
   "0.7": {
     "url": "https://github.com/agda/agda-stdlib/archive/refs/tags/0_7.zip",
-    "dir": "agda-stdlib-0.7"
+    "dir": "agda-stdlib-0_7"
   },
   "0.6": {
     "url": "https://github.com/agda/agda-stdlib/archive/refs/tags/0_6.zip",
-    "dir": "agda-stdlib-0.6"
+    "dir": "agda-stdlib-0_6"
   },
   "0.5": {
     "url": "https://github.com/agda/agda-stdlib/archive/refs/tags/0_5.zip",
-    "dir": "agda-stdlib-0.5"
+    "dir": "agda-stdlib-0_5"
   },
   "0.4": {
     "url": "https://github.com/agda/agda-stdlib/archive/refs/tags/0_4.zip",
-    "dir": "agda-stdlib-0.4"
+    "dir": "agda-stdlib-0_4"
   },
   "0.3": {
     "url": "https://github.com/agda/agda-stdlib/archive/refs/tags/0_3.zip",
-    "dir": "agda-stdlib-0.3"
+    "dir": "agda-stdlib-0_3"
   },
   "0.2": {
     "url": "https://github.com/agda/agda-stdlib/archive/refs/tags/0_2.zip",
-    "dir": "agda-stdlib-0.2"
+    "dir": "agda-stdlib-0_2"
   },
   "0.1": {
     "url": "https://github.com/agda/agda-stdlib/archive/refs/tags/0_1.zip",
-    "dir": "agda-stdlib-0.1"
+    "dir": "agda-stdlib-0_1"
   }
 }
