@@ -6,9 +6,7 @@
     "ecmaVersion": 6,
     "sourceType": "module",
     "project": [
-      "./tsconfig.json",
-      "./tsconfig-lib.json",
-      "./tsconfig-script.json"
+      "./tsconfig.json"
     ]
   },
   "rules": {
