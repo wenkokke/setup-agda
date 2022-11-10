@@ -36,6 +36,14 @@ export default function getOptions(
     core.info(`Input ${k}: ${rawInputValue} => ${inputValue}`)
     return inputValue
   }
+  function getFlagPair(
+    flagOn: opts.SetupAgdaFlag,
+    flagOff: opts.SetupAgdaFlag
+  ): [boolean, boolean] {
+    const [on, off] = [getFlag(flagOn), getFlag(flagOff)]
+    if (on && off) throw Error(`Flags ${flagOn} and ${flagOff} conflict.`)
+    return [on, off]
+  }
 
   // Resolve Agda version:
   const agdaVersionSpec = getOption('agda-version')
@@ -61,27 +69,30 @@ export default function getOptions(
     throw Error('Input "ghc-version-range" is not a valid version range')
 
   // Check for contradictory options:
-  const [forceBuild, forceNoBuild] = [
-    getFlag('force-build'),
-    getFlag('force-no-build')
-  ]
-  if (forceBuild && forceNoBuild)
-    throw Error('Build or not? What do you want from me? 🤷🏻‍♀️')
-  const [forceClusterCounting, forceNoClusterCounting] = [
-    getFlag('force-cluster-counting'),
-    getFlag('force-no-cluster-counting')
-  ]
-  if (forceClusterCounting && forceNoClusterCounting)
-    throw Error('Cluster counting or not? What do you want from me? 🤷🏻‍♀️')
-  const [forceOptimiseHeavily, forceNoOptimiseHeavily] = [
-    getFlag('force-optimise-heavily'),
-    getFlag('force-no-optimise-heavily')
-  ]
-  if (forceOptimiseHeavily && forceNoOptimiseHeavily)
-    throw Error('Optimise heavily or not? What do you want from me? 🤷🏻‍♀️')
+  const [forceBuild, forceNoBuild] = getFlagPair(
+    'force-build',
+    'force-no-build'
+  )
+  const [forceClusterCounting, forceNoClusterCounting] = getFlagPair(
+    'force-cluster-counting',
+    'force-no-cluster-counting'
+  )
+  const [forceOptimiseHeavily, forceNoOptimiseHeavily] = getFlagPair(
+    'force-optimise-heavily',
+    'force-no-optimise-heavily'
+  )
 
-  // Validate bdist-name:
+  // Parse the bdist name:
   const bdistName = parseBdistName(getOption('bdist-name'))
+  const bdistRetentionDays = getOption('bdist-retention-days')
+  const bdistRetentionDaysInt = parseInt(bdistRetentionDays)
+  if (!(0 <= bdistRetentionDaysInt && bdistRetentionDaysInt <= 90))
+    throw Error(
+      [
+        `Input "bdist-rentention-days" must be a number between 0 and 90.`,
+        `Found "${bdistRetentionDays}".`
+      ].join(' ')
+    )
 
   // Create build options:
   const options: opts.BuildOptions = {
@@ -90,6 +101,7 @@ export default function getOptions(
     'agda-stdlib-version': agdaStdlibVersion,
     'bdist-compress-exe': getFlag('bdist-compress-exe'),
     'bdist-name': bdistName,
+    'bdist-retention-days': bdistRetentionDays,
     'bdist-upload': getFlag('bdist-upload'),
     'force-build': forceBuild,
     'force-no-build': forceNoBuild,
