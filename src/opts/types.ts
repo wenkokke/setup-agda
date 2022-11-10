@@ -169,6 +169,8 @@ export interface SetupHaskellInputs
 export type SetupAgdaOption =
   | 'agda-version'
   | 'agda-stdlib-version'
+  | 'agda-libraries'
+  | 'agda-defaults'
   | 'bdist-name'
   | 'bdist-retention-days'
   | 'ghc-version-range'

@@ -32,6 +32,32 @@ inputs:
 
       Only used when "agda-stdlib-version" is not "none".
     required: false
+  agda-libraries:
+    description: |
+      A list of Agda libraries to install.
+
+      Libraries must be specified by their Git URL and end in a version anchor,
+      e.g.,
+
+      https://github.com/agda/agda-categories.git#v0.1.7.1
+      https://github.com/agda/cubical.git#v0.3
+
+      To setup the Agda standard library, use "agda-stdlib-version" instead, as
+      that ensures that the standard library and Agda versions are compatible.
+
+      NOTE: this option is currently unsupported
+    required: false
+  agda-defaults:
+    description: |
+      A list of installed Agda libraries to add to defaults.
+
+      Libraries must be specified by the name of their .agda-lib file, e.g.,
+
+      agda-categories
+      cubical
+
+      NOTE: this option is currently unsupported
+    required: false
   bdist-compress-exe:
     description: |
       If specified, the executables are compressed with UPX (https://upx.github.io).

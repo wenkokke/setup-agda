@@ -358,6 +358,8 @@ function getOptions(inputs, actionYml) {
         'agda-version': agdaVersion,
         'agda-stdlib-version': agdaStdlibVersion,
         'agda-stdlib-default': getFlag('agda-stdlib-default'),
+        'agda-libraries': getOption('agda-libraries'),
+        'agda-defaults': getOption('agda-defaults'),
         'bdist-compress-exe': getFlag('bdist-compress-exe'),
         'bdist-name': bdistName,
         'bdist-retention-days': bdistRetentionDays,
