@@ -12,6 +12,19 @@ export function agdaDir(): string {
   }
 }
 
+export function cacheDir(name: string): string {
+  const now = new Date(Date.now())
+  const nowString = [
+    now.getFullYear().toString().padStart(4, '0'),
+    now.getMonth().toString().padStart(2, '0'),
+    now.getDate().toString().padStart(2, '0'),
+    now.getHours().toString().padStart(2, '0'),
+    now.getMinutes().toString().padStart(2, '0'),
+    now.getSeconds().toString().padStart(2, '0')
+  ].join('')
+  return path.join(agdaDir(), 'cache', `${name}-${nowString}`)
+}
+
 export function installDir(version: string): string {
   return path.join(agdaDir(), 'agda', version)
 }

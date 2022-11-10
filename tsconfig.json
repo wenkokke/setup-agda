@@ -7,12 +7,18 @@
     "strict": true,
     "resolveJsonModule": true,
     "noImplicitAny": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "declaration": true,
+    "declarationMap": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["es6"],
+    "noEmitOnError": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "pretty": true,
+    "sourceMap": true
   },
-  "exclude": [
-    "src/data/update-agda-info.ts",
-    "node_modules",
-    "**/*.test.ts",
-    "vendor"
-  ]
+  "include": ["src/**/*.ts"]
 }

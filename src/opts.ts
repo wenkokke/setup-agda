@@ -7,7 +7,7 @@ export {
 } from './opts/compat'
 export {default as getOptions} from './opts/get-options'
 export {Platform, platform, Arch, arch} from './opts/platform'
-export {agdaDir, installDir} from './opts/path'
+export {agdaDir, cacheDir, installDir} from './opts/path'
 export {default as resolveGhcVersion} from './opts/resolve-ghc-version'
 export {default as resolveAgdaStdlibVersion} from './opts/resolve-agda-stdlib-version'
 export {

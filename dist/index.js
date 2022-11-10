@@ -37,7 +37,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const opts = __importStar(__nccwpck_require__(1352));
 const setup_agda_1 = __importDefault(__nccwpck_require__(8021));
 (0, setup_agda_1.default)(opts.getOptions(core.getInput));
-
+//# sourceMappingURL=main.js.map
 
 /***/ }),
 
@@ -50,7 +50,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.isAgdaStdlibVersion = exports.isAgdaGitRef = exports.isAgdaVersion = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.installDir = exports.agdaDir = exports.arch = exports.platform = exports.getOptions = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
+exports.isAgdaStdlibVersion = exports.isAgdaGitRef = exports.isAgdaVersion = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.installDir = exports.cacheDir = exports.agdaDir = exports.arch = exports.platform = exports.getOptions = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
 var compat_1 = __nccwpck_require__(4021);
 Object.defineProperty(exports, "runPreBuildHook", ({ enumerable: true, get: function () { return compat_1.runPreBuildHook; } }));
 Object.defineProperty(exports, "supportsSplitSections", ({ enumerable: true, get: function () { return compat_1.supportsSplitSections; } }));
@@ -64,6 +64,7 @@ Object.defineProperty(exports, "platform", ({ enumerable: true, get: function ()
 Object.defineProperty(exports, "arch", ({ enumerable: true, get: function () { return platform_1.arch; } }));
 var path_1 = __nccwpck_require__(4059);
 Object.defineProperty(exports, "agdaDir", ({ enumerable: true, get: function () { return path_1.agdaDir; } }));
+Object.defineProperty(exports, "cacheDir", ({ enumerable: true, get: function () { return path_1.cacheDir; } }));
 Object.defineProperty(exports, "installDir", ({ enumerable: true, get: function () { return path_1.installDir; } }));
 var resolve_ghc_version_1 = __nccwpck_require__(7530);
 Object.defineProperty(exports, "resolveGhcVersion", ({ enumerable: true, get: function () { return __importDefault(resolve_ghc_version_1).default; } }));
@@ -76,7 +77,7 @@ Object.defineProperty(exports, "agdaStdlibSdistIndex", ({ enumerable: true, get:
 Object.defineProperty(exports, "isAgdaVersion", ({ enumerable: true, get: function () { return types_1.isAgdaVersion; } }));
 Object.defineProperty(exports, "isAgdaGitRef", ({ enumerable: true, get: function () { return types_1.isAgdaGitRef; } }));
 Object.defineProperty(exports, "isAgdaStdlibVersion", ({ enumerable: true, get: function () { return types_1.isAgdaStdlibVersion; } }));
-
+//# sourceMappingURL=opts.js.map
 
 /***/ }),
 
@@ -173,7 +174,7 @@ function needsIcu(options) {
     return (supportsClusterCounting(options) && !options['force-no-cluster-counting']);
 }
 exports.needsIcu = needsIcu;
-
+//# sourceMappingURL=compat.js.map
 
 /***/ }),
 
@@ -343,7 +344,7 @@ function parseBdistName(bdistName) {
         ].join(os.EOL));
     }
 }
-
+//# sourceMappingURL=get-options.js.map
 
 /***/ }),
 
@@ -376,7 +377,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installDir = exports.agdaDir = void 0;
+exports.installDir = exports.cacheDir = exports.agdaDir = void 0;
 const opts = __importStar(__nccwpck_require__(542));
 const path = __importStar(__nccwpck_require__(9411));
 const os = __importStar(__nccwpck_require__(612));
@@ -390,11 +391,24 @@ function agdaDir() {
     }
 }
 exports.agdaDir = agdaDir;
+function cacheDir(name) {
+    const now = new Date(Date.now());
+    const nowString = [
+        now.getFullYear().toString().padStart(4, '0'),
+        now.getMonth().toString().padStart(2, '0'),
+        now.getDate().toString().padStart(2, '0'),
+        now.getHours().toString().padStart(2, '0'),
+        now.getMinutes().toString().padStart(2, '0'),
+        now.getSeconds().toString().padStart(2, '0')
+    ].join('');
+    return path.join(agdaDir(), 'cache', `${name}-${nowString}`);
+}
+exports.cacheDir = cacheDir;
 function installDir(version) {
     return path.join(agdaDir(), 'agda', version);
 }
 exports.installDir = installDir;
-
+//# sourceMappingURL=path.js.map
 
 /***/ }),
 
@@ -446,7 +460,7 @@ exports.arch = (() => {
         core.warning(`Support for ${process.arch} is experimental`);
     return process.arch;
 })();
-
+//# sourceMappingURL=platform.js.map
 
 /***/ }),
 
@@ -526,7 +540,7 @@ function resolveAgdaStdlibVersion(agdaVersion, agdaStdlibVersionSpec) {
     }
 }
 exports["default"] = resolveAgdaStdlibVersion;
-
+//# sourceMappingURL=resolve-agda-stdlib-version.js.map
 
 /***/ }),
 
@@ -587,7 +601,7 @@ function resolveAgdaVersion(versionSpec) {
     }
 }
 exports["default"] = resolveAgdaVersion;
-
+//# sourceMappingURL=resolve-agda-version.js.map
 
 /***/ }),
 
@@ -737,7 +751,7 @@ function resolveGhcVersion(options, currentVersion, versionsThatCanBuildAgda) {
     return selected;
 }
 exports["default"] = resolveGhcVersion;
-
+//# sourceMappingURL=resolve-ghc-version.js.map
 
 /***/ }),
 
@@ -840,7 +854,7 @@ exports.agdaVersionToCompatibleAgdaStdlibVersions = agdaVersionToCompatibleAgdaS
 for (const agdaVersion of exports.agdaVersions)
     for (const agdaStdlibVersionString of agdaVersionToCompatibleAgdaStdlibVersionStrings[agdaVersion])
         (0, node_assert_1.default)(isAgdaStdlibVersion(agdaStdlibVersionString));
-
+//# sourceMappingURL=types.js.map
 
 /***/ }),
 
@@ -935,7 +949,7 @@ function setup(options) {
     });
 }
 exports["default"] = setup;
-
+//# sourceMappingURL=setup-agda.js.map
 
 /***/ }),
 
@@ -1073,7 +1087,7 @@ function buildFromSource(options) {
     });
 }
 exports["default"] = buildFromSource;
-
+//# sourceMappingURL=build-from-sdist.js.map
 
 /***/ }),
 
@@ -1232,7 +1246,7 @@ function findCabalFile(sourceDir) {
         }
     });
 }
-
+//# sourceMappingURL=cabal.js.map
 
 /***/ }),
 
@@ -1448,7 +1462,7 @@ function findAgdaBins(sourceDir) {
         }
     });
 }
-
+//# sourceMappingURL=stack.js.map
 
 /***/ }),
 
@@ -1617,7 +1631,7 @@ function repairPermissions(bdistDir) {
         }
     });
 }
-
+//# sourceMappingURL=install-from-bdist.js.map
 
 /***/ }),
 
@@ -1699,7 +1713,7 @@ function installFromToolCache(options) {
     });
 }
 exports["default"] = installFromToolCache;
-
+//# sourceMappingURL=install-from-tool-cache.js.map
 
 /***/ }),
 
@@ -1828,7 +1842,7 @@ function renderName(template, options) {
     ])), { arch: os.arch(), platform: os.platform(), release: os.release() }));
 }
 exports.renderName = renderName;
-
+//# sourceMappingURL=upload-bdist.js.map
 
 /***/ }),
 
@@ -1912,7 +1926,7 @@ function pickSetupHaskellInputs(options) {
         'stack-version'
     ]);
 }
-
+//# sourceMappingURL=setup-haskell.js.map
 
 /***/ }),
 
@@ -1993,7 +2007,7 @@ function bundle(distDir, options) {
     });
 }
 exports.bundle = bundle;
-
+//# sourceMappingURL=setup-icu.js.map
 
 /***/ }),
 
@@ -2119,7 +2133,7 @@ function bundleForLinux(distDir, options) {
     });
 }
 exports.bundleForLinux = bundleForLinux;
-
+//# sourceMappingURL=linux.js.map
 
 /***/ }),
 
@@ -2260,7 +2274,7 @@ function bundleForMacOS(distDir, options) {
     });
 }
 exports.bundleForMacOS = bundleForMacOS;
-
+//# sourceMappingURL=macos.js.map
 
 /***/ }),
 
@@ -2375,7 +2389,7 @@ function icuGetLibDirs() {
         ]);
     });
 }
-
+//# sourceMappingURL=windows.js.map
 
 /***/ }),
 
@@ -2473,7 +2487,7 @@ function setupWindows(options) {
         return path.join(upxDir, 'upx-3.96-win64', 'upx');
     });
 }
-
+//# sourceMappingURL=setup-upx.js.map
 
 /***/ }),
 
@@ -2524,7 +2538,7 @@ __exportStar(__nccwpck_require__(8398), exports);
 __exportStar(__nccwpck_require__(1311), exports);
 __exportStar(__nccwpck_require__(7066), exports);
 exports.simver = __importStar(__nccwpck_require__(7609));
-
+//# sourceMappingURL=util.js.map
 
 /***/ }),
 
@@ -2609,7 +2623,7 @@ function getAgdaSdistFromGitHub(agdaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         if (agdaVersion === 'HEAD') {
             core.info(`Cloning from ${agdaGitUrl}`);
-            const sourceDir = path.join(process.env.RUNNER_TEMP, 'agda-HEAD');
+            const sourceDir = opts.cacheDir('agda-HEAD');
             yield exec.getOutput('git', [
                 'clone',
                 '--single-branch',
@@ -2739,7 +2753,7 @@ function configureEnvFor(installDir) {
     });
 }
 exports.configureEnvFor = configureEnvFor;
-
+//# sourceMappingURL=agda.js.map
 
 /***/ }),
 
@@ -2811,7 +2825,7 @@ function ensureError(input) {
     }
 }
 exports["default"] = ensureError;
-
+//# sourceMappingURL=ensure-error.js.map
 
 /***/ }),
 
@@ -2978,7 +2992,7 @@ function getVersion(prog, options) {
     });
 }
 exports.getVersion = getVersion;
-
+//# sourceMappingURL=exec.js.map
 
 /***/ }),
 
@@ -3158,7 +3172,7 @@ function getPackageSource(packageName, options) {
     });
 }
 exports.getPackageSource = getPackageSource;
-
+//# sourceMappingURL=hackage.js.map
 
 /***/ }),
 
@@ -3322,7 +3336,7 @@ function stackGetLocalBin(using) {
     });
 }
 exports.stackGetLocalBin = stackGetLocalBin;
-
+//# sourceMappingURL=haskell.js.map
 
 /***/ }),
 
@@ -3381,7 +3395,7 @@ function brewGetVersion(formula) {
     });
 }
 exports.brewGetVersion = brewGetVersion;
-
+//# sourceMappingURL=homebrew.js.map
 
 /***/ }),
 
@@ -3444,7 +3458,7 @@ function pacmanGetVersion(pkg) {
     });
 }
 exports.pacmanGetVersion = pacmanGetVersion;
-
+//# sourceMappingURL=pacman.js.map
 
 /***/ }),
 
@@ -3545,7 +3559,7 @@ function dumpbin(...args) {
     });
 }
 exports.dumpbin = dumpbin;
-
+//# sourceMappingURL=patch-binary.js.map
 
 /***/ }),
 
@@ -3607,7 +3621,7 @@ function xattr(...args) {
     });
 }
 exports.xattr = xattr;
-
+//# sourceMappingURL=patch-permissions.js.map
 
 /***/ }),
 
@@ -3693,7 +3707,7 @@ function addPkgConfigPath(pkgConfigDir) {
     core.exportVariable('PKG_CONFIG_PATH', [pkgConfigDir, ...pkgConfigDirs].join(pathSep));
 }
 exports.addPkgConfigPath = addPkgConfigPath;
-
+//# sourceMappingURL=pkg-config.js.map
 
 /***/ }),
 
@@ -3803,7 +3817,7 @@ function max(versions) {
     return maxSimVer === null ? null : toString(maxSimVer);
 }
 exports.max = max;
-
+//# sourceMappingURL=simver.js.map
 
 /***/ }),
 
@@ -31588,7 +31602,7 @@ module.exports = JSON.parse('{"darwin":{"x64":{"nightly":{"url":"https://github.
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"packageInfo":{"2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.4":"deprecated","2.5.4.1":"deprecated","2.6.0":"deprecated","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated"},"lastModified":"Tue, 18 Oct 2022 17:32:16 GMT"}');
+module.exports = JSON.parse('{"packageInfo":{"2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.4":"deprecated","2.5.4.1":"deprecated","2.6.0":"deprecated","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated"},"lastModified":"Thu, 10 Nov 2022 12:45:45 GMT"}');
 
 /***/ }),
 
@@ -31596,7 +31610,7 @@ module.exports = JSON.parse('{"packageInfo":{"2.5.1":"deprecated","2.5.1.1":"dep
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4.2":"normal","2.6.0.1":"normal","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Tue, 18 Oct 2022 17:32:16 GMT"}');
+module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4.2":"normal","2.6.0.1":"normal","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Thu, 10 Nov 2022 12:45:45 GMT"}');
 
 /***/ }),
 
