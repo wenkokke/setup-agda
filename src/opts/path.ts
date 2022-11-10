@@ -13,18 +13,31 @@ export function agdaDir(): string {
 }
 
 export function cacheDir(name: string): string {
-  const now = new Date(Date.now())
-  const nowString = [
-    now.getFullYear().toString().padStart(4, '0'),
-    now.getMonth().toString().padStart(2, '0'),
-    now.getDate().toString().padStart(2, '0'),
-    now.getHours().toString().padStart(2, '0'),
-    now.getMinutes().toString().padStart(2, '0'),
-    now.getSeconds().toString().padStart(2, '0')
-  ].join('')
-  return path.join(agdaDir(), 'cache', `${name}-${nowString}`)
+  return path.join(agdaDir(), 'cache', `${name}-${yyyymmdd()}`)
 }
 
 export function installDir(version: string): string {
   return path.join(agdaDir(), 'agda', version)
+}
+
+export function librariesDir(): string {
+  return path.join(agdaDir(), 'libraries.d')
+}
+
+export function libraryDir(
+  libraryName: string,
+  libraryVersion: string,
+  experimental = true
+): string {
+  if (experimental) libraryVersion += `-${yyyymmdd()}`
+  return path.join(librariesDir(), libraryName, libraryVersion)
+}
+
+function yyyymmdd(): string {
+  const nowDate = new Date(Date.now())
+  return [
+    nowDate.getFullYear().toString().padStart(4, '0'),
+    nowDate.getMonth().toString().padStart(2, '0'),
+    nowDate.getDate().toString().padStart(2, '0')
+  ].join('')
 }

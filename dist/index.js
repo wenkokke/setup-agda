@@ -50,7 +50,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.isAgdaStdlibVersion = exports.isAgdaGitRef = exports.isAgdaVersion = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.installDir = exports.cacheDir = exports.agdaDir = exports.arch = exports.platform = exports.getOptions = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
+exports.isAgdaStdlibVersion = exports.isAgdaGitRef = exports.isAgdaVersion = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.libraryDir = exports.librariesDir = exports.installDir = exports.cacheDir = exports.agdaDir = exports.arch = exports.platform = exports.getOptions = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
 var compat_1 = __nccwpck_require__(4021);
 Object.defineProperty(exports, "runPreBuildHook", ({ enumerable: true, get: function () { return compat_1.runPreBuildHook; } }));
 Object.defineProperty(exports, "supportsSplitSections", ({ enumerable: true, get: function () { return compat_1.supportsSplitSections; } }));
@@ -66,6 +66,8 @@ var path_1 = __nccwpck_require__(4059);
 Object.defineProperty(exports, "agdaDir", ({ enumerable: true, get: function () { return path_1.agdaDir; } }));
 Object.defineProperty(exports, "cacheDir", ({ enumerable: true, get: function () { return path_1.cacheDir; } }));
 Object.defineProperty(exports, "installDir", ({ enumerable: true, get: function () { return path_1.installDir; } }));
+Object.defineProperty(exports, "librariesDir", ({ enumerable: true, get: function () { return path_1.librariesDir; } }));
+Object.defineProperty(exports, "libraryDir", ({ enumerable: true, get: function () { return path_1.libraryDir; } }));
 var resolve_ghc_version_1 = __nccwpck_require__(7530);
 Object.defineProperty(exports, "resolveGhcVersion", ({ enumerable: true, get: function () { return __importDefault(resolve_ghc_version_1).default; } }));
 var resolve_agda_stdlib_version_1 = __nccwpck_require__(3237);
@@ -377,7 +379,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.installDir = exports.cacheDir = exports.agdaDir = void 0;
+exports.libraryDir = exports.librariesDir = exports.installDir = exports.cacheDir = exports.agdaDir = void 0;
 const opts = __importStar(__nccwpck_require__(542));
 const path = __importStar(__nccwpck_require__(9411));
 const os = __importStar(__nccwpck_require__(612));
@@ -392,22 +394,31 @@ function agdaDir() {
 }
 exports.agdaDir = agdaDir;
 function cacheDir(name) {
-    const now = new Date(Date.now());
-    const nowString = [
-        now.getFullYear().toString().padStart(4, '0'),
-        now.getMonth().toString().padStart(2, '0'),
-        now.getDate().toString().padStart(2, '0'),
-        now.getHours().toString().padStart(2, '0'),
-        now.getMinutes().toString().padStart(2, '0'),
-        now.getSeconds().toString().padStart(2, '0')
-    ].join('');
-    return path.join(agdaDir(), 'cache', `${name}-${nowString}`);
+    return path.join(agdaDir(), 'cache', `${name}-${yyyymmdd()}`);
 }
 exports.cacheDir = cacheDir;
 function installDir(version) {
     return path.join(agdaDir(), 'agda', version);
 }
 exports.installDir = installDir;
+function librariesDir() {
+    return path.join(agdaDir(), 'libraries.d');
+}
+exports.librariesDir = librariesDir;
+function libraryDir(libraryName, libraryVersion, experimental = true) {
+    if (experimental)
+        libraryVersion += `-${yyyymmdd()}`;
+    return path.join(librariesDir(), libraryName, libraryVersion);
+}
+exports.libraryDir = libraryDir;
+function yyyymmdd() {
+    const nowDate = new Date(Date.now());
+    return [
+        nowDate.getFullYear().toString().padStart(4, '0'),
+        nowDate.getMonth().toString().padStart(2, '0'),
+        nowDate.getDate().toString().padStart(2, '0')
+    ].join('');
+}
 //# sourceMappingURL=path.js.map
 
 /***/ }),
