@@ -81,7 +81,7 @@ async function getAgdaSdistFromGitHub(
 ): Promise<string> {
   if (agdaVersion === 'HEAD') {
     core.info(`Cloning from ${agdaGitUrl}`)
-    const sourceDir = path.join(process.env.RUNNER_TEMP, 'agda-HEAD')
+    const sourceDir = opts.cacheDir('agda-HEAD')
     await exec.getOutput('git', [
       'clone',
       '--single-branch',

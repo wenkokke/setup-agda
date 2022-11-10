@@ -12,13 +12,10 @@ export function agdaDir(): string {
   }
 }
 
-<<<<<<< HEAD
-=======
 export function cacheDir(name: string): string {
   return path.join(agdaDir(), 'cache', `${name}-${yyyymmdd()}`)
 }
 
->>>>>>> ac5deb8 (Change paths)
 export function installDir(version: string): string {
   return path.join(agdaDir(), 'agda', version)
 }

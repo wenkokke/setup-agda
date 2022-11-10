@@ -50,19 +50,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-exports.isAgdaStdlibVersion = exports.isAgdaGitRef = exports.isAgdaVersion = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.installDir = exports.agdaDir = exports.arch = exports.platform = exports.getOptions = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
-=======
-exports.isAgdaStdlibVersion = exports.isAgdaGitRef = exports.isAgdaVersion = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.libraryDir = exports.librariesDir = exports.installDir = exports.cacheDir = exports.agdaDir = exports.arch = exports.platform = exports.getOptions = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
->>>>>>> ac5deb8 (Change paths)
-=======
-exports.isAgdaStdlibVersion = exports.isAgdaGitRef = exports.isAgdaVersion = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.downloadDistIndexEntry = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.libraryDir = exports.librariesDir = exports.librariesFile = exports.installDir = exports.cacheDir = exports.agdaDir = exports.arch = exports.platform = exports.getOptions = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
->>>>>>> ffbc022 (Add support for setting up agda-stdlib)
-=======
 exports.isAgdaStdlibVersion = exports.isAgdaGitRef = exports.isAgdaVersion = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.downloadDistIndexEntry = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.libraryDir = exports.librariesDir = exports.defaultsFile = exports.librariesFile = exports.installDir = exports.cacheDir = exports.agdaDir = exports.arch = exports.platform = exports.getOptions = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
->>>>>>> 5fcd8ba (Add support for 'agda-stdlib-default')
 var compat_1 = __nccwpck_require__(4021);
 Object.defineProperty(exports, "runPreBuildHook", ({ enumerable: true, get: function () { return compat_1.runPreBuildHook; } }));
 Object.defineProperty(exports, "supportsSplitSections", ({ enumerable: true, get: function () { return compat_1.supportsSplitSections; } }));
@@ -76,6 +64,7 @@ Object.defineProperty(exports, "platform", ({ enumerable: true, get: function ()
 Object.defineProperty(exports, "arch", ({ enumerable: true, get: function () { return platform_1.arch; } }));
 var path_1 = __nccwpck_require__(4059);
 Object.defineProperty(exports, "agdaDir", ({ enumerable: true, get: function () { return path_1.agdaDir; } }));
+Object.defineProperty(exports, "cacheDir", ({ enumerable: true, get: function () { return path_1.cacheDir; } }));
 Object.defineProperty(exports, "installDir", ({ enumerable: true, get: function () { return path_1.installDir; } }));
 Object.defineProperty(exports, "librariesFile", ({ enumerable: true, get: function () { return path_1.librariesFile; } }));
 Object.defineProperty(exports, "defaultsFile", ({ enumerable: true, get: function () { return path_1.defaultsFile; } }));
@@ -261,7 +250,7 @@ function downloadDistIndexEntry(entry, dest, auth, headers) {
     });
 }
 exports["default"] = downloadDistIndexEntry;
-//# sourceMappingURL=download-dist-index-entry.js.map
+
 
 /***/ }),
 
@@ -464,19 +453,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-exports.installDir = exports.agdaDir = void 0;
-=======
-exports.libraryDir = exports.librariesDir = exports.installDir = exports.cacheDir = exports.agdaDir = void 0;
->>>>>>> ac5deb8 (Change paths)
-=======
-exports.libraryDir = exports.librariesDir = exports.librariesFile = exports.installDir = exports.cacheDir = exports.agdaDir = void 0;
->>>>>>> ffbc022 (Add support for setting up agda-stdlib)
-=======
 exports.libraryDir = exports.defaultsFile = exports.librariesDir = exports.librariesFile = exports.installDir = exports.cacheDir = exports.agdaDir = void 0;
->>>>>>> 5fcd8ba (Add support for 'agda-stdlib-default')
 const opts = __importStar(__nccwpck_require__(542));
 const path = __importStar(__nccwpck_require__(9411));
 const os = __importStar(__nccwpck_require__(612));
@@ -490,27 +467,18 @@ function agdaDir() {
     }
 }
 exports.agdaDir = agdaDir;
-<<<<<<< HEAD
-=======
 function cacheDir(name) {
     return path.join(agdaDir(), 'cache', `${name}-${yyyymmdd()}`);
 }
 exports.cacheDir = cacheDir;
->>>>>>> ac5deb8 (Change paths)
 function installDir(version) {
     return path.join(agdaDir(), 'agda', version);
 }
 exports.installDir = installDir;
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
-=======
 function librariesFile() {
     return path.join(agdaDir(), 'libraries');
 }
 exports.librariesFile = librariesFile;
->>>>>>> ffbc022 (Add support for setting up agda-stdlib)
 function librariesDir() {
     return path.join(agdaDir(), 'libraries.d');
 }
@@ -533,8 +501,7 @@ function yyyymmdd() {
         nowDate.getDate().toString().padStart(2, '0')
     ].join('');
 }
-//# sourceMappingURL=path.js.map
->>>>>>> ac5deb8 (Change paths)
+
 
 /***/ }),
 
@@ -2761,7 +2728,7 @@ function getAgdaSdistFromGitHub(agdaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         if (agdaVersion === 'HEAD') {
             core.info(`Cloning from ${agdaGitUrl}`);
-            const sourceDir = path.join(process.env.RUNNER_TEMP, 'agda-HEAD');
+            const sourceDir = opts.cacheDir('agda-HEAD');
             yield exec.getOutput('git', [
                 'clone',
                 '--single-branch',
