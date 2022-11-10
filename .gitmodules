@@ -1,0 +1,3 @@
+[submodule "setup/vendor/haskell/actions"]
+	path = setup/vendor/haskell/actions
+	url = https://github.com/haskell/actions.git

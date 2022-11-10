@@ -1,0 +1,26 @@
+#!/usr/bin/env sh
+
+fail="$(mktemp)"
+
+# Check files with pre-commit
+echo "Running pre-commit..."
+{ pre-commit run --all-files || echo > "$fail"; }
+
+# Build dist and add to commit:
+echo "Building setup dist..."
+{ cd setup && npm run all || echo > "$fail"; }
+git add setup/dist/*
+git add setup/src/data/*.json
+
+# Delete 'latest' tag locally:
+git tag --delete latest || true
+
+# Check if any of the previous commands failed:
+if [ ! -s "$fail" ]
+then
+    rm "$fail"
+    exit 0
+else
+    rm "$fail"
+    exit 1
+fi
