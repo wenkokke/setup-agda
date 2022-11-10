@@ -51,10 +51,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 <<<<<<< HEAD
+<<<<<<< HEAD
 exports.isAgdaStdlibVersion = exports.isAgdaGitRef = exports.isAgdaVersion = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.installDir = exports.agdaDir = exports.arch = exports.platform = exports.getOptions = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
 =======
 exports.isAgdaStdlibVersion = exports.isAgdaGitRef = exports.isAgdaVersion = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.libraryDir = exports.librariesDir = exports.installDir = exports.cacheDir = exports.agdaDir = exports.arch = exports.platform = exports.getOptions = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
 >>>>>>> ac5deb8 (Change paths)
+=======
+exports.isAgdaStdlibVersion = exports.isAgdaGitRef = exports.isAgdaVersion = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.downloadDistIndexEntry = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.libraryDir = exports.librariesDir = exports.librariesFile = exports.installDir = exports.cacheDir = exports.agdaDir = exports.arch = exports.platform = exports.getOptions = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
+>>>>>>> ffbc022 (Add support for setting up agda-stdlib)
 var compat_1 = __nccwpck_require__(4021);
 Object.defineProperty(exports, "runPreBuildHook", ({ enumerable: true, get: function () { return compat_1.runPreBuildHook; } }));
 Object.defineProperty(exports, "supportsSplitSections", ({ enumerable: true, get: function () { return compat_1.supportsSplitSections; } }));
@@ -69,12 +73,15 @@ Object.defineProperty(exports, "arch", ({ enumerable: true, get: function () { r
 var path_1 = __nccwpck_require__(4059);
 Object.defineProperty(exports, "agdaDir", ({ enumerable: true, get: function () { return path_1.agdaDir; } }));
 Object.defineProperty(exports, "installDir", ({ enumerable: true, get: function () { return path_1.installDir; } }));
+Object.defineProperty(exports, "librariesFile", ({ enumerable: true, get: function () { return path_1.librariesFile; } }));
 Object.defineProperty(exports, "librariesDir", ({ enumerable: true, get: function () { return path_1.librariesDir; } }));
 Object.defineProperty(exports, "libraryDir", ({ enumerable: true, get: function () { return path_1.libraryDir; } }));
 var resolve_ghc_version_1 = __nccwpck_require__(7530);
 Object.defineProperty(exports, "resolveGhcVersion", ({ enumerable: true, get: function () { return __importDefault(resolve_ghc_version_1).default; } }));
 var resolve_agda_stdlib_version_1 = __nccwpck_require__(3237);
 Object.defineProperty(exports, "resolveAgdaStdlibVersion", ({ enumerable: true, get: function () { return __importDefault(resolve_agda_stdlib_version_1).default; } }));
+var download_dist_index_entry_1 = __nccwpck_require__(5456);
+Object.defineProperty(exports, "downloadDistIndexEntry", ({ enumerable: true, get: function () { return __importDefault(download_dist_index_entry_1).default; } }));
 var types_1 = __nccwpck_require__(9150);
 Object.defineProperty(exports, "agdaPackageInfoCache", ({ enumerable: true, get: function () { return types_1.agdaPackageInfoCache; } }));
 Object.defineProperty(exports, "agdaBdistIndex", ({ enumerable: true, get: function () { return types_1.agdaBdistIndex; } }));
@@ -180,6 +187,76 @@ function needsIcu(options) {
 }
 exports.needsIcu = needsIcu;
 
+
+/***/ }),
+
+/***/ 5456:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
+const tc = __importStar(__nccwpck_require__(7784));
+const path = __importStar(__nccwpck_require__(9411));
+function downloadDistIndexEntry(entry, dest, auth, headers) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (typeof entry === 'string')
+            entry = { url: entry };
+        core.info(`Downloading package from ${entry.url}`);
+        const archive = yield tc.downloadTool(entry.url, undefined, auth, headers);
+        let dir = undefined;
+        if (entry.url.match(/\.zip$/)) {
+            dir = yield tc.extractZip(archive, dest);
+        }
+        else if (entry.url.match(/(\.tar\.gz|\.tgz)$/)) {
+            dir = yield tc.extractTar(archive, dest, ['--extract', '--gzip']);
+        }
+        else if (entry.url.match(/(\.tar\.xz|\.txz)$/)) {
+            dir = yield tc.extractTar(archive, dest, ['--extract', '--xz']);
+        }
+        else {
+            throw Error(`Do not know how to extract archive: ${entry.url}`);
+        }
+        if (entry.dir !== undefined)
+            dir = path.join(dir, entry.dir);
+        return dir;
+    });
+}
+exports["default"] = downloadDistIndexEntry;
+//# sourceMappingURL=download-dist-index-entry.js.map
 
 /***/ }),
 
@@ -382,10 +459,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 <<<<<<< HEAD
+<<<<<<< HEAD
 exports.installDir = exports.agdaDir = void 0;
 =======
 exports.libraryDir = exports.librariesDir = exports.installDir = exports.cacheDir = exports.agdaDir = void 0;
 >>>>>>> ac5deb8 (Change paths)
+=======
+exports.libraryDir = exports.librariesDir = exports.librariesFile = exports.installDir = exports.cacheDir = exports.agdaDir = void 0;
+>>>>>>> ffbc022 (Add support for setting up agda-stdlib)
 const opts = __importStar(__nccwpck_require__(542));
 const path = __importStar(__nccwpck_require__(9411));
 const os = __importStar(__nccwpck_require__(612));
@@ -411,8 +492,15 @@ function installDir(version) {
 }
 exports.installDir = installDir;
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
+=======
+function librariesFile() {
+    return path.join(agdaDir(), 'libraries');
+}
+exports.librariesFile = librariesFile;
+>>>>>>> ffbc022 (Add support for setting up agda-stdlib)
 function librariesDir() {
     return path.join(agdaDir(), 'libraries.d');
 }
@@ -1537,7 +1625,6 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
-const tc = __importStar(__nccwpck_require__(7784));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
@@ -1558,7 +1645,7 @@ function installFromBdist(options) {
                 return null;
             }
             try {
-                const bdistDir = yield downloadBdistIndexEntry(bdistIndexEntry);
+                const bdistDir = yield opts.downloadDistIndexEntry(bdistIndexEntry);
                 // If needed, repair file permissions:
                 yield repairPermissions(bdistDir);
                 // Test package:
@@ -1589,30 +1676,6 @@ function installFromBdist(options) {
     });
 }
 exports["default"] = installFromBdist;
-function downloadBdistIndexEntry(entry, dest, auth, headers) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (typeof entry === 'string')
-            entry = { url: entry };
-        core.info(`Downloading package from ${entry.url}`);
-        const archive = yield tc.downloadTool(entry.url, undefined, auth, headers);
-        let dir = undefined;
-        if (entry.url.match(/\.zip$/)) {
-            dir = yield tc.extractZip(archive, dest);
-        }
-        else if (entry.url.match(/(\.tar\.gz|\.tgz)$/)) {
-            dir = yield tc.extractTar(archive, dest, ['--extract', '--gzip']);
-        }
-        else if (entry.url.match(/(\.tar\.xz|\.txz)$/)) {
-            dir = yield tc.extractTar(archive, dest, ['--extract', '--xz']);
-        }
-        else {
-            throw Error(`Do not know how to extract archive: ${entry.url}`);
-        }
-        if (entry.dir !== undefined)
-            dir = path.join(dir, entry.dir);
-        return dir;
-    });
-}
 function repairPermissions(bdistDir) {
     var e_1, _a;
     return __awaiter(this, void 0, void 0, function* () {
@@ -2614,7 +2677,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.configureEnvFor = exports.agdaTest = exports.agda = exports.agdaGetDataDir = exports.agdaGetVersion = exports.agdaBinNames = exports.agdaModeBinName = exports.agdaBinName = exports.getAgdaSdist = void 0;
+exports.configureEnvFor = exports.agdaTest = exports.agda = exports.agdaGetDataDir = exports.agdaGetVersion = exports.agdaBinNames = exports.agdaModeBinName = exports.agdaBinName = exports.getAgdaSdist = exports.registerAgdaLibrary = exports.readLibrariesSync = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const path = __importStar(__nccwpck_require__(9411));
@@ -2623,8 +2686,32 @@ const exec = __importStar(__nccwpck_require__(4369));
 const simver = __importStar(__nccwpck_require__(7609));
 const hackage = __importStar(__nccwpck_require__(903));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
-// Hackage helpers
+const fs = __importStar(__nccwpck_require__(7561));
+const os = __importStar(__nccwpck_require__(612));
 // Agda utilities
+function readLibrariesSync() {
+    if (!fs.existsSync(opts.librariesFile()))
+        return [];
+    const librariesFileContents = fs.readFileSync(opts.librariesFile()).toString();
+    const libraries = librariesFileContents.split(/\r\n|\r|\n/g);
+    return libraries.map(libraryPath => path.parse(libraryPath));
+}
+exports.readLibrariesSync = readLibrariesSync;
+function registerAgdaLibrary(libraryFile) {
+    // Check agdaLibraryFile exists & refers to an agda-lib file:
+    (0, node_assert_1.default)(fs.existsSync(libraryFile));
+    const newLibrary = path.parse(path.resolve(libraryFile));
+    (0, node_assert_1.default)(newLibrary.ext === '.agda-lib');
+    // Load the current libraries file:
+    const oldLibraries = readLibrariesSync();
+    if (oldLibraries.some(oldLibrary => oldLibrary.name === newLibrary.name))
+        core.warning(`Agda libraries file already contains a copy of ${newLibrary.name}`);
+    const newLibraries = [...oldLibraries, newLibrary];
+    fs.writeFileSync(opts.librariesFile(), newLibraries
+        .map(libraryParsedPath => path.format(libraryParsedPath))
+        .join(os.EOL));
+}
+exports.registerAgdaLibrary = registerAgdaLibrary;
 function getAgdaSdist(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Throw an error if the 'agda-version' is 'nightly':

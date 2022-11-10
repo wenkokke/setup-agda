@@ -14,18 +14,20 @@ export {
   agdaDir,
   cacheDir,
   installDir,
+  librariesFile,
   librariesDir,
   libraryDir
 } from './opts/path'
 >>>>>>> ac5deb8 (Change paths)
 export {default as resolveGhcVersion} from './opts/resolve-ghc-version'
 export {default as resolveAgdaStdlibVersion} from './opts/resolve-agda-stdlib-version'
+export {default as downloadDistIndexEntry} from './opts/download-dist-index-entry'
 export {
   BuildOptions,
   SetupAgdaInputs,
   SetupHaskellInputs,
   agdaPackageInfoCache,
-  BdistIndexEntry,
+  DistIndexEntry,
   agdaBdistIndex,
   agdaStdlibSdistIndex,
   AgdaVersion,
