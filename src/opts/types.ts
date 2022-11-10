@@ -175,6 +175,7 @@ export type SetupAgdaOption =
   | SetupHaskellOption
 
 export type SetupAgdaFlag =
+  | 'agda-stdlib-default'
   | 'bdist-compress-exe'
   | 'bdist-upload'
   | 'force-cluster-counting'

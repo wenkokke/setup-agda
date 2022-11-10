@@ -26,6 +26,7 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
     standardLibraryDir
   )
   util.registerAgdaLibrary(
-    path.join(standardLibraryDir, 'standard-library.agda-lib')
+    path.join(standardLibraryDir, 'standard-library.agda-lib'),
+    options['agda-stdlib-default']
   )
 }

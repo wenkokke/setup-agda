@@ -18,7 +18,16 @@ export function readLibrariesSync(): path.ParsedPath[] {
   return libraries.map(libraryPath => path.parse(libraryPath))
 }
 
-export function registerAgdaLibrary(libraryFile: string): void {
+export function readDefaultsSync(): string[] {
+  if (!fs.existsSync(opts.defaultsFile())) return []
+  const defaultsFileContents = fs.readFileSync(opts.defaultsFile()).toString()
+  return defaultsFileContents.split(/\r\n|\r|\n/g)
+}
+
+export function registerAgdaLibrary(
+  libraryFile: string,
+  isDefault = false
+): void {
   // Check agdaLibraryFile exists & refers to an agda-lib file:
   assert(fs.existsSync(libraryFile))
   const newLibrary = path.parse(path.resolve(libraryFile))
@@ -36,6 +45,12 @@ export function registerAgdaLibrary(libraryFile: string): void {
       .map(libraryParsedPath => path.format(libraryParsedPath))
       .join(os.EOL)
   )
+  // Add the library to defaults:
+  if (isDefault === true) {
+    const oldDefaults = readDefaultsSync()
+    const newDefaults = [...oldDefaults, newLibrary.base]
+    fs.writeFileSync(opts.defaultsFile(), newDefaults.join(os.EOL))
+  }
 }
 
 export async function getAgdaSdist(

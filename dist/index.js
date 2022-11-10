@@ -50,7 +50,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.isAgdaStdlibVersion = exports.isAgdaGitRef = exports.isAgdaVersion = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.downloadDistIndexEntry = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.libraryDir = exports.librariesDir = exports.librariesFile = exports.installDir = exports.cacheDir = exports.agdaDir = exports.arch = exports.platform = exports.getOptions = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
+exports.isAgdaStdlibVersion = exports.isAgdaGitRef = exports.isAgdaVersion = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.downloadDistIndexEntry = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.libraryDir = exports.librariesDir = exports.defaultsFile = exports.librariesFile = exports.installDir = exports.cacheDir = exports.agdaDir = exports.arch = exports.platform = exports.getOptions = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
 var compat_1 = __nccwpck_require__(4021);
 Object.defineProperty(exports, "runPreBuildHook", ({ enumerable: true, get: function () { return compat_1.runPreBuildHook; } }));
 Object.defineProperty(exports, "supportsSplitSections", ({ enumerable: true, get: function () { return compat_1.supportsSplitSections; } }));
@@ -67,6 +67,7 @@ Object.defineProperty(exports, "agdaDir", ({ enumerable: true, get: function () 
 Object.defineProperty(exports, "cacheDir", ({ enumerable: true, get: function () { return path_1.cacheDir; } }));
 Object.defineProperty(exports, "installDir", ({ enumerable: true, get: function () { return path_1.installDir; } }));
 Object.defineProperty(exports, "librariesFile", ({ enumerable: true, get: function () { return path_1.librariesFile; } }));
+Object.defineProperty(exports, "defaultsFile", ({ enumerable: true, get: function () { return path_1.defaultsFile; } }));
 Object.defineProperty(exports, "librariesDir", ({ enumerable: true, get: function () { return path_1.librariesDir; } }));
 Object.defineProperty(exports, "libraryDir", ({ enumerable: true, get: function () { return path_1.libraryDir; } }));
 var resolve_ghc_version_1 = __nccwpck_require__(7530);
@@ -358,6 +359,7 @@ function getOptions(inputs, actionYml) {
         // Specified in Agdaopts.SetupInputs
         'agda-version': agdaVersion,
         'agda-stdlib-version': agdaStdlibVersion,
+        'agda-stdlib-default': getFlag('agda-stdlib-default'),
         'bdist-compress-exe': getFlag('bdist-compress-exe'),
         'bdist-name': bdistName,
         'bdist-upload': getFlag('bdist-upload'),
@@ -452,7 +454,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.libraryDir = exports.librariesDir = exports.librariesFile = exports.installDir = exports.cacheDir = exports.agdaDir = void 0;
+exports.libraryDir = exports.defaultsFile = exports.librariesDir = exports.librariesFile = exports.installDir = exports.cacheDir = exports.agdaDir = void 0;
 const opts = __importStar(__nccwpck_require__(542));
 const path = __importStar(__nccwpck_require__(9411));
 const os = __importStar(__nccwpck_require__(612));
@@ -482,6 +484,10 @@ function librariesDir() {
     return path.join(agdaDir(), 'libraries.d');
 }
 exports.librariesDir = librariesDir;
+function defaultsFile() {
+    return path.join(agdaDir(), 'defaults');
+}
+exports.defaultsFile = defaultsFile;
 function libraryDir(libraryName, libraryVersion, experimental = true) {
     if (experimental)
         libraryVersion += `-${yyyymmdd()}`;
@@ -2653,7 +2659,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.configureEnvFor = exports.agdaTest = exports.agda = exports.agdaGetDataDir = exports.agdaGetVersion = exports.agdaBinNames = exports.agdaModeBinName = exports.agdaBinName = exports.getAgdaSdist = exports.registerAgdaLibrary = exports.readLibrariesSync = void 0;
+exports.configureEnvFor = exports.agdaTest = exports.agda = exports.agdaGetDataDir = exports.agdaGetVersion = exports.agdaBinNames = exports.agdaModeBinName = exports.agdaBinName = exports.getAgdaSdist = exports.registerAgdaLibrary = exports.readDefaultsSync = exports.readLibrariesSync = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const path = __importStar(__nccwpck_require__(9411));
@@ -2673,7 +2679,14 @@ function readLibrariesSync() {
     return libraries.map(libraryPath => path.parse(libraryPath));
 }
 exports.readLibrariesSync = readLibrariesSync;
-function registerAgdaLibrary(libraryFile) {
+function readDefaultsSync() {
+    if (!fs.existsSync(opts.defaultsFile()))
+        return [];
+    const defaultsFileContents = fs.readFileSync(opts.defaultsFile()).toString();
+    return defaultsFileContents.split(/\r\n|\r|\n/g);
+}
+exports.readDefaultsSync = readDefaultsSync;
+function registerAgdaLibrary(libraryFile, isDefault = false) {
     // Check agdaLibraryFile exists & refers to an agda-lib file:
     (0, node_assert_1.default)(fs.existsSync(libraryFile));
     const newLibrary = path.parse(path.resolve(libraryFile));
@@ -2686,6 +2699,12 @@ function registerAgdaLibrary(libraryFile) {
     fs.writeFileSync(opts.librariesFile(), newLibraries
         .map(libraryParsedPath => path.format(libraryParsedPath))
         .join(os.EOL));
+    // Add the library to defaults:
+    if (isDefault === true) {
+        const oldDefaults = readDefaultsSync();
+        const newDefaults = [...oldDefaults, newLibrary.base];
+        fs.writeFileSync(opts.defaultsFile(), newDefaults.join(os.EOL));
+    }
 }
 exports.registerAgdaLibrary = registerAgdaLibrary;
 function getAgdaSdist(options) {
