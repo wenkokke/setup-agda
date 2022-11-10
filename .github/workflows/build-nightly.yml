@@ -11,7 +11,7 @@ on:
     #        │  │ │ │ │
     #        │  │ │ │ │
     #        *  * * * *
-    - cron: '30 1 * * *'
+    - cron: "30 1 * * *"
   workflow_call:
   workflow_dispatch:
 
@@ -30,9 +30,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build Agda (nightly)
-        uses: ./
+        uses: ./setup
         with:
-          agda-version: 'HEAD'
+          agda-version: "HEAD"
           bdist-upload: true
           bdist-name: |
             agda-{{{agda-version}}}
@@ -53,9 +53,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build Agda (nightly)
-        uses: ./
+        uses: ./setup
         with:
-          agda-version: 'HEAD'
+          agda-version: "HEAD"
           bdist-upload: true
           bdist-name: |
             agda-{{{agda-version}}}

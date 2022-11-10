@@ -1,15 +1,15 @@
-name: 'Setup yq'
-description: 'Setup yq'
+name: "Setup yq"
+description: "Setup yq"
 inputs:
   yq-version:
-    description: 'The version of yq to install.'
-    default: '4.28.2'
+    description: "The version of yq to install."
+    default: "4.28.2"
 outputs:
   yq-path:
-    description: 'Path to the downloaded yq binary.'
+    description: "Path to the downloaded yq binary."
     value: ${{ steps.setup-yq.outputs.yq-path }}
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Cache yq
       uses: actions/cache@v3

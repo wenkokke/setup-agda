@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
   workflow_run:
     # Run 'setup-nightly' if 'setup' completed:
-    workflows: ['setup']
+    workflows: ["setup"]
     types: [completed]
 
 jobs:
@@ -24,16 +24,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup Agda
-        uses: ./
+        uses: ./setup
         with:
           force-no-build: true
-          agda-version: 'nightly'
+          agda-version: "nightly"
       - name: Test Agda
         run: |
           agda -v0 greet.agda
           agda -v0 hello-world.agda
         shell: sh
-        working-directory: tests/agda
+        working-directory: setup/tests/agda
     strategy:
       matrix:
         os:
@@ -43,5 +43,5 @@ jobs:
             macos-11,
             macos-12,
             windows-2019,
-            windows-2022
+            windows-2022,
           ]

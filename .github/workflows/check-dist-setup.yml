@@ -1,22 +1,25 @@
-name: check dist
+name: check dist setup
 
 on:
   workflow_call:
   workflow_dispatch:
 
 jobs:
-  check-dist:
+  check-dist-setup:
     runs-on: ubuntu-latest
+
     defaults:
-      run: {shell: sh}
+      run:
+        shell: sh
+        working-directory: setup
 
     steps:
       - uses: actions/checkout@v3
-        with: {submodules: true}
+        with: { submodules: true }
 
       - name: Set Node.js 16.x
         uses: actions/setup-node@v3.5.1
-        with: {node-version: 16.x}
+        with: { node-version: 16.x }
 
       - name: Rebuild `setup/dist/index.js`
         run: npm ci && npm run build && npm run package
@@ -44,6 +47,6 @@ jobs:
           title: Update `setup/dist/`
           body: Automatic pull request to update `setup/dist/`
           add-paths: setup/dist/*
-          branch: update-setup-dist
+          branch: update-dist-setup
           branch-suffix: timestamp
           delete-branch: true
