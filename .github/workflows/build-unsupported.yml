@@ -133,7 +133,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - id: setup-yq
-        uses: ./setup.github/actions/setup-yq
+        uses: ./.github/actions/setup-yq
       - name: Build Agda (2.6.2.1)
         uses: ./setup
         with:
@@ -164,7 +164,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - id: setup-yq
-        uses: ./setup.github/actions/setup-yq
+        uses: ./.github/actions/setup-yq
       - name: Build Agda (2.6.2)
         uses: ./setup
         with:
@@ -195,7 +195,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - id: setup-yq
-        uses: ./setup.github/actions/setup-yq
+        uses: ./.github/actions/setup-yq
       - name: Build Agda (2.6.1.3)
         uses: ./setup
         with:
@@ -227,7 +227,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - id: setup-yq
-        uses: ./setup.github/actions/setup-yq
+        uses: ./.github/actions/setup-yq
       - name: Build Agda (2.6.0.1)
         uses: ./setup
         with:
@@ -259,7 +259,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - id: setup-yq
-        uses: ./setup.github/actions/setup-yq
+        uses: ./.github/actions/setup-yq
       - name: Build Agda (2.5.4.2)
         uses: ./setup
         with:

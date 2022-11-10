@@ -12,17 +12,17 @@ on:
 
 jobs:
   check-dist-setup:
-    uses: ./setup.github/workflows/check-dist-setup.yml
+    uses: ./.github/workflows/check-dist-setup.yml
 
   setup-latest:
     needs: [check-dist-setup]
-    uses: ./setup.github/workflows/setup-latest.yml
+    uses: ./.github/workflows/setup-latest.yml
 
   setup-legacy:
     needs: [check-dist-setup]
-    uses: ./setup.github/workflows/setup-legacy.yml
+    uses: ./.github/workflows/setup-legacy.yml
 
   release:
     if: ${{ github.event_name == 'push' }}
     needs: [check-dist, setup-latest, setup-legacy]
-    uses: ./setup.github/workflows/release.yml
+    uses: ./.github/workflows/release.yml
