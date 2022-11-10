@@ -18,4 +18,4 @@ repos:
     hooks:
       - id: prettier
 
-exclude: ^setup/dist/|^setup/lib/|^setup/vendor/
+exclude: ^setup/dist/

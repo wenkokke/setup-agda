@@ -2025,7 +2025,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const object_pick_1 = __importDefault(__nccwpck_require__(9962));
-const setup_haskell_1 = __importDefault(__nccwpck_require__(827));
+const setup_haskell_1 = __importDefault(__nccwpck_require__(6501));
 const util = __importStar(__nccwpck_require__(4024));
 function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -26609,10 +26609,512 @@ try {
 
 /***/ }),
 
-/***/ 827:
-/***/ ((module) => {
+/***/ 324:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
-module.exports = eval("require")("setup-haskell");
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.resetTool = exports.installTool = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const exec_1 = __nccwpck_require__(1514);
+const io_1 = __nccwpck_require__(7436);
+const tc = __importStar(__nccwpck_require__(7784));
+const fs_1 = __nccwpck_require__(7147);
+const path_1 = __nccwpck_require__(1017);
+const opts_1 = __nccwpck_require__(1169);
+const process_1 = __importDefault(__nccwpck_require__(7282));
+const glob = __importStar(__nccwpck_require__(8090));
+const fs = __importStar(__nccwpck_require__(7147));
+// Don't throw on non-zero.
+const exec = async (cmd, args) => (0, exec_1.exec)(cmd, args, { ignoreReturnCode: true });
+function failed(tool, version) {
+    throw new Error(`All install methods for ${tool} ${version} failed`);
+}
+async function configureOutputs(tool, path, os) {
+    core.setOutput(`${tool}-path`, path);
+    core.setOutput(`${tool}-exe`, await (0, io_1.which)(tool));
+    if (tool == 'stack') {
+        const sr = process_1.default.env['STACK_ROOT'] ??
+            (os === 'win32' ? 'C:\\sr' : `${process_1.default.env.HOME}/.stack`);
+        core.setOutput('stack-root', sr);
+        if (os === 'win32')
+            core.exportVariable('STACK_ROOT', sr);
+    }
+}
+async function success(tool, version, path, os) {
+    core.addPath(path);
+    await configureOutputs(tool, path, os);
+    core.info(`Found ${tool} ${version} in cache at path ${path}. Setup successful.`);
+    return true;
+}
+function warn(tool, version) {
+    const policy = {
+        cabal: `the two latest major releases of ${tool} are commonly supported.`,
+        ghc: `the three latest major releases of ${tool} are commonly supported.`,
+        stack: `the latest release of ${tool} is commonly supported.`
+    }[tool];
+    core.debug(`${tool} ${version} was not found in the cache. It will be downloaded.\n` +
+        `If this is unexpected, please check if version ${version} is pre-installed.\n` +
+        `The list of pre-installed versions is available here: https://help.github.com/en/actions/reference/software-installed-on-github-hosted-runners\n` +
+        `The above list follows a common haskell convention that ${policy}\n` +
+        'If the list is outdated, please file an issue here: https://github.com/actions/virtual-environments\n' +
+        'by using the appropriate tool request template: https://github.com/actions/virtual-environments/issues/new/choose');
+}
+function aptVersion(tool, version) {
+    // For Cabal, extract the first two segments of the version number. This
+    // regex is intentionally liberal to accomodate unusual cases like "head".
+    return tool === 'cabal' ? /[^.]*\.?[^.]*/.exec(version)[0] : version;
+}
+async function isInstalled(tool, version, os) {
+    const toolPath = tc.find(tool, version);
+    if (toolPath)
+        return success(tool, version, toolPath, os);
+    const ghcupPath = `${process_1.default.env.HOME}/.ghcup${tool === 'ghc' ? `/ghc/${version}` : ''}/bin`;
+    const v = aptVersion(tool, version);
+    const aptPath = `/opt/${tool}/${v}/bin`;
+    const chocoPath = await getChocoPath(tool, version);
+    const locations = {
+        stack: [],
+        cabal: {
+            win32: [chocoPath],
+            linux: [aptPath],
+            darwin: []
+        }[os],
+        ghc: {
+            win32: [chocoPath],
+            linux: [aptPath, ghcupPath],
+            darwin: [ghcupPath]
+        }[os]
+    };
+    for (const p of locations[tool]) {
+        const installedPath = await fs_1.promises
+            .access(p)
+            .then(() => p)
+            .catch(() => undefined);
+        if (installedPath) {
+            // Make sure that the correct ghc is used, even if ghcup has set a
+            // default prior to this action being ran.
+            if (tool === 'ghc' && installedPath === ghcupPath)
+                await exec(await ghcupBin(os), ['set', tool, version]);
+            return success(tool, version, installedPath, os);
+        }
+    }
+    if (tool === 'cabal' && os !== 'win32') {
+        const installedPath = await fs_1.promises
+            .access(`${ghcupPath}/cabal-${version}`)
+            .then(() => ghcupPath)
+            .catch(() => undefined);
+        if (installedPath) {
+            await exec(await ghcupBin(os), ['set', tool, version]);
+            return success(tool, version, installedPath, os);
+        }
+    }
+    return false;
+}
+async function installTool(tool, version, os) {
+    if (await isInstalled(tool, version, os))
+        return;
+    warn(tool, version);
+    if (tool === 'stack') {
+        await stack(version, os);
+        if (await isInstalled(tool, version, os))
+            return;
+        return failed(tool, version);
+    }
+    switch (os) {
+        case 'linux':
+            if (tool === 'ghc' && version === 'head') {
+                if (!(await aptBuildEssential()))
+                    break;
+                await ghcupGHCHead();
+                break;
+            }
+            await ghcup(tool, version, os);
+            if (await isInstalled(tool, version, os))
+                return;
+            await apt(tool, version);
+            break;
+        case 'win32':
+            await choco(tool, version);
+            break;
+        case 'darwin':
+            await ghcup(tool, version, os);
+            break;
+    }
+    if (await isInstalled(tool, version, os))
+        return;
+    return failed(tool, version);
+}
+exports.installTool = installTool;
+async function resetTool(tool, _version, os) {
+    if (tool === 'stack') {
+        // We don't need to do anything here... yet
+        // (Once we switch to utilizing ghcup for stack when possible, we can
+        // remove this early return)
+        return;
+    }
+    let bin = '';
+    switch (os) {
+        case 'linux':
+            bin = await ghcupBin(os);
+            await exec(bin, ['unset', tool]);
+            return;
+        case 'darwin':
+            bin = await ghcupBin(os);
+            await exec(bin, ['unset', tool]);
+            return;
+        case 'win32':
+            // We don't need to do anything here... yet
+            return;
+    }
+}
+exports.resetTool = resetTool;
+async function stack(version, os) {
+    core.info(`Attempting to install stack ${version}`);
+    const build = {
+        linux: `linux-x86_64${version >= '2.3.1' ? '' : '-static'}`,
+        darwin: 'osx-x86_64',
+        win32: 'windows-x86_64'
+    }[os];
+    const url = `https://github.com/commercialhaskell/stack/releases/download/v${version}/stack-${version}-${build}.tar.gz`;
+    const p = await tc.downloadTool(`${url}`).then(tc.extractTar);
+    const [stackPath] = await glob
+        .create(`${p}/stack*`, {
+        implicitDescendants: false
+    })
+        .then(async (g) => g.glob());
+    await tc.cacheDir(stackPath, 'stack', version);
+}
+async function aptBuildEssential() {
+    core.info(`Installing build-essential using apt-get (for ghc-head)`);
+    const returnCode = await exec(`sudo -- sh -c "apt-get update && apt-get -y install build-essential"`);
+    return returnCode === 0;
+}
+async function apt(tool, version) {
+    const toolName = tool === 'ghc' ? 'ghc' : 'cabal-install';
+    const v = aptVersion(tool, version);
+    core.info(`Attempting to install ${toolName} ${v} using apt-get`);
+    // Ignore the return code so we can fall back to ghcup
+    await exec(`sudo -- sh -c "add-apt-repository -y ppa:hvr/ghc && apt-get update && apt-get -y install ${toolName}-${v}"`);
+}
+async function choco(tool, version) {
+    core.info(`Attempting to install ${tool} ${version} using chocolatey`);
+    // Choco tries to invoke `add-path` command on earlier versions of ghc, which has been deprecated and fails the step, so disable command execution during this.
+    console.log('::stop-commands::SetupHaskellStopCommands');
+    const args = [
+        'choco',
+        'install',
+        tool,
+        '--version',
+        version,
+        '-m',
+        '--no-progress',
+        '-r'
+    ];
+    if ((await exec('powershell', args)) !== 0)
+        await exec('powershell', [...args, '--pre']);
+    console.log('::SetupHaskellStopCommands::'); // Re-enable command execution
+    // Add GHC to path automatically because it does not add until the end of the step and we check the path.
+    const chocoPath = await getChocoPath(tool, version);
+    if (tool == 'ghc')
+        core.addPath(chocoPath);
+}
+async function ghcupBin(os) {
+    const cachedBin = tc.find('ghcup', opts_1.ghcup_version);
+    if (cachedBin)
+        return (0, path_1.join)(cachedBin, 'ghcup');
+    const bin = await tc.downloadTool(`https://downloads.haskell.org/ghcup/${opts_1.ghcup_version}/x86_64-${os === 'darwin' ? 'apple-darwin' : 'linux'}-ghcup-${opts_1.ghcup_version}`);
+    await fs_1.promises.chmod(bin, 0o755);
+    return (0, path_1.join)(await tc.cacheFile(bin, 'ghcup', 'ghcup', opts_1.ghcup_version), 'ghcup');
+}
+async function ghcup(tool, version, os) {
+    core.info(`Attempting to install ${tool} ${version} using ghcup`);
+    const bin = await ghcupBin(os);
+    const returnCode = await exec(bin, ['install', tool, version]);
+    if (returnCode === 0)
+        await exec(bin, ['set', tool, version]);
+}
+async function ghcupGHCHead() {
+    core.info(`Attempting to install ghc head using ghcup`);
+    const bin = await ghcupBin('linux');
+    const returnCode = await exec(bin, [
+        'install',
+        'ghc',
+        '-u',
+        'https://gitlab.haskell.org/ghc/ghc/-/jobs/artifacts/master/raw/ghc-x86_64-deb9-linux-integer-simple.tar.xz?job=validate-x86_64-linux-deb9-integer-simple',
+        'head'
+    ]);
+    if (returnCode === 0)
+        await exec(bin, ['set', 'ghc', 'head']);
+}
+async function getChocoPath(tool, version) {
+    // Environment variable 'ChocolateyToolsLocation' will be added to Hosted images soon
+    // fallback to C:\\tools for now until variable is available
+    const chocoToolsLocation = process_1.default.env.ChocolateyToolsLocation ??
+        (0, path_1.join)(`${process_1.default.env.SystemDrive}`, 'tools');
+    // choco packages GHC 9.x are installed on different path (C:\\tools\ghc-9.0.1)
+    let chocoToolPath = (0, path_1.join)(chocoToolsLocation, `${tool}-${version}`);
+    // choco packages GHC < 9.x
+    if (!fs.existsSync(chocoToolPath)) {
+        chocoToolPath = (0, path_1.join)(`${process_1.default.env.ChocolateyInstall}`, 'lib', `${tool}.${version}`);
+    }
+    const pattern = `${chocoToolPath}/**/${tool}.exe`;
+    const globber = await glob.create(pattern);
+    for await (const file of globber.globGenerator()) {
+        return (0, path_1.dirname)(file);
+    }
+    return '<not-found>';
+}
+
+
+/***/ }),
+
+/***/ 1169:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getOpts = exports.getDefaults = exports.yamlInputs = exports.ghcup_version = exports.supported_versions = exports.release_revisions = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const fs_1 = __nccwpck_require__(7147);
+const js_yaml_1 = __nccwpck_require__(1917);
+const path_1 = __nccwpck_require__(1017);
+const sv = __importStar(__nccwpck_require__(5915));
+const rv = __importStar(__nccwpck_require__(8248));
+exports.release_revisions = rv;
+exports.supported_versions = sv;
+exports.ghcup_version = sv.ghcup[0]; // Known to be an array of length 1
+exports.yamlInputs = (0, js_yaml_1.load)((0, fs_1.readFileSync)((0, path_1.join)(__dirname, '..', 'action.yml'), 'utf8')
+// The action.yml file structure is statically known.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+).inputs;
+function getDefaults(os) {
+    const mkVersion = (v, vs, t) => ({
+        version: resolve(exports.yamlInputs[v].default, vs, t, os),
+        supported: vs
+    });
+    return {
+        ghc: mkVersion('ghc-version', exports.supported_versions.ghc, 'ghc'),
+        cabal: mkVersion('cabal-version', exports.supported_versions.cabal, 'cabal'),
+        stack: mkVersion('stack-version', exports.supported_versions.stack, 'stack'),
+        general: { matcher: { enable: true } }
+    };
+}
+exports.getDefaults = getDefaults;
+function resolve(version, supported, tool, os) {
+    const resolved = version === 'latest'
+        ? supported[0]
+        : supported.find(v => v.startsWith(version)) ?? version;
+    return (exports.release_revisions?.[os]?.[tool]?.find(({ from }) => from === resolved)?.to ??
+        resolved);
+}
+function getOpts({ ghc, cabal, stack }, os, inputs) {
+    core.debug(`Inputs are: ${JSON.stringify(inputs)}`);
+    const stackNoGlobal = (inputs['stack-no-global'] || '') !== '';
+    const stackSetupGhc = (inputs['stack-setup-ghc'] || '') !== '';
+    const stackEnable = (inputs['enable-stack'] || '') !== '';
+    const matcherDisable = (inputs['disable-matcher'] || '') !== '';
+    core.debug(`${stackNoGlobal}/${stackSetupGhc}/${stackEnable}`);
+    const verInpt = {
+        ghc: inputs['ghc-version'] || ghc.version,
+        cabal: inputs['cabal-version'] || cabal.version,
+        stack: inputs['stack-version'] || stack.version
+    };
+    const errors = [];
+    if (stackNoGlobal && !stackEnable) {
+        errors.push('enable-stack is required if stack-no-global is set');
+    }
+    if (stackSetupGhc && !stackEnable) {
+        errors.push('enable-stack is required if stack-setup-ghc is set');
+    }
+    if (errors.length > 0) {
+        throw new Error(errors.join('\n'));
+    }
+    const opts = {
+        ghc: {
+            raw: verInpt.ghc,
+            resolved: resolve(verInpt.ghc, ghc.supported, 'ghc', os),
+            enable: !stackNoGlobal
+        },
+        cabal: {
+            raw: verInpt.cabal,
+            resolved: resolve(verInpt.cabal, cabal.supported, 'cabal', os),
+            enable: !stackNoGlobal
+        },
+        stack: {
+            raw: verInpt.stack,
+            resolved: resolve(verInpt.stack, stack.supported, 'stack', os),
+            enable: stackEnable,
+            setup: stackSetupGhc
+        },
+        general: { matcher: { enable: !matcherDisable } }
+    };
+    // eslint-disable-next-line github/array-foreach
+    Object.values(opts)
+        .filter(t => t.enable && t.raw !== t.resolved)
+        .forEach(t => core.info(`Resolved ${t.raw} to ${t.resolved}`));
+    core.debug(`Options are: ${JSON.stringify(opts)}`);
+    return opts;
+}
+exports.getOpts = getOpts;
+
+
+/***/ }),
+
+/***/ 6501:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
+const ensure_error_1 = __importDefault(__nccwpck_require__(4578));
+const fs = __importStar(__nccwpck_require__(7147));
+const path = __importStar(__nccwpck_require__(1017));
+const os_1 = __nccwpck_require__(2037);
+const opts_1 = __nccwpck_require__(1169);
+const installer_1 = __nccwpck_require__(324);
+const exec_1 = __nccwpck_require__(1514);
+async function cabalConfig() {
+    let out = Buffer.from('');
+    const append = (b) => (out = Buffer.concat([out, b]));
+    await (0, exec_1.exec)('cabal', ['--help'], {
+        silent: true,
+        listeners: { stdout: append, stderr: append }
+    });
+    return out.toString().trim().split('\n').slice(-1)[0].trim();
+}
+async function run(inputs) {
+    try {
+        core.info('Preparing to setup a Haskell environment');
+        const os = process.platform;
+        const opts = (0, opts_1.getOpts)((0, opts_1.getDefaults)(os), os, inputs);
+        for (const [t, { resolved }] of Object.entries(opts).filter(o => o[1].enable)) {
+            await core.group(`Preparing ${t} environment`, async () => (0, installer_1.resetTool)(t, resolved, os));
+            await core.group(`Installing ${t} version ${resolved}`, async () => (0, installer_1.installTool)(t, resolved, os));
+        }
+        if (opts.stack.setup)
+            await core.group('Pre-installing GHC with stack', async () => (0, exec_1.exec)('stack', ['setup', opts.ghc.resolved]));
+        if (opts.cabal.enable)
+            await core.group('Setting up cabal', async () => {
+                // Create config only if it doesn't exist.
+                await (0, exec_1.exec)('cabal', ['user-config', 'init'], {
+                    silent: true,
+                    ignoreReturnCode: true
+                });
+                // Blindly appending is fine.
+                // Cabal merges these and picks the last defined option.
+                const configFile = await cabalConfig();
+                if (process.platform === 'win32') {
+                    fs.appendFileSync(configFile, `store-dir: C:\\sr${os_1.EOL}`);
+                    core.setOutput('cabal-store', 'C:\\sr');
+                }
+                else {
+                    core.setOutput('cabal-store', `${process.env.HOME}/.cabal/store`);
+                }
+                // Workaround the GHC nopie linking errors for ancient GHC verions
+                // NB: Is this _just_ for GHC 7.10.3?
+                if (opts.ghc.resolved === '7.10.3') {
+                    fs.appendFileSync(configFile, ['program-default-options', '  ghc-options: -optl-no-pie'].join(os_1.EOL) + os_1.EOL);
+                    // We cannot use cabal user-config to normalize the config because of:
+                    // https://github.com/haskell/cabal/issues/6823
+                    // await exec('cabal user-config update');
+                }
+                if (!opts.stack.enable)
+                    await (0, exec_1.exec)('cabal update');
+            });
+        core.info(`##[add-matcher]${path.join(__dirname, '..', 'matcher.json')}`);
+    }
+    catch (_error) {
+        const error = (0, ensure_error_1.default)(_error);
+        if (core.isDebug()) {
+            // we don't fail here so that the error path can be tested in CI
+            core.setOutput('failed', true);
+            core.debug(error.message);
+        }
+        else {
+            core.setFailed(error.message);
+        }
+    }
+}
+exports["default"] = run;
 
 
 /***/ }),
@@ -26745,6 +27247,14 @@ module.exports = require("perf_hooks");
 
 /***/ }),
 
+/***/ 7282:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("process");
+
+/***/ }),
+
 /***/ 2781:
 /***/ ((module) => {
 
@@ -26801,6 +27311,68 @@ module.exports = require("zlib");
 
 /***/ }),
 
+/***/ 4578:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __nccwpck_require__) => {
+
+"use strict";
+__nccwpck_require__.r(__webpack_exports__);
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ensureError)
+/* harmony export */ });
+/* harmony import */ var node_util__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(7261);
+
+
+class NonError extends Error {
+	constructor(message) {
+		super((0,node_util__WEBPACK_IMPORTED_MODULE_0__.inspect)(message));
+
+		Object.defineProperty(this, 'name', {
+			value: 'NonError',
+			configurable: true,
+			writable: true,
+		});
+
+		Error.captureStackTrace(this, NonError);
+	}
+}
+
+function ensureError(input) {
+	if (!(input instanceof Error)) {
+		return new NonError(input);
+	}
+
+	const error = input;
+
+	if (!error.name) {
+		Object.defineProperty(error, 'name', {
+			value: (error.constructor && error.constructor.name) || 'Error',
+			configurable: true,
+			writable: true,
+		});
+	}
+
+	if (!error.message) {
+		Object.defineProperty(error, 'message', {
+			value: '<No error message>',
+			configurable: true,
+			writable: true,
+		});
+	}
+
+	if (!error.stack) {
+		Object.defineProperty(error, 'stack', {
+			value: (new Error(error.message)).stack.replace(/\n {4}at /, '\n<Original stack missing>$&'),
+			configurable: true,
+			writable: true,
+		});
+	}
+
+	return error;
+}
+
+
+/***/ }),
+
 /***/ 9442:
 /***/ ((module) => {
 
@@ -26847,6 +27419,22 @@ module.exports = JSON.parse('{"ghc":["9.4.1","9.2.4","9.2.3","9.2.2","9.2.1","9.
 "use strict";
 module.exports = JSON.parse('{"1.7.1":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.7.1.zip","dir":"agda-stdlib-1.7.1"},"1.7":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.7.zip","dir":"agda-stdlib-1.7"},"1.6":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.6.zip","dir":"agda-stdlib-1.6"},"1.5":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.5.zip","dir":"agda-stdlib-1.5"},"1.4":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.4.zip","dir":"agda-stdlib-1.4"},"1.3":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.3.zip","dir":"agda-stdlib-1.3"},"1.2":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.2.zip","dir":"agda-stdlib-1.2"},"1.1":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.1.zip","dir":"agda-stdlib-1.1"},"1.0.1":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.0.1.zip","dir":"agda-stdlib-1.0.1"},"1.0":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.0.zip","dir":"agda-stdlib-1.0"},"0.17":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.17.zip","dir":"agda-stdlib-0.17"},"0.16":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.16.zip","dir":"agda-stdlib-0.16"},"0.16.1":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.16.1.zip","dir":"agda-stdlib-0.16.1"},"0.15":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.15.zip","dir":"agda-stdlib-0.15"},"0.14":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.14.zip","dir":"agda-stdlib-0.14"},"0.13":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.13.zip","dir":"agda-stdlib-0.13"},"0.12":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.12.zip","dir":"agda-stdlib-0.12"},"0.11":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.11.zip","dir":"agda-stdlib-0.11"},"0.10":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.10.zip","dir":"agda-stdlib-0.10"},"0.9":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.9.zip","dir":"agda-stdlib-0.9"},"0.8.1":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.8.1.zip","dir":"agda-stdlib-0.8.1"},"0.8":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.8.zip","dir":"agda-stdlib-0.8"},"0.7":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_7.zip","dir":"agda-stdlib-0_7"},"0.6":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_6.zip","dir":"agda-stdlib-0_6"},"0.5":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_5.zip","dir":"agda-stdlib-0_5"},"0.4":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_4.zip","dir":"agda-stdlib-0_4"},"0.3":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_3.zip","dir":"agda-stdlib-0_3"},"0.2":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_2.zip","dir":"agda-stdlib-0_2"},"0.1":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_1.zip","dir":"agda-stdlib-0_1"}}');
 
+/***/ }),
+
+/***/ 8248:
+/***/ ((module) => {
+
+"use strict";
+module.exports = JSON.parse('{"win32":{"ghc":[{"from":"8.10.2","to":"8.10.2.2"},{"from":"8.10.1","to":"8.10.1.1"},{"from":"8.8.4","to":"8.8.4.1"},{"from":"8.8.3","to":"8.8.3.1"},{"from":"8.8.2","to":"8.8.2.1"},{"from":"8.6.1","to":"8.6.1.1"},{"from":"8.0.2","to":"8.0.2.2"},{"from":"7.8.4","to":"7.8.4.1"},{"from":"7.8.3","to":"7.8.3.1"},{"from":"7.8.2","to":"7.8.2.1"},{"from":"7.8.1","to":"7.8.1.1"},{"from":"7.6.3","to":"7.6.3.1"},{"from":"7.6.2","to":"7.6.2.1"},{"from":"7.6.1","to":"7.6.1.1"}]}}');
+
+/***/ }),
+
+/***/ 5915:
+/***/ ((module) => {
+
+"use strict";
+module.exports = JSON.parse('{"ghc":["9.4.1","9.2.4","9.2.3","9.2.2","9.2.1","9.0.2","9.0.1","8.10.7","8.10.6","8.10.5","8.10.4","8.10.3","8.10.2","8.10.1","8.8.4","8.8.3","8.8.2","8.8.1","8.6.5","8.6.4","8.6.3","8.6.2","8.6.1","8.4.4","8.4.3","8.4.2","8.4.1","8.2.2","8.0.2","7.10.3"],"cabal":["3.8.1.0","3.6.2.0","3.6.0.0","3.4.1.0","3.4.0.0","3.2.0.0","3.0.0.0","2.4.1.0"],"stack":["2.7.5","2.7.3","2.7.1","2.5.1","2.3.3","2.3.1","2.1.3","2.1.1","1.9.3","1.9.1","1.7.1","1.6.5","1.6.3","1.6.1","1.5.1","1.5.0","1.4.0","1.3.2","1.3.0","1.2.0"],"ghcup":["0.1.18.0"]}');
+
 /***/ })
 
 /******/ 	});
@@ -26882,6 +27470,34 @@ module.exports = JSON.parse('{"1.7.1":{"url":"https://github.com/agda/agda-stdli
 /******/ 	}
 /******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__nccwpck_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__nccwpck_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
