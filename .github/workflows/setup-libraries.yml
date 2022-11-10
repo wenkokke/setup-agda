@@ -1,0 +1,36 @@
+name: setup libraries
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  setup-categories:
+    name: Setup agda-categories
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Agda
+        uses: ./
+        with:
+          force-no-build: true
+          agda-version: 'latest'
+          agda-stdlib-version: 'recommended'
+          agda-stdlib-default: true
+          agda-libraries: |
+            https://github.com/agda/agda-categories.git#v0.1.7.1
+
+  setup-cubical:
+    name: Setup cubical
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Agda
+        uses: ./
+        with:
+          force-no-build: true
+          agda-version: 'latest'
+          agda-stdlib-version: 'recommended'
+          agda-stdlib-default: true
+          agda-libraries: |
+            https://github.com/agda/cubical.git#v0.3
