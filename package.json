@@ -16,7 +16,8 @@
     "mustache": "^4.2.0",
     "object.pick": "^1.3.0",
     "semver": "^7.3.8",
-    "setup-haskell": "file:./vendor/haskell/actions/setup"
+    "setup-haskell": "file:./vendor/haskell/actions/setup",
+    "tmp": "^0.2.1"
   },
   "repository": {
     "type": "git",
@@ -42,6 +43,7 @@
     "@types/node": "^18.11.9",
     "@types/object.pick": "^1.3.2",
     "@types/semver": "^7.3.13",
+    "@types/tmp": "^0.2.3",
     "@typescript-eslint/parser": "^5.42.1",
     "@vercel/ncc": "^0.34.0",
     "eslint": "^8.27.0",

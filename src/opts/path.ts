@@ -1,6 +1,7 @@
 import * as opts from './platform'
 import * as path from 'node:path'
 import * as os from 'node:os'
+import * as tmp from 'tmp'
 
 export function agdaDir(): string {
   switch (opts.platform) {
@@ -13,7 +14,12 @@ export function agdaDir(): string {
 }
 
 export function cacheDir(name: string): string {
-  return path.join(agdaDir(), 'cache', `${name}-${yyyymmdd()}`)
+  if (process.env.RUNNER_TEMP !== undefined) {
+    return path.join(process.env.RUNNER_TEMP, name, yyyymmdd())
+  } else {
+    // TODO: register callback to remove tmp directory
+    return tmp.dirSync().name
+  }
 }
 
 export function installDir(version: string): string {

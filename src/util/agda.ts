@@ -14,14 +14,14 @@ import * as os from 'node:os'
 export function readLibrariesSync(): path.ParsedPath[] {
   if (!fs.existsSync(opts.librariesFile())) return []
   const librariesFileContents = fs.readFileSync(opts.librariesFile()).toString()
-  const libraries = librariesFileContents.split(/\r\n|\r|\n/g)
+  const libraries = librariesFileContents.split(/\r?\n/g)
   return libraries.map(libraryPath => path.parse(libraryPath))
 }
 
 export function readDefaultsSync(): string[] {
   if (!fs.existsSync(opts.defaultsFile())) return []
   const defaultsFileContents = fs.readFileSync(opts.defaultsFile()).toString()
-  return defaultsFileContents.split(/\r\n|\r|\n/g)
+  return defaultsFileContents.split(/\r?\n/g)
 }
 
 export function registerAgdaLibrary(

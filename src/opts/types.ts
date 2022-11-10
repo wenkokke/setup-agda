@@ -105,7 +105,7 @@ export const agdaPackageInfoCache = hackage.mergePackageInfoCache(
 //
 // NOTE: The type ensures that all binary distributions are indexed under valid
 //       platform, architecture, and Agda version keys.
-export type DistIndexEntry = string | {url: string; dir?: string}
+export type DistIndexEntry = string | {url: string; dir?: string; tag?: string}
 
 export const agdaBdistIndex: Partial<
   Record<

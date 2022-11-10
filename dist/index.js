@@ -224,25 +224,45 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const tc = __importStar(__nccwpck_require__(7784));
+const path_1 = __nccwpck_require__(4059);
 const path = __importStar(__nccwpck_require__(9411));
+const util = __importStar(__nccwpck_require__(4024));
 function downloadDistIndexEntry(entry, dest, auth, headers) {
     return __awaiter(this, void 0, void 0, function* () {
+        // Coerce string to {url: string; dir?: string; tag?: string}
         if (typeof entry === 'string')
             entry = { url: entry };
+        // Download package depending on the type of URL:
         core.info(`Downloading package from ${entry.url}`);
-        const archive = yield tc.downloadTool(entry.url, undefined, auth, headers);
         let dir = undefined;
-        if (entry.url.match(/\.zip$/)) {
-            dir = yield tc.extractZip(archive, dest);
-        }
-        else if (entry.url.match(/(\.tar\.gz|\.tgz)$/)) {
-            dir = yield tc.extractTar(archive, dest, ['--extract', '--gzip']);
-        }
-        else if (entry.url.match(/(\.tar\.xz|\.txz)$/)) {
-            dir = yield tc.extractTar(archive, dest, ['--extract', '--xz']);
-        }
-        else {
-            throw Error(`Do not know how to extract archive: ${entry.url}`);
+        switch (distType(entry.url)) {
+            case 'zip': {
+                const arc = yield tc.downloadTool(entry.url, undefined, auth, headers);
+                dir = yield tc.extractZip(arc, dest);
+                break;
+            }
+            case 'tgz': {
+                const arc = yield tc.downloadTool(entry.url, undefined, auth, headers);
+                dir = yield tc.extractTar(arc, dest, ['--extract', '--gzip']);
+                break;
+            }
+            case 'txz': {
+                const arc = yield tc.downloadTool(entry.url, undefined, auth, headers);
+                dir = yield tc.extractTar(arc, dest, ['--extract', '--xz']);
+                break;
+            }
+            case 'git': {
+                dir = (0, path_1.cacheDir)('agda-setup');
+                yield util.getOutput('git', [
+                    ['clone'],
+                    ['--depth=1'],
+                    ['--single-branch'],
+                    entry.tag === undefined ? [] : ['--branch', entry.tag],
+                    [entry.url],
+                    [dir]
+                ].flat());
+                break;
+            }
         }
         if (entry.dir !== undefined)
             dir = path.join(dir, entry.dir);
@@ -250,6 +270,17 @@ function downloadDistIndexEntry(entry, dest, auth, headers) {
     });
 }
 exports["default"] = downloadDistIndexEntry;
+function distType(url) {
+    if (url.match(/\.zip$/))
+        return 'zip';
+    if (url.match(/\.tgz$|\.tar\.gz$/))
+        return 'tgz';
+    if (url.match(/\.txz$|\.tar\.xz/))
+        return 'txz';
+    if (url.match(/\.git$/))
+        return 'git';
+    throw Error(`Could not guess how to download distribution from ${url}`);
+}
 
 
 /***/ }),
@@ -459,6 +490,7 @@ exports.libraryDir = exports.defaultsFile = exports.librariesDir = exports.libra
 const opts = __importStar(__nccwpck_require__(542));
 const path = __importStar(__nccwpck_require__(9411));
 const os = __importStar(__nccwpck_require__(612));
+const tmp = __importStar(__nccwpck_require__(8517));
 function agdaDir() {
     switch (opts.platform) {
         case 'linux':
@@ -470,7 +502,13 @@ function agdaDir() {
 }
 exports.agdaDir = agdaDir;
 function cacheDir(name) {
-    return path.join(agdaDir(), 'cache', `${name}-${yyyymmdd()}`);
+    if (process.env.RUNNER_TEMP !== undefined) {
+        return path.join(process.env.RUNNER_TEMP, name, yyyymmdd());
+    }
+    else {
+        // TODO: register callback to remove tmp directory
+        return tmp.dirSync().name;
+    }
 }
 exports.cacheDir = cacheDir;
 function installDir(version) {
@@ -2743,7 +2781,7 @@ function readLibrariesSync() {
     if (!fs.existsSync(opts.librariesFile()))
         return [];
     const librariesFileContents = fs.readFileSync(opts.librariesFile()).toString();
-    const libraries = librariesFileContents.split(/\r\n|\r|\n/g);
+    const libraries = librariesFileContents.split(/\r?\n/g);
     return libraries.map(libraryPath => path.parse(libraryPath));
 }
 exports.readLibrariesSync = readLibrariesSync;
@@ -2751,7 +2789,7 @@ function readDefaultsSync() {
     if (!fs.existsSync(opts.defaultsFile()))
         return [];
     const defaultsFileContents = fs.readFileSync(opts.defaultsFile()).toString();
-    return defaultsFileContents.split(/\r\n|\r|\n/g);
+    return defaultsFileContents.split(/\r?\n/g);
 }
 exports.readDefaultsSync = readDefaultsSync;
 function registerAgdaLibrary(libraryFile, isDefault = false) {
