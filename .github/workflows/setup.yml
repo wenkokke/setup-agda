@@ -3,11 +3,11 @@ name: setup
 on:
   push:
     branches: ["main"]
-    paths: ["**.ts", "**.js", "**.json", "**.yml"]
+    paths: ["**.ts", "**.js", "**.json", "**.yml", "**.yaml", "**.agda"]
 
   pull_request:
     branches: ["main"]
-    paths: ["**.ts", "**.js", "**.json", "**.yml"]
+    paths: ["**.ts", "**.js", "**.json", "**.yml", "**.yaml", "**.agda"]
     types: [opened, synchronize, reopened]
 
 jobs:
