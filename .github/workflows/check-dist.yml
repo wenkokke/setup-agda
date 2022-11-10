@@ -1,4 +1,4 @@
-name: Check dist
+name: check dist
 
 on:
   workflow_call:

@@ -22,7 +22,7 @@ jobs:
     needs: [check-dist]
     uses: ./.github/workflows/setup-legacy.yml
 
-  update-release:
+  release:
     if: ${{ github.event_name == 'push' }}
     needs: [check-dist, setup-latest, setup-legacy]
-    uses: ./.github/workflows/update-release.yml
+    uses: ./.github/workflows/release.yml

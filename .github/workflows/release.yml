@@ -1,11 +1,12 @@
-name: Update Release
+name: release
 
 on:
   workflow_call:
   workflow_dispatch:
 
 jobs:
-  update-latest-release:
+  release-latest:
+    name: release latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

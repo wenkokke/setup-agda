@@ -1,4 +1,4 @@
-name: Setup Legacy
+name: setup legacy
 
 on:
   workflow_call:
