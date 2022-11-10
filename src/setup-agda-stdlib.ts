@@ -7,7 +7,7 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
   if (options['agda-stdlib-version'] === 'none') return
 
   // Setup agda-stdlib:
-  const standardLibraryDir = opts.libraryDir(
+  let standardLibraryDir = opts.libraryDir(
     'standard-library',
     options['agda-stdlib-version'],
     options['agda-stdlib-version'] === 'experimental'
@@ -21,7 +21,7 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
     throw Error(
       `Unsupported agda-stdlib version: '${options['agda-stdlib-version']}'`
     )
-  await opts.downloadDistIndexEntry(
+  standardLibraryDir = await opts.downloadDistIndexEntry(
     standardLibraryDistIndexEntry,
     standardLibraryDir
   )
