@@ -15,6 +15,7 @@ export {
   cacheDir,
   installDir,
   librariesFile,
+  defaultsFile,
   librariesDir,
   libraryDir
 } from './opts/path'

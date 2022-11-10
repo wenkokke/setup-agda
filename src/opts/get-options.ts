@@ -99,6 +99,7 @@ export default function getOptions(
     // Specified in Agdaopts.SetupInputs
     'agda-version': agdaVersion,
     'agda-stdlib-version': agdaStdlibVersion,
+    'agda-stdlib-default': getFlag('agda-stdlib-default'),
     'bdist-compress-exe': getFlag('bdist-compress-exe'),
     'bdist-name': bdistName,
     'bdist-retention-days': bdistRetentionDays,

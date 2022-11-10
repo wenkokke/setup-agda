@@ -31,6 +31,10 @@ export function librariesDir(): string {
   return path.join(agdaDir(), 'libraries.d')
 }
 
+export function defaultsFile(): string {
+  return path.join(agdaDir(), 'defaults')
+}
+
 export function libraryDir(
   libraryName: string,
   libraryVersion: string,
