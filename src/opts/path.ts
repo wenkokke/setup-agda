@@ -12,6 +12,35 @@ export function agdaDir(): string {
   }
 }
 
+<<<<<<< HEAD
+=======
+export function cacheDir(name: string): string {
+  return path.join(agdaDir(), 'cache', `${name}-${yyyymmdd()}`)
+}
+
+>>>>>>> ac5deb8 (Change paths)
 export function installDir(version: string): string {
   return path.join(agdaDir(), 'agda', version)
+}
+
+export function librariesDir(): string {
+  return path.join(agdaDir(), 'libraries.d')
+}
+
+export function libraryDir(
+  libraryName: string,
+  libraryVersion: string,
+  experimental = true
+): string {
+  if (experimental) libraryVersion += `-${yyyymmdd()}`
+  return path.join(librariesDir(), libraryName, libraryVersion)
+}
+
+function yyyymmdd(): string {
+  const nowDate = new Date(Date.now())
+  return [
+    nowDate.getFullYear().toString().padStart(4, '0'),
+    nowDate.getMonth().toString().padStart(2, '0'),
+    nowDate.getDate().toString().padStart(2, '0')
+  ].join('')
 }
