@@ -7,8 +7,7 @@
     "sourceType": "module",
     "project": [
       "./tsconfig.json",
-      "./tsconfig-lib.json",
-      "./tsconfig-script.json"
+      "./tsconfig-scripts.json"
     ]
   },
   "rules": {

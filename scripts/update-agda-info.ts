@@ -2,9 +2,9 @@ import * as core from '@actions/core'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
-import * as hackage from '../util/hackage'
-import ensureError from '../util/ensure-error'
-import {agdaPackageInfoCache as oldCache} from '../opts/types'
+import * as hackage from '../src/util/hackage'
+import ensureError from '../src/util/ensure-error'
+import {agdaPackageInfoCache as oldCache} from '../src/opts/types'
 import pick from 'object.pick'
 
 async function run(): Promise<void> {
@@ -36,7 +36,13 @@ async function run(): Promise<void> {
         // we save the deprecated and normal versions separately
         core.info(`Updated Agda package info${os.EOL}`)
         fs.writeFileSync(
-          path.join(__dirname, 'Agda.versions.deprecated.json'),
+          path.join(
+            __dirname,
+            '..',
+            'src',
+            'data',
+            'Agda.versions.deprecated.json'
+          ),
           JSON.stringify({
             packageInfo: pick(
               newCache.packageInfo,
@@ -46,7 +52,13 @@ async function run(): Promise<void> {
           })
         )
         fs.writeFileSync(
-          path.join(__dirname, 'Agda.versions.normal.json'),
+          path.join(
+            __dirname,
+            '..',
+            'src',
+            'data',
+            'Agda.versions.normal.json'
+          ),
           JSON.stringify({
             packageInfo: pick(
               newCache.packageInfo,
