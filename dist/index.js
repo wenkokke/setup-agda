@@ -31774,7 +31774,7 @@ module.exports = JSON.parse('{"darwin":{"x64":{"nightly":{"url":"https://github.
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"packageInfo":{"2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.4":"deprecated","2.5.4.1":"deprecated","2.6.0":"deprecated","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated"},"lastModified":"Tue, 18 Oct 2022 17:32:16 GMT"}');
+module.exports = JSON.parse('{"packageInfo":{"2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.4":"deprecated","2.5.4.1":"deprecated","2.6.0":"deprecated","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated"},"lastModified":"Thu, 10 Nov 2022 17:28:02 GMT"}');
 
 /***/ }),
 
@@ -31782,7 +31782,7 @@ module.exports = JSON.parse('{"packageInfo":{"2.5.1":"deprecated","2.5.1.1":"dep
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4.2":"normal","2.6.0.1":"normal","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Tue, 18 Oct 2022 17:32:16 GMT"}');
+module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4.2":"normal","2.6.0.1":"normal","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Thu, 10 Nov 2022 17:28:02 GMT"}');
 
 /***/ }),
 

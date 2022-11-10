@@ -8,5 +8,6 @@
     "resolveJsonModule": true,
     "noImplicitAny": true,
     "esModuleInterop": true
-  }
+  },
+  "include": ["src/**/*.ts", "src/**/*.json"]
 }

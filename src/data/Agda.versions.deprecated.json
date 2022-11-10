@@ -1,1 +1,13 @@
-{"packageInfo":{"2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.4":"deprecated","2.5.4.1":"deprecated","2.6.0":"deprecated","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated"},"lastModified":"Thu, 10 Nov 2022 17:28:02 GMT"}
+{
+  "packageInfo": {
+    "2.5.1": "deprecated",
+    "2.5.1.1": "deprecated",
+    "2.5.4": "deprecated",
+    "2.5.4.1": "deprecated",
+    "2.6.0": "deprecated",
+    "2.6.1": "deprecated",
+    "2.6.1.1": "deprecated",
+    "2.6.1.2": "deprecated"
+  },
+  "lastModified": "Thu, 10 Nov 2022 17:28:02 GMT"
+}
