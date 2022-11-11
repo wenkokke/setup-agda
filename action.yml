@@ -45,7 +45,12 @@ inputs:
       To setup the Agda standard library, use "agda-stdlib-version" instead, as
       that ensures that the standard library and Agda versions are compatible.
 
-      NOTE: this option is currently unsupported
+      This input requires that the library has a tagged release and that the
+      repository contains a .agda-lib file.
+
+      This input relies on the convention that the filename of the .agda-lib
+      file is the name of the library, and will refuse to install any library
+      whose .agda-lib file is simple named ".agda-lib".
     required: false
   agda-defaults:
     description: |
@@ -55,8 +60,6 @@ inputs:
 
       agda-categories
       cubical
-
-      NOTE: this option is currently unsupported
     required: false
   bdist-compress-exe:
     description: |
