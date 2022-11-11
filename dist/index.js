@@ -50,7 +50,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.isAgdaStdlibVersion = exports.isAgdaGitRef = exports.isAgdaVersion = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.downloadDistIndexEntry = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.libraryDir = exports.librariesDir = exports.defaultsFile = exports.librariesFile = exports.installDir = exports.cacheDir = exports.agdaDir = exports.arch = exports.platform = exports.getOptions = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
+exports.isAgdaStdlibVersion = exports.isAgdaGitRef = exports.isAgdaVersion = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.downloadDist = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.libraryDir = exports.librariesDir = exports.defaultsFile = exports.librariesFile = exports.installDir = exports.cacheDir = exports.agdaDir = exports.arch = exports.platform = exports.getOptions = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
 var compat_1 = __nccwpck_require__(4021);
 Object.defineProperty(exports, "runPreBuildHook", ({ enumerable: true, get: function () { return compat_1.runPreBuildHook; } }));
 Object.defineProperty(exports, "supportsSplitSections", ({ enumerable: true, get: function () { return compat_1.supportsSplitSections; } }));
@@ -74,8 +74,8 @@ var resolve_ghc_version_1 = __nccwpck_require__(7530);
 Object.defineProperty(exports, "resolveGhcVersion", ({ enumerable: true, get: function () { return __importDefault(resolve_ghc_version_1).default; } }));
 var resolve_agda_stdlib_version_1 = __nccwpck_require__(3237);
 Object.defineProperty(exports, "resolveAgdaStdlibVersion", ({ enumerable: true, get: function () { return __importDefault(resolve_agda_stdlib_version_1).default; } }));
-var download_dist_index_entry_1 = __nccwpck_require__(5456);
-Object.defineProperty(exports, "downloadDistIndexEntry", ({ enumerable: true, get: function () { return __importDefault(download_dist_index_entry_1).default; } }));
+var download_dist_1 = __nccwpck_require__(6338);
+Object.defineProperty(exports, "downloadDist", ({ enumerable: true, get: function () { return __importDefault(download_dist_1).default; } }));
 var types_1 = __nccwpck_require__(9150);
 Object.defineProperty(exports, "agdaPackageInfoCache", ({ enumerable: true, get: function () { return types_1.agdaPackageInfoCache; } }));
 Object.defineProperty(exports, "agdaBdistIndex", ({ enumerable: true, get: function () { return types_1.agdaBdistIndex; } }));
@@ -184,7 +184,7 @@ exports.needsIcu = needsIcu;
 
 /***/ }),
 
-/***/ 5456:
+/***/ 6338:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -224,10 +224,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const tc = __importStar(__nccwpck_require__(7784));
+const crypto = __importStar(__nccwpck_require__(6005));
 const path_1 = __nccwpck_require__(4059);
 const path = __importStar(__nccwpck_require__(9411));
 const util = __importStar(__nccwpck_require__(4024));
-function downloadDistIndexEntry(entry, dest, auth, headers) {
+function downloadDist(entry, dest, auth, headers) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         // Coerce string to {url: string; dir?: string; tag?: string}
@@ -235,42 +236,43 @@ function downloadDistIndexEntry(entry, dest, auth, headers) {
             entry = { url: entry };
         // Download package depending on the type of URL:
         core.info(`Downloading package from ${entry.url}`);
-        let dir = undefined;
         switch ((_a = entry.distType) !== null && _a !== void 0 ? _a : inferDistType(entry.url)) {
             case 'zip': {
                 const arc = yield tc.downloadTool(entry.url, undefined, auth, headers);
-                dir = yield tc.extractZip(arc, dest);
+                dest = yield tc.extractZip(arc, dest);
                 break;
             }
             case 'tgz': {
                 const arc = yield tc.downloadTool(entry.url, undefined, auth, headers);
-                dir = yield tc.extractTar(arc, dest, ['--extract', '--gzip']);
+                dest = yield tc.extractTar(arc, dest, ['--extract', '--gzip']);
                 break;
             }
             case 'txz': {
                 const arc = yield tc.downloadTool(entry.url, undefined, auth, headers);
-                dir = yield tc.extractTar(arc, dest, ['--extract', '--xz']);
+                dest = yield tc.extractTar(arc, dest, ['--extract', '--xz']);
                 break;
             }
             case 'git': {
-                dir = (0, path_1.cacheDir)('agda-setup');
+                if (dest === undefined) {
+                    dest = (0, path_1.cacheDir)(crypto.createHash('sha256').update(entry.url).digest('hex'));
+                }
                 yield util.getOutput('git', [
                     ['clone'],
                     ['--depth=1'],
                     ['--single-branch'],
                     entry.tag === undefined ? [] : ['--branch', entry.tag],
                     [entry.url],
-                    [dir]
+                    [dest]
                 ].flat());
                 break;
             }
         }
         if (entry.dir !== undefined)
-            dir = path.join(dir, entry.dir);
-        return dir;
+            dest = path.join(dest, entry.dir);
+        return dest;
     });
 }
-exports["default"] = downloadDistIndexEntry;
+exports["default"] = downloadDist;
 function inferDistType(url) {
     if (url.match(/\.zip$/))
         return 'zip';
@@ -436,8 +438,9 @@ function getOptions(inputs, actionYml) {
         // Specified in opts.BuildOptions
         'extra-include-dirs': [],
         'extra-lib-dirs': [],
-        'agda-library-list': agdaLibraryList,
-        'agda-default-list': []
+        'agda-libraries-list-local': [],
+        'agda-libraries-list-sdist': agdaLibraryList,
+        'agda-libraries-default': []
     };
     // Print options:
     core.info([
@@ -1018,6 +1021,68 @@ for (const agdaVersion of exports.agdaVersions)
 
 /***/ }),
 
+/***/ 7606:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
+const glob = __importStar(__nccwpck_require__(8090));
+const node_path_1 = __importDefault(__nccwpck_require__(9411));
+const opts = __importStar(__nccwpck_require__(1352));
+function setup(dist) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Coerce string to {url: string; dir?: string; tag?: string}
+        if (typeof dist === 'string')
+            dist = { url: dist };
+        core.info(`Download from ${dist.url}`);
+        const tmpDir = yield opts.downloadDist(dist);
+        const globber = yield glob.create(node_path_1.default.join(tmpDir, '**', '*.agda-lib'));
+        const agdaLibFiles = globber.glob();
+        core.info(`Found .agda-lib files: ${JSON.stringify(agdaLibFiles)}`);
+    });
+}
+exports["default"] = setup;
+
+
+/***/ }),
+
 /***/ 6404:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -1073,7 +1138,7 @@ function setup(options) {
         const standardLibraryDistIndexEntry = opts.agdaStdlibSdistIndex[options['agda-stdlib-version']];
         if (standardLibraryDistIndexEntry === undefined)
             throw Error(`Unsupported agda-stdlib version: '${options['agda-stdlib-version']}'`);
-        standardLibraryDir = yield opts.downloadDistIndexEntry(standardLibraryDistIndexEntry, standardLibraryDir);
+        standardLibraryDir = yield opts.downloadDist(standardLibraryDistIndexEntry, standardLibraryDir);
         util.registerAgdaLibrary(node_path_1.default.join(standardLibraryDir, 'standard-library.agda-lib'), options['agda-stdlib-default']);
     });
 }
@@ -1131,6 +1196,7 @@ const build_from_sdist_1 = __importDefault(__nccwpck_require__(3350));
 const install_from_bdist_1 = __importDefault(__nccwpck_require__(6577));
 const install_from_tool_cache_1 = __importDefault(__nccwpck_require__(9546));
 const setup_agda_stdlib_1 = __importDefault(__nccwpck_require__(6404));
+const setup_agda_library_1 = __importDefault(__nccwpck_require__(7606));
 const util = __importStar(__nccwpck_require__(4024));
 function setup(options) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -1167,8 +1233,10 @@ function setup(options) {
             }));
             // 3. Test:
             yield core.group('👩🏾‍🔬 Testing Agda installation', () => __awaiter(this, void 0, void 0, function* () { return yield util.agdaTest(); }));
-            // 4. Setup agda-stdlib:
+            // 4. Setup agda-stdlib & other libraries:
             yield (0, setup_agda_stdlib_1.default)(options);
+            for (const library of options['agda-libraries-list-sdist'])
+                yield (0, setup_agda_library_1.default)(library);
         }
         catch (error) {
             core.setFailed(util.ensureError(error));
@@ -1760,7 +1828,7 @@ function installFromBdist(options) {
                 return null;
             }
             try {
-                const bdistDir = yield opts.downloadDistIndexEntry(bdistIndexEntry);
+                const bdistDir = yield opts.downloadDist(bdistIndexEntry);
                 // If needed, repair file permissions:
                 yield repairPermissions(bdistDir);
                 // Test package:
@@ -31636,6 +31704,14 @@ module.exports = require("net");
 
 "use strict";
 module.exports = require("node:assert");
+
+/***/ }),
+
+/***/ 6005:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("node:crypto");
 
 /***/ }),
 

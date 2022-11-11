@@ -105,7 +105,7 @@ export const agdaPackageInfoCache = hackage.mergePackageInfoCache(
 export type DistType = 'zip' | 'tgz' | 'txz' | 'git'
 
 // Type of distributions, e.g., zip files or Git repositories.
-export type DistIndexEntry =
+export type Dist =
   | string
   | {url: string; dir?: string; tag?: string; distType?: DistType}
 
@@ -116,9 +116,7 @@ export type DistIndexEntry =
 export const agdaBdistIndex: Partial<
   Record<
     Platform,
-    Partial<
-      Record<Arch, Partial<Record<AgdaVersion | 'nightly', DistIndexEntry>>>
-    >
+    Partial<Record<Arch, Partial<Record<AgdaVersion | 'nightly', Dist>>>>
   >
 > = bundledAgdaBdistIndex
 
@@ -127,7 +125,7 @@ export const agdaBdistIndex: Partial<
 // NOTE: The type ensures that all source distributions are indexed under valid
 //       agda-stdlib version keys.
 export const agdaStdlibSdistIndex = bundledAgdaStdlibSdistIndex as Partial<
-  Record<AgdaStdlibVersion | 'experimental', DistIndexEntry>
+  Record<AgdaStdlibVersion | 'experimental', Dist>
 >
 
 // The compatibility mapping between Agda versions and agda-stdlib versions:
@@ -206,9 +204,12 @@ export interface BuildOptions extends SetupAgdaInputs {
   // Type refinements of 'agda-version' and 'agda-stdlib-version':
   'agda-version': AgdaVersion | 'HEAD' | 'nightly'
   'agda-stdlib-version': AgdaStdlibVersion | 'experimental' | 'none'
-  // Lists of libraries and defaults:
-  'agda-library-list': DistIndexEntry[]
-  'agda-default-list': string[]
+  // Libraries: paths to libraries on the file system:
+  'agda-libraries-list-local': string[]
+  // Libraries: distribution information for libraries that need to be installed:
+  'agda-libraries-list-sdist': Dist[]
+  // Libraries: names of libraries that need to be added to defaults
+  'agda-libraries-default': string[]
   // Extra include and lib directories for compiling Agda:
   'extra-include-dirs': string[]
   'extra-lib-dirs': string[]

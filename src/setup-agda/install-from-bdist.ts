@@ -26,7 +26,7 @@ export default async function installFromBdist(
       return null
     }
     try {
-      const bdistDir = await opts.downloadDistIndexEntry(bdistIndexEntry)
+      const bdistDir = await opts.downloadDist(bdistIndexEntry)
       // If needed, repair file permissions:
       await repairPermissions(bdistDir)
       // Test package:

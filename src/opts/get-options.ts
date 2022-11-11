@@ -96,7 +96,7 @@ export default function getOptions(
 
   // Parse agda-libraries and agda-defaults:
   const agdaLibraries = getOption('agda-libraries')
-  const agdaLibraryList: opts.DistIndexEntry[] = []
+  const agdaLibraryList: opts.Dist[] = []
   for (const agdaLibrary of agdaLibraries.split(/\r?\n/g)) {
     if (agdaLibrary.match(/^\s*$/)) continue
     const [agdaLibraryUrl, agdaLibraryTag] = agdaLibrary.trim().split('#', 2)
@@ -107,7 +107,7 @@ export default function getOptions(
     })
   }
   const agdaDefaults = getOption('agda-defaults')
-  const agdaDefaultList: opts.DistIndexEntry[] = []
+  const agdaDefaultList: opts.Dist[] = []
   for (const agdaDefault of agdaDefaults.split(/\r?\n/g)) {
     if (agdaDefault.match(/^\s*$/)) continue
     agdaDefaultList.push(agdaDefault.trim())
@@ -147,8 +147,9 @@ export default function getOptions(
     // Specified in opts.BuildOptions
     'extra-include-dirs': [],
     'extra-lib-dirs': [],
-    'agda-library-list': agdaLibraryList,
-    'agda-default-list': []
+    'agda-libraries-list-local': [],
+    'agda-libraries-list-sdist': agdaLibraryList,
+    'agda-libraries-default': []
   }
   // Print options:
   core.info(

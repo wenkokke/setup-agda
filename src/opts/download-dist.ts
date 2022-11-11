@@ -1,13 +1,14 @@
 import * as core from '@actions/core'
 import * as tc from '@actions/tool-cache'
 import * as opts from './types'
+import * as crypto from 'node:crypto'
 import {cacheDir} from './path'
 import * as httpm from 'node:http'
 import * as path from 'node:path'
 import * as util from '../util'
 
-export default async function downloadDistIndexEntry(
-  entry: opts.DistIndexEntry,
+export default async function downloadDist(
+  entry: opts.Dist,
   dest?: string,
   auth?: string | undefined,
   headers?: httpm.OutgoingHttpHeaders | undefined
@@ -17,25 +18,28 @@ export default async function downloadDistIndexEntry(
 
   // Download package depending on the type of URL:
   core.info(`Downloading package from ${entry.url}`)
-  let dir: string | undefined = undefined
   switch (entry.distType ?? inferDistType(entry.url)) {
     case 'zip': {
       const arc = await tc.downloadTool(entry.url, undefined, auth, headers)
-      dir = await tc.extractZip(arc, dest)
+      dest = await tc.extractZip(arc, dest)
       break
     }
     case 'tgz': {
       const arc = await tc.downloadTool(entry.url, undefined, auth, headers)
-      dir = await tc.extractTar(arc, dest, ['--extract', '--gzip'])
+      dest = await tc.extractTar(arc, dest, ['--extract', '--gzip'])
       break
     }
     case 'txz': {
       const arc = await tc.downloadTool(entry.url, undefined, auth, headers)
-      dir = await tc.extractTar(arc, dest, ['--extract', '--xz'])
+      dest = await tc.extractTar(arc, dest, ['--extract', '--xz'])
       break
     }
     case 'git': {
-      dir = cacheDir('agda-setup')
+      if (dest === undefined) {
+        dest = cacheDir(
+          crypto.createHash('sha256').update(entry.url).digest('hex')
+        )
+      }
       await util.getOutput(
         'git',
         [
@@ -44,14 +48,14 @@ export default async function downloadDistIndexEntry(
           ['--single-branch'],
           entry.tag === undefined ? [] : ['--branch', entry.tag],
           [entry.url],
-          [dir]
+          [dest]
         ].flat()
       )
       break
     }
   }
-  if (entry.dir !== undefined) dir = path.join(dir, entry.dir)
-  return dir
+  if (entry.dir !== undefined) dest = path.join(dest, entry.dir)
+  return dest
 }
 
 function inferDistType(url: string): opts.DistType {

@@ -18,13 +18,13 @@ export {
 } from './opts/path'
 export {default as resolveGhcVersion} from './opts/resolve-ghc-version'
 export {default as resolveAgdaStdlibVersion} from './opts/resolve-agda-stdlib-version'
-export {default as downloadDistIndexEntry} from './opts/download-dist-index-entry'
+export {default as downloadDist} from './opts/download-dist'
 export {
   BuildOptions,
   SetupAgdaInputs,
   SetupHaskellInputs,
   agdaPackageInfoCache,
-  DistIndexEntry,
+  Dist,
   agdaBdistIndex,
   agdaStdlibSdistIndex,
   AgdaVersion,
