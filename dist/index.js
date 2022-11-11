@@ -1088,7 +1088,7 @@ const os = __importStar(__nccwpck_require__(612));
 const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
 function setup(dist, options) {
-    var _a;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         // Coerce string to {url: string; dir?: string; tag?: string}
         if (typeof dist === 'string')
@@ -1101,7 +1101,7 @@ function setup(dist, options) {
             const libraryFrom = path.dirname(agdaLibraryFile);
             const libraryVersion = (_a = dist.tag) !== null && _a !== void 0 ? _a : 'experimental';
             const libraryExperimental = dist.tag === undefined;
-            const libraryRelativeDir = path.relative(tmpDir, libraryFrom);
+            const libraryRelativeDir = (_b = path.relative(tmpDir, libraryFrom)) !== null && _b !== void 0 ? _b : 'repository root';
             core.info(`Found ${libraryName} version ${libraryVersion} at ${libraryRelativeDir}`);
             const libraryTo = opts.libraryDir(libraryName, libraryVersion, libraryExperimental);
             core.info(`Install ${libraryName} to ${libraryTo}`);

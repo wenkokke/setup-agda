@@ -20,7 +20,8 @@ export default async function setup(
     const libraryFrom = path.dirname(agdaLibraryFile)
     const libraryVersion = dist.tag ?? 'experimental'
     const libraryExperimental = dist.tag === undefined
-    const libraryRelativeDir = path.relative(tmpDir, libraryFrom)
+    const libraryRelativeDir =
+      path.relative(tmpDir, libraryFrom) ?? 'repository root'
     core.info(
       `Found ${libraryName} version ${libraryVersion} at ${libraryRelativeDir}`
     )
