@@ -61,6 +61,15 @@ inputs:
       agda-categories
       cubical
     required: false
+  agda-executables:
+    description: |
+      A list of executables to register with Agda.
+
+      Executables must be specified by their name or path, e.g.,
+
+      z3
+      /bin/sh
+    required: false
   bdist-compress-exe:
     description: |
       If specified, the executables are compressed with UPX (https://upx.github.io).

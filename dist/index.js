@@ -29,6 +29,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -36,7 +45,13 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const opts = __importStar(__nccwpck_require__(1352));
 const setup_agda_1 = __importDefault(__nccwpck_require__(8021));
-(0, setup_agda_1.default)(opts.getOptions(core.getInput));
+function main() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const options = yield opts.getOptions(core.getInput);
+        yield (0, setup_agda_1.default)(options);
+    });
+}
+main();
 
 
 /***/ }),
@@ -46,43 +61,37 @@ const setup_agda_1 = __importDefault(__nccwpck_require__(8021));
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.isAgdaStdlibVersion = exports.isAgdaGitRef = exports.isAgdaVersion = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.downloadDist = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.libraryDir = exports.librariesDir = exports.defaultsFile = exports.librariesFile = exports.installDir = exports.cacheDir = exports.agdaDir = exports.arch = exports.platform = exports.getOptions = exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
-var compat_1 = __nccwpck_require__(4021);
-Object.defineProperty(exports, "runPreBuildHook", ({ enumerable: true, get: function () { return compat_1.runPreBuildHook; } }));
-Object.defineProperty(exports, "supportsSplitSections", ({ enumerable: true, get: function () { return compat_1.supportsSplitSections; } }));
-Object.defineProperty(exports, "supportsOptimiseHeavily", ({ enumerable: true, get: function () { return compat_1.supportsOptimiseHeavily; } }));
-Object.defineProperty(exports, "supportsClusterCounting", ({ enumerable: true, get: function () { return compat_1.supportsClusterCounting; } }));
-Object.defineProperty(exports, "needsIcu", ({ enumerable: true, get: function () { return compat_1.needsIcu; } }));
+exports.downloadDist = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.getOptions = void 0;
+__exportStar(__nccwpck_require__(4021), exports);
 var get_options_1 = __nccwpck_require__(1665);
 Object.defineProperty(exports, "getOptions", ({ enumerable: true, get: function () { return __importDefault(get_options_1).default; } }));
-var platform_1 = __nccwpck_require__(542);
-Object.defineProperty(exports, "platform", ({ enumerable: true, get: function () { return platform_1.platform; } }));
-Object.defineProperty(exports, "arch", ({ enumerable: true, get: function () { return platform_1.arch; } }));
-var path_1 = __nccwpck_require__(4059);
-Object.defineProperty(exports, "agdaDir", ({ enumerable: true, get: function () { return path_1.agdaDir; } }));
-Object.defineProperty(exports, "cacheDir", ({ enumerable: true, get: function () { return path_1.cacheDir; } }));
-Object.defineProperty(exports, "installDir", ({ enumerable: true, get: function () { return path_1.installDir; } }));
-Object.defineProperty(exports, "librariesFile", ({ enumerable: true, get: function () { return path_1.librariesFile; } }));
-Object.defineProperty(exports, "defaultsFile", ({ enumerable: true, get: function () { return path_1.defaultsFile; } }));
-Object.defineProperty(exports, "librariesDir", ({ enumerable: true, get: function () { return path_1.librariesDir; } }));
-Object.defineProperty(exports, "libraryDir", ({ enumerable: true, get: function () { return path_1.libraryDir; } }));
+__exportStar(__nccwpck_require__(542), exports);
+__exportStar(__nccwpck_require__(4059), exports);
 var resolve_ghc_version_1 = __nccwpck_require__(7530);
 Object.defineProperty(exports, "resolveGhcVersion", ({ enumerable: true, get: function () { return __importDefault(resolve_ghc_version_1).default; } }));
 var resolve_agda_stdlib_version_1 = __nccwpck_require__(3237);
 Object.defineProperty(exports, "resolveAgdaStdlibVersion", ({ enumerable: true, get: function () { return __importDefault(resolve_agda_stdlib_version_1).default; } }));
 var download_dist_1 = __nccwpck_require__(6338);
 Object.defineProperty(exports, "downloadDist", ({ enumerable: true, get: function () { return __importDefault(download_dist_1).default; } }));
-var types_1 = __nccwpck_require__(9150);
-Object.defineProperty(exports, "agdaPackageInfoCache", ({ enumerable: true, get: function () { return types_1.agdaPackageInfoCache; } }));
-Object.defineProperty(exports, "agdaBdistIndex", ({ enumerable: true, get: function () { return types_1.agdaBdistIndex; } }));
-Object.defineProperty(exports, "agdaStdlibSdistIndex", ({ enumerable: true, get: function () { return types_1.agdaStdlibSdistIndex; } }));
-Object.defineProperty(exports, "isAgdaVersion", ({ enumerable: true, get: function () { return types_1.isAgdaVersion; } }));
-Object.defineProperty(exports, "isAgdaGitRef", ({ enumerable: true, get: function () { return types_1.isAgdaGitRef; } }));
-Object.defineProperty(exports, "isAgdaStdlibVersion", ({ enumerable: true, get: function () { return types_1.isAgdaStdlibVersion; } }));
+__exportStar(__nccwpck_require__(9150), exports);
 
 
 /***/ }),
@@ -316,6 +325,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -332,150 +350,159 @@ const plat = __importStar(__nccwpck_require__(542));
 const resolve_agda_stdlib_version_1 = __importDefault(__nccwpck_require__(3237));
 const resolve_agda_version_1 = __importDefault(__nccwpck_require__(2349));
 const opts = __importStar(__nccwpck_require__(9150));
+const exec = __importStar(__nccwpck_require__(4369));
+const lines_1 = __nccwpck_require__(9152);
 function getOptions(inputs, actionYml) {
-    function getOption(k) {
-        var _a, _b;
-        const rawInputValue = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
-        const inputValue = (_b = (_a = rawInputValue === null || rawInputValue === void 0 ? void 0 : rawInputValue.trim()) !== null && _a !== void 0 ? _a : getDefault(k, actionYml)) !== null && _b !== void 0 ? _b : '';
-        core.debug(`Input ${k}: ${rawInputValue} => ${inputValue}`);
-        return inputValue;
-    }
-    function getFlag(k) {
-        const rawInputValue = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
-        const inputValue = !(rawInputValue === false ||
-            rawInputValue === null ||
-            rawInputValue === undefined ||
-            rawInputValue === '' ||
-            rawInputValue === 'false');
-        core.debug(`Input ${k}: ${rawInputValue} => ${inputValue}`);
-        return inputValue;
-    }
-    function getFlagPair(flagOn, flagOff) {
-        const [on, off] = [getFlag(flagOn), getFlag(flagOff)];
-        if (on && off)
-            throw Error(`Flags ${flagOn} and ${flagOff} conflict.`);
-        return [on, off];
-    }
-    // Resolve Agda version:
-    const agdaVersionSpec = getOption('agda-version');
-    if (!opts.isAgdaVersionSpec(agdaVersionSpec))
-        if (opts.isDeprecatedAgdaVersion(agdaVersionSpec))
-            throw Error(`Agda version ${agdaVersionSpec} is deprecated`);
-        else
-            throw Error(`Could not parse Agda version ${agdaVersionSpec}`);
-    const agdaVersion = (0, resolve_agda_version_1.default)(agdaVersionSpec);
-    // Resolve agda-stdlib version:
-    const agdaStdlibVersionSpec = getOption('agda-stdlib-version');
-    if (!opts.isAgdaStdlibVersionSpec(agdaStdlibVersionSpec))
-        throw Error(`Unsupported value for input 'agda-stdlib-version': '${agdaStdlibVersionSpec}'`);
-    const agdaStdlibVersion = (0, resolve_agda_stdlib_version_1.default)(agdaVersion, agdaStdlibVersionSpec);
-    // Validate ghc-version-range:
-    const ghcVersionRange = getOption('ghc-version-range');
-    if (!semver.validRange(ghcVersionRange))
-        throw Error('Input "ghc-version-range" is not a valid version range');
-    // Check for contradictory options:
-    const [forceBuild, forceNoBuild] = getFlagPair('force-build', 'force-no-build');
-    const [forceClusterCounting, forceNoClusterCounting] = getFlagPair('force-cluster-counting', 'force-no-cluster-counting');
-    const [forceOptimiseHeavily, forceNoOptimiseHeavily] = getFlagPair('force-optimise-heavily', 'force-no-optimise-heavily');
-    // Parse the bdist name:
-    const bdistName = parseBdistName(getOption('bdist-name'));
-    const bdistRetentionDays = getOption('bdist-retention-days');
-    const bdistRetentionDaysInt = parseInt(bdistRetentionDays);
-    if (!(0 <= bdistRetentionDaysInt && bdistRetentionDaysInt <= 90))
-        throw Error([
-            `Input "bdist-rentention-days" must be a number between 0 and 90.`,
-            `Found "${bdistRetentionDays}".`
-        ].join(' '));
-    // Parse agda-libraries:
-    const agdaLibraries = getOption('agda-libraries');
-    const agdaLibrariesLines = agdaLibraries
-        .split(/\r?\n/g)
-        .map(string => string.trim())
-        .filter(string => string.length > 0);
-    const agdaLibrariesLocal = [];
-    const agdaLibrariesSDist = [];
-    for (const agdaLibrary of agdaLibrariesLines) {
-        // Check if the entry refers to a local .agda-lib file,
-        // otherwise assume it refers to a .git URL:
-        if (agdaLibrary.match(/\.agda-lib$/) && fs.existsSync(agdaLibrary)) {
-            agdaLibrariesLocal.push(agdaLibrary);
+    return __awaiter(this, void 0, void 0, function* () {
+        function getOption(k) {
+            var _a, _b;
+            const rawInputValue = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
+            const inputValue = (_b = (_a = rawInputValue === null || rawInputValue === void 0 ? void 0 : rawInputValue.trim()) !== null && _a !== void 0 ? _a : getDefault(k, actionYml)) !== null && _b !== void 0 ? _b : '';
+            core.debug(`Input ${k}: ${rawInputValue} => ${inputValue}`);
+            return inputValue;
         }
-        else {
-            const [url, tag] = agdaLibrary.split('#', 2);
-            agdaLibrariesSDist.push({ url, tag, distType: 'git' });
+        function getFlag(k) {
+            const rawInputValue = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
+            const inputValue = !(rawInputValue === false ||
+                rawInputValue === null ||
+                rawInputValue === undefined ||
+                rawInputValue === '' ||
+                rawInputValue === 'false');
+            core.debug(`Input ${k}: ${rawInputValue} => ${inputValue}`);
+            return inputValue;
         }
-    }
-    // Parse agda-defaults:
-    const agdaDefaults = getOption('agda-defaults');
-    const agdaDefaultsLines = agdaDefaults
-        .split(/\r?\n/g)
-        .map(string => string.trim())
-        .filter(string => string.length > 0);
-    const agdaLibrariesDefault = [];
-    for (const agdaDefault of agdaDefaultsLines) {
-        agdaLibrariesDefault.push(agdaDefault);
-    }
-    // Add standard-library:
-    const agdaStdlibDefault = getFlag('agda-stdlib-default');
-    if (agdaStdlibVersion !== 'none') {
-        // Add standard-library to agda-libraries-dist:
-        let dist = opts.agdaStdlibSdistIndex[agdaStdlibVersion];
-        if (dist === undefined)
-            throw Error(`Unsupported agda-stdlib version ${agdaStdlibVersion}`);
-        if (typeof dist === 'string')
-            dist = { url: dist };
-        if (dist.tag === undefined)
-            dist.tag = agdaStdlibVersion;
-        agdaLibrariesSDist.push(dist);
-        // Add standard-library agda-libraries-default:
-        if (agdaStdlibDefault)
-            agdaLibrariesDefault.push('standard-library');
-    }
-    // Create build options:
-    const options = {
-        // Specified in Agdaopts.SetupInputs
-        'agda-version': agdaVersion,
-        'agda-stdlib-version': agdaStdlibVersion,
-        'agda-stdlib-default': agdaStdlibDefault,
-        'agda-libraries': agdaLibraries,
-        'agda-defaults': getOption('agda-defaults'),
-        'bdist-compress-exe': getFlag('bdist-compress-exe'),
-        'bdist-name': bdistName,
-        'bdist-retention-days': bdistRetentionDays,
-        'bdist-upload': getFlag('bdist-upload'),
-        'force-build': forceBuild,
-        'force-no-build': forceNoBuild,
-        'force-cluster-counting': forceClusterCounting,
-        'force-no-cluster-counting': forceNoClusterCounting,
-        'force-optimise-heavily': forceOptimiseHeavily,
-        'force-no-optimise-heavily': forceNoOptimiseHeavily,
-        'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
-        'ghc-version-range': ghcVersionRange,
-        'pre-build-hook': getOption('pre-build-hook'),
-        // Specified in Haskellopts.SetupInputs
-        'cabal-version': getOption('cabal-version'),
-        'disable-matcher': getFlag('disable-matcher'),
-        'enable-stack': getFlag('enable-stack'),
-        'ghc-version': getOption('ghc-version'),
-        'stack-no-global': getFlag('stack-no-global'),
-        'stack-setup-ghc': getFlag('stack-setup-ghc'),
-        'stack-version': getOption('stack-version'),
-        // Specified in opts.BuildOptions
-        'extra-include-dirs': [],
-        'extra-lib-dirs': [],
-        'agda-libraries-list-local': agdaLibrariesLocal,
-        'agda-libraries-list-sdist': agdaLibrariesSDist,
-        'agda-libraries-default': agdaLibrariesDefault
-    };
-    // Print options:
-    core.info([
-        'Options:',
-        ...Object.entries(Object.assign({ os: plat.platform }, options)).map(entry => {
-            const [key, value] = entry;
-            return `- ${key}: ${JSON.stringify(value)}`;
-        })
-    ].join(os.EOL));
-    return options;
+        function getFlagPair(flagOn, flagOff) {
+            const [on, off] = [getFlag(flagOn), getFlag(flagOff)];
+            if (on && off)
+                throw Error(`Flags ${flagOn} and ${flagOff} conflict.`);
+            return [on, off];
+        }
+        // Resolve Agda version:
+        const agdaVersionSpec = getOption('agda-version');
+        if (!opts.isAgdaVersionSpec(agdaVersionSpec))
+            if (opts.isDeprecatedAgdaVersion(agdaVersionSpec))
+                throw Error(`Agda version ${agdaVersionSpec} is deprecated`);
+            else
+                throw Error(`Could not parse Agda version ${agdaVersionSpec}`);
+        const agdaVersion = (0, resolve_agda_version_1.default)(agdaVersionSpec);
+        // Resolve agda-stdlib version:
+        const agdaStdlibVersionSpec = getOption('agda-stdlib-version');
+        if (!opts.isAgdaStdlibVersionSpec(agdaStdlibVersionSpec))
+            throw Error(`Unsupported value for input 'agda-stdlib-version': '${agdaStdlibVersionSpec}'`);
+        const agdaStdlibVersion = (0, resolve_agda_stdlib_version_1.default)(agdaVersion, agdaStdlibVersionSpec);
+        // Validate ghc-version-range:
+        const ghcVersionRange = getOption('ghc-version-range');
+        if (!semver.validRange(ghcVersionRange))
+            throw Error('Input "ghc-version-range" is not a valid version range');
+        // Check for contradictory options:
+        const [forceBuild, forceNoBuild] = getFlagPair('force-build', 'force-no-build');
+        const [forceClusterCounting, forceNoClusterCounting] = getFlagPair('force-cluster-counting', 'force-no-cluster-counting');
+        const [forceOptimiseHeavily, forceNoOptimiseHeavily] = getFlagPair('force-optimise-heavily', 'force-no-optimise-heavily');
+        // Parse the bdist name:
+        const bdistName = parseBdistName(getOption('bdist-name'));
+        const bdistRetentionDays = getOption('bdist-retention-days');
+        const bdistRetentionDaysInt = parseInt(bdistRetentionDays);
+        if (!(0 <= bdistRetentionDaysInt && bdistRetentionDaysInt <= 90))
+            throw Error([
+                `Input "bdist-rentention-days" must be a number between 0 and 90.`,
+                `Found "${bdistRetentionDays}".`
+            ].join(' '));
+        // Parse agda-libraries:
+        const agdaLibraries = getOption('agda-libraries');
+        const agdaLibrariesListLocal = [];
+        const agdaLibrariesListSDist = [];
+        for (const agdaLibrary of (0, lines_1.splitLines)(agdaLibraries)) {
+            // Check if the entry refers to a local .agda-lib file,
+            // otherwise assume it refers to a .git URL:
+            if (agdaLibrary.match(/\.agda-lib$/) && fs.existsSync(agdaLibrary)) {
+                agdaLibrariesListLocal.push(agdaLibrary);
+            }
+            else {
+                const [url, tag] = agdaLibrary.split('#', 2);
+                agdaLibrariesListSDist.push({ url, tag, distType: 'git' });
+            }
+        }
+        // Parse agda-defaults:
+        const agdaDefaults = getOption('agda-defaults');
+        const agdaLibrariesDefault = [];
+        for (const agdaDefault of (0, lines_1.splitLines)(agdaDefaults)) {
+            agdaLibrariesDefault.push(agdaDefault);
+        }
+        // Add standard-library:
+        const agdaStdlibDefault = getFlag('agda-stdlib-default');
+        if (agdaStdlibVersion !== 'none') {
+            // Add standard-library to agda-libraries-dist:
+            let dist = opts.agdaStdlibSdistIndex[agdaStdlibVersion];
+            if (dist === undefined)
+                throw Error(`Unsupported agda-stdlib version ${agdaStdlibVersion}`);
+            if (typeof dist === 'string')
+                dist = { url: dist };
+            if (dist.tag === undefined)
+                dist.tag = agdaStdlibVersion;
+            agdaLibrariesListSDist.push(dist);
+            // Add standard-library agda-libraries-default:
+            if (agdaStdlibDefault)
+                agdaLibrariesDefault.push('standard-library');
+        }
+        // Parse agda-executables:
+        const agdaExecutables = getOption('agda-executables');
+        const agdaExecutablesList = [];
+        for (const agdaExecutable of (0, lines_1.splitLines)(agdaExecutables)) {
+            if (path.isAbsolute(agdaExecutable) && fs.existsSync(agdaExecutable)) {
+                agdaExecutablesList.push(agdaExecutable);
+            }
+            else {
+                agdaExecutablesList.push(yield exec.which(agdaExecutable, true));
+            }
+        }
+        // Create build options:
+        const options = {
+            // Specified in Agdaopts.SetupInputs
+            'agda-version': agdaVersion,
+            'agda-stdlib-version': agdaStdlibVersion,
+            'agda-stdlib-default': agdaStdlibDefault,
+            'agda-libraries': agdaLibraries,
+            'agda-defaults': agdaDefaults,
+            'agda-executables': agdaExecutables,
+            'bdist-compress-exe': getFlag('bdist-compress-exe'),
+            'bdist-name': bdistName,
+            'bdist-retention-days': bdistRetentionDays,
+            'bdist-upload': getFlag('bdist-upload'),
+            'force-build': forceBuild,
+            'force-no-build': forceNoBuild,
+            'force-cluster-counting': forceClusterCounting,
+            'force-no-cluster-counting': forceNoClusterCounting,
+            'force-optimise-heavily': forceOptimiseHeavily,
+            'force-no-optimise-heavily': forceNoOptimiseHeavily,
+            'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
+            'ghc-version-range': ghcVersionRange,
+            'pre-build-hook': getOption('pre-build-hook'),
+            // Specified in Haskellopts.SetupInputs
+            'cabal-version': getOption('cabal-version'),
+            'disable-matcher': getFlag('disable-matcher'),
+            'enable-stack': getFlag('enable-stack'),
+            'ghc-version': getOption('ghc-version'),
+            'stack-no-global': getFlag('stack-no-global'),
+            'stack-setup-ghc': getFlag('stack-setup-ghc'),
+            'stack-version': getOption('stack-version'),
+            // Specified in opts.BuildOptions
+            'extra-include-dirs': [],
+            'extra-lib-dirs': [],
+            'agda-libraries-list-local': agdaLibrariesListLocal,
+            'agda-libraries-list-sdist': agdaLibrariesListSDist,
+            'agda-libraries-default': agdaLibrariesDefault,
+            'agda-executables-list': agdaExecutablesList
+        };
+        // Print options:
+        core.info([
+            'Options:',
+            ...Object.entries(Object.assign({ os: plat.platform }, options)).map(entry => {
+                const [key, value] = entry;
+                return `- ${key}: ${JSON.stringify(value)}`;
+            })
+        ].join(os.EOL));
+        return options;
+    });
 }
 exports["default"] = getOptions;
 let inputSpec = undefined;
@@ -534,7 +561,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.libraryDir = exports.defaultsFile = exports.librariesDir = exports.librariesFile = exports.installDir = exports.cacheDir = exports.agdaDir = void 0;
+exports.libraryDir = exports.executablesFile = exports.defaultsFile = exports.librariesDir = exports.librariesFile = exports.installDir = exports.cacheDir = exports.agdaDir = void 0;
 const opts = __importStar(__nccwpck_require__(542));
 const path = __importStar(__nccwpck_require__(9411));
 const os = __importStar(__nccwpck_require__(612));
@@ -575,6 +602,10 @@ function defaultsFile() {
     return path.join(agdaDir(), 'defaults');
 }
 exports.defaultsFile = defaultsFile;
+function executablesFile() {
+    return path.join(agdaDir(), 'executables');
+}
+exports.executablesFile = executablesFile;
 function libraryDir(libraryName, libraryVersion, experimental = true) {
     if (experimental)
         libraryVersion += `-${yyyymmdd()}`;
@@ -1223,6 +1254,9 @@ function setup(options) {
         catch (error) {
             core.setFailed(util.ensureError(error));
         }
+        // 5. Register executables
+        for (const executable of options['agda-executables-list'])
+            util.registerAgdaExecutable(executable);
     });
 }
 exports["default"] = setup;
@@ -2842,7 +2876,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.configureEnvFor = exports.agdaTest = exports.agda = exports.agdaGetDataDir = exports.agdaGetVersion = exports.agdaBinNames = exports.agdaModeBinName = exports.agdaBinName = exports.getAgdaSdist = exports.registerAgdaLibrary = exports.readDefaultsSync = exports.readLibrariesSync = void 0;
+exports.configureEnvFor = exports.agdaTest = exports.agda = exports.agdaGetDataDir = exports.agdaGetVersion = exports.agdaBinNames = exports.agdaModeBinName = exports.agdaBinName = exports.getAgdaSdist = exports.registerAgdaExecutable = exports.registerAgdaLibrary = exports.readExecutablesSync = exports.readDefaultsSync = exports.readLibrariesSync = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const path = __importStar(__nccwpck_require__(9411));
@@ -2853,12 +2887,13 @@ const hackage = __importStar(__nccwpck_require__(903));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const fs = __importStar(__nccwpck_require__(7561));
 const os = __importStar(__nccwpck_require__(612));
+const lines_1 = __nccwpck_require__(9152);
 // Agda utilities
 function readLibrariesSync() {
     if (!fs.existsSync(opts.librariesFile()))
         return [];
     const librariesFileContents = fs.readFileSync(opts.librariesFile()).toString();
-    const libraries = librariesFileContents.split(/\r?\n/g);
+    const libraries = (0, lines_1.splitLines)(librariesFileContents);
     return libraries.map(libraryPath => path.parse(libraryPath));
 }
 exports.readLibrariesSync = readLibrariesSync;
@@ -2866,9 +2901,16 @@ function readDefaultsSync() {
     if (!fs.existsSync(opts.defaultsFile()))
         return [];
     const defaultsFileContents = fs.readFileSync(opts.defaultsFile()).toString();
-    return defaultsFileContents.split(/\r?\n/g);
+    return (0, lines_1.splitLines)(defaultsFileContents);
 }
 exports.readDefaultsSync = readDefaultsSync;
+function readExecutablesSync() {
+    if (!fs.existsSync(opts.executablesFile()))
+        return [];
+    const defaultsFileContents = fs.readFileSync(opts.defaultsFile()).toString();
+    return (0, lines_1.splitLines)(defaultsFileContents);
+}
+exports.readExecutablesSync = readExecutablesSync;
 function registerAgdaLibrary(libraryFile, isDefault = false) {
     // Check agdaLibraryFile exists & refers to an agda-lib file:
     (0, node_assert_1.default)(fs.existsSync(libraryFile));
@@ -2890,6 +2932,12 @@ function registerAgdaLibrary(libraryFile, isDefault = false) {
     }
 }
 exports.registerAgdaLibrary = registerAgdaLibrary;
+function registerAgdaExecutable(newExecutable) {
+    const oldExecutables = readExecutablesSync();
+    const newExecutables = [...oldExecutables, newExecutable];
+    fs.writeFileSync(opts.executablesFile(), newExecutables.join(os.EOL));
+}
+exports.registerAgdaExecutable = registerAgdaExecutable;
 function getAgdaSdist(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Throw an error if the 'agda-version' is 'nightly':
@@ -3684,6 +3732,24 @@ function brewGetVersion(formula) {
     });
 }
 exports.brewGetVersion = brewGetVersion;
+
+
+/***/ }),
+
+/***/ 9152:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.splitLines = void 0;
+function splitLines(string) {
+    return string
+        .split(/\r?\n/g)
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+}
+exports.splitLines = splitLines;
 
 
 /***/ }),

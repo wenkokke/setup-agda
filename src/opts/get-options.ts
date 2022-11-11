@@ -10,14 +10,16 @@ import * as plat from './platform'
 import resolveAgdaStdlibVersion from './resolve-agda-stdlib-version'
 import resolveAgdaVersion from './resolve-agda-version'
 import * as opts from './types'
+import * as exec from '../util/exec'
+import {splitLines} from '../util/lines'
 
-export default function getOptions(
+export default async function getOptions(
   inputs?:
     | Partial<opts.SetupAgdaInputs>
     | Partial<Record<string, string>>
     | ((name: string) => string | undefined),
   actionYml?: string
-): opts.BuildOptions {
+): Promise<opts.BuildOptions> {
   function getOption(k: opts.SetupAgdaOption): string {
     const rawInputValue = typeof inputs === 'function' ? inputs(k) : inputs?.[k]
     const inputValue = rawInputValue?.trim() ?? getDefault(k, actionYml) ?? ''
@@ -96,30 +98,22 @@ export default function getOptions(
 
   // Parse agda-libraries:
   const agdaLibraries = getOption('agda-libraries')
-  const agdaLibrariesLines = agdaLibraries
-    .split(/\r?\n/g)
-    .map(string => string.trim())
-    .filter(string => string.length > 0)
-  const agdaLibrariesLocal: string[] = []
-  const agdaLibrariesSDist: opts.Dist[] = []
-  for (const agdaLibrary of agdaLibrariesLines) {
+  const agdaLibrariesListLocal: string[] = []
+  const agdaLibrariesListSDist: opts.Dist[] = []
+  for (const agdaLibrary of splitLines(agdaLibraries)) {
     // Check if the entry refers to a local .agda-lib file,
     // otherwise assume it refers to a .git URL:
     if (agdaLibrary.match(/\.agda-lib$/) && fs.existsSync(agdaLibrary)) {
-      agdaLibrariesLocal.push(agdaLibrary)
+      agdaLibrariesListLocal.push(agdaLibrary)
     } else {
       const [url, tag] = agdaLibrary.split('#', 2)
-      agdaLibrariesSDist.push({url, tag, distType: 'git'})
+      agdaLibrariesListSDist.push({url, tag, distType: 'git'})
     }
   }
   // Parse agda-defaults:
   const agdaDefaults = getOption('agda-defaults')
-  const agdaDefaultsLines = agdaDefaults
-    .split(/\r?\n/g)
-    .map(string => string.trim())
-    .filter(string => string.length > 0)
   const agdaLibrariesDefault: string[] = []
-  for (const agdaDefault of agdaDefaultsLines) {
+  for (const agdaDefault of splitLines(agdaDefaults)) {
     agdaLibrariesDefault.push(agdaDefault)
   }
   // Add standard-library:
@@ -131,9 +125,19 @@ export default function getOptions(
       throw Error(`Unsupported agda-stdlib version ${agdaStdlibVersion}`)
     if (typeof dist === 'string') dist = {url: dist}
     if (dist.tag === undefined) dist.tag = agdaStdlibVersion
-    agdaLibrariesSDist.push(dist)
+    agdaLibrariesListSDist.push(dist)
     // Add standard-library agda-libraries-default:
     if (agdaStdlibDefault) agdaLibrariesDefault.push('standard-library')
+  }
+  // Parse agda-executables:
+  const agdaExecutables = getOption('agda-executables')
+  const agdaExecutablesList: string[] = []
+  for (const agdaExecutable of splitLines(agdaExecutables)) {
+    if (path.isAbsolute(agdaExecutable) && fs.existsSync(agdaExecutable)) {
+      agdaExecutablesList.push(agdaExecutable)
+    } else {
+      agdaExecutablesList.push(await exec.which(agdaExecutable, true))
+    }
   }
 
   // Create build options:
@@ -143,7 +147,8 @@ export default function getOptions(
     'agda-stdlib-version': agdaStdlibVersion,
     'agda-stdlib-default': agdaStdlibDefault,
     'agda-libraries': agdaLibraries,
-    'agda-defaults': getOption('agda-defaults'),
+    'agda-defaults': agdaDefaults,
+    'agda-executables': agdaExecutables,
     'bdist-compress-exe': getFlag('bdist-compress-exe'),
     'bdist-name': bdistName,
     'bdist-retention-days': bdistRetentionDays,
@@ -170,9 +175,10 @@ export default function getOptions(
     // Specified in opts.BuildOptions
     'extra-include-dirs': [],
     'extra-lib-dirs': [],
-    'agda-libraries-list-local': agdaLibrariesLocal,
-    'agda-libraries-list-sdist': agdaLibrariesSDist,
-    'agda-libraries-default': agdaLibrariesDefault
+    'agda-libraries-list-local': agdaLibrariesListLocal,
+    'agda-libraries-list-sdist': agdaLibrariesListSDist,
+    'agda-libraries-default': agdaLibrariesDefault,
+    'agda-executables-list': agdaExecutablesList
   }
   // Print options:
   core.info(

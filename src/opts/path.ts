@@ -38,6 +38,10 @@ export function defaultsFile(): string {
   return path.join(agdaDir(), 'defaults')
 }
 
+export function executablesFile(): string {
+  return path.join(agdaDir(), 'executables')
+}
+
 export function libraryDir(
   libraryName: string,
   libraryVersion: string,

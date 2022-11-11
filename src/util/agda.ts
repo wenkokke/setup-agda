@@ -8,20 +8,27 @@ import * as hackage from './hackage'
 import assert from 'node:assert'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
+import {splitLines} from './lines'
 
 // Agda utilities
 
 export function readLibrariesSync(): path.ParsedPath[] {
   if (!fs.existsSync(opts.librariesFile())) return []
   const librariesFileContents = fs.readFileSync(opts.librariesFile()).toString()
-  const libraries = librariesFileContents.split(/\r?\n/g)
+  const libraries = splitLines(librariesFileContents)
   return libraries.map(libraryPath => path.parse(libraryPath))
 }
 
 export function readDefaultsSync(): string[] {
   if (!fs.existsSync(opts.defaultsFile())) return []
   const defaultsFileContents = fs.readFileSync(opts.defaultsFile()).toString()
-  return defaultsFileContents.split(/\r?\n/g)
+  return splitLines(defaultsFileContents)
+}
+
+export function readExecutablesSync(): string[] {
+  if (!fs.existsSync(opts.executablesFile())) return []
+  const defaultsFileContents = fs.readFileSync(opts.defaultsFile()).toString()
+  return splitLines(defaultsFileContents)
 }
 
 export function registerAgdaLibrary(
@@ -51,6 +58,12 @@ export function registerAgdaLibrary(
     const newDefaults = [...oldDefaults, newLibrary.base]
     fs.writeFileSync(opts.defaultsFile(), newDefaults.join(os.EOL))
   }
+}
+
+export function registerAgdaExecutable(newExecutable: string): void {
+  const oldExecutables = readExecutablesSync()
+  const newExecutables = [...oldExecutables, newExecutable]
+  fs.writeFileSync(opts.executablesFile(), newExecutables.join(os.EOL))
 }
 
 export async function getAgdaSdist(

@@ -72,4 +72,8 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
   } catch (error) {
     core.setFailed(util.ensureError(error))
   }
+
+  // 5. Register executables
+  for (const executable of options['agda-executables-list'])
+    util.registerAgdaExecutable(executable)
 }

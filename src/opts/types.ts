@@ -175,6 +175,7 @@ export type SetupAgdaOption =
   | 'agda-stdlib-version'
   | 'agda-libraries'
   | 'agda-defaults'
+  | 'agda-executables'
   | 'bdist-name'
   | 'bdist-retention-days'
   | 'ghc-version-range'
@@ -204,12 +205,14 @@ export interface BuildOptions extends SetupAgdaInputs {
   // Type refinements of 'agda-version' and 'agda-stdlib-version':
   'agda-version': AgdaVersion | 'HEAD' | 'nightly'
   'agda-stdlib-version': AgdaStdlibVersion | 'experimental' | 'none'
-  // Libraries: paths to libraries on the file system:
+  // Libraries: paths to libraries that need to be added to AGDA_DIR/libraries:
   'agda-libraries-list-local': string[]
-  // Libraries: distribution information for libraries that need to be installed:
+  // Libraries: distribution information for libraries that need to be installed and added to AGDA_DIR/libraries:
   'agda-libraries-list-sdist': Dist[]
-  // Libraries: names of libraries that need to be added to defaults
+  // Libraries: names of libraries that need to be added to AGDA_DIR/defaults
   'agda-libraries-default': string[]
+  // Executables: paths of executables that need to be added to AGDA_DIR/executables
+  'agda-executables-list': string[]
   // Extra include and lib directories for compiling Agda:
   'extra-include-dirs': string[]
   'extra-lib-dirs': string[]
