@@ -1058,13 +1058,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
-const node_path_1 = __importDefault(__nccwpck_require__(9411));
+const path = __importStar(__nccwpck_require__(9411));
+const os = __importStar(__nccwpck_require__(612));
 const opts = __importStar(__nccwpck_require__(1352));
 function setup(dist) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -1073,8 +1071,11 @@ function setup(dist) {
             dist = { url: dist };
         core.info(`Download from ${dist.url}`);
         const tmpDir = yield opts.downloadDist(dist);
-        const globber = yield glob.create(node_path_1.default.join(tmpDir, '**', '*.agda-lib'));
-        const agdaLibFiles = globber.glob();
+        const globber = yield glob.create([
+            path.join(tmpDir, '*.agda-lib'),
+            path.join(tmpDir, '**', '*.agda-lib')
+        ].join(os.EOL));
+        const agdaLibFiles = yield globber.glob();
         core.info(`Found .agda-lib files: ${JSON.stringify(agdaLibFiles)}`);
     });
 }
