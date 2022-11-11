@@ -447,10 +447,7 @@ function getOptions(inputs, actionYml) {
         'Options:',
         ...Object.entries(Object.assign({ os: plat.platform }, options)).map(entry => {
             const [key, value] = entry;
-            if (Array.isArray(value))
-                return `- ${key}: [${value.join(', ')}]`;
-            else
-                return `- ${key}: ${value}`;
+            return `- ${key}: ${JSON.stringify(value)}`;
         })
     ].join(os.EOL));
     return options;
