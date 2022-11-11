@@ -21,33 +21,85 @@ See [action.yml](action.yml)
 Minimal:
 
 ```yaml
+name: minimal
 on: [push]
-name: check
 jobs:
   check:
-    name: Check Hello.agda
+    name: Check greet.agda
     runs-on: ubuntu-latest # or macOS-latest, or windows-latest
     steps:
       - uses: actions/checkout@v3
       - uses: wenkokke/setup-agda@latest
-      - run: agda Hello.agda
+      - run: agda greet.agda
 ```
 
 Basic:
 
 ```yaml
+name: basic
 on: [push]
-name: check
 jobs:
   check:
-    name: Check Hello.agda
+    name: Check hello-world-dep.agda
     runs-on: ubuntu-latest # or macOS-latest, or windows-latest
     steps:
       - uses: actions/checkout@v3
       - uses: wenkokke/setup-agda@latest
         with:
           agda-version: '2.6.2.2'
-      - run: agda Hello.agda
+          agda-stdlib-version: '1.7.1'
+      - run: agda hello-world-dep.agda
+```
+
+Matrix:
+
+```yaml
+name: matrix
+on: [push]
+jobs:
+  check:
+    name: Check hello-world-proof.agda
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+        agda-version: ['2.6.2.2', '2.6.1.3', '2.6.0.1', '2.5.4.2']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: wenkokke/setup-agda@latest
+        with:
+          agda-version: ${{ matrix.agda-version }}
+          agda-stdlib-version: 'recommended'
+      - run: agda hello-world-proof.agda
+```
+
+Complex:
+
+```yaml
+name: complex
+on: [push]
+jobs:
+  check:
+    name: Check hello-schmitty.agda
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: cda-tum/setup-z3@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: wenkokke/setup-agda@latest
+        with:
+          agda-version: '2.6.2.2'
+          agda-stdlib-version: '1.7.1'
+          agda-libraries: |
+            https://github.com/gallais/agdarsec.git#v0.5.0
+            https://github.com/wenkokke/schmitty.git#v1.0.1
+          agda-executables: |
+            z3
+      - run: agda hello-schmitty.agda
 ```
 
 ## Supported versions
