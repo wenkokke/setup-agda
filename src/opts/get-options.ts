@@ -94,23 +94,46 @@ export default function getOptions(
       ].join(' ')
     )
 
-  // Parse agda-libraries and agda-defaults:
+  // Parse agda-libraries:
   const agdaLibraries = getOption('agda-libraries')
-  const agdaLibraryList: opts.Dist[] = []
-  for (const agdaLibrary of agdaLibraries.split(/\r?\n/g)) {
-    if (agdaLibrary.match(/^\s*$/)) continue
-    const [agdaLibraryUrl, agdaLibraryTag] = agdaLibrary.trim().split('#', 2)
-    agdaLibraryList.push({
-      url: agdaLibraryUrl,
-      tag: agdaLibraryTag,
-      distType: 'git'
-    })
+  const agdaLibrariesLines = agdaLibraries
+    .split(/\r?\n/g)
+    .map(string => string.trim())
+    .filter(string => string.length > 0)
+  const agdaLibrariesLocal: string[] = []
+  const agdaLibrariesSDist: opts.Dist[] = []
+  for (const agdaLibrary of agdaLibrariesLines) {
+    // Check if the entry refers to a local .agda-lib file,
+    // otherwise assume it refers to a .git URL:
+    if (agdaLibrary.match(/\.agda-lib$/) && fs.existsSync(agdaLibrary)) {
+      agdaLibrariesLocal.push(agdaLibrary)
+    } else {
+      const [url, tag] = agdaLibrary.split('#', 2)
+      agdaLibrariesSDist.push({url, tag, distType: 'git'})
+    }
   }
+  // Parse agda-defaults:
   const agdaDefaults = getOption('agda-defaults')
-  const agdaDefaultList: opts.Dist[] = []
-  for (const agdaDefault of agdaDefaults.split(/\r?\n/g)) {
-    if (agdaDefault.match(/^\s*$/)) continue
-    agdaDefaultList.push(agdaDefault.trim())
+  const agdaDefaultsLines = agdaDefaults
+    .split(/\r?\n/g)
+    .map(string => string.trim())
+    .filter(string => string.length > 0)
+  const agdaLibrariesDefault: string[] = []
+  for (const agdaDefault of agdaDefaultsLines) {
+    agdaLibrariesDefault.push(agdaDefault)
+  }
+  // Add standard-library:
+  const agdaStdlibDefault = getFlag('agda-stdlib-default')
+  if (agdaStdlibVersion !== 'none') {
+    // Add standard-library to agda-libraries-dist:
+    let dist = opts.agdaStdlibSdistIndex[agdaStdlibVersion]
+    if (dist === undefined)
+      throw Error(`Unsupported agda-stdlib version ${agdaStdlibVersion}`)
+    if (typeof dist === 'string') dist = {url: dist}
+    if (dist.tag === undefined) dist.tag = agdaStdlibVersion
+    agdaLibrariesSDist.push(dist)
+    // Add standard-library agda-libraries-default:
+    if (agdaStdlibDefault) agdaLibrariesDefault.push('standard-library')
   }
 
   // Create build options:
@@ -118,7 +141,7 @@ export default function getOptions(
     // Specified in Agdaopts.SetupInputs
     'agda-version': agdaVersion,
     'agda-stdlib-version': agdaStdlibVersion,
-    'agda-stdlib-default': getFlag('agda-stdlib-default'),
+    'agda-stdlib-default': agdaStdlibDefault,
     'agda-libraries': agdaLibraries,
     'agda-defaults': getOption('agda-defaults'),
     'bdist-compress-exe': getFlag('bdist-compress-exe'),
@@ -147,9 +170,9 @@ export default function getOptions(
     // Specified in opts.BuildOptions
     'extra-include-dirs': [],
     'extra-lib-dirs': [],
-    'agda-libraries-list-local': [],
-    'agda-libraries-list-sdist': agdaLibraryList,
-    'agda-libraries-default': []
+    'agda-libraries-list-local': agdaLibrariesLocal,
+    'agda-libraries-list-sdist': agdaLibrariesSDist,
+    'agda-libraries-default': agdaLibrariesDefault
   }
   // Print options:
   core.info(

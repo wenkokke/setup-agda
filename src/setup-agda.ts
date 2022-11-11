@@ -5,7 +5,6 @@ import * as opts from './opts'
 import buildFromSdist from './setup-agda/build-from-sdist'
 import installFromBdist from './setup-agda/install-from-bdist'
 import installFromToolCache from './setup-agda/install-from-tool-cache'
-import setupAgdaStdlib from './setup-agda-stdlib'
 import setupAgdaLibrary from './setup-agda-library'
 import * as util from './util'
 
@@ -63,9 +62,13 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
     )
 
     // 4. Setup agda-stdlib & other libraries:
-    await setupAgdaStdlib(options)
-    for (const library of options['agda-libraries-list-sdist'])
-      await setupAgdaLibrary(library)
+    for (const libraryDist of options['agda-libraries-list-sdist'])
+      await setupAgdaLibrary(libraryDist, options)
+    for (const libraryFile of options['agda-libraries-list-local']) {
+      const libraryName = path.basename(libraryFile, '.agda-lib')
+      const isDefault = options['agda-libraries-default'].includes(libraryName)
+      util.registerAgdaLibrary(libraryFile, isDefault)
+    }
   } catch (error) {
     core.setFailed(util.ensureError(error))
   }

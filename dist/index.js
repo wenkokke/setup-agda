@@ -386,32 +386,57 @@ function getOptions(inputs, actionYml) {
             `Input "bdist-rentention-days" must be a number between 0 and 90.`,
             `Found "${bdistRetentionDays}".`
         ].join(' '));
-    // Parse agda-libraries and agda-defaults:
+    // Parse agda-libraries:
     const agdaLibraries = getOption('agda-libraries');
-    const agdaLibraryList = [];
-    for (const agdaLibrary of agdaLibraries.split(/\r?\n/g)) {
-        if (agdaLibrary.match(/^\s*$/))
-            continue;
-        const [agdaLibraryUrl, agdaLibraryTag] = agdaLibrary.trim().split('#', 2);
-        agdaLibraryList.push({
-            url: agdaLibraryUrl,
-            tag: agdaLibraryTag,
-            distType: 'git'
-        });
+    const agdaLibrariesLines = agdaLibraries
+        .split(/\r?\n/g)
+        .map(string => string.trim())
+        .filter(string => string.length > 0);
+    const agdaLibrariesLocal = [];
+    const agdaLibrariesSDist = [];
+    for (const agdaLibrary of agdaLibrariesLines) {
+        // Check if the entry refers to a local .agda-lib file,
+        // otherwise assume it refers to a .git URL:
+        if (agdaLibrary.match(/\.agda-lib$/) && fs.existsSync(agdaLibrary)) {
+            agdaLibrariesLocal.push(agdaLibrary);
+        }
+        else {
+            const [url, tag] = agdaLibrary.split('#', 2);
+            agdaLibrariesSDist.push({ url, tag, distType: 'git' });
+        }
     }
+    // Parse agda-defaults:
     const agdaDefaults = getOption('agda-defaults');
-    const agdaDefaultList = [];
-    for (const agdaDefault of agdaDefaults.split(/\r?\n/g)) {
-        if (agdaDefault.match(/^\s*$/))
-            continue;
-        agdaDefaultList.push(agdaDefault.trim());
+    const agdaDefaultsLines = agdaDefaults
+        .split(/\r?\n/g)
+        .map(string => string.trim())
+        .filter(string => string.length > 0);
+    const agdaLibrariesDefault = [];
+    for (const agdaDefault of agdaDefaultsLines) {
+        agdaLibrariesDefault.push(agdaDefault);
+    }
+    // Add standard-library:
+    const agdaStdlibDefault = getFlag('agda-stdlib-default');
+    if (agdaStdlibVersion !== 'none') {
+        // Add standard-library to agda-libraries-dist:
+        let dist = opts.agdaStdlibSdistIndex[agdaStdlibVersion];
+        if (dist === undefined)
+            throw Error(`Unsupported agda-stdlib version ${agdaStdlibVersion}`);
+        if (typeof dist === 'string')
+            dist = { url: dist };
+        if (dist.tag === undefined)
+            dist.tag = agdaStdlibVersion;
+        agdaLibrariesSDist.push(dist);
+        // Add standard-library agda-libraries-default:
+        if (agdaStdlibDefault)
+            agdaLibrariesDefault.push('standard-library');
     }
     // Create build options:
     const options = {
         // Specified in Agdaopts.SetupInputs
         'agda-version': agdaVersion,
         'agda-stdlib-version': agdaStdlibVersion,
-        'agda-stdlib-default': getFlag('agda-stdlib-default'),
+        'agda-stdlib-default': agdaStdlibDefault,
         'agda-libraries': agdaLibraries,
         'agda-defaults': getOption('agda-defaults'),
         'bdist-compress-exe': getFlag('bdist-compress-exe'),
@@ -438,9 +463,9 @@ function getOptions(inputs, actionYml) {
         // Specified in opts.BuildOptions
         'extra-include-dirs': [],
         'extra-lib-dirs': [],
-        'agda-libraries-list-local': [],
-        'agda-libraries-list-sdist': agdaLibraryList,
-        'agda-libraries-default': []
+        'agda-libraries-list-local': agdaLibrariesLocal,
+        'agda-libraries-list-sdist': agdaLibrariesSDist,
+        'agda-libraries-default': agdaLibrariesDefault
     };
     // Print options:
     core.info([
@@ -1061,86 +1086,42 @@ const glob = __importStar(__nccwpck_require__(8090));
 const path = __importStar(__nccwpck_require__(9411));
 const os = __importStar(__nccwpck_require__(612));
 const opts = __importStar(__nccwpck_require__(1352));
-function setup(dist) {
+const util = __importStar(__nccwpck_require__(4024));
+function setup(dist, options) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         // Coerce string to {url: string; dir?: string; tag?: string}
         if (typeof dist === 'string')
             dist = { url: dist };
         core.info(`Download from ${dist.url}`);
         const tmpDir = yield opts.downloadDist(dist);
-        const globber = yield glob.create([
-            path.join(tmpDir, '*.agda-lib'),
-            path.join(tmpDir, '**', '*.agda-lib')
-        ].join(os.EOL));
-        const agdaLibFiles = yield globber.glob();
-        core.info(`Found .agda-lib files: ${JSON.stringify(agdaLibFiles)}`);
+        const agdaLibraryFiles = yield findAgdaLibraryFiles(tmpDir);
+        for (const agdaLibraryFile of agdaLibraryFiles) {
+            const libraryName = path.basename(agdaLibraryFile, '.agda-lib');
+            const libraryFrom = path.dirname(agdaLibraryFile);
+            const libraryVersion = (_a = dist.tag) !== null && _a !== void 0 ? _a : 'experimental';
+            const libraryExperimental = dist.tag === undefined;
+            const libraryRelativeDir = path.relative(tmpDir, libraryFrom);
+            core.info(`Found ${libraryName} version ${libraryVersion} at ${libraryRelativeDir}`);
+            const libraryTo = opts.libraryDir(libraryName, libraryVersion, libraryExperimental);
+            core.info(`Install ${libraryName} to ${libraryTo}`);
+            yield util.mkdirP(path.dirname(libraryTo));
+            yield util.cpR(libraryFrom, libraryTo);
+            // TODO: clean up libraryFrom
+            const libraryIsDefault = options['agda-libraries-default'].includes(libraryName);
+            if (libraryIsDefault)
+                core.info(`Register ${libraryName} as default`);
+            util.registerAgdaLibrary(path.join(libraryTo, `${libraryName}.agda-lib`), libraryIsDefault);
+        }
     });
 }
 exports["default"] = setup;
-
-
-/***/ }),
-
-/***/ 6404:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const core = __importStar(__nccwpck_require__(2186));
-const node_path_1 = __importDefault(__nccwpck_require__(9411));
-const opts = __importStar(__nccwpck_require__(1352));
-const util = __importStar(__nccwpck_require__(4024));
-function setup(options) {
+function findAgdaLibraryFiles(dir) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (options['agda-stdlib-version'] === 'none')
-            return;
-        // Setup agda-stdlib:
-        let standardLibraryDir = opts.libraryDir('standard-library', options['agda-stdlib-version'], options['agda-stdlib-version'] === 'experimental');
-        core.info(`Install agda-stdlib ${options['agda-stdlib-version']} to ${standardLibraryDir}`);
-        const standardLibraryDistIndexEntry = opts.agdaStdlibSdistIndex[options['agda-stdlib-version']];
-        if (standardLibraryDistIndexEntry === undefined)
-            throw Error(`Unsupported agda-stdlib version: '${options['agda-stdlib-version']}'`);
-        standardLibraryDir = yield opts.downloadDist(standardLibraryDistIndexEntry, standardLibraryDir);
-        util.registerAgdaLibrary(node_path_1.default.join(standardLibraryDir, 'standard-library.agda-lib'), options['agda-stdlib-default']);
+        const globber = yield glob.create([path.join(dir, '*.agda-lib'), path.join(dir, '**', '*.agda-lib')].join(os.EOL));
+        return yield globber.glob();
     });
 }
-exports["default"] = setup;
 
 
 /***/ }),
@@ -1193,7 +1174,6 @@ const opts = __importStar(__nccwpck_require__(1352));
 const build_from_sdist_1 = __importDefault(__nccwpck_require__(3350));
 const install_from_bdist_1 = __importDefault(__nccwpck_require__(6577));
 const install_from_tool_cache_1 = __importDefault(__nccwpck_require__(9546));
-const setup_agda_stdlib_1 = __importDefault(__nccwpck_require__(6404));
 const setup_agda_library_1 = __importDefault(__nccwpck_require__(7606));
 const util = __importStar(__nccwpck_require__(4024));
 function setup(options) {
@@ -1232,9 +1212,13 @@ function setup(options) {
             // 3. Test:
             yield core.group('👩🏾‍🔬 Testing Agda installation', () => __awaiter(this, void 0, void 0, function* () { return yield util.agdaTest(); }));
             // 4. Setup agda-stdlib & other libraries:
-            yield (0, setup_agda_stdlib_1.default)(options);
-            for (const library of options['agda-libraries-list-sdist'])
-                yield (0, setup_agda_library_1.default)(library);
+            for (const libraryDist of options['agda-libraries-list-sdist'])
+                yield (0, setup_agda_library_1.default)(libraryDist, options);
+            for (const libraryFile of options['agda-libraries-list-local']) {
+                const libraryName = path.basename(libraryFile, '.agda-lib');
+                const isDefault = options['agda-libraries-default'].includes(libraryName);
+                util.registerAgdaLibrary(libraryFile, isDefault);
+            }
         }
         catch (error) {
             core.setFailed(util.ensureError(error));
