@@ -1009,7 +1009,7 @@ function isAgdaStdlibVersion(version) {
 exports.isAgdaStdlibVersion = isAgdaStdlibVersion;
 // Type guard for agda-stdlib version specifications:
 function isAgdaStdlibVersionSpec(versionSpec) {
-    return (isAgdaVersion(versionSpec) ||
+    return (isAgdaStdlibVersion(versionSpec) ||
         versionSpec === 'recommended' ||
         versionSpec === 'latest' ||
         versionSpec === 'experimental' ||

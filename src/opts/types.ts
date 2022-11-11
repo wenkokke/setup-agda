@@ -87,7 +87,7 @@ export function isAgdaStdlibVersionSpec(
   versionSpec: string
 ): versionSpec is AgdaStdlibVersionSpec {
   return (
-    isAgdaVersion(versionSpec) ||
+    isAgdaStdlibVersion(versionSpec) ||
     versionSpec === 'recommended' ||
     versionSpec === 'latest' ||
     versionSpec === 'experimental' ||
