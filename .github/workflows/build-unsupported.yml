@@ -31,10 +31,6 @@ on:
 #  "2.4.2",   "2.4.2.1", "2.4.2.2", "2.4.2.3", "2.4.2.4", "2.4.2.5", "2.5.1.2"
 # ]
 #
-# Agda 2.5.2 uses GHC 8.0.1, which is unsupported by haskell/actions/setup.
-# We could build this version by requiring Stack to set up GHC, or by using
-# GHC 8.0.2, which *is* supported.
-#
 # Agda 2.5.3 fails to build because it cannot find `alex` and `happy`, which
 # is probably due to older versions of Cabal not properly installing build
 # tool dependencies. We could build this version by installing `alex` and
