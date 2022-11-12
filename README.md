@@ -115,11 +115,12 @@ jobs:
 | Agda    | Ubuntu 20.04 | Ubuntu 22.04 | macOS 11   | macOS 12   | Windows 2019 | Windows 2022 |
 | ------- | ------------ | ------------ | ---------- | ---------- | ------------ | ------------ |
 | 2.6.2.2 | 📦 & 🏗       | 📦 & 🏗       | 📦 & 🏗     | 📦 & 🏗     | 📦 only      | 📦 & 🏗       |
-| 2.6.2.1 | 📦 & 🏗[^1]   | 📦 & 🏗[^1]   | 📦 & 🏗[^1] | 📦 & 🏗[^1] |              |              |
-| 2.6.2   | 📦 & 🏗       | 📦 & 🏗       | 📦 & 🏗     | 📦 & 🏗     |              |              |
+| 2.6.2.1 | 📦 & 🏗[^1]   | 📦 & 🏗[^1]   | 📦 & 🏗[^1] | 📦 & 🏗[^1] | 📦 only      | 📦 & 🏗       |
+| 2.6.2   | 📦 & 🏗       | 📦 & 🏗       | 📦 & 🏗     | 📦 & 🏗     | 📦 only      | 📦 & 🏗       |
 | 2.6.1.3 | 📦 & 🏗[^1]   | 📦 & 🏗[^1]   | 📦 & 🏗[^1] | 📦 & 🏗[^1] |              |              |
 | 2.6.0.1 | 📦 & 🏗[^1]   | 📦 & 🏗[^1]   | 📦 & 🏗[^1] | 📦 & 🏗[^1] |              |              |
 | 2.5.4.2 | 📦 & 🏗[^1]   | 📦 & 🏗[^1]   | 📦 & 🏗[^1] | 📦 & 🏗[^1] |              |              |
+| 2.5.2   | 📦 & 🏗[^1]   | 📦 & 🏗[^1]   | 📦 & 🏗[^1] | 📦 & 🏗[^1] |              |              |
 
 If 📦 is specified, the platform supports setting up the Agda version from a binary distribution.
 
@@ -129,7 +130,7 @@ We encourage using the binary distributions. The binary distributions are tested
 
 If you find a configuration for this action which builds a legacy version not listed here, please open an issue and include the GitHub workflow. You can find the configuration for the current legacy builds in the [build-legacy] workflow.
 
-[^1]: This version can only be built with Stack. Set the input `enable-stack` to build with Stack.
+[^1]: This version can only be built with Stack. Set the input `enable-stack` to build with Stack. See [build.yml] for details.
 
 ## Licenses
 
@@ -146,3 +147,4 @@ The binary distributions bundle binaries for [icu4c], and as such are subject to
 [agda license]: https://github.com/agda/agda/blob/master/LICENSE
 [its license]: https://github.com/wenkokke/setup-agda/blob/main/LICENSE
 [the licenses of its dependencies]: https://github.com/wenkokke/setup-agda/blob/main/dist/licenses.txt
+[build.yml]: .github/workflows/build.yml
