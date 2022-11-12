@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import assert from 'node:assert'
 import * as path from 'node:path'
+import * as os from 'node:os'
 import * as opts from './opts'
 import buildFromSdist from './setup-agda/build-from-sdist'
 import installFromBdist from './setup-agda/install-from-bdist'
@@ -61,19 +62,40 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
       async () => await util.agdaTest()
     )
 
-    // 4. Setup agda-stdlib & other libraries:
-    for (const libraryDist of options['agda-libraries-list-sdist'])
-      await setupAgdaLibrary(libraryDist, options)
-    for (const libraryFile of options['agda-libraries-list-local']) {
-      const libraryName = path.basename(libraryFile, '.agda-lib')
-      const isDefault = options['agda-libraries-default'].includes(libraryName)
-      util.registerAgdaLibrary(libraryFile, isDefault)
-    }
+    // 4. Install libraries & register executables:
+    await core.group(
+      '📚 Installing libraries & registering executables',
+      async () => {
+        // Install libraries from sdist:
+        for (const libraryDist of options['agda-libraries-list-sdist']) {
+          await setupAgdaLibrary(libraryDist, options)
+        }
+        // Register local libraries:
+        for (const libraryFile of options['agda-libraries-list-local']) {
+          const libraryName = path.basename(libraryFile, '.agda-lib')
+          const isDefault =
+            options['agda-libraries-default'].includes(libraryName)
+          util.registerAgdaLibrary(libraryFile, isDefault)
+        }
+        // Register local executables:
+        for (const executable of options['agda-executables-list']) {
+          util.registerAgdaExecutable(executable)
+        }
+        // Print final register:
+        const libraries = util.readLibrariesSync()
+        core.info(
+          [
+            'libraries:',
+            ...libraries.map(parsedPath => path.format(parsedPath))
+          ].join(os.EOL)
+        )
+        const defaults = util.readDefaultsSync()
+        core.info(['defaults:', ...defaults].join(os.EOL))
+        const executables = util.readExecutablesSync()
+        core.info(['executables:', ...executables].join(os.EOL))
+      }
+    )
   } catch (error) {
     core.setFailed(util.ensureError(error))
   }
-
-  // 5. Register executables
-  for (const executable of options['agda-executables-list'])
-    util.registerAgdaExecutable(executable)
 }

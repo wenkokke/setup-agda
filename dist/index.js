@@ -1201,6 +1201,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const path = __importStar(__nccwpck_require__(9411));
+const os = __importStar(__nccwpck_require__(612));
 const opts = __importStar(__nccwpck_require__(1352));
 const build_from_sdist_1 = __importDefault(__nccwpck_require__(3350));
 const install_from_bdist_1 = __importDefault(__nccwpck_require__(6577));
@@ -1242,21 +1243,37 @@ function setup(options) {
             }));
             // 3. Test:
             yield core.group('👩🏾‍🔬 Testing Agda installation', () => __awaiter(this, void 0, void 0, function* () { return yield util.agdaTest(); }));
-            // 4. Setup agda-stdlib & other libraries:
-            for (const libraryDist of options['agda-libraries-list-sdist'])
-                yield (0, setup_agda_library_1.default)(libraryDist, options);
-            for (const libraryFile of options['agda-libraries-list-local']) {
-                const libraryName = path.basename(libraryFile, '.agda-lib');
-                const isDefault = options['agda-libraries-default'].includes(libraryName);
-                util.registerAgdaLibrary(libraryFile, isDefault);
-            }
+            // 4. Install libraries & register executables:
+            yield core.group('📚 Installing libraries & registering executables', () => __awaiter(this, void 0, void 0, function* () {
+                // Install libraries from sdist:
+                for (const libraryDist of options['agda-libraries-list-sdist']) {
+                    yield (0, setup_agda_library_1.default)(libraryDist, options);
+                }
+                // Register local libraries:
+                for (const libraryFile of options['agda-libraries-list-local']) {
+                    const libraryName = path.basename(libraryFile, '.agda-lib');
+                    const isDefault = options['agda-libraries-default'].includes(libraryName);
+                    util.registerAgdaLibrary(libraryFile, isDefault);
+                }
+                // Register local executables:
+                for (const executable of options['agda-executables-list']) {
+                    util.registerAgdaExecutable(executable);
+                }
+                // Print final register:
+                const libraries = util.readLibrariesSync();
+                core.info([
+                    'libraries:',
+                    ...libraries.map(parsedPath => path.format(parsedPath))
+                ].join(os.EOL));
+                const defaults = util.readDefaultsSync();
+                core.info(['defaults:', ...defaults].join(os.EOL));
+                const executables = util.readExecutablesSync();
+                core.info(['executables:', ...executables].join(os.EOL));
+            }));
         }
         catch (error) {
             core.setFailed(util.ensureError(error));
         }
-        // 5. Register executables
-        for (const executable of options['agda-executables-list'])
-            util.registerAgdaExecutable(executable);
     });
 }
 exports["default"] = setup;
