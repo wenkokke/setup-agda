@@ -249,9 +249,9 @@ jobs:
       matrix:
         os: [ubuntu-20.04, macos-11]
 
-  # Build Agda 2.5.2 with Cabal:
-  build-2_5_2-cabal:
-    name: Build Agda (2.5.2) on ${{ matrix.os }} with Cabal
+  # Build Agda 2.5.2 with Stack:
+  build-2_5_2-stack:
+    name: Build Agda (2.5.2) on ${{ matrix.os }} with Stack
     runs-on: ${{ matrix.os }}
     continue-on-error: true
     steps:

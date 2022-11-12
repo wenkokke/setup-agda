@@ -112,17 +112,17 @@ jobs:
           cabal-version: '2.4'
           enable-stack: true
           force-build: true
-          ghc-version: '7.10.3'
+          ghc-version: '8.0.2'
           ghc-version-match-exact: true
           pre-build-hook: |
             stack install alex-3.2.1
             stack install happy-1.19.4
-            yq -i '${{ env.YQ_SCRIPT_FIX_TEXT_ICU }}' $STACK_YAML
-            yq -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
+            ${{ steps.setup-yq.outputs.yq-path }} -i '${{ env.YQ_SCRIPT_FIX_TEXT_ICU }}' $STACK_YAML
+            ${{ steps.setup-yq.outputs.yq-path }} -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
             cat $STACK_YAML
     strategy:
       matrix:
-        os: [ubuntu-20.04]
+        os: [ubuntu-20.04, macos-11]
 
   # Build Agda 2.6.1.3 with Stack on Windows (failing):
   build-2_6_1_3-stack-win32:
