@@ -55,7 +55,7 @@ jobs:
       - run: agda hello-world-dep.agda
 ```
 
-#### Matrix 
+#### Matrix
 
 Matrix test with multiple Agda versions.
 
