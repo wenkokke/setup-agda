@@ -125,7 +125,7 @@ jobs:
             yq -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
             cat $STACK_YAML
     strategy:
-      matrix: 
+      matrix:
         os: [ubuntu-20.04]
 
   # Build Agda 2.6.2.1 with Stack on Windows (failing):
@@ -191,7 +191,7 @@ jobs:
             ${{ steps.setup-yq.outputs.yq-path }} -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
             cat $STACK_YAML
     strategy:
-      matrix: 
+      matrix:
         os: [windows-2022]
 
   # Build Agda 2.6.1.3 with Stack on Windows (failing):
