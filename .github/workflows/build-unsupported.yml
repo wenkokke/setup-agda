@@ -150,6 +150,7 @@ jobs:
           cabal-version: '2.4'
           enable-stack: true
           force-build: true
+          force-no-optimise-heavily: true
           ghc-version-match-exact: true
           pre-build-hook: |
             ${{ steps.setup-yq.outputs.yq-path }} -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
@@ -181,6 +182,7 @@ jobs:
           cabal-version: '2.4'
           enable-stack: true
           force-build: true
+          force-no-optimise-heavily: true
           ghc-version-match-exact: true
           pre-build-hook: |
             ${{ steps.setup-yq.outputs.yq-path }} -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
