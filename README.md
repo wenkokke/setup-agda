@@ -14,7 +14,6 @@ For all other versions, this action attempts to build Agda from source. If an ol
 
 [^0]: All binary distributions support [cluster counting].
 
-
 ## Usage
 
 See [action.yml](action.yml)
@@ -56,7 +55,7 @@ jobs:
       - run: agda hello-world-dep.agda
 ```
 
-#### Matrix 
+#### Matrix
 
 Matrix test with multiple Agda versions.
 
@@ -111,7 +110,6 @@ jobs:
       - run: agda hello-schmitty.agda
 ```
 
-
 ## Supported versions
 
 | Agda    | Ubuntu 20.04 | Ubuntu 22.04 | macOS 11   | macOS 12   | Windows 2019 | Windows 2022 |
@@ -132,7 +130,6 @@ We encourage using the binary distributions. The binary distributions are tested
 If you find a configuration for this action which builds a legacy version not listed here, please open an issue and include the GitHub workflow. You can find the configuration for the current legacy builds in the [build-legacy] workflow.
 
 [^1]: This version can only be built with Stack. Set the input `enable-stack` to build with Stack.
-
 
 ## Licenses
 
