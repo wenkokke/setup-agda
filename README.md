@@ -18,7 +18,9 @@ For all other versions, this action attempts to build Agda from source. If an ol
 
 See [action.yml](action.yml)
 
-Minimal:
+#### Minimal
+
+Setup the latest Agda version.
 
 ```yaml
 name: minimal
@@ -33,7 +35,9 @@ jobs:
       - run: agda greet.agda
 ```
 
-Basic:
+#### Basic
+
+Setup a specific Agda version and its recommended standard library version.
 
 ```yaml
 name: basic
@@ -47,11 +51,13 @@ jobs:
       - uses: wenkokke/setup-agda@latest
         with:
           agda-version: '2.6.2.2'
-          agda-stdlib-version: '1.7.1'
+          agda-stdlib-version: 'recommended'
       - run: agda hello-world-dep.agda
 ```
 
-Matrix:
+#### Matrix 
+
+Matrix test with multiple Agda versions.
 
 ```yaml
 name: matrix
@@ -73,7 +79,9 @@ jobs:
       - run: agda hello-world-proof.agda
 ```
 
-Complex:
+#### Complex
+
+Setup a specific Agda version, a specific standard library version, various other libraries, and an executable.
 
 ```yaml
 name: complex
