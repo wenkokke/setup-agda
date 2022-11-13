@@ -40,9 +40,8 @@ export async function build(
   await opts.runPreBuildHook(options, execOptions)
 
   // Print the contents of stack.yaml:
-  core.info(
-    `${path.basename(stackYaml)}:${os.EOL}${fs.readFileSync(stackYaml)}`
-  )
+  const stackYamlContents = fs.readFileSync(path.join(sourceDir, stackYaml))
+  core.info(`${stackYaml}:${os.EOL}${stackYamlContents}`)
 
   // Configure, Build, and Install:
   const installBinDir = path.join(installDir, 'bin')
