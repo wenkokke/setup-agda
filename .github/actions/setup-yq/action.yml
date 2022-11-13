@@ -24,6 +24,8 @@ runs:
       run: |
         Invoke-WebRequest -Uri "https://github.com/mikefarah/yq/releases/download/v${{ inputs.yq-version }}/yq_windows_amd64.zip" -OutFile "${{ runner.temp }}/yq.zip"
         Expand-Archive "${{ runner.temp }}/yq.zip" -DestinationPath "${{ github.workspace }}/yq/"
+        Copy-Item "${{ github.workspace }}/yq/yq_windows_amd64.exe" -Destination "${{ github.workspace }}/yq/yq.exe"
+        Add-Content $Env:GITHUB_PATH "${{ github.workspace }}/yq/"
       shell: pwsh
 
     - name: Set yq-path

@@ -111,7 +111,7 @@ jobs:
           force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
           ghc-version-match-exact: true
           pre-build-hook: |
-            ${{ steps.setup-yq.outputs.yq-path }} -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
+            yq -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
             cat $STACK_YAML
     strategy:
       matrix:
@@ -144,7 +144,7 @@ jobs:
           force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
           ghc-version-match-exact: true
           pre-build-hook: |
-            ${{ steps.setup-yq.outputs.yq-path }} -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
+            yq -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
             cat $STACK_YAML
     strategy:
       matrix:
@@ -176,8 +176,8 @@ jobs:
           force-build: true
           ghc-version-match-exact: true
           pre-build-hook: |
-            ${{ steps.setup-yq.outputs.yq-path }} -i '${{ env.YQ_SCRIPT_FIX_TEXT_ICU }}' $STACK_YAML
-            ${{ steps.setup-yq.outputs.yq-path }} -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
+            yq -i '${{ env.YQ_SCRIPT_FIX_TEXT_ICU }}' $STACK_YAML
+            yq -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
             cat $STACK_YAML
     strategy:
       matrix:
@@ -209,8 +209,8 @@ jobs:
           force-build: true
           ghc-version-match-exact: true
           pre-build-hook: |
-            ${{ steps.setup-yq.outputs.yq-path }} -i '${{ env.YQ_SCRIPT_FIX_TEXT_ICU }}' $STACK_YAML
-            ${{ steps.setup-yq.outputs.yq-path }} -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
+            yq -i '${{ env.YQ_SCRIPT_FIX_TEXT_ICU }}' $STACK_YAML
+            yq -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
             cat $STACK_YAML
     strategy:
       matrix:
@@ -242,8 +242,8 @@ jobs:
           force-build: true
           ghc-version-match-exact: true
           pre-build-hook: |
-            ${{ steps.setup-yq.outputs.yq-path }} -i '${{ env.YQ_SCRIPT_FIX_TEXT_ICU }}' $STACK_YAML
-            ${{ steps.setup-yq.outputs.yq-path }} -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
+            yq -i '${{ env.YQ_SCRIPT_FIX_TEXT_ICU }}' $STACK_YAML
+            yq -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
             cat $STACK_YAML
     strategy:
       matrix:
@@ -280,8 +280,8 @@ jobs:
             stack config set resolver lts-9.21
             stack install alex-3.2.1
             stack install happy-1.19.4
-            ${{ steps.setup-yq.outputs.yq-path }} -i '${{ env.YQ_SCRIPT_FIX_TEXT_ICU }}' $STACK_YAML
-            ${{ steps.setup-yq.outputs.yq-path }} -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
+            yq -i '${{ env.YQ_SCRIPT_FIX_TEXT_ICU }}' $STACK_YAML
+            yq -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
             cat $STACK_YAML
     strategy:
       matrix:
