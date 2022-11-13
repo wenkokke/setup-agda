@@ -1650,7 +1650,8 @@ function build(sourceDir, installDir, options, matchingGhcVersionsThatCanBuildAg
         // Run the pre-build hook:
         yield opts.runPreBuildHook(options, execOptions);
         // Print the contents of stack.yaml:
-        core.info(`${stackYaml}:${os.EOL}${fs.readFileSync(path.join(sourceDir, stackYaml))}`);
+        const stackYamlContents = fs.readFileSync(path.join(sourceDir, stackYaml));
+        core.info(`${stackYaml}:${os.EOL}${stackYamlContents}`);
         // Configure, Build, and Install:
         const installBinDir = path.join(installDir, 'bin');
         yield util.mkdirP(installBinDir);
