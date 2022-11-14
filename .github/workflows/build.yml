@@ -181,7 +181,7 @@ jobs:
             cat $STACK_YAML
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-11]
+        os: [ubuntu-20.04, macos-11, windows-2022]
 
   # Build Agda 2.6.0.1 with Stack:
   build-2_6_0_1-stack:
