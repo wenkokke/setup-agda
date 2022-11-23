@@ -6,6 +6,10 @@ fail="$(mktemp)"
 echo "Running pre-commit..."
 { pre-commit run --all-files || echo > "$fail"; }
 
+# Build README.md and add to commit:
+{ npm run update-readme || echo > "$fail"; }
+git add README.md
+
 # Build dist and add to commit:
 echo "Building dist..."
 { npm run all || echo > "$fail"; }
