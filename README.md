@@ -327,7 +327,7 @@ Default: `agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}`
 
 #### Input: `bdist-compress-exe`
 
-If specified, the executables are compressed with UPX (https://upx.github.io).
+If specified, the executables are compressed with [UPX](https://upx.github.io).
 
 Beware that on MacOS and Windows the resulting executables are unsigned,
 and therefore will cause problems with security.
