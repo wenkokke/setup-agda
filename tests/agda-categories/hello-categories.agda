@@ -1,21 +1,12 @@
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Categories.Category using (Category)
 
-_⇒_ : Set → Set → Set
-A ⇒ B = A → B
-
-id : ∀ {A} → A ⇒ A
-id x = x
-
-_∘_ : ∀ {A B C} → B ⇒ C → A ⇒ B → A ⇒ C
-(g ∘ f) x = g (f x)
-
 Agda : Category _ _ _
 Category.Obj       Agda = Set
-Category._⇒_       Agda = _⇒_
+Category._⇒_       Agda = λ A B → A → B
 Category._≈_       Agda = _≡_
-Category.id        Agda = id
-Category._∘_       Agda = _∘_
+Category.id        Agda = λ x → x
+Category._∘_       Agda = λ g f x → g (f x)
 Category.assoc     Agda = refl
 Category.sym-assoc Agda = refl
 Category.identityˡ Agda = refl
