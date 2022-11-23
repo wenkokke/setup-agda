@@ -330,8 +330,19 @@ Default: `agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}`
 If specified, the executables are compressed with UPX (https://upx.github.io).
 
 Beware that on MacOS and Windows the resulting executables are unsigned,
-and therefore will cause problems with security. There is a workaround
-for this on MacOS, see 'setup-agda.install-from-bdist.repairPermissions'.
+and therefore will cause problems with security.
+There is a workaround for this on MacOS:
+
+```sh
+# for each executable file in <package>/bin:
+chmod +x <bin>
+xattr -c <bin>
+
+# for each library file in <package>/lib:
+chmod +w <lib>
+xattr -c <lib>
+chmod -w <lib>
+```
 
 Only used when `bdist-upload` is specified.
 
