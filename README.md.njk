@@ -132,16 +132,34 @@ If you find a configuration for this action which builds a legacy version not li
 
 ## Usage
 
-You can customize the behaviour of `setup-agda` using its inputs, such as `agda-version` and `agda-stdlib-version` in [basic](#basic). You have already seen the most important inputs used in [the sample configurations](#samples): [`agda-version`](#input-agda-version), [`agda-stdlib-version`](#input-agda-stdlib-version), [`agda-libraries`](#input-agda-libraries), [`agda-defaults`](#input-agda-defaults), and [`agda-executables`](#input-agda-executables).
+You can customize the behaviour of `setup-agda` using its inputs, such as `agda-version` and `agda-stdlib-version` in [basic](#basic).
 
-This section describes all possible inputs, including a number of inputs used to customize the Agda build process.
+You have already seen the most important inputs used in [the sample configurations](#samples):
 
-{% for input_name, input in inputs %}
+- [`agda-version`](#input-agda-version);
+- [`agda-stdlib-version`](#input-agda-stdlib-version);
+- [`agda-libraries`](#input-agda-libraries);
+- [`agda-defaults`](#input-agda-defaults); and
+- [`agda-executables`](#input-agda-executables).
+
+This section describes those and all other inputs.
+
+{%- for input_name, input in inputs %}
 
 #### Input: `{{ input_name | trim }}`
 
 {{ input.description | trim }}
-{% endfor %}
+
+{% if input.required -%}
+Required.
+{%- else -%}
+{%- if input.default -%}
+Default: `{{ input.default }}`
+{%- else -%}
+Default: `false`
+{%- endif -%}
+{%- endif %}
+{%- endfor %}
 
 ## Licenses
 

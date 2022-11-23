@@ -132,11 +132,17 @@ If you find a configuration for this action which builds a legacy version not li
 
 ## Usage
 
-You can customize the behaviour of `setup-agda` using its inputs, such as `agda-version` and `agda-stdlib-version` in [basic](#basic). You have already seen the most important inputs used in [the sample configurations](#samples): [`agda-version`](#input-agda-version), [`agda-stdlib-version`](#input-agda-stdlib-version), [`agda-libraries`](#input-agda-libraries), [`agda-defaults`](#input-agda-defaults), and [`agda-executables`](#input-agda-executables).
+You can customize the behaviour of `setup-agda` using its inputs, such as `agda-version` and `agda-stdlib-version` in [basic](#basic).
 
-This section describes all possible inputs, including a number of inputs used to customize the Agda build process.
+You have already seen the most important inputs used in [the sample configurations](#samples):
 
+- [`agda-version`](#input-agda-version);
+- [`agda-stdlib-version`](#input-agda-stdlib-version);
+- [`agda-libraries`](#input-agda-libraries);
+- [`agda-defaults`](#input-agda-defaults); and
+- [`agda-executables`](#input-agda-executables).
 
+This section describes those and all other inputs.
 
 #### Input: `agda-version`
 
@@ -144,6 +150,7 @@ The Agda version.
 
 Can be "latest" or a specific version number (e.g., 2.6.2.2).
 
+Default: `latest`
 
 #### Input: `agda-stdlib-version`
 
@@ -159,6 +166,7 @@ If set to "latest" or a specific version number, it will install the
 latest or that specific version, regardless of compatibility with the
 specified Agda version.
 
+Default: `none`
 
 #### Input: `agda-libraries`
 
@@ -183,6 +191,7 @@ This input relies on the convention that the filename of the .agda-lib
 file is the name of the library, and will refuse to install any library
 whose .agda-lib file is simple named ".agda-lib".
 
+Default: `false`
 
 #### Input: `agda-defaults`
 
@@ -197,6 +206,7 @@ agda-defaults: |
   cubical
 ```
 
+Default: `false`
 
 #### Input: `agda-executables`
 
@@ -210,17 +220,49 @@ agda-executables: |
   /bin/echo
 ```
 
+Default: `false`
 
-#### Input: `bdist-compress-exe`
+#### Input: `force-build`
 
-If specified, the executables are compressed with UPX (https://upx.github.io).
+If specified, always build from source.
 
-Beware that on MacOS and Windows the resulting executables are unsigned,
-and therefore will cause problems with security. There is a workaround
-for this on MacOS, see 'setup-agda.install-from-bdist.repairPermissions'.
+Default: `false`
 
-Only used when `bdist-upload` is specified.
+#### Input: `force-no-build`
 
+If specified, never build from source.
+
+Default: `false`
+
+#### Input: `force-cluster-counting`
+
+If specified, build with cluster counting.
+
+Default: `false`
+
+#### Input: `force-no-cluster-counting`
+
+If specified, build without cluster counting.
+
+Default: `false`
+
+#### Input: `force-optimise-heavily`
+
+If specified, build with optimise heavily.
+
+Default: `false`
+
+#### Input: `force-no-optimise-heavily`
+
+If specified, build without optimise heavily.
+
+Default: `false`
+
+#### Input: `bdist-upload`
+
+If specified, will upload a binary distribution for the specified Agda version.
+
+Default: `false`
 
 #### Input: `bdist-name`
 
@@ -236,6 +278,19 @@ by [the corresponding NodeJS functions](https://nodejs.org/api/os.html).
 
 Only used when `bdist-upload` is specified.
 
+Default: `agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}`
+
+#### Input: `bdist-compress-exe`
+
+If specified, the executables are compressed with UPX (https://upx.github.io).
+
+Beware that on MacOS and Windows the resulting executables are unsigned,
+and therefore will cause problems with security. There is a workaround
+for this on MacOS, see 'setup-agda.install-from-bdist.repairPermissions'.
+
+Only used when `bdist-upload` is specified.
+
+Default: `false`
 
 #### Input: `bdist-retention-days`
 
@@ -245,65 +300,13 @@ Duration after which bdist will expire in days.
 Minimum 1 day.
 Maximum 90 days unless changed from the repository settings page.
 
-
-#### Input: `bdist-upload`
-
-If specified, will upload a binary distribution for the specified Agda version.
-
-
-#### Input: `force-cluster-counting`
-
-If specified, build with cluster counting.
-
-
-#### Input: `force-no-cluster-counting`
-
-If specified, build without cluster counting.
-
-
-#### Input: `force-optimise-heavily`
-
-If specified, build with optimise heavily.
-
-
-#### Input: `force-no-optimise-heavily`
-
-If specified, build without optimise heavily.
-
-
-#### Input: `force-build`
-
-If specified, always build from source.
-
-
-#### Input: `force-no-build`
-
-If specified, never build from source.
-
-
-#### Input: `ghc-version-match-exact`
-
-If specified, requires an exact match for the GHC version.
-
-By default, this action uses the pre-installed version of GHC if it is
-compatible with the requested Agda version (see `ghc-version-range`) in
-the major and minor version numbers, ignoring the patch version.
-
-
-#### Input: `ghc-version-range`
-
-If specified, restricts the range of allowed GHC versions.
-
-By default, this action infers the set of compatible GHC versions from
-the `tested-with` field in Agda.cabal (if building with Cabal) or from the
-set of `stack-*.yaml` files (if building with Stack). If specified, this
-inferred set of is then filtered by `ghc-version-range`.
-
+Default: `0`
 
 #### Input: `pre-build-hook`
 
 A Bash script to be run before starting the build.
 
+Default: `false`
 
 #### Input: `ghc-version`
 
@@ -321,36 +324,64 @@ even if it is incompatible with the Agda version.
 If `enable-stack` is specified, this may result in errors, as there may
 not be a `stack-XYZ.yaml` file for the specified GHC version.
 
+Default: `recommended`
+
+#### Input: `ghc-version-match-exact`
+
+If specified, requires an exact match for the GHC version.
+
+By default, this action uses the pre-installed version of GHC if it is
+compatible with the requested Agda version (see `ghc-version-range`) in
+the major and minor version numbers, ignoring the patch version.
+
+Default: `false`
+
+#### Input: `ghc-version-range`
+
+If specified, restricts the range of allowed GHC versions.
+
+By default, this action infers the set of compatible GHC versions from
+the `tested-with` field in Agda.cabal (if building with Cabal) or from the
+set of `stack-*.yaml` files (if building with Stack). If specified, this
+inferred set of is then filtered by `ghc-version-range`.
+
+Default: `*`
 
 #### Input: `cabal-version`
 
 Version of Cabal to use. If set to "latest", it will always get the latest stable version.
 
+Default: `latest`
 
 #### Input: `stack-version`
 
 Version of Stack to use. If set to "latest", it will always get the latest stable version.
 
+Default: `latest`
 
 #### Input: `enable-stack`
 
 If specified, will setup Stack.
 
+Default: `false`
 
 #### Input: `stack-no-global`
 
 If specified, enable-stack must be set. Prevents installing GHC and Cabal globally.
 
+Default: `false`
 
 #### Input: `stack-setup-ghc`
 
 If specified, enable-stack must be set. Will run stack setup to install the specified GHC.
 
+Default: `false`
 
 #### Input: `disable-matcher`
 
 If specified, disables match messages from GHC as GitHub CI annotations.
 
+Default: `false`
 
 ## Licenses
 

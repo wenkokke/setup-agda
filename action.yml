@@ -72,43 +72,13 @@ inputs:
         /bin/echo
       ```
     required: false
-  bdist-compress-exe:
+  force-build:
     description: |
-      If specified, the executables are compressed with UPX (https://upx.github.io).
-
-      Beware that on MacOS and Windows the resulting executables are unsigned,
-      and therefore will cause problems with security. There is a workaround
-      for this on MacOS, see 'setup-agda.install-from-bdist.repairPermissions'.
-
-      Only used when `bdist-upload` is specified.
+      If specified, always build from source.
     required: false
-  bdist-name:
-    default: 'agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}'
+  force-no-build:
     description: |
-      If specified, will be used as a name for the binary distribution package.
-
-      The value is interpreted as a [mustache template](https://mustache.github.io/).
-      The template may use `{{{agda-version}}}`, `{{{cabal-version}}}`, `{{{ghc-version}}}`,
-      `{{{icu-version}}}`, `{{{stack-version}}}`, and `{{{upx-version}}}`, which will be
-      replaced by the concrete versions, if installed, and to {{{arch}}},
-      {{{platform}}}, and {{{release}}}, which will be replaced by the system
-      architecture, operating system, and operating system release, as returned
-      by [the corresponding NodeJS functions](https://nodejs.org/api/os.html).
-
-      Only used when `bdist-upload` is specified.
-    required: false
-  bdist-retention-days:
-    default: '0'
-    description: |
-      Duration after which bdist will expire in days.
-      0 means using default retention.
-
-      Minimum 1 day.
-      Maximum 90 days unless changed from the repository settings page.
-    required: false
-  bdist-upload:
-    description: |
-      If specified, will upload a binary distribution for the specified Agda version.
+      If specified, never build from source.
     required: false
   force-cluster-counting:
     description: |
@@ -126,13 +96,66 @@ inputs:
     description: |
       If specified, build without optimise heavily.
     required: false
-  force-build:
+  bdist-upload:
     description: |
-      If specified, always build from source.
+      If specified, will upload a binary distribution for the specified Agda version.
     required: false
-  force-no-build:
+  bdist-name:
+    default: 'agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}'
     description: |
-      If specified, never build from source.
+      If specified, will be used as a name for the binary distribution package.
+
+      The value is interpreted as a [mustache template](https://mustache.github.io/).
+      The template may use `{{{agda-version}}}`, `{{{cabal-version}}}`, `{{{ghc-version}}}`,
+      `{{{icu-version}}}`, `{{{stack-version}}}`, and `{{{upx-version}}}`, which will be
+      replaced by the concrete versions, if installed, and to {{{arch}}},
+      {{{platform}}}, and {{{release}}}, which will be replaced by the system
+      architecture, operating system, and operating system release, as returned
+      by [the corresponding NodeJS functions](https://nodejs.org/api/os.html).
+
+      Only used when `bdist-upload` is specified.
+    required: false
+  bdist-compress-exe:
+    description: |
+      If specified, the executables are compressed with UPX (https://upx.github.io).
+
+      Beware that on MacOS and Windows the resulting executables are unsigned,
+      and therefore will cause problems with security. There is a workaround
+      for this on MacOS, see 'setup-agda.install-from-bdist.repairPermissions'.
+
+      Only used when `bdist-upload` is specified.
+    required: false
+  bdist-retention-days:
+    default: '0'
+    description: |
+      Duration after which bdist will expire in days.
+      0 means using default retention.
+
+      Minimum 1 day.
+      Maximum 90 days unless changed from the repository settings page.
+    required: false
+  pre-build-hook:
+    default: ''
+    description: |
+      A Bash script to be run before starting the build.
+    required: false
+
+  ghc-version:
+    default: 'recommended'
+    description: |
+      Version of GHC to use.
+
+      Can be "recommended", "latest", or a specific version number (e.g., 9.4.2).
+
+      If set to "recommended", it will get the latest version supported by
+      `haskell/actions/setup` which the Agda version is tested-with.
+      If `ghc-version-match-exact` is set to false, it will favour versions
+      which are supported by `haskell/actions/setup`.
+
+      If set "latest" or to a specific GHC version, this version will be used
+      even if it is incompatible with the Agda version.
+      If `enable-stack` is specified, this may result in errors, as there may
+      not be a `stack-XYZ.yaml` file for the specified GHC version.
     required: false
   ghc-version-match-exact:
     description: |
@@ -152,49 +175,33 @@ inputs:
       set of `stack-*.yaml` files (if building with Stack). If specified, this
       inferred set of is then filtered by `ghc-version-range`.
     required: false
-  pre-build-hook:
-    default: ''
-    description: |
-      A Bash script to be run before starting the build.
-    required: false
 
-  # If it is called, following inputs are passed to haskell/actions/setup:
-  ghc-version:
-    default: 'recommended'
-    description: |
-      Version of GHC to use.
-
-      Can be "recommended", "latest", or a specific version number (e.g., 9.4.2).
-
-      If set to "recommended", it will get the latest version supported by
-      `haskell/actions/setup` which the Agda version is tested-with.
-      If `ghc-version-match-exact` is set to false, it will favour versions
-      which are supported by `haskell/actions/setup`.
-
-      If set "latest" or to a specific GHC version, this version will be used
-      even if it is incompatible with the Agda version.
-      If `enable-stack` is specified, this may result in errors, as there may
-      not be a `stack-XYZ.yaml` file for the specified GHC version.
-    required: false
+  # If haskell/actions/setup is called, following inputs are passed to it:
   cabal-version:
     default: 'latest'
-    description: 'Version of Cabal to use. If set to "latest", it will always get the latest stable version.'
+    description: |
+      Version of Cabal to use. If set to "latest", it will always get the latest stable version.
     required: false
   stack-version:
     default: 'latest'
-    description: 'Version of Stack to use. If set to "latest", it will always get the latest stable version.'
+    description: |
+      Version of Stack to use. If set to "latest", it will always get the latest stable version.
     required: false
   enable-stack:
-    description: 'If specified, will setup Stack.'
+    description: |
+      If specified, will setup Stack.
     required: false
   stack-no-global:
-    description: 'If specified, enable-stack must be set. Prevents installing GHC and Cabal globally.'
+    description: |
+      If specified, enable-stack must be set. Prevents installing GHC and Cabal globally.
     required: false
   stack-setup-ghc:
-    description: 'If specified, enable-stack must be set. Will run stack setup to install the specified GHC.'
+    description: |
+      If specified, enable-stack must be set. Will run stack setup to install the specified GHC.
     required: false
   disable-matcher:
-    description: 'If specified, disables match messages from GHC as GitHub CI annotations.'
+    description: |
+      If specified, disables match messages from GHC as GitHub CI annotations.
     required: false
 
 outputs:
