@@ -22,10 +22,6 @@ jobs:
     needs: [check-dist]
     uses: ./.github/workflows/setup-legacy.yml
 
-  setup-agda-stdlib-default:
-    needs: [check-dist]
-    uses: ./.github/workflows/setup-agda-stdlib-default.yml
-
   setup-libraries:
     needs: [check-dist]
     uses: ./.github/workflows/setup-libraries.yml
