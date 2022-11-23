@@ -72,6 +72,7 @@ inputs:
         /bin/echo
       ```
     required: false
+
   force-build:
     description: |
       If specified, always build from source.
@@ -95,49 +96,6 @@ inputs:
   force-no-optimise-heavily:
     description: |
       If specified, build without optimise heavily.
-    required: false
-  bdist-upload:
-    description: |
-      If specified, will upload a binary distribution for the specified Agda version.
-    required: false
-  bdist-name:
-    default: 'agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}'
-    description: |
-      If specified, will be used as a name for the binary distribution package.
-
-      The value is interpreted as a [mustache template](https://mustache.github.io/).
-      The template may use `{{{agda-version}}}`, `{{{cabal-version}}}`, `{{{ghc-version}}}`,
-      `{{{icu-version}}}`, `{{{stack-version}}}`, and `{{{upx-version}}}`, which will be
-      replaced by the concrete versions, if installed, and to {{{arch}}},
-      {{{platform}}}, and {{{release}}}, which will be replaced by the system
-      architecture, operating system, and operating system release, as returned
-      by [the corresponding NodeJS functions](https://nodejs.org/api/os.html).
-
-      Only used when `bdist-upload` is specified.
-    required: false
-  bdist-compress-exe:
-    description: |
-      If specified, the executables are compressed with UPX (https://upx.github.io).
-
-      Beware that on MacOS and Windows the resulting executables are unsigned,
-      and therefore will cause problems with security. There is a workaround
-      for this on MacOS, see 'setup-agda.install-from-bdist.repairPermissions'.
-
-      Only used when `bdist-upload` is specified.
-    required: false
-  bdist-retention-days:
-    default: '0'
-    description: |
-      Duration after which bdist will expire in days.
-      0 means using default retention.
-
-      Minimum 1 day.
-      Maximum 90 days unless changed from the repository settings page.
-    required: false
-  pre-build-hook:
-    default: ''
-    description: |
-      A Bash script to be run before starting the build.
     required: false
 
   ghc-version:
@@ -174,6 +132,51 @@ inputs:
       the `tested-with` field in Agda.cabal (if building with Cabal) or from the
       set of `stack-*.yaml` files (if building with Stack). If specified, this
       inferred set of is then filtered by `ghc-version-range`.
+    required: false
+
+  pre-build-hook:
+    default: ''
+    description: |
+      A shell script to be run before starting the build.
+    required: false
+
+  bdist-upload:
+    description: |
+      If specified, will upload a binary distribution for the specified Agda version.
+    required: false
+  bdist-name:
+    default: 'agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}'
+    description: |
+      If specified, will be used as a name for the binary distribution package.
+
+      The value is interpreted as a [mustache template](https://mustache.github.io/).
+      The template may use `{{{agda-version}}}`, `{{{cabal-version}}}`, `{{{ghc-version}}}`,
+      `{{{icu-version}}}`, `{{{stack-version}}}`, and `{{{upx-version}}}`, which will be
+      replaced by the concrete versions, if installed, and to `{{{arch}}}`,
+      `{{{platform}}}`, and `{{{release}}}`, which will be replaced by the system
+      architecture, operating system, and operating system release, as returned
+      by [the corresponding NodeJS functions](https://nodejs.org/api/os.html).
+
+      Only used when `bdist-upload` is specified.
+    required: false
+  bdist-compress-exe:
+    description: |
+      If specified, the executables are compressed with UPX (https://upx.github.io).
+
+      Beware that on MacOS and Windows the resulting executables are unsigned,
+      and therefore will cause problems with security. There is a workaround
+      for this on MacOS, see 'setup-agda.install-from-bdist.repairPermissions'.
+
+      Only used when `bdist-upload` is specified.
+    required: false
+  bdist-retention-days:
+    default: '0'
+    description: |
+      Duration after which bdist will expire in days.
+      0 means using default retention.
+
+      Minimum 1 day.
+      Maximum 90 days unless changed from the repository settings page.
     required: false
 
   # If haskell/actions/setup is called, following inputs are passed to it:

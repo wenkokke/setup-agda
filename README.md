@@ -258,56 +258,6 @@ If specified, build without optimise heavily.
 
 Default: `false`
 
-#### Input: `bdist-upload`
-
-If specified, will upload a binary distribution for the specified Agda version.
-
-Default: `false`
-
-#### Input: `bdist-name`
-
-If specified, will be used as a name for the binary distribution package.
-
-The value is interpreted as a [mustache template](https://mustache.github.io/).
-The template may use `{{{agda-version}}}`, `{{{cabal-version}}}`, `{{{ghc-version}}}`,
-`{{{icu-version}}}`, `{{{stack-version}}}`, and `{{{upx-version}}}`, which will be
-replaced by the concrete versions, if installed, and to {{{arch}}},
-{{{platform}}}, and {{{release}}}, which will be replaced by the system
-architecture, operating system, and operating system release, as returned
-by [the corresponding NodeJS functions](https://nodejs.org/api/os.html).
-
-Only used when `bdist-upload` is specified.
-
-Default: `agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}`
-
-#### Input: `bdist-compress-exe`
-
-If specified, the executables are compressed with UPX (https://upx.github.io).
-
-Beware that on MacOS and Windows the resulting executables are unsigned,
-and therefore will cause problems with security. There is a workaround
-for this on MacOS, see 'setup-agda.install-from-bdist.repairPermissions'.
-
-Only used when `bdist-upload` is specified.
-
-Default: `false`
-
-#### Input: `bdist-retention-days`
-
-Duration after which bdist will expire in days.
-0 means using default retention.
-
-Minimum 1 day.
-Maximum 90 days unless changed from the repository settings page.
-
-Default: `0`
-
-#### Input: `pre-build-hook`
-
-A Bash script to be run before starting the build.
-
-Default: `false`
-
 #### Input: `ghc-version`
 
 Version of GHC to use.
@@ -346,6 +296,56 @@ set of `stack-*.yaml` files (if building with Stack). If specified, this
 inferred set of is then filtered by `ghc-version-range`.
 
 Default: `*`
+
+#### Input: `pre-build-hook`
+
+A shell script to be run before starting the build.
+
+Default: `false`
+
+#### Input: `bdist-upload`
+
+If specified, will upload a binary distribution for the specified Agda version.
+
+Default: `false`
+
+#### Input: `bdist-name`
+
+If specified, will be used as a name for the binary distribution package.
+
+The value is interpreted as a [mustache template](https://mustache.github.io/).
+The template may use `{{{agda-version}}}`, `{{{cabal-version}}}`, `{{{ghc-version}}}`,
+`{{{icu-version}}}`, `{{{stack-version}}}`, and `{{{upx-version}}}`, which will be
+replaced by the concrete versions, if installed, and to `{{{arch}}}`,
+`{{{platform}}}`, and `{{{release}}}`, which will be replaced by the system
+architecture, operating system, and operating system release, as returned
+by [the corresponding NodeJS functions](https://nodejs.org/api/os.html).
+
+Only used when `bdist-upload` is specified.
+
+Default: `agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}`
+
+#### Input: `bdist-compress-exe`
+
+If specified, the executables are compressed with UPX (https://upx.github.io).
+
+Beware that on MacOS and Windows the resulting executables are unsigned,
+and therefore will cause problems with security. There is a workaround
+for this on MacOS, see 'setup-agda.install-from-bdist.repairPermissions'.
+
+Only used when `bdist-upload` is specified.
+
+Default: `false`
+
+#### Input: `bdist-retention-days`
+
+Duration after which bdist will expire in days.
+0 means using default retention.
+
+Minimum 1 day.
+Maximum 90 days unless changed from the repository settings page.
+
+Default: `0`
 
 #### Input: `cabal-version`
 
