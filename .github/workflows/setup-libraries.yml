@@ -15,7 +15,7 @@ jobs:
         with:
           force-no-build: true
           agda-version: 'latest'
-          agda-stdlib-version: 'recommended'
+          agda-stdlib-version: '1.7'
           agda-libraries: |
             https://github.com/agda/agda-categories.git#v0.1.7.1
       - name: Test Agda with agda-categories
@@ -37,7 +37,7 @@ jobs:
         with:
           force-no-build: true
           agda-version: 'latest'
-          agda-stdlib-version: 'recommended'
+          agda-stdlib-version: '1.7'
           agda-libraries: |
             https://github.com/agda/agda-categories.git#v0.1.7.1
           agda-defaults: |
@@ -61,7 +61,6 @@ jobs:
         with:
           force-no-build: true
           agda-version: 'latest'
-          agda-stdlib-version: 'recommended'
           agda-libraries: |
             https://github.com/agda/cubical.git#v0.3
     strategy:
