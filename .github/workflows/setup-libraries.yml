@@ -78,7 +78,8 @@ jobs:
           force-no-build: true
           agda-version: 'latest'
           agda-stdlib-version: 'recommended'
-          agda-stdlib-default: true
+          agda-defaults: |
+            standard-library
       - name: Test Agda with agda-stdlib as default
         run: |
           agda -v0 hello-world-dep.agda
