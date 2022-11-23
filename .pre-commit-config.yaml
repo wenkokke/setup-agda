@@ -18,4 +18,4 @@ repos:
     hooks:
       - id: prettier
 
-exclude: ^(dist|lib|vendor)/
+exclude: ^README.md$|^(dist|lib|vendor)/

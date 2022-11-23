@@ -17,8 +17,8 @@ inputs:
       Can be "none", "recommended", "latest", or a specific version number (e.g., 1.7.1).
 
       If set to "recommended", it will install the latest version of the Agda
-      standard library compatible with the specified Agda version, see:
-      https://wiki.portal.chalmers.se/agda/Libraries/StandardLibrary
+      standard library compatible with the specified Agda version, as specified
+      on [the Agda Wiki](https://wiki.portal.chalmers.se/agda/Libraries/StandardLibrary).
 
       If set to "latest" or a specific version number, it will install the
       latest or that specific version, regardless of compatibility with the
@@ -31,8 +31,11 @@ inputs:
       Libraries must be specified by their Git URL and end in a version anchor,
       e.g.,
 
-      https://github.com/agda/agda-categories.git#v0.1.7.1
-      https://github.com/agda/cubical.git#v0.3
+      ```yaml
+      agda-libraries: |
+        https://github.com/agda/agda-categories.git#v0.1.7.1
+        https://github.com/agda/cubical.git#v0.3
+      ```
 
       To setup the Agda standard library, use "agda-stdlib-version" instead, as
       that ensures that the standard library and Agda versions are compatible.
@@ -50,8 +53,12 @@ inputs:
 
       Libraries must be specified by the name of their .agda-lib file, e.g.,
 
-      agda-categories
-      cubical
+      ```yaml
+      agda-defaults: |
+        standard-library
+        agda-categories
+        cubical
+      ```
     required: false
   agda-executables:
     description: |
@@ -59,8 +66,11 @@ inputs:
 
       Executables must be specified by their name or path, e.g.,
 
-      z3
-      /bin/sh
+      ```yaml
+      agda-executables: |
+        z3
+        /bin/echo
+      ```
     required: false
   bdist-compress-exe:
     description: |
@@ -70,27 +80,28 @@ inputs:
       and therefore will cause problems with security. There is a workaround
       for this on MacOS, see 'setup-agda.install-from-bdist.repairPermissions'.
 
-      Only used when "bdist-upload" is specified.
+      Only used when `bdist-upload` is specified.
     required: false
   bdist-name:
     default: 'agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}'
     description: |
       If specified, will be used as a name for the binary distribution package.
 
-      The value is interpreted as a template (https://mustache.github.io/).
-      The template may use {{agda-version}}, {{cabal-version}}, {{ghc-version}},
-      {{icu-version}}, {{stack-version}}, and {{upx-version}}, which will be
-      replaced by the concrete versions, if installed, and to {{arch}},
-      {{platform}}, and {{release}}, which will be replaced by the system
+      The value is interpreted as a [mustache template](https://mustache.github.io/).
+      The template may use `{{{agda-version}}}`, `{{{cabal-version}}}`, `{{{ghc-version}}}`,
+      `{{{icu-version}}}`, `{{{stack-version}}}`, and `{{{upx-version}}}`, which will be
+      replaced by the concrete versions, if installed, and to {{{arch}}},
+      {{{platform}}}, and {{{release}}}, which will be replaced by the system
       architecture, operating system, and operating system release, as returned
-      by the corresponding NodeJS functions (https://nodejs.org/api/os.html).
+      by [the corresponding NodeJS functions](https://nodejs.org/api/os.html).
 
-      Only used when "bdist-upload" is specified.
+      Only used when `bdist-upload` is specified.
     required: false
   bdist-retention-days:
     default: '0'
     description: |
-      Duration after which bdist will expire in days. 0 means using default retention.
+      Duration after which bdist will expire in days.
+      0 means using default retention.
 
       Minimum 1 day.
       Maximum 90 days unless changed from the repository settings page.
@@ -128,7 +139,7 @@ inputs:
       If specified, requires an exact match for the GHC version.
 
       By default, this action uses the pre-installed version of GHC if it is
-      compatible with the requested Agda version (see "ghc-version-range") in
+      compatible with the requested Agda version (see `ghc-version-range`) in
       the major and minor version numbers, ignoring the patch version.
     required: false
   ghc-version-range:
@@ -137,9 +148,9 @@ inputs:
       If specified, restricts the range of allowed GHC versions.
 
       By default, this action infers the set of compatible GHC versions from
-      the "tested-with" field in Agda.cabal (if building with Cabal) or from the
-      set of "stack-*.yaml" files (if building with Stack). If specified, this
-      inferred set of is then filtered by "ghc-version-range".
+      the `tested-with` field in Agda.cabal (if building with Cabal) or from the
+      set of `stack-*.yaml` files (if building with Stack). If specified, this
+      inferred set of is then filtered by `ghc-version-range`.
     required: false
   pre-build-hook:
     default: ''
@@ -156,14 +167,14 @@ inputs:
       Can be "recommended", "latest", or a specific version number (e.g., 9.4.2).
 
       If set to "recommended", it will get the latest version supported by
-      haskell/actions/setup which the Agda version is tested-with.
-      If "ghc-version-match-exact" is set to false, it will favour versions
-      which are supported by haskell/actions/setup.
+      `haskell/actions/setup` which the Agda version is tested-with.
+      If `ghc-version-match-exact` is set to false, it will favour versions
+      which are supported by `haskell/actions/setup`.
 
       If set "latest" or to a specific GHC version, this version will be used
       even if it is incompatible with the Agda version.
-      If "enable-stack" is specified, this may result in errors, as there may
-      not be a "stack-XYZ.yaml" file for the specified GHC version.
+      If `enable-stack` is specified, this may result in errors, as there may
+      not be a `stack-XYZ.yaml` file for the specified GHC version.
     required: false
   cabal-version:
     default: 'latest'
