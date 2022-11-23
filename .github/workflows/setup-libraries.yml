@@ -28,7 +28,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
   setup-categories-default:
-    name: Setup agda-categories
+    name: Setup agda-categories as default
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
