@@ -1896,7 +1896,7 @@ function installFromBdist(options) {
 }
 exports["default"] = installFromBdist;
 function repairPermissions(bdistDir) {
-    var e_1, _a;
+    var _a, e_1, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
         switch (opts.platform) {
             case 'linux': {
@@ -1918,17 +1918,24 @@ function repairPermissions(bdistDir) {
                 // Repair file permissions on libraries
                 const libGlobber = yield glob.create(path.join(bdistDir, 'lib', '*'));
                 try {
-                    for (var _b = __asyncValues(libGlobber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
-                        const libPath = _c.value;
-                        yield util.chmod('+w', libPath);
-                        yield util.xattr('-c', libPath);
-                        yield util.chmod('-w', libPath);
+                    for (var _d = true, _e = __asyncValues(libGlobber.globGenerator()), _f; _f = yield _e.next(), _a = _f.done, !_a;) {
+                        _c = _f.value;
+                        _d = false;
+                        try {
+                            const libPath = _c;
+                            yield util.chmod('+w', libPath);
+                            yield util.xattr('-c', libPath);
+                            yield util.chmod('-w', libPath);
+                        }
+                        finally {
+                            _d = true;
+                        }
                     }
                 }
                 catch (e_1_1) { e_1 = { error: e_1_1 }; }
                 finally {
                     try {
-                        if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
+                        if (!_d && !_a && (_b = _e.return)) yield _b.call(_e);
                     }
                     finally { if (e_1) throw e_1.error; }
                 }
@@ -3067,7 +3074,7 @@ function agda(args, agdaOptions, options) {
 }
 exports.agda = agda;
 function agdaTest(agdaOptions, options) {
-    var e_1, _a;
+    var _a, e_1, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
         const versionString = yield agdaGetVersion(agdaOptions);
         core.info(`Found Agda version ${versionString} on PATH`);
@@ -3079,16 +3086,23 @@ function agdaTest(agdaOptions, options) {
             matchDirectories: false
         });
         try {
-            for (var _b = __asyncValues(globber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
-                const agdaFile = _c.value;
-                core.info(`Compiling ${agdaFile}`);
-                yield agda(['-v0', agdaFile], agdaOptions, Object.assign(Object.assign({}, options), { cwd: path.join(dataDir, 'lib', 'prim') }));
+            for (var _d = true, _e = __asyncValues(globber.globGenerator()), _f; _f = yield _e.next(), _a = _f.done, !_a;) {
+                _c = _f.value;
+                _d = false;
+                try {
+                    const agdaFile = _c;
+                    core.info(`Compiling ${agdaFile}`);
+                    yield agda(['-v0', agdaFile], agdaOptions, Object.assign(Object.assign({}, options), { cwd: path.join(dataDir, 'lib', 'prim') }));
+                }
+                finally {
+                    _d = true;
+                }
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
         finally {
             try {
-                if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
+                if (!_d && !_a && (_b = _e.return)) yield _b.call(_e);
             }
             finally { if (e_1) throw e_1.error; }
         }
