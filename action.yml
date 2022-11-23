@@ -24,14 +24,6 @@ inputs:
       latest or that specific version, regardless of compatibility with the
       specified Agda version.
     required: false
-  agda-stdlib-default:
-    description: |
-      If specified, the Agda standard library will be added to the defaults file.
-
-      See: https://agda.readthedocs.io/en/latest/tools/package-system.html#default-libraries
-
-      Only used when "agda-stdlib-version" is not "none".
-    required: false
   agda-libraries:
     description: |
       A list of Agda libraries to install.

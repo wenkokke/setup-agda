@@ -55,7 +55,7 @@ export function registerAgdaLibrary(
   // Add the library to defaults:
   if (isDefault === true) {
     const oldDefaults = readDefaultsSync()
-    const newDefaults = [...oldDefaults, newLibrary.base]
+    const newDefaults = [...oldDefaults, newLibrary.name]
     fs.writeFileSync(opts.defaultsFile(), newDefaults.join(os.EOL))
   }
 }
