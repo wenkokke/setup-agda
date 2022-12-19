@@ -534,15 +534,17 @@ function getOptions(inputs, actionYml) {
         const ghcVersionRange = getOption('ghc-version-range');
         if (!semver.validRange(ghcVersionRange))
             throw Error('Input `ghc-version-range` is not a valid version range');
-        // Check compatibility for `bdist-license-report`:
-        const enableStack = getFlag('enable-stack');
-        const bdistLicenseReport = getFlag('bdist-license-report');
-        if (bdistLicenseReport && bdistLicenseReport)
-            throw Error('Input `bdist-license-report` is incompatible with `enable-stack`');
         // Check for contradictory options:
         const [forceBuild, forceNoBuild] = getFlagPair('force-build', 'force-no-build');
         const [forceClusterCounting, forceNoClusterCounting] = getFlagPair('force-cluster-counting', 'force-no-cluster-counting');
         const [forceOptimiseHeavily, forceNoOptimiseHeavily] = getFlagPair('force-optimise-heavily', 'force-no-optimise-heavily');
+        // Check compatibility for `bdist-license-report`:
+        const bdistLicenseReport = getFlag('bdist-license-report');
+        const enableStack = getFlag('enable-stack');
+        if (bdistLicenseReport && enableStack)
+            throw Error('Input `bdist-license-report` is incompatible with `enable-stack`');
+        if (bdistLicenseReport && forceNoBuild)
+            throw Error('Input `bdist-license-report` is incompatible with `force-no-build`');
         // Parse the bdist name:
         const bdistName = parseBdistName(getOption('bdist-name'));
         const bdistRetentionDays = getOption('bdist-retention-days');
@@ -1518,6 +1520,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.supportedGhcVersions = exports.build = exports.name = void 0;
 const core = __importStar(__nccwpck_require__(2186));
@@ -1528,6 +1533,7 @@ const path = __importStar(__nccwpck_require__(9411));
 const semver = __importStar(__nccwpck_require__(1383));
 const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
+const setup_cabal_plan_1 = __importDefault(__nccwpck_require__(5497));
 exports.name = 'cabal';
 function build(sourceDir, installDir, options, 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1535,24 +1541,43 @@ matchingGhcVersionsThatCanBuildAgda) {
     return __awaiter(this, void 0, void 0, function* () {
         const execOptions = { cwd: sourceDir };
         // Run `cabal update`
-        yield util.cabal(['v2-update']);
+        yield util.cabal(['update']);
         // Run `cabal configure`:
         core.info(`Configure Agda-${options['agda-version']}`);
-        yield util.cabal(['v2-configure', ...buildFlags(options)], execOptions);
+        yield util.cabal(['configure', ...buildFlags(options)], execOptions);
         // Run the pre-build hook:
         yield opts.runPreBuildHook(options, execOptions);
         // Run `cabal build`:
         core.info(`Build Agda-${options['agda-version']}`);
-        yield util.cabal(['v2-build', 'exe:agda', 'exe:agda-mode'], execOptions);
+        yield util.cabal(['build', 'exe:agda', 'exe:agda-mode'], execOptions);
+        // Install & Run `cabal-plan license-report`:
+        core.info(`Install cabal-plan`);
+        const cabalPlan = yield (0, setup_cabal_plan_1.default)(options);
+        core.info(`Generate license-report in ${installDir}`);
+        const installLicenseDir = path.join(installDir, 'licenses');
+        yield util.mkdirP(installLicenseDir);
+        const components = [
+            ['agda', 'Agda:exe:agda'],
+            ['agda-mode', 'Agda:exe:agda-mode']
+        ];
+        for (const [componentName, component] of components) {
+            const licenseReportPath = path.join(installLicenseDir, `license-report-${componentName}.md`);
+            const { output, errors } = yield util.getOutputAndErrors(cabalPlan, [
+                'license-report',
+                `--licensedir=${installLicenseDir}`
+            ]);
+            fs.writeFileSync(licenseReportPath, [output, '## Warnings', errors ? errors : 'No warnings'].join(`${os.EOL}${os.EOL}`));
+        }
         // Run `cabal install`:
         core.info(`Install Agda-${options['agda-version']} to ${installDir}`);
-        yield util.mkdirP(path.join(installDir, 'bin'));
+        const installBinDir = path.join(installDir, 'bin');
+        yield util.mkdirP(installBinDir);
         yield util.cabal([
-            'v2-install',
+            'install',
             'exe:agda',
             'exe:agda-mode',
             '--install-method=copy',
-            `--installdir=${path.join(installDir, 'bin')}`
+            `--installdir=${installBinDir}`
         ], execOptions);
     });
 }
@@ -2155,6 +2180,9 @@ function uploadBdist(installDir, options) {
         // Copy binaries & data:
         yield util.cpR(path.join(installDir, 'bin'), bdistDir);
         yield util.cpR(path.join(installDir, 'data'), bdistDir);
+        // Copy license reports:
+        if (options['bdist-license-report'])
+            yield util.cpR(path.join(installDir, 'licenses'), bdistDir);
         // Bundle libraries:
         if (options['icu-version'] !== undefined) {
             yield icu.bundle(bdistDir, options);
@@ -2218,6 +2246,74 @@ function renderName(template, options) {
     ])), { arch: os.arch(), platform: os.platform(), release: os.release() }));
 }
 exports.renderName = renderName;
+
+
+/***/ }),
+
+/***/ 5497:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const path = __importStar(__nccwpck_require__(9411));
+const opts = __importStar(__nccwpck_require__(1352));
+const util = __importStar(__nccwpck_require__(4024));
+function setup(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const cabalPlanVersion = '0.7.2.3';
+        const cabalPlanDir = opts.setupAgdaCacheDir(path.join('cabal-plan', cabalPlanVersion));
+        // Update cabal package index
+        yield util.cabal(['update']);
+        // Install cabal-plan to cabalPlanDir
+        yield util.cabal([
+            'install',
+            `cabal-plan-${cabalPlanVersion}`,
+            '--flag +license-report',
+            '--ignore-project',
+            '--install-method=copy',
+            `--installdir=${cabalPlanDir}`,
+            '--overwrite-policy=always'
+        ]);
+        // Return the path to the cabal-plan executable:
+        return opts.platform === 'win32'
+            ? path.join(cabalPlanDir, 'cabal-plan.exe')
+            : path.join(cabalPlanDir, 'cabal-plan');
+    });
+}
+exports["default"] = setup;
 
 
 /***/ }),
@@ -3312,7 +3408,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getVersion = exports.lsR = exports.rmRF = exports.mkdirP = exports.mv = exports.cpR = exports.cp = exports.getOutput = exports.which = exports.findInPath = void 0;
+exports.getVersion = exports.lsR = exports.rmRF = exports.mkdirP = exports.mv = exports.cpR = exports.cp = exports.getOutputAndErrors = exports.getOutput = exports.which = exports.findInPath = void 0;
 const exec = __importStar(__nccwpck_require__(1514));
 const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
@@ -3325,28 +3421,37 @@ Object.defineProperty(exports, "findInPath", ({ enumerable: true, get: function 
 Object.defineProperty(exports, "which", ({ enumerable: true, get: function () { return io_1.which; } }));
 function getOutput(prog, args, execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
-        let progOutput = '';
-        let progErrors = '';
+        const { output } = yield getOutputAndErrors(prog, args, execOptions);
+        return output;
+    });
+}
+exports.getOutput = getOutput;
+function getOutputAndErrors(prog, args, execOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let output = '';
+        let errors = '';
         execOptions = execOptions !== null && execOptions !== void 0 ? execOptions : {};
         execOptions.ignoreReturnCode = true;
         execOptions.listeners = {
             stdout: (data) => {
-                progOutput += data.toString();
+                output += data.toString();
             },
             stderr: (data) => {
-                progErrors += data.toString();
+                errors += data.toString();
             }
         };
+        output = output.trim();
+        errors = errors.trim();
         const exitCode = yield exec.exec(prog, args, execOptions);
         if (exitCode === 0) {
-            return progOutput.trim();
+            return { output, errors };
         }
         else {
-            throw Error(`The call to ${prog} failed with exit code ${exitCode}:${os.EOL}${progErrors}`);
+            throw Error(`The call to ${prog} failed with exit code ${exitCode}:${os.EOL}${errors}`);
         }
     });
 }
-exports.getOutput = getOutput;
+exports.getOutputAndErrors = getOutputAndErrors;
 function cp(source, dest, options) {
     return __awaiter(this, void 0, void 0, function* () {
         source = escape(source);

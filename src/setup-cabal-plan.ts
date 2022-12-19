@@ -2,7 +2,9 @@ import * as path from 'node:path'
 import * as opts from './opts'
 import * as util from './util'
 
-export async function setup(options: opts.BuildOptions): Promise<string> {
+export default async function setup(
+  options: opts.BuildOptions
+): Promise<string> {
   const cabalPlanVersion = '0.7.2.3'
   const cabalPlanDir = opts.setupAgdaCacheDir(
     path.join('cabal-plan', cabalPlanVersion)
@@ -13,6 +15,7 @@ export async function setup(options: opts.BuildOptions): Promise<string> {
   await util.cabal([
     'install',
     `cabal-plan-${cabalPlanVersion}`,
+    '--flag +license-report',
     '--ignore-project',
     '--install-method=copy',
     `--installdir=${cabalPlanDir}`,

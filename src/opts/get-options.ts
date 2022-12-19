@@ -70,14 +70,6 @@ export default async function getOptions(
   if (!semver.validRange(ghcVersionRange))
     throw Error('Input `ghc-version-range` is not a valid version range')
 
-  // Check compatibility for `bdist-license-report`:
-  const enableStack = getFlag('enable-stack')
-  const bdistLicenseReport = getFlag('bdist-license-report')
-  if (bdistLicenseReport && bdistLicenseReport)
-    throw Error(
-      'Input `bdist-license-report` is incompatible with `enable-stack`'
-    )
-
   // Check for contradictory options:
   const [forceBuild, forceNoBuild] = getFlagPair(
     'force-build',
@@ -91,6 +83,18 @@ export default async function getOptions(
     'force-optimise-heavily',
     'force-no-optimise-heavily'
   )
+
+  // Check compatibility for `bdist-license-report`:
+  const bdistLicenseReport = getFlag('bdist-license-report')
+  const enableStack = getFlag('enable-stack')
+  if (bdistLicenseReport && enableStack)
+    throw Error(
+      'Input `bdist-license-report` is incompatible with `enable-stack`'
+    )
+  if (bdistLicenseReport && forceNoBuild)
+    throw Error(
+      'Input `bdist-license-report` is incompatible with `force-no-build`'
+    )
 
   // Parse the bdist name:
   const bdistName = parseBdistName(getOption('bdist-name'))

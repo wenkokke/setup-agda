@@ -6,6 +6,7 @@ import * as path from 'node:path'
 import * as semver from 'semver'
 import * as opts from '../../opts'
 import * as util from '../../util'
+import setupCabalPlan from '../../setup-cabal-plan'
 
 export const name = 'cabal'
 
@@ -19,29 +20,58 @@ export async function build(
   const execOptions: util.ExecOptions = {cwd: sourceDir}
 
   // Run `cabal update`
-  await util.cabal(['v2-update'])
+  await util.cabal(['update'])
 
   // Run `cabal configure`:
   core.info(`Configure Agda-${options['agda-version']}`)
-  await util.cabal(['v2-configure', ...buildFlags(options)], execOptions)
+  await util.cabal(['configure', ...buildFlags(options)], execOptions)
 
   // Run the pre-build hook:
   await opts.runPreBuildHook(options, execOptions)
 
   // Run `cabal build`:
   core.info(`Build Agda-${options['agda-version']}`)
-  await util.cabal(['v2-build', 'exe:agda', 'exe:agda-mode'], execOptions)
+  await util.cabal(['build', 'exe:agda', 'exe:agda-mode'], execOptions)
+
+  // Install & Run `cabal-plan license-report`:
+  core.info(`Install cabal-plan`)
+  const cabalPlan = await setupCabalPlan(options)
+
+  core.info(`Generate license-report in ${installDir}`)
+  const installLicenseDir = path.join(installDir, 'licenses')
+  await util.mkdirP(installLicenseDir)
+  const components = [
+    ['agda', 'Agda:exe:agda'],
+    ['agda-mode', 'Agda:exe:agda-mode']
+  ]
+  for (const [componentName, component] of components) {
+    const licenseReportPath = path.join(
+      installLicenseDir,
+      `license-report-${componentName}.md`
+    )
+    const {output, errors} = await util.getOutputAndErrors(cabalPlan, [
+      'license-report',
+      `--licensedir=${installLicenseDir}`
+    ])
+    fs.writeFileSync(
+      licenseReportPath,
+      [output, '## Warnings', errors ? errors : 'No warnings'].join(
+        `${os.EOL}${os.EOL}`
+      )
+    )
+  }
 
   // Run `cabal install`:
   core.info(`Install Agda-${options['agda-version']} to ${installDir}`)
-  await util.mkdirP(path.join(installDir, 'bin'))
+  const installBinDir = path.join(installDir, 'bin')
+  await util.mkdirP(installBinDir)
   await util.cabal(
     [
-      'v2-install',
+      'install',
       'exe:agda',
       'exe:agda-mode',
       '--install-method=copy',
-      `--installdir=${path.join(installDir, 'bin')}`
+      `--installdir=${installBinDir}`
     ],
     execOptions
   )

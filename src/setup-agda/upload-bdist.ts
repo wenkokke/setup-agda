@@ -23,6 +23,10 @@ export default async function uploadBdist(
   await util.cpR(path.join(installDir, 'bin'), bdistDir)
   await util.cpR(path.join(installDir, 'data'), bdistDir)
 
+  // Copy license reports:
+  if (options['bdist-license-report'])
+    await util.cpR(path.join(installDir, 'licenses'), bdistDir)
+
   // Bundle libraries:
   if (options['icu-version'] !== undefined) {
     await icu.bundle(bdistDir, options)

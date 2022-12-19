@@ -14,24 +14,35 @@ export async function getOutput(
   args: string[],
   execOptions?: exec.ExecOptions
 ): Promise<string> {
-  let progOutput = ''
-  let progErrors = ''
+  const {output} = await getOutputAndErrors(prog, args, execOptions)
+  return output
+}
+
+export async function getOutputAndErrors(
+  prog: string,
+  args: string[],
+  execOptions?: exec.ExecOptions
+): Promise<{output: string; errors: string}> {
+  let output = ''
+  let errors = ''
   execOptions = execOptions ?? {}
   execOptions.ignoreReturnCode = true
   execOptions.listeners = {
     stdout: (data: Buffer) => {
-      progOutput += data.toString()
+      output += data.toString()
     },
     stderr: (data: Buffer) => {
-      progErrors += data.toString()
+      errors += data.toString()
     }
   }
+  output = output.trim()
+  errors = errors.trim()
   const exitCode = await exec.exec(prog, args, execOptions)
   if (exitCode === 0) {
-    return progOutput.trim()
+    return {output, errors}
   } else {
     throw Error(
-      `The call to ${prog} failed with exit code ${exitCode}:${os.EOL}${progErrors}`
+      `The call to ${prog} failed with exit code ${exitCode}:${os.EOL}${errors}`
     )
   }
 }
