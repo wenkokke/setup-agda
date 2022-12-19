@@ -35,7 +35,7 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
       throw Error('Required build, but "force-no-build" is set.')
 
     // 2. Set environment variables:
-    const installDir = opts.installDir(options['agda-version'])
+    const installDir = opts.agdaInstallDir(options['agda-version'])
     await core.group(`🚀 Install Agda ${options['agda-version']}`, async () => {
       assert(
         agdaDir !== null,

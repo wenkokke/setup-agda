@@ -2,7 +2,7 @@ import * as core from '@actions/core'
 import * as tc from '@actions/tool-cache'
 import * as opts from './types'
 import * as crypto from 'node:crypto'
-import {cacheDir} from './path'
+import {setupAgdaCacheDir} from './appdirs'
 import * as httpm from 'node:http'
 import * as path from 'node:path'
 import * as util from '../util'
@@ -36,7 +36,7 @@ export default async function downloadDist(
     }
     case 'git': {
       if (dest === undefined) {
-        dest = cacheDir(
+        dest = setupAgdaCacheDir(
           crypto.createHash('sha256').update(entry.url).digest('hex')
         )
       }

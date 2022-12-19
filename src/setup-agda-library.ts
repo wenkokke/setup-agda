@@ -25,7 +25,7 @@ export default async function setup(
     core.info(
       `Found ${libraryName} version ${libraryVersion} at ${libraryRelativeDir}`
     )
-    const libraryTo = opts.libraryDir(
+    const libraryTo = opts.agdaLibraryInstallDir(
       libraryName,
       libraryVersion,
       libraryExperimental

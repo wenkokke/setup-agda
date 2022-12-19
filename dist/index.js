@@ -84,7 +84,7 @@ __exportStar(__nccwpck_require__(4021), exports);
 var get_options_1 = __nccwpck_require__(1665);
 Object.defineProperty(exports, "getOptions", ({ enumerable: true, get: function () { return __importDefault(get_options_1).default; } }));
 __exportStar(__nccwpck_require__(542), exports);
-__exportStar(__nccwpck_require__(4059), exports);
+__exportStar(__nccwpck_require__(51), exports);
 var resolve_ghc_version_1 = __nccwpck_require__(7530);
 Object.defineProperty(exports, "resolveGhcVersion", ({ enumerable: true, get: function () { return __importDefault(resolve_ghc_version_1).default; } }));
 var resolve_agda_stdlib_version_1 = __nccwpck_require__(3237);
@@ -92,6 +92,146 @@ Object.defineProperty(exports, "resolveAgdaStdlibVersion", ({ enumerable: true, 
 var download_dist_1 = __nccwpck_require__(6338);
 Object.defineProperty(exports, "downloadDist", ({ enumerable: true, get: function () { return __importDefault(download_dist_1).default; } }));
 __exportStar(__nccwpck_require__(9150), exports);
+
+
+/***/ }),
+
+/***/ 51:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.agdaLibraryInstallDir = exports.agdaLibrariesInstallDir = exports.agdaExecutablesFile = exports.agdaDefaultsFile = exports.agdaLibrariesFile = exports.agdaInstallDir = exports.agdaDir = exports.setupAgdaCacheDir = void 0;
+const opts = __importStar(__nccwpck_require__(542));
+const path = __importStar(__nccwpck_require__(9411));
+const os = __importStar(__nccwpck_require__(612));
+const tmp = __importStar(__nccwpck_require__(8517));
+/**
+ * The cache for `setup-agda`.
+ *
+ * Used to cache downloads, tools, etc.
+ */
+function setupAgdaCacheDir(name) {
+    if (process.env.RUNNER_TEMP !== undefined) {
+        return path.join(process.env.RUNNER_TEMP, name, yyyymmdd());
+    }
+    else {
+        // TODO: register callback to remove tmp directory
+        return tmp.dirSync().name;
+    }
+}
+exports.setupAgdaCacheDir = setupAgdaCacheDir;
+// Directories for Agda installation:
+/**
+ * The directory where Agda stores its global configuration files.
+ *
+ * By convention, we use the same directory for Agda and Agda library installations.
+ *
+ * Resolves to `~/.agda` on Linux and macOS and to `%AppData%\agda` on Windows.
+ */
+function agdaDir() {
+    switch (opts.platform) {
+        case 'linux':
+        case 'darwin':
+            return path.join(os.homedir(), '.agda');
+        case 'win32':
+            return path.join(os.homedir(), 'AppData', 'Roaming', 'agda');
+    }
+}
+exports.agdaDir = agdaDir;
+/**
+ * The directory to which to install the given Agda version.
+ *
+ * Resolves to `$agdaDir/agda/$version.
+ */
+function agdaInstallDir(version) {
+    return path.join(agdaDir(), 'agda', version);
+}
+exports.agdaInstallDir = agdaInstallDir;
+/**
+ * The path to the global Agda libraries file.
+ *
+ * Resolves to `$agdaDir/libraries`.
+ */
+function agdaLibrariesFile() {
+    return path.join(agdaDir(), 'libraries');
+}
+exports.agdaLibrariesFile = agdaLibrariesFile;
+/**
+ * The path to the global Agda defaults file.
+ *
+ * Resolves to `$agdaDir/defaults`.
+ */
+function agdaDefaultsFile() {
+    return path.join(agdaDir(), 'defaults');
+}
+exports.agdaDefaultsFile = agdaDefaultsFile;
+/**
+ * The path to the global Agda defaults file.
+ *
+ * Resolves to `$agdaDir/executables`.
+ */
+function agdaExecutablesFile() {
+    return path.join(agdaDir(), 'executables');
+}
+exports.agdaExecutablesFile = agdaExecutablesFile;
+/**
+ * The directory where to install Agda libraries.
+ *
+ * Resolves to `$agdaDir/libraries.d`.
+ */
+function agdaLibrariesInstallDir() {
+    return path.join(agdaDir(), 'libraries.d');
+}
+exports.agdaLibrariesInstallDir = agdaLibrariesInstallDir;
+/**
+ * The directory where to install a specific Agda library.
+ *
+ * Resolves to `$agdaDir/libraries.d/$libraryName/$libraryVersion`.
+ *
+ * If the library is experimental, append the current date to the version.
+ */
+function agdaLibraryInstallDir(libraryName, libraryVersion, experimental = true) {
+    if (experimental)
+        libraryVersion += `-${yyyymmdd()}`;
+    return path.join(agdaLibrariesInstallDir(), libraryName, libraryVersion);
+}
+exports.agdaLibraryInstallDir = agdaLibraryInstallDir;
+/**
+ * The current date as `yyyymmdd`.
+ */
+function yyyymmdd() {
+    const nowDate = new Date(Date.now());
+    return [
+        nowDate.getFullYear().toString().padStart(4, '0'),
+        nowDate.getMonth().toString().padStart(2, '0'),
+        nowDate.getDate().toString().padStart(2, '0')
+    ].join('');
+}
 
 
 /***/ }),
@@ -234,7 +374,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const tc = __importStar(__nccwpck_require__(7784));
 const crypto = __importStar(__nccwpck_require__(6005));
-const path_1 = __nccwpck_require__(4059);
+const appdirs_1 = __nccwpck_require__(51);
 const path = __importStar(__nccwpck_require__(9411));
 const util = __importStar(__nccwpck_require__(4024));
 function downloadDist(entry, dest, auth, headers) {
@@ -263,7 +403,7 @@ function downloadDist(entry, dest, auth, headers) {
             }
             case 'git': {
                 if (dest === undefined) {
-                    dest = (0, path_1.cacheDir)(crypto.createHash('sha256').update(entry.url).digest('hex'));
+                    dest = (0, appdirs_1.setupAgdaCacheDir)(crypto.createHash('sha256').update(entry.url).digest('hex'));
                 }
                 yield util.getOutput('git', [
                     ['clone'],
@@ -527,98 +667,6 @@ function parseBdistName(bdistName) {
             (0, ensure_error_1.default)(error).message
         ].join(os.EOL));
     }
-}
-
-
-/***/ }),
-
-/***/ 4059:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.libraryDir = exports.executablesFile = exports.defaultsFile = exports.librariesDir = exports.librariesFile = exports.installDir = exports.cacheDir = exports.agdaDir = void 0;
-const opts = __importStar(__nccwpck_require__(542));
-const path = __importStar(__nccwpck_require__(9411));
-const os = __importStar(__nccwpck_require__(612));
-const tmp = __importStar(__nccwpck_require__(8517));
-function agdaDir() {
-    switch (opts.platform) {
-        case 'linux':
-        case 'darwin':
-            return path.join(os.homedir(), '.agda');
-        case 'win32':
-            return path.join(os.homedir(), 'AppData', 'Roaming', 'agda');
-    }
-}
-exports.agdaDir = agdaDir;
-function cacheDir(name) {
-    if (process.env.RUNNER_TEMP !== undefined) {
-        return path.join(process.env.RUNNER_TEMP, name, yyyymmdd());
-    }
-    else {
-        // TODO: register callback to remove tmp directory
-        return tmp.dirSync().name;
-    }
-}
-exports.cacheDir = cacheDir;
-function installDir(version) {
-    return path.join(agdaDir(), 'agda', version);
-}
-exports.installDir = installDir;
-function librariesFile() {
-    return path.join(agdaDir(), 'libraries');
-}
-exports.librariesFile = librariesFile;
-function librariesDir() {
-    return path.join(agdaDir(), 'libraries.d');
-}
-exports.librariesDir = librariesDir;
-function defaultsFile() {
-    return path.join(agdaDir(), 'defaults');
-}
-exports.defaultsFile = defaultsFile;
-function executablesFile() {
-    return path.join(agdaDir(), 'executables');
-}
-exports.executablesFile = executablesFile;
-function libraryDir(libraryName, libraryVersion, experimental = true) {
-    if (experimental)
-        libraryVersion += `-${yyyymmdd()}`;
-    return path.join(librariesDir(), libraryName, libraryVersion);
-}
-exports.libraryDir = libraryDir;
-function yyyymmdd() {
-    const nowDate = new Date(Date.now());
-    return [
-        nowDate.getFullYear().toString().padStart(4, '0'),
-        nowDate.getMonth().toString().padStart(2, '0'),
-        nowDate.getDate().toString().padStart(2, '0')
-    ].join('');
 }
 
 
@@ -1134,7 +1182,7 @@ function setup(dist, options) {
             const libraryExperimental = dist.tag === undefined;
             const libraryRelativeDir = (_b = path.relative(tmpDir, libraryFrom)) !== null && _b !== void 0 ? _b : 'repository root';
             core.info(`Found ${libraryName} version ${libraryVersion} at ${libraryRelativeDir}`);
-            const libraryTo = opts.libraryDir(libraryName, libraryVersion, libraryExperimental);
+            const libraryTo = opts.agdaLibraryInstallDir(libraryName, libraryVersion, libraryExperimental);
             core.info(`Install ${libraryName} to ${libraryTo}`);
             yield util.mkdirP(path.dirname(libraryTo));
             yield util.cpR(libraryFrom, libraryTo);
@@ -1225,7 +1273,7 @@ function setup(options) {
             else if (agdaDir === null)
                 throw Error('Required build, but "force-no-build" is set.');
             // 2. Set environment variables:
-            const installDir = opts.installDir(options['agda-version']);
+            const installDir = opts.agdaInstallDir(options['agda-version']);
             yield core.group(`🚀 Install Agda ${options['agda-version']}`, () => __awaiter(this, void 0, void 0, function* () {
                 (0, node_assert_1.default)(agdaDir !== null, `Variable 'agdaDir' was mutated after build tasks finished. Did you forget an 'await'?`);
                 if (installDir !== agdaDir) {
@@ -1391,7 +1439,7 @@ function buildFromSource(options) {
             }));
         }
         // 5. Build:
-        const agdaDir = opts.installDir(options['agda-version']);
+        const agdaDir = opts.agdaInstallDir(options['agda-version']);
         yield core.group('🏗 Building Agda', () => __awaiter(this, void 0, void 0, function* () {
             const { buildTool, sourceDir, matchingGhcVersionsThatCanBuildAgda } = buildInfo;
             yield buildTool.build(sourceDir, agdaDir, options, matchingGhcVersionsThatCanBuildAgda);
@@ -2766,7 +2814,7 @@ function setupLinux(options) {
         const upxVersion = '3.96';
         options['upx-version'] = upxVersion;
         const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-amd64_linux.tar.xz`;
-        const upxDir = opts.cacheDir(path.join('upx', upxVersion));
+        const upxDir = opts.setupAgdaCacheDir(path.join('upx', upxVersion));
         const upxTar = yield tc.downloadTool(upxPkgUrl);
         const upxDirTC = yield tc.extractTar(upxTar, upxDir, [
             '--extract',
@@ -2797,7 +2845,7 @@ function setupWindows(options) {
     return __awaiter(this, void 0, void 0, function* () {
         const upxVersion = '3.96';
         options['upx-version'] = upxVersion;
-        const upxDir = opts.cacheDir(path.join('upx', upxVersion));
+        const upxDir = opts.setupAgdaCacheDir(path.join('upx', upxVersion));
         const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-win64.zip`;
         const upxZip = yield tc.downloadTool(upxPkgUrl);
         const upxDirTC = yield tc.extractZip(upxZip, upxDir);
@@ -2921,24 +2969,30 @@ const os = __importStar(__nccwpck_require__(612));
 const lines_1 = __nccwpck_require__(9152);
 // Agda utilities
 function readLibrariesSync() {
-    if (!fs.existsSync(opts.librariesFile()))
+    if (!fs.existsSync(opts.agdaLibrariesFile()))
         return [];
-    const librariesFileContents = fs.readFileSync(opts.librariesFile()).toString();
+    const librariesFileContents = fs
+        .readFileSync(opts.agdaLibrariesFile())
+        .toString();
     const libraries = (0, lines_1.splitLines)(librariesFileContents);
     return libraries.map(libraryPath => path.parse(libraryPath));
 }
 exports.readLibrariesSync = readLibrariesSync;
 function readDefaultsSync() {
-    if (!fs.existsSync(opts.defaultsFile()))
+    if (!fs.existsSync(opts.agdaDefaultsFile()))
         return [];
-    const defaultsFileContents = fs.readFileSync(opts.defaultsFile()).toString();
+    const defaultsFileContents = fs
+        .readFileSync(opts.agdaDefaultsFile())
+        .toString();
     return (0, lines_1.splitLines)(defaultsFileContents);
 }
 exports.readDefaultsSync = readDefaultsSync;
 function readExecutablesSync() {
-    if (!fs.existsSync(opts.executablesFile()))
+    if (!fs.existsSync(opts.agdaExecutablesFile()))
         return [];
-    const defaultsFileContents = fs.readFileSync(opts.defaultsFile()).toString();
+    const defaultsFileContents = fs
+        .readFileSync(opts.agdaDefaultsFile())
+        .toString();
     return (0, lines_1.splitLines)(defaultsFileContents);
 }
 exports.readExecutablesSync = readExecutablesSync;
@@ -2952,21 +3006,21 @@ function registerAgdaLibrary(libraryFile, isDefault = false) {
     if (oldLibraries.some(oldLibrary => oldLibrary.name === newLibrary.name))
         core.warning(`Agda libraries file already contains a copy of ${newLibrary.name}`);
     const newLibraries = [...oldLibraries, newLibrary];
-    fs.writeFileSync(opts.librariesFile(), newLibraries
+    fs.writeFileSync(opts.agdaLibrariesFile(), newLibraries
         .map(libraryParsedPath => path.format(libraryParsedPath))
         .join(os.EOL));
     // Add the library to defaults:
     if (isDefault === true) {
         const oldDefaults = readDefaultsSync();
         const newDefaults = [...oldDefaults, newLibrary.name];
-        fs.writeFileSync(opts.defaultsFile(), newDefaults.join(os.EOL));
+        fs.writeFileSync(opts.agdaDefaultsFile(), newDefaults.join(os.EOL));
     }
 }
 exports.registerAgdaLibrary = registerAgdaLibrary;
 function registerAgdaExecutable(newExecutable) {
     const oldExecutables = readExecutablesSync();
     const newExecutables = [...oldExecutables, newExecutable];
-    fs.writeFileSync(opts.executablesFile(), newExecutables.join(os.EOL));
+    fs.writeFileSync(opts.agdaExecutablesFile(), newExecutables.join(os.EOL));
 }
 exports.registerAgdaExecutable = registerAgdaExecutable;
 function getAgdaSdist(options) {
@@ -2991,7 +3045,7 @@ function getAgdaSdistFromGitHub(agdaVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         if (agdaVersion === 'HEAD') {
             core.info(`Cloning from ${agdaGitUrl}`);
-            const sourceDir = opts.cacheDir('agda-HEAD');
+            const sourceDir = opts.setupAgdaCacheDir('agda-HEAD');
             yield exec.getOutput('git', [
                 'clone',
                 '--single-branch',
