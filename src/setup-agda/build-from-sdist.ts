@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import * as path from 'node:path'
 import * as opts from '../opts'
+import setupCabalPlan from '../setup-cabal-plan'
 import setupHaskell from '../setup-haskell'
 import * as icu from '../setup-icu'
 import * as util from '../util'
@@ -102,6 +103,18 @@ export default async function buildFromSource(
         await icu.setup(options)
       } catch (error) {
         core.info('If this fails, try setting "disable-cluster-counting"')
+        throw error
+      }
+    })
+  }
+
+  // 5. Install cabal-plan:
+  if (options['bdist-license-report']) {
+    await core.group('🪪 Installing cabal-plan', async () => {
+      try {
+        await setupCabalPlan(options)
+      } catch (error) {
+        core.info('If this fails, try removing "bdist-license-report"')
         throw error
       }
     })

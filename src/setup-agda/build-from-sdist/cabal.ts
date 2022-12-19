@@ -34,9 +34,6 @@ export async function build(
   await util.cabal(['build', 'exe:agda', 'exe:agda-mode'], execOptions)
 
   // Install & Run `cabal-plan license-report`:
-  core.info(`Install cabal-plan`)
-  const cabalPlan = await setupCabalPlan(options)
-
   core.info(`Generate license-report in ${installDir}`)
   const installLicenseDir = path.join(installDir, 'licenses')
   await util.mkdirP(installLicenseDir)
@@ -50,7 +47,7 @@ export async function build(
       `license-report-${componentName}.md`
     )
     const {output, errors} = await util.getOutputAndErrors(
-      cabalPlan,
+      'cabal-plan',
       ['license-report', `--licensedir=${installLicenseDir}`, component],
       execOptions
     )

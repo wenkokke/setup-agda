@@ -1,10 +1,9 @@
+import * as core from '@actions/core'
 import * as path from 'node:path'
 import * as opts from './opts'
 import * as util from './util'
 
-export default async function setup(
-  options: opts.BuildOptions
-): Promise<string> {
+export default async function setup(options: opts.BuildOptions): Promise<void> {
   const cabalPlanVersion = '0.7.2.3'
   const cabalPlanDir = opts.setupAgdaCacheDir(
     path.join('cabal-plan', cabalPlanVersion)
@@ -21,8 +20,6 @@ export default async function setup(
     `--installdir=${cabalPlanDir}`,
     '--overwrite-policy=always'
   ])
-  // Return the path to the cabal-plan executable:
-  return opts.platform === 'win32'
-    ? path.join(cabalPlanDir, 'cabal-plan.exe')
-    : path.join(cabalPlanDir, 'cabal-plan')
+  // Add the path to the cabal-plan executable to the PATH
+  core.addPath(cabalPlanDir)
 }

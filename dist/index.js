@@ -1389,6 +1389,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
+const setup_cabal_plan_1 = __importDefault(__nccwpck_require__(5497));
 const setup_haskell_1 = __importDefault(__nccwpck_require__(6933));
 const icu = __importStar(__nccwpck_require__(4173));
 const util = __importStar(__nccwpck_require__(4024));
@@ -1450,6 +1451,18 @@ function buildFromSource(options) {
                 }
                 catch (error) {
                     core.info('If this fails, try setting "disable-cluster-counting"');
+                    throw error;
+                }
+            }));
+        }
+        // 5. Install cabal-plan:
+        if (options['bdist-license-report']) {
+            yield core.group('🪪 Installing cabal-plan', () => __awaiter(this, void 0, void 0, function* () {
+                try {
+                    yield (0, setup_cabal_plan_1.default)(options);
+                }
+                catch (error) {
+                    core.info('If this fails, try removing "bdist-license-report"');
                     throw error;
                 }
             }));
@@ -1520,9 +1533,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.supportedGhcVersions = exports.build = exports.name = void 0;
 const core = __importStar(__nccwpck_require__(2186));
@@ -1533,7 +1543,6 @@ const path = __importStar(__nccwpck_require__(9411));
 const semver = __importStar(__nccwpck_require__(1383));
 const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
-const setup_cabal_plan_1 = __importDefault(__nccwpck_require__(5497));
 exports.name = 'cabal';
 function build(sourceDir, installDir, options, 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1551,8 +1560,6 @@ matchingGhcVersionsThatCanBuildAgda) {
         core.info(`Build Agda-${options['agda-version']}`);
         yield util.cabal(['build', 'exe:agda', 'exe:agda-mode'], execOptions);
         // Install & Run `cabal-plan license-report`:
-        core.info(`Install cabal-plan`);
-        const cabalPlan = yield (0, setup_cabal_plan_1.default)(options);
         core.info(`Generate license-report in ${installDir}`);
         const installLicenseDir = path.join(installDir, 'licenses');
         yield util.mkdirP(installLicenseDir);
@@ -1562,7 +1569,7 @@ matchingGhcVersionsThatCanBuildAgda) {
         ];
         for (const [componentName, component] of components) {
             const licenseReportPath = path.join(installLicenseDir, `license-report-${componentName}.md`);
-            const { output, errors } = yield util.getOutputAndErrors(cabalPlan, ['license-report', `--licensedir=${installLicenseDir}`, component], execOptions);
+            const { output, errors } = yield util.getOutputAndErrors('cabal-plan', ['license-report', `--licensedir=${installLicenseDir}`, component], execOptions);
             fs.writeFileSync(licenseReportPath, [output, '## Warnings', errors ? errors : 'No warnings'].join(`${os.EOL}${os.EOL}`));
         }
         // Run `cabal install`:
@@ -2285,6 +2292,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
@@ -2304,10 +2312,8 @@ function setup(options) {
             `--installdir=${cabalPlanDir}`,
             '--overwrite-policy=always'
         ]);
-        // Return the path to the cabal-plan executable:
-        return opts.platform === 'win32'
-            ? path.join(cabalPlanDir, 'cabal-plan.exe')
-            : path.join(cabalPlanDir, 'cabal-plan');
+        // Add the path to the cabal-plan executable to the PATH
+        core.addPath(cabalPlanDir);
     });
 }
 exports["default"] = setup;
