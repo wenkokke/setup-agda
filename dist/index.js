@@ -2763,16 +2763,18 @@ function setup(options) {
 exports["default"] = setup;
 function setupLinux(options) {
     return __awaiter(this, void 0, void 0, function* () {
-        const upxPkgUrl = 'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz';
+        const upxVersion = '3.96';
+        options['upx-version'] = upxVersion;
+        const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-amd64_linux.tar.xz`;
+        const upxDir = opts.cacheDir(path.join('upx', upxVersion));
         const upxTar = yield tc.downloadTool(upxPkgUrl);
-        const upxDir = yield tc.extractTar(upxTar, undefined, [
+        const upxDirTC = yield tc.extractTar(upxTar, upxDir, [
             '--extract',
             '--xz',
             '--preserve-permissions',
             '--strip-components=1'
         ]);
-        options['upx-version'] = '3.96';
-        return path.join(upxDir, 'upx');
+        return path.join(upxDirTC, 'upx');
     });
 }
 function setupMacOS(options) {
@@ -2793,11 +2795,13 @@ function setupMacOS(options) {
 }
 function setupWindows(options) {
     return __awaiter(this, void 0, void 0, function* () {
-        const upxPkgUrl = 'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-win64.zip';
+        const upxVersion = '3.96';
+        options['upx-version'] = upxVersion;
+        const upxDir = opts.cacheDir(path.join('upx', upxVersion));
+        const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-win64.zip`;
         const upxZip = yield tc.downloadTool(upxPkgUrl);
-        const upxDir = yield tc.extractZip(upxZip);
-        options['upx-version'] = '3.96';
-        return path.join(upxDir, 'upx-3.96-win64', 'upx');
+        const upxDirTC = yield tc.extractZip(upxZip, upxDir);
+        return path.join(upxDirTC, `upx-${upxVersion}-win64`, 'upx');
     });
 }
 

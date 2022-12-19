@@ -17,17 +17,18 @@ export default async function setup(
 }
 
 async function setupLinux(options: opts.BuildOptions): Promise<string> {
-  const upxPkgUrl =
-    'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz'
+  const upxVersion = '3.96'
+  options['upx-version'] = upxVersion
+  const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-amd64_linux.tar.xz`
+  const upxDir = opts.cacheDir(path.join('upx', upxVersion))
   const upxTar = await tc.downloadTool(upxPkgUrl)
-  const upxDir = await tc.extractTar(upxTar, undefined, [
+  const upxDirTC = await tc.extractTar(upxTar, upxDir, [
     '--extract',
     '--xz',
     '--preserve-permissions',
     '--strip-components=1'
   ])
-  options['upx-version'] = '3.96'
-  return path.join(upxDir, 'upx')
+  return path.join(upxDirTC, 'upx')
 }
 
 async function setupMacOS(options: opts.BuildOptions): Promise<string> {
@@ -44,10 +45,11 @@ async function setupMacOS(options: opts.BuildOptions): Promise<string> {
 }
 
 async function setupWindows(options: opts.BuildOptions): Promise<string> {
-  const upxPkgUrl =
-    'https://github.com/upx/upx/releases/download/v3.96/upx-3.96-win64.zip'
+  const upxVersion = '3.96'
+  options['upx-version'] = upxVersion
+  const upxDir = opts.cacheDir(path.join('upx', upxVersion))
+  const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-win64.zip`
   const upxZip = await tc.downloadTool(upxPkgUrl)
-  const upxDir = await tc.extractZip(upxZip)
-  options['upx-version'] = '3.96'
-  return path.join(upxDir, 'upx-3.96-win64', 'upx')
+  const upxDirTC = await tc.extractZip(upxZip, upxDir)
+  return path.join(upxDirTC, `upx-${upxVersion}-win64`, 'upx')
 }
