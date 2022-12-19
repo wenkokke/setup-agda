@@ -20,7 +20,7 @@ async function setupLinux(options: opts.BuildOptions): Promise<string> {
   const upxVersion = '3.96'
   options['upx-version'] = upxVersion
   const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-amd64_linux.tar.xz`
-  const upxDir = opts.cacheDir(path.join('upx', upxVersion))
+  const upxDir = opts.setupAgdaCacheDir(path.join('upx', upxVersion))
   const upxTar = await tc.downloadTool(upxPkgUrl)
   const upxDirTC = await tc.extractTar(upxTar, upxDir, [
     '--extract',
@@ -47,7 +47,7 @@ async function setupMacOS(options: opts.BuildOptions): Promise<string> {
 async function setupWindows(options: opts.BuildOptions): Promise<string> {
   const upxVersion = '3.96'
   options['upx-version'] = upxVersion
-  const upxDir = opts.cacheDir(path.join('upx', upxVersion))
+  const upxDir = opts.setupAgdaCacheDir(path.join('upx', upxVersion))
   const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-win64.zip`
   const upxZip = await tc.downloadTool(upxPkgUrl)
   const upxDirTC = await tc.extractZip(upxZip, upxDir)

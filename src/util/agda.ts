@@ -13,21 +13,27 @@ import {splitLines} from './lines'
 // Agda utilities
 
 export function readLibrariesSync(): path.ParsedPath[] {
-  if (!fs.existsSync(opts.librariesFile())) return []
-  const librariesFileContents = fs.readFileSync(opts.librariesFile()).toString()
+  if (!fs.existsSync(opts.agdaLibrariesFile())) return []
+  const librariesFileContents = fs
+    .readFileSync(opts.agdaLibrariesFile())
+    .toString()
   const libraries = splitLines(librariesFileContents)
   return libraries.map(libraryPath => path.parse(libraryPath))
 }
 
 export function readDefaultsSync(): string[] {
-  if (!fs.existsSync(opts.defaultsFile())) return []
-  const defaultsFileContents = fs.readFileSync(opts.defaultsFile()).toString()
+  if (!fs.existsSync(opts.agdaDefaultsFile())) return []
+  const defaultsFileContents = fs
+    .readFileSync(opts.agdaDefaultsFile())
+    .toString()
   return splitLines(defaultsFileContents)
 }
 
 export function readExecutablesSync(): string[] {
-  if (!fs.existsSync(opts.executablesFile())) return []
-  const defaultsFileContents = fs.readFileSync(opts.defaultsFile()).toString()
+  if (!fs.existsSync(opts.agdaExecutablesFile())) return []
+  const defaultsFileContents = fs
+    .readFileSync(opts.agdaDefaultsFile())
+    .toString()
   return splitLines(defaultsFileContents)
 }
 
@@ -47,7 +53,7 @@ export function registerAgdaLibrary(
     )
   const newLibraries = [...oldLibraries, newLibrary]
   fs.writeFileSync(
-    opts.librariesFile(),
+    opts.agdaLibrariesFile(),
     newLibraries
       .map(libraryParsedPath => path.format(libraryParsedPath))
       .join(os.EOL)
@@ -56,14 +62,14 @@ export function registerAgdaLibrary(
   if (isDefault === true) {
     const oldDefaults = readDefaultsSync()
     const newDefaults = [...oldDefaults, newLibrary.name]
-    fs.writeFileSync(opts.defaultsFile(), newDefaults.join(os.EOL))
+    fs.writeFileSync(opts.agdaDefaultsFile(), newDefaults.join(os.EOL))
   }
 }
 
 export function registerAgdaExecutable(newExecutable: string): void {
   const oldExecutables = readExecutablesSync()
   const newExecutables = [...oldExecutables, newExecutable]
-  fs.writeFileSync(opts.executablesFile(), newExecutables.join(os.EOL))
+  fs.writeFileSync(opts.agdaExecutablesFile(), newExecutables.join(os.EOL))
 }
 
 export async function getAgdaSdist(
@@ -94,7 +100,7 @@ async function getAgdaSdistFromGitHub(
 ): Promise<string> {
   if (agdaVersion === 'HEAD') {
     core.info(`Cloning from ${agdaGitUrl}`)
-    const sourceDir = opts.cacheDir('agda-HEAD')
+    const sourceDir = opts.setupAgdaCacheDir('agda-HEAD')
     await exec.getOutput('git', [
       'clone',
       '--single-branch',

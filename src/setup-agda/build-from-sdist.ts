@@ -108,7 +108,7 @@ export default async function buildFromSource(
   }
 
   // 5. Build:
-  const agdaDir = opts.installDir(options['agda-version'])
+  const agdaDir = opts.agdaInstallDir(options['agda-version'])
   await core.group('🏗 Building Agda', async () => {
     const {buildTool, sourceDir, matchingGhcVersionsThatCanBuildAgda} =
       buildInfo

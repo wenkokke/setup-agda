@@ -8,7 +8,7 @@ import * as tmp from 'tmp'
  *
  * Used to cache downloads, tools, etc.
  */
-export function cacheDir(name: string): string {
+export function setupAgdaCacheDir(name: string): string {
   if (process.env.RUNNER_TEMP !== undefined) {
     return path.join(process.env.RUNNER_TEMP, name, yyyymmdd())
   } else {
@@ -41,7 +41,7 @@ export function agdaDir(): string {
  *
  * Resolves to `$agdaDir/agda/$version.
  */
-export function installDir(version: string): string {
+export function agdaInstallDir(version: string): string {
   return path.join(agdaDir(), 'agda', version)
 }
 
@@ -50,17 +50,8 @@ export function installDir(version: string): string {
  *
  * Resolves to `$agdaDir/libraries`.
  */
-export function librariesFile(): string {
+export function agdaLibrariesFile(): string {
   return path.join(agdaDir(), 'libraries')
-}
-
-/**
- * The directory where to install Agda libraries.
- *
- * Resolves to `$agdaDir/libraries.d`.
- */
-export function librariesDir(): string {
-  return path.join(agdaDir(), 'libraries.d')
 }
 
 /**
@@ -68,7 +59,7 @@ export function librariesDir(): string {
  *
  * Resolves to `$agdaDir/defaults`.
  */
-export function defaultsFile(): string {
+export function agdaDefaultsFile(): string {
   return path.join(agdaDir(), 'defaults')
 }
 
@@ -77,8 +68,17 @@ export function defaultsFile(): string {
  *
  * Resolves to `$agdaDir/executables`.
  */
-export function executablesFile(): string {
+export function agdaExecutablesFile(): string {
   return path.join(agdaDir(), 'executables')
+}
+
+/**
+ * The directory where to install Agda libraries.
+ *
+ * Resolves to `$agdaDir/libraries.d`.
+ */
+export function agdaLibrariesInstallDir(): string {
+  return path.join(agdaDir(), 'libraries.d')
 }
 
 /**
@@ -88,13 +88,13 @@ export function executablesFile(): string {
  *
  * If the library is experimental, append the current date to the version.
  */
-export function libraryDir(
+export function agdaLibraryInstallDir(
   libraryName: string,
   libraryVersion: string,
   experimental = true
 ): string {
   if (experimental) libraryVersion += `-${yyyymmdd()}`
-  return path.join(librariesDir(), libraryName, libraryVersion)
+  return path.join(agdaLibrariesInstallDir(), libraryName, libraryVersion)
 }
 
 /**
