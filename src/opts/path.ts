@@ -3,6 +3,11 @@ import * as path from 'node:path'
 import * as os from 'node:os'
 import * as tmp from 'tmp'
 
+/**
+ * The cache for `setup-agda`.
+ *
+ * Used to cache downloads, tools, etc.
+ */
 export function cacheDir(name: string): string {
   if (process.env.RUNNER_TEMP !== undefined) {
     return path.join(process.env.RUNNER_TEMP, name, yyyymmdd())

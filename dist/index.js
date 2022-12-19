@@ -566,6 +566,11 @@ const opts = __importStar(__nccwpck_require__(542));
 const path = __importStar(__nccwpck_require__(9411));
 const os = __importStar(__nccwpck_require__(612));
 const tmp = __importStar(__nccwpck_require__(8517));
+/**
+ * The cache for `setup-agda`.
+ *
+ * Used to cache downloads, tools, etc.
+ */
 function cacheDir(name) {
     if (process.env.RUNNER_TEMP !== undefined) {
         return path.join(process.env.RUNNER_TEMP, name, yyyymmdd());
