@@ -15,7 +15,7 @@ export default async function setup(
   await util.cabal([
     'install',
     `cabal-plan-${cabalPlanVersion}`,
-    '--flag +license-report',
+    '-f license-report',
     '--ignore-project',
     '--install-method=copy',
     `--installdir=${cabalPlanDir}`,
