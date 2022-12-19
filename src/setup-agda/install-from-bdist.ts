@@ -33,7 +33,11 @@ export default async function installFromBdist(
       core.info(`Testing Agda ${options['agda-version']} package`)
       try {
         await util.agdaTest({
-          agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
+          agdaExePath: path.join(
+            bdistDir,
+            'bin',
+            opts.agdaComponents['Agda:exe:agda'].exe
+          ),
           agdaDataDir: path.join(bdistDir, 'data')
         })
         return bdistDir
@@ -60,8 +64,8 @@ async function repairPermissions(bdistDir: string): Promise<void> {
     case 'linux': {
       // Repair file permissions
       core.info('Repairing file permissions')
-      for (const binName of util.agdaBinNames) {
-        await util.chmod('+x', path.join(bdistDir, 'bin', binName))
+      for (const component of Object.values(opts.agdaComponents)) {
+        await util.chmod('+x', path.join(bdistDir, 'bin', component.exe))
       }
       break
     }
@@ -69,9 +73,9 @@ async function repairPermissions(bdistDir: string): Promise<void> {
       // Repair file permissions
       core.info('Repairing file permissions')
       // Repair file permissions on executables
-      for (const binName of util.agdaBinNames) {
-        await util.chmod('+x', path.join(bdistDir, 'bin', binName))
-        await util.xattr('-c', path.join(bdistDir, 'bin', binName))
+      for (const component of Object.values(opts.agdaComponents)) {
+        await util.chmod('+x', path.join(bdistDir, 'bin', component.exe))
+        await util.xattr('-c', path.join(bdistDir, 'bin', component.exe))
       }
       // Repair file permissions on libraries
       const libGlobber = await glob.create(path.join(bdistDir, 'lib', '*'))

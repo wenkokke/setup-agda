@@ -1047,14 +1047,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.agdaVersionToCompatibleAgdaStdlibVersions = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.isAgdaStdlibVersionSpec = exports.isAgdaStdlibVersion = exports.agdaStdlibVersions = exports.isAgdaVersionSpec = exports.isAgdaGitRef = exports.isDeprecatedAgdaVersion = exports.agdaDeprecatedVersions = exports.isAgdaVersion = exports.agdaVersions = void 0;
+exports.agdaVersionToCompatibleAgdaStdlibVersions = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.isAgdaStdlibVersionSpec = exports.isAgdaStdlibVersion = exports.agdaStdlibVersions = exports.isAgdaVersionSpec = exports.isAgdaGitRef = exports.isDeprecatedAgdaVersion = exports.agdaDeprecatedVersions = exports.isAgdaVersion = exports.agdaVersions = exports.agdaComponents = void 0;
 const hackage = __importStar(__nccwpck_require__(903));
 const Agda_bdist_json_1 = __importDefault(__nccwpck_require__(7951));
 const agda_stdlib_sdist_json_1 = __importDefault(__nccwpck_require__(5324));
 const Agda_versions_deprecated_json_1 = __importDefault(__nccwpck_require__(1656));
 const Agda_versions_normal_json_1 = __importDefault(__nccwpck_require__(2115));
 const Agda_agda_stdlib_compat_json_1 = __importDefault(__nccwpck_require__(9442));
+const Agda_components_json_1 = __importDefault(__nccwpck_require__(3172));
+const platform_1 = __nccwpck_require__(542);
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
+// Values of Agda components:
+exports.agdaComponents = Agda_components_json_1.default;
+// Windows: add .exe extension
+if (platform_1.platform === 'win32')
+    for (const component of Object.keys(exports.agdaComponents))
+        exports.agdaComponents[component].exe += '.exe';
 exports.agdaVersions = Object.keys(Agda_versions_normal_json_1.default.packageInfo);
 // Type guard for Agda versions:
 function isAgdaVersion(version) {
@@ -1448,7 +1456,7 @@ function buildFromSource(options) {
         // 6. Test:
         yield core.group('👩🏾‍🔬 Testing Agda build', () => __awaiter(this, void 0, void 0, function* () {
             return yield util.agdaTest({
-                agdaBin: path.join(agdaDir, 'bin', util.agdaBinName),
+                agdaExePath: path.join(agdaDir, 'bin', opts.agdaComponents['Agda:exe:agda'].exe),
                 agdaDataDir: path.join(agdaDir, 'data')
             });
         }));
@@ -1919,7 +1927,7 @@ function installFromBdist(options) {
                 core.info(`Testing Agda ${options['agda-version']} package`);
                 try {
                     yield util.agdaTest({
-                        agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
+                        agdaExePath: path.join(bdistDir, 'bin', opts.agdaComponents['Agda:exe:agda'].exe),
                         agdaDataDir: path.join(bdistDir, 'data')
                     });
                     return bdistDir;
@@ -1950,8 +1958,8 @@ function repairPermissions(bdistDir) {
             case 'linux': {
                 // Repair file permissions
                 core.info('Repairing file permissions');
-                for (const binName of util.agdaBinNames) {
-                    yield util.chmod('+x', path.join(bdistDir, 'bin', binName));
+                for (const component of Object.values(opts.agdaComponents)) {
+                    yield util.chmod('+x', path.join(bdistDir, 'bin', component.exe));
                 }
                 break;
             }
@@ -1959,9 +1967,9 @@ function repairPermissions(bdistDir) {
                 // Repair file permissions
                 core.info('Repairing file permissions');
                 // Repair file permissions on executables
-                for (const binName of util.agdaBinNames) {
-                    yield util.chmod('+x', path.join(bdistDir, 'bin', binName));
-                    yield util.xattr('-c', path.join(bdistDir, 'bin', binName));
+                for (const component of Object.values(opts.agdaComponents)) {
+                    yield util.chmod('+x', path.join(bdistDir, 'bin', component.exe));
+                    yield util.xattr('-c', path.join(bdistDir, 'bin', component.exe));
                 }
                 // Repair file permissions on libraries
                 const libGlobber = yield glob.create(path.join(bdistDir, 'lib', '*'));
@@ -2037,6 +2045,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const tc = __importStar(__nccwpck_require__(7784));
 const path = __importStar(__nccwpck_require__(9411));
+const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
 // Helper to install from GitHub Runner tool cache
 // NOTE: We can hope, can't we?
@@ -2059,7 +2068,7 @@ function installFromToolCache(options) {
             core.info(`Testing cache for Agda ${options['agda-version']}`);
             try {
                 util.agdaTest({
-                    agdaBin: path.join(agdaDirTC, 'bin', util.agdaBinName),
+                    agdaExePath: path.join(agdaDirTC, 'bin', opts.agdaComponents['Agda:exe:agda'].exe),
                     agdaDataDir: path.join(agdaDirTC, 'data')
                 });
                 return agdaDirTC;
@@ -2148,8 +2157,8 @@ function uploadBdist(installDir, options) {
         if (options['bdist-compress-exe']) {
             try {
                 const upxExe = yield (0, setup_upx_1.default)(options);
-                for (const binName of util.agdaBinNames)
-                    yield compressBin(upxExe, path.join(bdistDir, 'bin', binName));
+                for (const component of Object.values(opts.agdaComponents))
+                    yield compressBin(upxExe, path.join(bdistDir, 'bin', component.exe));
             }
             catch (error) {
                 core.info(util.ensureError(error).message);
@@ -2157,7 +2166,7 @@ function uploadBdist(installDir, options) {
         }
         // Test artifact:
         yield util.agdaTest({
-            agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
+            agdaExePath: path.join(bdistDir, 'bin', opts.agdaComponents['Agda:exe:agda'].exe),
             agdaDataDir: path.join(bdistDir, 'data')
         });
         // Create file list for artifact:
@@ -2415,6 +2424,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
+const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
 function setupForLinux(options) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -2482,15 +2492,15 @@ function bundleForLinux(distDir, options) {
             yield util.patchelf('--set-rpath', '$ORIGIN', libTo);
         }
         // Change dependencies on Agda executable:
-        const agdaBinPath = path.join(distBinDir, util.agdaBinName);
+        const agdaExePath = path.join(distBinDir, opts.agdaComponents['Agda:exe:agda'].exe);
         const binDepsToChange = ['libicui18n', 'libicuuc', 'libicudata'];
         for (const depName of binDepsToChange) {
             const depNameFrom = `${depName}.so.${icuVerMaj}`;
             const depNameTo = `agda-${options['agda-version']}-${depName}.so`;
-            yield util.patchelf('--replace-needed', depNameFrom, depNameTo, agdaBinPath);
+            yield util.patchelf('--replace-needed', depNameFrom, depNameTo, agdaExePath);
         }
         // NOTE: This overrides any previously set run path.
-        yield util.patchelf('--set-rpath', '$ORIGIN/../lib', agdaBinPath);
+        yield util.patchelf('--set-rpath', '$ORIGIN/../lib', agdaExePath);
     });
 }
 exports.bundleForLinux = bundleForLinux;
@@ -2542,6 +2552,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.bundleForMacOS = exports.setupForMacOS = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const path = __importStar(__nccwpck_require__(9411));
+const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 // MacOS
@@ -2623,14 +2634,14 @@ function bundleForMacOS(distDir, options) {
             }
         }
         // Change dependencies on Agda executable:
-        const agdaBinPath = path.join(distBinDir, util.agdaBinName);
+        const agdaExePath = path.join(distBinDir, opts.agdaComponents['Agda:exe:agda'].exe);
         const binDepsToChange = ['libicui18n', 'libicuuc'];
         for (const libName of binDepsToChange) {
             const libNameFrom = `${libName}.${options['icu-version']}.dylib`;
             const libFrom = path.join(prefix, 'lib', libNameFrom);
             const libNameTo = `agda-${options['agda-version']}-${libName}.dylib`;
             const libTo = `@executable_path/../lib/${libNameTo}`;
-            yield util.installNameTool('-change', libFrom, libTo, agdaBinPath);
+            yield util.installNameTool('-change', libFrom, libTo, agdaExePath);
         }
     });
 }
@@ -2955,18 +2966,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.configureEnvFor = exports.agdaTest = exports.agda = exports.agdaGetDataDir = exports.agdaGetVersion = exports.agdaBinNames = exports.agdaModeBinName = exports.agdaBinName = exports.getAgdaSdist = exports.registerAgdaExecutable = exports.registerAgdaLibrary = exports.readExecutablesSync = exports.readDefaultsSync = exports.readLibrariesSync = void 0;
+exports.configureEnvFor = exports.agdaTest = exports.agda = exports.agdaGetDataDir = exports.agdaGetVersion = exports.getAgdaSdist = exports.registerAgdaExecutable = exports.registerAgdaLibrary = exports.readExecutablesSync = exports.readDefaultsSync = exports.readLibrariesSync = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
-const path = __importStar(__nccwpck_require__(9411));
-const opts = __importStar(__nccwpck_require__(1352));
-const exec = __importStar(__nccwpck_require__(4369));
-const simver = __importStar(__nccwpck_require__(7609));
-const hackage = __importStar(__nccwpck_require__(903));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const fs = __importStar(__nccwpck_require__(7561));
 const os = __importStar(__nccwpck_require__(612));
+const path = __importStar(__nccwpck_require__(9411));
+const opts = __importStar(__nccwpck_require__(1352));
+const exec = __importStar(__nccwpck_require__(4369));
+const hackage = __importStar(__nccwpck_require__(903));
 const lines_1 = __nccwpck_require__(9152);
+const simver = __importStar(__nccwpck_require__(7609));
 // Agda utilities
 function readLibrariesSync() {
     if (!fs.existsSync(opts.agdaLibrariesFile()))
@@ -3076,21 +3087,17 @@ function getAgdaSdistFromHackage(agdaVersion) {
         return packageDir;
     });
 }
-// Executable names
-exports.agdaBinName = opts.platform === 'win32' ? 'agda.exe' : 'agda';
-exports.agdaModeBinName = opts.platform === 'win32' ? 'agda-mode.exe' : 'agda-mode';
-exports.agdaBinNames = [exports.agdaBinName, exports.agdaModeBinName];
 function resolveAgdaOptions(agdaOptions, options) {
     var _a, _b, _c, _d;
-    const agdaBin = (_a = agdaOptions === null || agdaOptions === void 0 ? void 0 : agdaOptions.agdaBin) !== null && _a !== void 0 ? _a : exports.agdaBinName;
+    const agdaExePath = (_a = agdaOptions === null || agdaOptions === void 0 ? void 0 : agdaOptions.agdaExePath) !== null && _a !== void 0 ? _a : opts.agdaComponents['Agda:exe:agda'].exe;
     // Set 'Agda_datadir' if it is explicitly passed:
     const agdaDataDirUnset = ((_b = options === null || options === void 0 ? void 0 : options.env) === null || _b === void 0 ? void 0 : _b.Agda_datadir) === undefined &&
         process.env.Agda_datadir !== undefined;
     if ((agdaOptions === null || agdaOptions === void 0 ? void 0 : agdaOptions.agdaDataDir) !== undefined || agdaDataDirUnset) {
-        const agdaDataDirDefault = path.normalize(path.join(path.dirname(path.resolve(agdaBin)), '..', 'data'));
+        const agdaDataDirDefault = path.normalize(path.join(path.dirname(path.resolve(agdaExePath)), '..', 'data'));
         options = Object.assign(Object.assign({}, options), { env: Object.assign(Object.assign({}, ((_c = options === null || options === void 0 ? void 0 : options.env) !== null && _c !== void 0 ? _c : process.env)), { Agda_datadir: (_d = agdaOptions === null || agdaOptions === void 0 ? void 0 : agdaOptions.agdaDataDir) !== null && _d !== void 0 ? _d : agdaDataDirDefault }) });
     }
-    return [agdaBin, options];
+    return [agdaExePath, options];
 }
 function agdaGetVersion(agdaOptions, options) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -3118,7 +3125,7 @@ function agdaGetDataDir(agdaOptions, options) {
             const agdaDataDir = (_a = agdaOptions === null || agdaOptions === void 0 ? void 0 : agdaOptions.agdaDataDir) !== null && _a !== void 0 ? _a : (_b = options === null || options === void 0 ? void 0 : options.env) === null || _b === void 0 ? void 0 : _b.Agda_datadir;
             if (agdaDataDir !== undefined)
                 return agdaDataDir;
-            const agdaBin = (_c = agdaOptions === null || agdaOptions === void 0 ? void 0 : agdaOptions.agdaBin) !== null && _c !== void 0 ? _c : (yield exec.which(exports.agdaBinName));
+            const agdaBin = (_c = agdaOptions === null || agdaOptions === void 0 ? void 0 : agdaOptions.agdaExePath) !== null && _c !== void 0 ? _c : (yield exec.which(opts.agdaComponents['Agda:exe:agda'].exe));
             return path.join(path.basename(agdaBin), '..', 'data');
         }
     });
@@ -3177,8 +3184,8 @@ function configureEnvFor(installDir) {
         core.info(`Add ${binDir} to PATH`);
         core.addPath(binDir);
         core.setOutput('agda-path', binDir);
-        core.setOutput('agda-exe', path.join(binDir, exports.agdaBinName));
-        core.setOutput('agda-mode-exe', path.join(binDir, exports.agdaModeBinName));
+        core.setOutput('agda-exe', path.join(binDir, opts.agdaComponents['Agda:exe:agda'].exe));
+        core.setOutput('agda-mode-exe', path.join(binDir, opts.agdaComponents['Agda:exe:agda-mode'].exe));
     });
 }
 exports.configureEnvFor = configureEnvFor;
@@ -32050,6 +32057,14 @@ module.exports = JSON.parse('{"2.6.2.2":["1.7.1"],"2.6.2.1":["1.7.1"],"2.6.2":["
 
 "use strict";
 module.exports = JSON.parse('{"darwin":{"x64":{"nightly":{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz","dir":"Agda-nightly"},"2.6.2.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-macos-11-icu71.1-ghc9.2.2-cabal3.6.2.0.zip","2.6.2.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-macos-11-icu71.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip","2.6.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-macos-11-icu71.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip","2.6.1.3":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-macos-11-icu71.1-ghc8.10.3-cabal2.4.1.0-stack2.7.5.zip","2.6.0.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-macos-11-icu71.1-ghc8.6.5-cabal2.4.1.0-stack2.7.5.zip","2.5.4.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-macos-11-icu71.1-ghc8.4.4-cabal2.4.1.0-stack2.7.5.zip","2.5.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-macos-11-icu-ghc8.0.2-cabal2.4.1.0-stack2.7.5.zip"}},"linux":{"x64":{"nightly":{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz","dir":"Agda-nightly"},"2.6.2.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04-icu66.1-ghc9.2.2-cabal3.6.2.0.zip","2.6.2.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-ubuntu-20.04-icu66.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip","2.6.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-ubuntu-20.04-icu66.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip","2.6.1.3":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-20.04-icu66.1-ghc8.10.3-cabal2.4.1.0-stack2.7.5.zip","2.6.0.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-20.04-icu66.1-ghc8.6.5-cabal2.4.1.0-stack2.7.5.zip","2.5.4.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-ubuntu-20.04-icu66.1-ghc8.4.4-cabal2.4.1.0-stack2.7.5.zip","2.5.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-ubuntu-20.04-icu-ghc8.0.2-cabal2.4.1.0-stack2.7.5.zip"}},"win32":{"x64":{"nightly":{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip","dir":"Agda-nightly"},"2.6.2.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022-icu71.1-ghc9.2.2-cabal3.6.2.0.zip","2.6.2.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-windows-2022-icu72.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip","2.6.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-windows-2022-icu72.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip","2.6.1.3":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-windows-2022-icu72.1-ghc8.10.3-cabal2.4.1.0-stack2.7.5.zip"}}}');
+
+/***/ }),
+
+/***/ 3172:
+/***/ ((module) => {
+
+"use strict";
+module.exports = JSON.parse('{"Agda:exe:agda":{"exe":"agda"},"Agda:exe:agda-mode":{"exe":"agda-mode"}}');
 
 /***/ }),
 

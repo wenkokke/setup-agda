@@ -32,8 +32,8 @@ export default async function uploadBdist(
   if (options['bdist-compress-exe']) {
     try {
       const upxExe = await setupUpx(options)
-      for (const binName of util.agdaBinNames)
-        await compressBin(upxExe, path.join(bdistDir, 'bin', binName))
+      for (const component of Object.values(opts.agdaComponents))
+        await compressBin(upxExe, path.join(bdistDir, 'bin', component.exe))
     } catch (error) {
       core.info(util.ensureError(error).message)
     }
@@ -41,7 +41,11 @@ export default async function uploadBdist(
 
   // Test artifact:
   await util.agdaTest({
-    agdaBin: path.join(bdistDir, 'bin', util.agdaBinName),
+    agdaExePath: path.join(
+      bdistDir,
+      'bin',
+      opts.agdaComponents['Agda:exe:agda'].exe
+    ),
     agdaDataDir: path.join(bdistDir, 'data')
   })
 

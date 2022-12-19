@@ -126,7 +126,11 @@ export default async function buildFromSource(
     '👩🏾‍🔬 Testing Agda build',
     async () =>
       await util.agdaTest({
-        agdaBin: path.join(agdaDir, 'bin', util.agdaBinName),
+        agdaExePath: path.join(
+          agdaDir,
+          'bin',
+          opts.agdaComponents['Agda:exe:agda'].exe
+        ),
         agdaDataDir: path.join(agdaDir, 'data')
       })
   )

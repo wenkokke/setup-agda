@@ -1,0 +1,4 @@
+{
+  "Agda:exe:agda": {"exe": "agda"},
+  "Agda:exe:agda-mode": {"exe": "agda-mode"}
+}
