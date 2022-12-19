@@ -317,6 +317,17 @@ This section describes all inputs:
 
   Default: `agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}`
 
+- `bdist-license-report`
+
+  If specified, include a license report in the binary distribution.
+  
+  The `bdist-license-report` option is incompatible with `enable-stack`, since
+  it relies on [`cabal-plan`](https://hackage.haskell.org/package/cabal-plan).
+  
+  Only used when `bdist-upload` is specified.
+
+  Default: `false`
+
 - `bdist-compress-exe`
 
   If specified, the executables are compressed with [UPX](https://upx.github.io).

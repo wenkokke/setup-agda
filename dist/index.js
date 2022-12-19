@@ -597,7 +597,7 @@ function getOptions(inputs, actionYml) {
         }
         // Create build options:
         const options = {
-            // Specified in Agdaopts.SetupInputs
+            // Specified in opts.SetupAgdaInputs
             'agda-version': agdaVersion,
             'agda-stdlib-version': agdaStdlibVersion,
             'agda-stdlib-default': agdaStdlibDefault,
@@ -605,6 +605,7 @@ function getOptions(inputs, actionYml) {
             'agda-defaults': agdaDefaults,
             'agda-executables': agdaExecutables,
             'bdist-compress-exe': getFlag('bdist-compress-exe'),
+            'bdist-license-report': getFlag('bdist-license-report'),
             'bdist-name': bdistName,
             'bdist-retention-days': bdistRetentionDays,
             'bdist-upload': getFlag('bdist-upload'),
@@ -617,7 +618,7 @@ function getOptions(inputs, actionYml) {
             'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
             'ghc-version-range': ghcVersionRange,
             'pre-build-hook': getOption('pre-build-hook'),
-            // Specified in Haskellopts.SetupInputs
+            // Specified in opts.SetupHaskellInputs:
             'cabal-version': getOption('cabal-version'),
             'disable-matcher': getFlag('disable-matcher'),
             'enable-stack': getFlag('enable-stack'),

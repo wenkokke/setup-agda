@@ -142,7 +142,7 @@ export default async function getOptions(
 
   // Create build options:
   const options: opts.BuildOptions = {
-    // Specified in Agdaopts.SetupInputs
+    // Specified in opts.SetupAgdaInputs
     'agda-version': agdaVersion,
     'agda-stdlib-version': agdaStdlibVersion,
     'agda-stdlib-default': agdaStdlibDefault,
@@ -150,6 +150,7 @@ export default async function getOptions(
     'agda-defaults': agdaDefaults,
     'agda-executables': agdaExecutables,
     'bdist-compress-exe': getFlag('bdist-compress-exe'),
+    'bdist-license-report': getFlag('bdist-license-report'),
     'bdist-name': bdistName,
     'bdist-retention-days': bdistRetentionDays,
     'bdist-upload': getFlag('bdist-upload'),
@@ -163,7 +164,7 @@ export default async function getOptions(
     'ghc-version-range': ghcVersionRange,
     'pre-build-hook': getOption('pre-build-hook'),
 
-    // Specified in Haskellopts.SetupInputs
+    // Specified in opts.SetupHaskellInputs:
     'cabal-version': getOption('cabal-version'),
     'disable-matcher': getFlag('disable-matcher'),
     'enable-stack': getFlag('enable-stack'),
