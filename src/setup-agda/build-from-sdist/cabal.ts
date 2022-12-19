@@ -49,10 +49,11 @@ export async function build(
       installLicenseDir,
       `license-report-${componentName}.md`
     )
-    const {output, errors} = await util.getOutputAndErrors(cabalPlan, [
-      'license-report',
-      `--licensedir=${installLicenseDir}`
-    ])
+    const {output, errors} = await util.getOutputAndErrors(
+      cabalPlan,
+      ['license-report', `--licensedir=${installLicenseDir}`, component],
+      execOptions
+    )
     fs.writeFileSync(
       licenseReportPath,
       [output, '## Warnings', errors ? errors : 'No warnings'].join(

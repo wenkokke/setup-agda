@@ -1562,10 +1562,7 @@ matchingGhcVersionsThatCanBuildAgda) {
         ];
         for (const [componentName, component] of components) {
             const licenseReportPath = path.join(installLicenseDir, `license-report-${componentName}.md`);
-            const { output, errors } = yield util.getOutputAndErrors(cabalPlan, [
-                'license-report',
-                `--licensedir=${installLicenseDir}`
-            ]);
+            const { output, errors } = yield util.getOutputAndErrors(cabalPlan, ['license-report', `--licensedir=${installLicenseDir}`, component], execOptions);
             fs.writeFileSync(licenseReportPath, [output, '## Warnings', errors ? errors : 'No warnings'].join(`${os.EOL}${os.EOL}`));
         }
         // Run `cabal install`:
