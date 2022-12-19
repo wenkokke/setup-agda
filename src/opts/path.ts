@@ -20,12 +20,11 @@ export function cacheDir(name: string): string {
 // Directories for Agda installation:
 
 /**
- * The directory where to store data related to Agda installations.
+ * The directory where Agda stores its global configuration files.
+ *
+ * By convention, we use the same directory for Agda and Agda library installations.
  *
  * Resolves to `~/.agda` on Linux and macOS and to `%AppData%\agda` on Windows.
- *
- * This is the directory where Agda conventionally stores the `libraries`,
- * `defaults`, and `executable` files.
  */
 export function agdaDir(): string {
   switch (opts.platform) {
