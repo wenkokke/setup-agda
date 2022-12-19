@@ -561,21 +561,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.libraryDir = exports.executablesFile = exports.defaultsFile = exports.librariesDir = exports.librariesFile = exports.installDir = exports.cacheDir = exports.agdaDir = void 0;
+exports.libraryDir = exports.executablesFile = exports.defaultsFile = exports.librariesDir = exports.librariesFile = exports.installDir = exports.agdaDir = exports.cacheDir = void 0;
 const opts = __importStar(__nccwpck_require__(542));
 const path = __importStar(__nccwpck_require__(9411));
 const os = __importStar(__nccwpck_require__(612));
 const tmp = __importStar(__nccwpck_require__(8517));
-function agdaDir() {
-    switch (opts.platform) {
-        case 'linux':
-        case 'darwin':
-            return path.join(os.homedir(), '.agda');
-        case 'win32':
-            return path.join(os.homedir(), 'AppData', 'Roaming', 'agda');
-    }
-}
-exports.agdaDir = agdaDir;
 function cacheDir(name) {
     if (process.env.RUNNER_TEMP !== undefined) {
         return path.join(process.env.RUNNER_TEMP, name, yyyymmdd());
@@ -586,32 +576,86 @@ function cacheDir(name) {
     }
 }
 exports.cacheDir = cacheDir;
+// Directories for Agda installation:
+/**
+ * The directory where to store data related to Agda installations.
+ *
+ * Resolves to `~/.agda` on Linux and macOS and to `%AppData%\agda` on Windows.
+ *
+ * This is the directory where Agda conventionally stores the `libraries`,
+ * `defaults`, and `executable` files.
+ */
+function agdaDir() {
+    switch (opts.platform) {
+        case 'linux':
+        case 'darwin':
+            return path.join(os.homedir(), '.agda');
+        case 'win32':
+            return path.join(os.homedir(), 'AppData', 'Roaming', 'agda');
+    }
+}
+exports.agdaDir = agdaDir;
+/**
+ * The directory to which to install the given Agda version.
+ *
+ * Resolves to `$agdaDir/agda/$version.
+ */
 function installDir(version) {
     return path.join(agdaDir(), 'agda', version);
 }
 exports.installDir = installDir;
+/**
+ * The path to the global Agda libraries file.
+ *
+ * Resolves to `$agdaDir/libraries`.
+ */
 function librariesFile() {
     return path.join(agdaDir(), 'libraries');
 }
 exports.librariesFile = librariesFile;
+/**
+ * The directory where to install Agda libraries.
+ *
+ * Resolves to `$agdaDir/libraries.d`.
+ */
 function librariesDir() {
     return path.join(agdaDir(), 'libraries.d');
 }
 exports.librariesDir = librariesDir;
+/**
+ * The path to the global Agda defaults file.
+ *
+ * Resolves to `$agdaDir/defaults`.
+ */
 function defaultsFile() {
     return path.join(agdaDir(), 'defaults');
 }
 exports.defaultsFile = defaultsFile;
+/**
+ * The path to the global Agda defaults file.
+ *
+ * Resolves to `$agdaDir/executables`.
+ */
 function executablesFile() {
     return path.join(agdaDir(), 'executables');
 }
 exports.executablesFile = executablesFile;
+/**
+ * The directory where to install a specific Agda library.
+ *
+ * Resolves to `$agdaDir/libraries.d/$libraryName/$libraryVersion`.
+ *
+ * If the library is experimental, append the current date to the version.
+ */
 function libraryDir(libraryName, libraryVersion, experimental = true) {
     if (experimental)
         libraryVersion += `-${yyyymmdd()}`;
     return path.join(librariesDir(), libraryName, libraryVersion);
 }
 exports.libraryDir = libraryDir;
+/**
+ * The current date as `yyyymmdd`.
+ */
 function yyyymmdd() {
     const nowDate = new Date(Date.now());
     return [
