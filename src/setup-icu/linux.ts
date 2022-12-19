@@ -89,13 +89,16 @@ export async function bundleForLinux(
   }
 
   // Change dependencies on Agda executable:
-  const agdaBinPath = path.join(distBinDir, util.agdaBinName)
+  const agdaExePath = path.join(
+    distBinDir,
+    opts.agdaComponents['Agda:exe:agda'].exe
+  )
   const binDepsToChange = ['libicui18n', 'libicuuc', 'libicudata']
   for (const depName of binDepsToChange) {
     const depNameFrom = `${depName}.so.${icuVerMaj}`
     const depNameTo = `agda-${options['agda-version']}-${depName}.so`
-    await util.patchelf('--replace-needed', depNameFrom, depNameTo, agdaBinPath)
+    await util.patchelf('--replace-needed', depNameFrom, depNameTo, agdaExePath)
   }
   // NOTE: This overrides any previously set run path.
-  await util.patchelf('--set-rpath', '$ORIGIN/../lib', agdaBinPath)
+  await util.patchelf('--set-rpath', '$ORIGIN/../lib', agdaExePath)
 }

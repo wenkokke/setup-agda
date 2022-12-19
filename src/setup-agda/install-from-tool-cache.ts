@@ -27,7 +27,11 @@ export default async function installFromToolCache(
     core.info(`Testing cache for Agda ${options['agda-version']}`)
     try {
       util.agdaTest({
-        agdaBin: path.join(agdaDirTC, 'bin', util.agdaBinName),
+        agdaExePath: path.join(
+          agdaDirTC,
+          'bin',
+          opts.agdaComponents['Agda:exe:agda'].exe
+        ),
         agdaDataDir: path.join(agdaDirTC, 'data')
       })
       return agdaDirTC

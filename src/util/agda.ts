@@ -1,14 +1,14 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
-import * as path from 'node:path'
-import * as opts from '../opts'
-import * as exec from './exec'
-import * as simver from './simver'
-import * as hackage from './hackage'
 import assert from 'node:assert'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
+import * as path from 'node:path'
+import * as opts from '../opts'
+import * as exec from './exec'
+import * as hackage from './hackage'
 import {splitLines} from './lines'
+import * as simver from './simver'
 
 // Agda utilities
 
@@ -134,20 +134,10 @@ async function getAgdaSdistFromHackage(
   return packageDir
 }
 
-// Executable names
-
-export const agdaBinName: string =
-  opts.platform === 'win32' ? 'agda.exe' : 'agda'
-
-export const agdaModeBinName: string =
-  opts.platform === 'win32' ? 'agda-mode.exe' : 'agda-mode'
-
-export const agdaBinNames: string[] = [agdaBinName, agdaModeBinName]
-
 // System calls
 
 export interface AgdaOptions {
-  agdaBin: string
+  agdaExePath: string
   agdaDataDir: string
 }
 
@@ -155,14 +145,15 @@ function resolveAgdaOptions(
   agdaOptions?: Partial<AgdaOptions>,
   options?: exec.ExecOptions
 ): [string, exec.ExecOptions | undefined] {
-  const agdaBin = agdaOptions?.agdaBin ?? agdaBinName
+  const agdaExePath =
+    agdaOptions?.agdaExePath ?? opts.agdaComponents['Agda:exe:agda'].exe
   // Set 'Agda_datadir' if it is explicitly passed:
   const agdaDataDirUnset =
     options?.env?.Agda_datadir === undefined &&
     process.env.Agda_datadir !== undefined
   if (agdaOptions?.agdaDataDir !== undefined || agdaDataDirUnset) {
     const agdaDataDirDefault = path.normalize(
-      path.join(path.dirname(path.resolve(agdaBin)), '..', 'data')
+      path.join(path.dirname(path.resolve(agdaExePath)), '..', 'data')
     )
     options = {
       ...options,
@@ -172,7 +163,7 @@ function resolveAgdaOptions(
       }
     }
   }
-  return [agdaBin, options]
+  return [agdaExePath, options]
 }
 export async function agdaGetVersion(
   agdaOptions?: Partial<AgdaOptions>,
@@ -202,7 +193,9 @@ export async function agdaGetDataDir(
   } else {
     const agdaDataDir = agdaOptions?.agdaDataDir ?? options?.env?.Agda_datadir
     if (agdaDataDir !== undefined) return agdaDataDir
-    const agdaBin = agdaOptions?.agdaBin ?? (await exec.which(agdaBinName))
+    const agdaBin =
+      agdaOptions?.agdaExePath ??
+      (await exec.which(opts.agdaComponents['Agda:exe:agda'].exe))
     return path.join(path.basename(agdaBin), '..', 'data')
   }
 }
@@ -250,6 +243,12 @@ export async function configureEnvFor(installDir: string): Promise<void> {
   core.info(`Add ${binDir} to PATH`)
   core.addPath(binDir)
   core.setOutput('agda-path', binDir)
-  core.setOutput('agda-exe', path.join(binDir, agdaBinName))
-  core.setOutput('agda-mode-exe', path.join(binDir, agdaModeBinName))
+  core.setOutput(
+    'agda-exe',
+    path.join(binDir, opts.agdaComponents['Agda:exe:agda'].exe)
+  )
+  core.setOutput(
+    'agda-mode-exe',
+    path.join(binDir, opts.agdaComponents['Agda:exe:agda-mode'].exe)
+  )
 }

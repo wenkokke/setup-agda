@@ -100,13 +100,16 @@ export async function bundleForMacOS(
   }
 
   // Change dependencies on Agda executable:
-  const agdaBinPath = path.join(distBinDir, util.agdaBinName)
+  const agdaExePath = path.join(
+    distBinDir,
+    opts.agdaComponents['Agda:exe:agda'].exe
+  )
   const binDepsToChange = ['libicui18n', 'libicuuc']
   for (const libName of binDepsToChange) {
     const libNameFrom = `${libName}.${options['icu-version']}.dylib`
     const libFrom = path.join(prefix, 'lib', libNameFrom)
     const libNameTo = `agda-${options['agda-version']}-${libName}.dylib`
     const libTo = `@executable_path/../lib/${libNameTo}`
-    await util.installNameTool('-change', libFrom, libTo, agdaBinPath)
+    await util.installNameTool('-change', libFrom, libTo, agdaExePath)
   }
 }

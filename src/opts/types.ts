@@ -4,10 +4,27 @@ import bundledAgdaStdlibSdistIndex from '../data/agda-stdlib.sdist.json'
 import bundledAgdaPackageInfoCacheForDeprecatedVersions from '../data/Agda.versions.deprecated.json'
 import bundledAgdaPackageInfoCacheForNormalVersions from '../data/Agda.versions.normal.json'
 import bundledAgdaToAgdaStdlibCompatibilityMap from '../data/Agda.agda-stdlib-compat.json'
-import {Platform, Arch} from './platform'
+import bundledAgdaComponentsMap from '../data/Agda.components.json'
+import {platform, Platform, Arch} from './platform'
 import assert from 'node:assert'
 
 // Bundled data & derived types:
+
+// Type of Agda components:
+
+export type AgdaComponent = keyof typeof bundledAgdaComponentsMap
+
+// Values of Agda components:
+
+export const agdaComponents: Record<
+  AgdaComponent,
+  Record<'exe', string>
+> = bundledAgdaComponentsMap
+
+// Windows: add .exe extension
+if (platform === 'win32')
+  for (const component of Object.keys(agdaComponents))
+    agdaComponents[component as AgdaComponent].exe += '.exe'
 
 // Type of Agda versions:
 export type AgdaVersion =
