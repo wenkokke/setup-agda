@@ -14,7 +14,7 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
   await util.cabal([
     'install',
     `cabal-plan-${cabalPlanVersion}`,
-    '--flags="+license-report"',
+    '-f license-report',
     '--ignore-project',
     '--install-method=copy',
     `--installdir=${cabalPlanDir}`,
