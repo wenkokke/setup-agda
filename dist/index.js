@@ -2298,7 +2298,7 @@ function setup(options) {
         yield util.cabal([
             'install',
             `cabal-plan-${cabalPlanVersion}`,
-            '-f license-report',
+            '--flags="+license-report"',
             '--ignore-project',
             '--install-method=copy',
             `--installdir=${cabalPlanDir}`,
