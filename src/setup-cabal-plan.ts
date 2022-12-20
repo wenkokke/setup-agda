@@ -11,7 +11,7 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
   // Update cabal package index
   await util.cabal(['update'])
   // Install cabal-plan to cabalPlanDir
-  core.debug(`Cabal version: ${await util.cabalGetVersion()}`)
+  await util.mkdirP(cabalPlanDir)
   await util.cabal([
     'install',
     `cabal-plan-${cabalPlanVersion}`,

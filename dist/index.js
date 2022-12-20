@@ -2303,7 +2303,7 @@ function setup(options) {
         // Update cabal package index
         yield util.cabal(['update']);
         // Install cabal-plan to cabalPlanDir
-        core.debug(`Cabal version: ${yield util.cabalGetVersion()}`);
+        yield util.mkdirP(cabalPlanDir);
         yield util.cabal([
             'install',
             `cabal-plan-${cabalPlanVersion}`,
