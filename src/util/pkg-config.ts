@@ -23,6 +23,17 @@ async function pkgConfigGetList(
     .filter(variableName => variableName !== '')
 }
 
+export async function pkgConfigGetVersion(name: string): Promise<string> {
+  return (await pkgConfig('--modversion', name)).trim()
+}
+
+export async function pkgConfigGetVariable(
+  name: string,
+  variable: string
+): Promise<string> {
+  return (await pkgConfig('--variable', variable, name)).trim()
+}
+
 export async function pkgConfigGetInfo(
   name: string,
   seen?: string[]
@@ -32,10 +43,10 @@ export async function pkgConfigGetInfo(
   } else {
     const variables: Partial<Record<string, string>> = {}
     for (const vn of await pkgConfigGetList(name, 'variables'))
-      variables[vn] = (await pkgConfig('--variable', vn, name)).trim()
+      variables[vn] = await pkgConfigGetVariable(name, vn)
     const requires: PkgConfig[] = []
     for (const rn of await pkgConfigGetList(name, 'requires'))
-      requires.push(await pkgConfigGetInfo(rn.trim(), [...(seen ?? []), name]))
+      requires.push(await pkgConfigGetInfo(rn, [...(seen ?? []), name]))
     return {name, variables, requires}
   }
 }

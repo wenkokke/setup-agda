@@ -23,12 +23,12 @@ export async function setupForWindows(
   )
 
   // Find the ICU version:
-  options['icu-version'] = await util.pkgConfig('--modversion', 'icu-i18n')
+  options['icu-version'] = await util.pkgConfigGetVersion('icu-i18n')
 
   // Add extra-{include,lib}-dirs:
   options['extra-include-dirs'].push(
     core.toPlatformPath(
-      await util.pkgConfig('--variable', 'includedir', 'icu-i18n')
+      await util.pkgConfigGetVariable('icu-i18n', 'includedir')
     )
   )
   // NOTE:
@@ -79,9 +79,9 @@ export async function bundleForWindows(
 }
 
 async function icuGetLibDirs(): Promise<Set<string>> {
-  const icuInLibDir = await util.pkgConfig('--variable', 'libdir', 'icu-i18n')
-  const icuUcLibDir = await util.pkgConfig('--variable', 'libdir', 'icu-uc')
-  const icuIoLibDir = await util.pkgConfig('--variable', 'libdir', 'icu-io')
+  const icuInLibDir = await util.pkgConfigGetVariable('icu-i18n', 'libdir')
+  const icuUcLibDir = await util.pkgConfigGetVariable('icu-uc', 'libdir')
+  const icuIoLibDir = await util.pkgConfigGetVariable('icu-io', 'libdir')
   return new Set<string>([
     'C:\\msys64\\mingw64\\bin',
     'C:\\msys64\\usr\\bin',

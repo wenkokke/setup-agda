@@ -2535,11 +2535,10 @@ const util = __importStar(__nccwpck_require__(4024));
 function setupForLinux(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Find the ICU version:
-        const icuVersion = yield util.pkgConfig('--modversion', 'icu-i18n');
-        options['icu-version'] = icuVersion.trim();
+        options['icu-version'] = yield util.pkgConfigGetVersion('icu-i18n');
         // Add extra-{include,lib}-dirs:
-        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfig('--variable', 'includedir', 'icu-i18n')));
-        options['extra-lib-dirs'].push(core.toPlatformPath(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n')));
+        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'includedir')));
+        options['extra-lib-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'libdir')));
         // Print ICU package info:
         try {
             core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-i18n')));
@@ -2557,8 +2556,8 @@ function bundleForLinux(distDir, options) {
         // Gather information
         core.info(`Bundle ICU version ${options['icu-version']}`);
         const libDirsFrom = new Set();
-        libDirsFrom.add(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n'));
-        libDirsFrom.add(yield util.pkgConfig('--variable', 'libdir', 'icu-uc'));
+        libDirsFrom.add(yield util.pkgConfigGetVariable('icu-i18n', 'libdir'));
+        libDirsFrom.add(yield util.pkgConfigGetVariable('icu-uc', 'libdir'));
         const libFromPatterns = [...libDirsFrom]
             .flatMap(libDir => ['libicui18n', 'libicuuc', 'libicudata'].flatMap(libName => path.join(libDir, `${libName}.so.${options['icu-version']}`)))
             .join(os.EOL);
@@ -2689,11 +2688,11 @@ function setupForMacOS(options) {
         const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig');
         util.addPkgConfigPath(pkgConfigDir);
         // Find the ICU version:
-        options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
+        options['icu-version'] = yield util.pkgConfigGetVersion('icu-i18n');
         (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version reported by Homebrew differs from ICU version reported by pkg-config');
         // Add extra-{include,lib}-dirs:
-        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfig('--variable', 'includedir', 'icu-i18n')));
-        options['extra-lib-dirs'].push(core.toPlatformPath(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n')));
+        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'includedir')));
+        options['extra-lib-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'libdir')));
         // Print ICU package info:
         try {
             core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-i18n')));
@@ -2811,9 +2810,9 @@ function setupForWindows(options) {
         core.addPath('C:\\msys64\\usr\\bin');
         yield util.pacman('-v', '--noconfirm', '-Sy', 'mingw-w64-x86_64-pkg-config', 'mingw-w64-x86_64-icu');
         // Find the ICU version:
-        options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
+        options['icu-version'] = yield util.pkgConfigGetVersion('icu-i18n');
         // Add extra-{include,lib}-dirs:
-        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfig('--variable', 'includedir', 'icu-i18n')));
+        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'includedir')));
         // NOTE:
         //   The libdir (C:\msys64\mingw64\lib) only contains libicu*.dll.a,
         //   not libicu*.dll. I'm not sure what the .dll.a files are?
@@ -2858,9 +2857,9 @@ function bundleForWindows(distDir, options) {
 exports.bundleForWindows = bundleForWindows;
 function icuGetLibDirs() {
     return __awaiter(this, void 0, void 0, function* () {
-        const icuInLibDir = yield util.pkgConfig('--variable', 'libdir', 'icu-i18n');
-        const icuUcLibDir = yield util.pkgConfig('--variable', 'libdir', 'icu-uc');
-        const icuIoLibDir = yield util.pkgConfig('--variable', 'libdir', 'icu-io');
+        const icuInLibDir = yield util.pkgConfigGetVariable('icu-i18n', 'libdir');
+        const icuUcLibDir = yield util.pkgConfigGetVariable('icu-uc', 'libdir');
+        const icuIoLibDir = yield util.pkgConfigGetVariable('icu-io', 'libdir');
         return new Set([
             'C:\\msys64\\mingw64\\bin',
             'C:\\msys64\\usr\\bin',
@@ -4238,7 +4237,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.addPkgConfigPath = exports.pkgConfigGetInfo = exports.pkgConfig = void 0;
+exports.addPkgConfigPath = exports.pkgConfigGetInfo = exports.pkgConfigGetVariable = exports.pkgConfigGetVersion = exports.pkgConfig = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const os = __importStar(__nccwpck_require__(612));
 const exec = __importStar(__nccwpck_require__(4369));
@@ -4257,6 +4256,18 @@ function pkgConfigGetList(name, listName) {
             .filter(variableName => variableName !== '');
     });
 }
+function pkgConfigGetVersion(name) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return (yield pkgConfig('--modversion', name)).trim();
+    });
+}
+exports.pkgConfigGetVersion = pkgConfigGetVersion;
+function pkgConfigGetVariable(name, variable) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return (yield pkgConfig('--variable', variable, name)).trim();
+    });
+}
+exports.pkgConfigGetVariable = pkgConfigGetVariable;
 function pkgConfigGetInfo(name, seen) {
     return __awaiter(this, void 0, void 0, function* () {
         if (seen === null || seen === void 0 ? void 0 : seen.includes(name)) {
@@ -4265,10 +4276,10 @@ function pkgConfigGetInfo(name, seen) {
         else {
             const variables = {};
             for (const vn of yield pkgConfigGetList(name, 'variables'))
-                variables[vn] = (yield pkgConfig('--variable', vn, name)).trim();
+                variables[vn] = yield pkgConfigGetVariable(name, vn);
             const requires = [];
             for (const rn of yield pkgConfigGetList(name, 'requires'))
-                requires.push(yield pkgConfigGetInfo(rn.trim(), [...(seen !== null && seen !== void 0 ? seen : []), name]));
+                requires.push(yield pkgConfigGetInfo(rn, [...(seen !== null && seen !== void 0 ? seen : []), name]));
             return { name, variables, requires };
         }
     });

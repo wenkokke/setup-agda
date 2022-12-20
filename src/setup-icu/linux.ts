@@ -8,19 +8,16 @@ import * as util from '../util'
 
 export async function setupForLinux(options: opts.BuildOptions): Promise<void> {
   // Find the ICU version:
-  const icuVersion = await util.pkgConfig('--modversion', 'icu-i18n')
-  options['icu-version'] = icuVersion.trim()
+  options['icu-version'] = await util.pkgConfigGetVersion('icu-i18n')
 
   // Add extra-{include,lib}-dirs:
   options['extra-include-dirs'].push(
     core.toPlatformPath(
-      await util.pkgConfig('--variable', 'includedir', 'icu-i18n')
+      await util.pkgConfigGetVariable('icu-i18n', 'includedir')
     )
   )
   options['extra-lib-dirs'].push(
-    core.toPlatformPath(
-      await util.pkgConfig('--variable', 'libdir', 'icu-i18n')
-    )
+    core.toPlatformPath(await util.pkgConfigGetVariable('icu-i18n', 'libdir'))
   )
 
   // Print ICU package info:
@@ -40,8 +37,8 @@ export async function bundleForLinux(
   // Gather information
   core.info(`Bundle ICU version ${options['icu-version']}`)
   const libDirsFrom = new Set<string>()
-  libDirsFrom.add(await util.pkgConfig('--variable', 'libdir', 'icu-i18n'))
-  libDirsFrom.add(await util.pkgConfig('--variable', 'libdir', 'icu-uc'))
+  libDirsFrom.add(await util.pkgConfigGetVariable('icu-i18n', 'libdir'))
+  libDirsFrom.add(await util.pkgConfigGetVariable('icu-uc', 'libdir'))
   const libFromPatterns = [...libDirsFrom]
     .flatMap<string>(libDir =>
       ['libicui18n', 'libicuuc', 'libicudata'].flatMap<string>(libName =>
