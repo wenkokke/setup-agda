@@ -8,7 +8,9 @@ import * as util from '../util'
 
 export async function setupForLinux(options: opts.BuildOptions): Promise<void> {
   // Find the ICU version:
-  options['icu-version'] = await util.pkgConfig('--modversion', 'icu-i18n')
+  let icuVersion = await util.pkgConfig('--modversion', 'icu-i18n')
+  icuVersion = icuVersion.trim()
+  options['icu-version'] = icuVersion
 
   // Add extra-{include,lib}-dirs:
   options['extra-include-dirs'].push(

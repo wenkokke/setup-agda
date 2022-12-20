@@ -2535,7 +2535,9 @@ const util = __importStar(__nccwpck_require__(4024));
 function setupForLinux(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Find the ICU version:
-        options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
+        let icuVersion = yield util.pkgConfig('--modversion', 'icu-i18n');
+        icuVersion = icuVersion.trim();
+        options['icu-version'] = icuVersion;
         // Add extra-{include,lib}-dirs:
         options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfig('--variable', 'includedir', 'icu-i18n')));
         options['extra-lib-dirs'].push(core.toPlatformPath(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n')));
