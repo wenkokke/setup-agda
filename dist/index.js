@@ -2535,9 +2535,8 @@ const util = __importStar(__nccwpck_require__(4024));
 function setupForLinux(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Find the ICU version:
-        let icuVersion = yield util.pkgConfig('--modversion', 'icu-i18n');
-        icuVersion = icuVersion.trim();
-        options['icu-version'] = icuVersion;
+        const icuVersion = yield util.pkgConfig('--modversion', 'icu-i18n');
+        options['icu-version'] = icuVersion.trim();
         // Add extra-{include,lib}-dirs:
         options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfig('--variable', 'includedir', 'icu-i18n')));
         options['extra-lib-dirs'].push(core.toPlatformPath(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n')));
@@ -2574,7 +2573,8 @@ function bundleForLinux(distDir, options) {
         core.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
         yield util.mkdirP(distLibDir);
         for (const libFrom of libsFrom) {
-            const libName = path.basename(libFrom, `.so.${options['icu-version']}`);
+            const icuVersion = options['icu-version'].trim();
+            const libName = path.basename(libFrom, `.so.${icuVersion}`);
             const libNameTo = `agda-${options['agda-version']}-${libName}.so`;
             const libTo = path.join(distLibDir, libNameTo);
             // Copy the library:
@@ -2589,11 +2589,12 @@ function bundleForLinux(distDir, options) {
             ['libicuuc', ['libicudata']]
         ];
         for (const [libName, depNames] of libDepsToChange) {
-            const libNameTo = `agda-${options['agda-version']}-${libName}.so`;
+            const agdaVersion = options['agda-version'].trim();
+            const libNameTo = `agda-${agdaVersion}-${libName}.so`;
             const libTo = path.join(distLibDir, libNameTo);
             for (const depName of depNames) {
                 const depFrom = `${depName}.so.${icuVerMaj}`;
-                const depTo = `agda-${options['agda-version']}-${depName}.so`;
+                const depTo = `agda-${agdaVersion}-${depName}.so`;
                 yield util.patchelf('--replace-needed', depFrom, depTo, libTo);
             }
             // NOTE: This overrides any previously set run path.
@@ -3468,10 +3469,13 @@ function cp(source, dest, options) {
         }
         catch (error) {
             const theError = (0, ensure_error_1.default)(error);
+            const truncate = (str) => str.split(os.EOL).slice(undefined, 10).join(os.EOL);
+            const sourceDirContents = yield lsR(path.dirname(source));
+            const destDirContents = yield lsR(path.dirname(dest));
             theError.message = [
                 theError.message,
-                `- sourceDir: ${yield lsR(path.dirname(source))}`,
-                `- destDir: ${yield lsR(path.dirname(dest))}`,
+                `- sourceDir: ${truncate(sourceDirContents)}`,
+                `- destDir: ${truncate(destDirContents)}`,
                 `- options: ${JSON.stringify(options)}`
             ].join(os.EOL);
             throw theError;

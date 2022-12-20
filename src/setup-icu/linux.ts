@@ -8,9 +8,8 @@ import * as util from '../util'
 
 export async function setupForLinux(options: opts.BuildOptions): Promise<void> {
   // Find the ICU version:
-  let icuVersion = await util.pkgConfig('--modversion', 'icu-i18n')
-  icuVersion = icuVersion.trim()
-  options['icu-version'] = icuVersion
+  const icuVersion = await util.pkgConfig('--modversion', 'icu-i18n')
+  options['icu-version'] = icuVersion.trim()
 
   // Add extra-{include,lib}-dirs:
   options['extra-include-dirs'].push(
@@ -63,7 +62,8 @@ export async function bundleForLinux(
   core.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`)
   await util.mkdirP(distLibDir)
   for (const libFrom of libsFrom) {
-    const libName = path.basename(libFrom, `.so.${options['icu-version']}`)
+    const icuVersion = options['icu-version'].trim()
+    const libName = path.basename(libFrom, `.so.${icuVersion}`)
     const libNameTo = `agda-${options['agda-version']}-${libName}.so`
     const libTo = path.join(distLibDir, libNameTo)
     // Copy the library:
@@ -79,11 +79,12 @@ export async function bundleForLinux(
     ['libicuuc', ['libicudata']]
   ]
   for (const [libName, depNames] of libDepsToChange) {
-    const libNameTo = `agda-${options['agda-version']}-${libName}.so`
+    const agdaVersion = options['agda-version'].trim()
+    const libNameTo = `agda-${agdaVersion}-${libName}.so`
     const libTo = path.join(distLibDir, libNameTo)
     for (const depName of depNames) {
       const depFrom = `${depName}.so.${icuVerMaj}`
-      const depTo = `agda-${options['agda-version']}-${depName}.so`
+      const depTo = `agda-${agdaVersion}-${depName}.so`
       await util.patchelf('--replace-needed', depFrom, depTo, libTo)
     }
     // NOTE: This overrides any previously set run path.
