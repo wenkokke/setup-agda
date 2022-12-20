@@ -32,10 +32,10 @@ export async function pkgConfigGetInfo(
   } else {
     const variables: Partial<Record<string, string>> = {}
     for (const vn of await pkgConfigGetList(name, 'variables'))
-      variables[vn] = await pkgConfig('--variable', vn, name)
+      variables[vn] = (await pkgConfig('--variable', vn, name)).trim()
     const requires: PkgConfig[] = []
     for (const rn of await pkgConfigGetList(name, 'requires'))
-      requires.push(await pkgConfigGetInfo(rn, [...(seen ?? []), name]))
+      requires.push(await pkgConfigGetInfo(rn.trim(), [...(seen ?? []), name]))
     return {name, variables, requires}
   }
 }
@@ -43,7 +43,10 @@ export async function pkgConfigGetInfo(
 export function addPkgConfigPath(pkgConfigDir: string): void {
   const pathSep = opts.platform === 'win32' ? ';' : ':'
   const pkgConfigPath = process.env.PKG_CONFIG_PATH ?? ''
-  const pkgConfigDirs = pkgConfigPath.split(pathSep).filter(dir => dir !== '')
+  const pkgConfigDirs = pkgConfigPath
+    .split(pathSep)
+    .map(dir => dir.trim())
+    .filter(dir => dir !== '')
   core.exportVariable(
     'PKG_CONFIG_PATH',
     [pkgConfigDir, ...pkgConfigDirs].join(pathSep)

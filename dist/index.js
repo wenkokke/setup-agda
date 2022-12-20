@@ -4265,10 +4265,10 @@ function pkgConfigGetInfo(name, seen) {
         else {
             const variables = {};
             for (const vn of yield pkgConfigGetList(name, 'variables'))
-                variables[vn] = yield pkgConfig('--variable', vn, name);
+                variables[vn] = (yield pkgConfig('--variable', vn, name)).trim();
             const requires = [];
             for (const rn of yield pkgConfigGetList(name, 'requires'))
-                requires.push(yield pkgConfigGetInfo(rn, [...(seen !== null && seen !== void 0 ? seen : []), name]));
+                requires.push(yield pkgConfigGetInfo(rn.trim(), [...(seen !== null && seen !== void 0 ? seen : []), name]));
             return { name, variables, requires };
         }
     });
@@ -4278,7 +4278,10 @@ function addPkgConfigPath(pkgConfigDir) {
     var _a;
     const pathSep = opts.platform === 'win32' ? ';' : ':';
     const pkgConfigPath = (_a = process.env.PKG_CONFIG_PATH) !== null && _a !== void 0 ? _a : '';
-    const pkgConfigDirs = pkgConfigPath.split(pathSep).filter(dir => dir !== '');
+    const pkgConfigDirs = pkgConfigPath
+        .split(pathSep)
+        .map(dir => dir.trim())
+        .filter(dir => dir !== '');
     core.exportVariable('PKG_CONFIG_PATH', [pkgConfigDir, ...pkgConfigDirs].join(pathSep));
 }
 exports.addPkgConfigPath = addPkgConfigPath;
