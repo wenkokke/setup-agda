@@ -1,8 +1,10 @@
 import * as core from '@actions/core'
 import * as path from 'node:path'
+import * as fs from 'node:fs'
 import * as opts from '../opts'
 import * as cabalPlan from '../setup-cabal-plan'
 import setupHaskell from '../setup-haskell'
+import zlibLicense from '../data/licenses/zlib'
 import * as icu from '../setup-icu'
 import * as util from '../util'
 import * as cabal from './build-from-sdist/cabal'
@@ -169,6 +171,12 @@ async function licenseReport(
   )
   await util.mkdirP(agdaLicenseDir)
   await util.cp(path.join(sourceDir, 'LICENSE'), agdaLicenseDir)
+
+  // Copy the zlib license to $licenseDir/zlib/LICENSE:
+  const zlibLicenseDir = path.join(licenseDir, 'zlib')
+  const zlibLicenseFile = path.join(zlibLicenseDir, 'LICENSE')
+  await util.mkdirP(zlibLicenseDir)
+  fs.writeFileSync(zlibLicenseFile, zlibLicense)
 
   // Copy the ICU license to $licenseDir/icu-$icuVersion/LICENSE:
   if (opts.needsIcu(options)) await icu.license(licenseDir, options)
