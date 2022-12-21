@@ -51,12 +51,12 @@ export default async function uploadBdist(
   })
 
   // Create file list for artifact:
-  const globber = await glob.create(path.join(bdistDir, '**', '*'), {
+  const fileGlobber = await glob.create(path.join(bdistDir, '**', '*'), {
     followSymbolicLinks: false,
     implicitDescendants: false,
     matchDirectories: false
   })
-  const files = await globber.glob()
+  const files = await fileGlobber.glob()
 
   // Upload artifact:
   const artifactClient = artifact.create()

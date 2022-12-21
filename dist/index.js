@@ -3057,12 +3057,12 @@ function uploadBdist(installDir, options) {
             agdaDataDir: path.join(bdistDir, 'data')
         });
         // Create file list for artifact:
-        const globber = yield glob.create(path.join(bdistDir, '**', '*'), {
+        const fileGlobber = yield glob.create(path.join(bdistDir, '**', '*'), {
             followSymbolicLinks: false,
             implicitDescendants: false,
             matchDirectories: false
         });
-        const files = yield globber.glob();
+        const files = yield fileGlobber.glob();
         // Upload artifact:
         const artifactClient = artifact.create();
         const uploadInfo = yield artifactClient.uploadArtifact(bdistName, files, bdistDir, {
