@@ -4,11 +4,11 @@ import assert from 'node:assert'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
-import * as opts from '../opts'
-import * as exec from './exec'
+import * as opts from '../../opts'
+import * as exec from '../exec'
 import * as hackage from './hackage'
-import {splitLines} from './lines'
-import * as simver from './simver'
+import {splitLines} from '../lines'
+import * as simver from '../simver'
 
 // Agda utilities
 

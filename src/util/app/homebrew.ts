@@ -1,4 +1,4 @@
-import * as exec from './exec'
+import * as exec from '../exec'
 
 export async function brew(...args: string[]): Promise<string> {
   return await exec.getOutput('brew', args)

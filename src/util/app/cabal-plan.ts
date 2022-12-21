@@ -2,8 +2,9 @@ import * as core from '@actions/core'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
-import * as opts from '../opts'
-import * as util from '../util'
+import * as opts from '../../opts'
+import {cabal} from './haskell'
+import {ExecOptions, getOutputAndErrors, mkdirP} from '../exec'
 
 export async function cabalPlanSetup(
   options: opts.BuildOptions
@@ -14,10 +15,10 @@ export async function cabalPlanSetup(
     path.join('cabal-plan', cabalPlanVersion)
   )
   // Update cabal package index
-  await util.cabal(['update'])
+  await cabal(['update'])
   // Install cabal-plan to cabalPlanDir
-  await util.mkdirP(cabalPlanDir)
-  await util.cabal([
+  await mkdirP(cabalPlanDir)
+  await cabal([
     'install',
     `cabal-plan-${cabalPlanVersion}`,
     '-f+license-report',
@@ -34,7 +35,7 @@ export async function cabalPlanLicenseReport(
   sourceDir: string,
   licenseDir: string
 ): Promise<void> {
-  const execOptions: util.ExecOptions = {cwd: sourceDir}
+  const execOptions: ExecOptions = {cwd: sourceDir}
   for (const component of Object.keys(opts.agdaComponents)) {
     // Get the short name for the component, e.g., Agda:exe:agda -> agda
     const componentShortName = component.split(':').at(-1)
@@ -47,7 +48,7 @@ export async function cabalPlanLicenseReport(
       licenseDir,
       `license-report-${componentShortName}.md`
     )
-    const {output, errors} = await util.getOutputAndErrors(
+    const {output, errors} = await getOutputAndErrors(
       'cabal-plan',
       ['license-report', `--licensedir=${licenseDir}`, component],
       execOptions

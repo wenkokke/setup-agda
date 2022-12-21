@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
-import * as exec from './exec'
-import ensureError from './ensure-error'
+import * as exec from '../exec'
+import ensureError from '../ensure-error'
 
 export async function getGhcInfo(
   execOptions?: exec.ExecOptions

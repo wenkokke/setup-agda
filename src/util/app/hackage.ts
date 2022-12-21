@@ -5,7 +5,7 @@ import assert from 'node:assert'
 import * as http from 'node:http'
 import * as os from 'node:os'
 import * as path from 'node:path'
-import * as simver from './simver'
+import * as simver from '../simver'
 
 // Types:
 

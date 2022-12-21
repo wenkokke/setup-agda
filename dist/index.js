@@ -1795,7 +1795,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.agdaVersionToCompatibleAgdaStdlibVersions = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.isAgdaStdlibVersionSpec = exports.isAgdaStdlibVersion = exports.agdaStdlibVersions = exports.isAgdaVersionSpec = exports.isAgdaGitRef = exports.isDeprecatedAgdaVersion = exports.agdaDeprecatedVersions = exports.isAgdaVersion = exports.agdaVersions = exports.agdaComponents = void 0;
-const hackage = __importStar(__nccwpck_require__(903));
+const hackage = __importStar(__nccwpck_require__(3942));
 const Agda_bdist_json_1 = __importDefault(__nccwpck_require__(7951));
 const agda_stdlib_sdist_json_1 = __importDefault(__nccwpck_require__(5324));
 const Agda_versions_deprecated_json_1 = __importDefault(__nccwpck_require__(1656));
@@ -3223,25 +3223,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.simver = exports.ensureError = void 0;
-__exportStar(__nccwpck_require__(9552), exports);
-__exportStar(__nccwpck_require__(8455), exports);
+__exportStar(__nccwpck_require__(7889), exports);
+__exportStar(__nccwpck_require__(7989), exports);
 var ensure_error_1 = __nccwpck_require__(1151);
 Object.defineProperty(exports, "ensureError", ({ enumerable: true, get: function () { return __importDefault(ensure_error_1).default; } }));
 __exportStar(__nccwpck_require__(4369), exports);
-__exportStar(__nccwpck_require__(1310), exports);
-__exportStar(__nccwpck_require__(6295), exports);
-__exportStar(__nccwpck_require__(9358), exports);
-__exportStar(__nccwpck_require__(5066), exports);
+__exportStar(__nccwpck_require__(6961), exports);
+__exportStar(__nccwpck_require__(8458), exports);
+__exportStar(__nccwpck_require__(8526), exports);
+__exportStar(__nccwpck_require__(905), exports);
 __exportStar(__nccwpck_require__(8398), exports);
 __exportStar(__nccwpck_require__(1311), exports);
-__exportStar(__nccwpck_require__(7066), exports);
+__exportStar(__nccwpck_require__(1016), exports);
 exports.simver = __importStar(__nccwpck_require__(7609));
-__exportStar(__nccwpck_require__(6102), exports);
+__exportStar(__nccwpck_require__(602), exports);
 
 
 /***/ }),
 
-/***/ 9552:
+/***/ 7889:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -3298,7 +3298,7 @@ const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const exec = __importStar(__nccwpck_require__(4369));
-const hackage = __importStar(__nccwpck_require__(903));
+const hackage = __importStar(__nccwpck_require__(3942));
 const lines_1 = __nccwpck_require__(9152);
 const simver = __importStar(__nccwpck_require__(7609));
 // Agda utilities
@@ -3516,7 +3516,7 @@ exports.configureEnvFor = configureEnvFor;
 
 /***/ }),
 
-/***/ 8455:
+/***/ 7989:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -3560,17 +3560,18 @@ const path = __importStar(__nccwpck_require__(9411));
 const fs = __importStar(__nccwpck_require__(7561));
 const os = __importStar(__nccwpck_require__(612));
 const opts = __importStar(__nccwpck_require__(1352));
-const util = __importStar(__nccwpck_require__(4024));
+const haskell_1 = __nccwpck_require__(6961);
+const exec_1 = __nccwpck_require__(4369);
 function cabalPlanSetup(options) {
     return __awaiter(this, void 0, void 0, function* () {
         const cabalPlanVersion = '0.7.2.3';
         options['cabal-plan-version'] = cabalPlanVersion;
         const cabalPlanDir = opts.setupAgdaCacheDir(path.join('cabal-plan', cabalPlanVersion));
         // Update cabal package index
-        yield util.cabal(['update']);
+        yield (0, haskell_1.cabal)(['update']);
         // Install cabal-plan to cabalPlanDir
-        yield util.mkdirP(cabalPlanDir);
-        yield util.cabal([
+        yield (0, exec_1.mkdirP)(cabalPlanDir);
+        yield (0, haskell_1.cabal)([
             'install',
             `cabal-plan-${cabalPlanVersion}`,
             '-f+license-report',
@@ -3593,13 +3594,990 @@ function cabalPlanLicenseReport(sourceDir, licenseDir) {
             // Run `cabal-plan license-report`
             core.info(`Generate license-report for ${componentShortName} in ${licenseDir}`);
             const licenseReportPath = path.join(licenseDir, `license-report-${componentShortName}.md`);
-            const { output, errors } = yield util.getOutputAndErrors('cabal-plan', ['license-report', `--licensedir=${licenseDir}`, component], execOptions);
+            const { output, errors } = yield (0, exec_1.getOutputAndErrors)('cabal-plan', ['license-report', `--licensedir=${licenseDir}`, component], execOptions);
             // Write the generated license report and warnings to a separate file:
             fs.writeFileSync(licenseReportPath, [output, '## Warnings', errors ? errors : 'No warnings'].join(`${os.EOL}${os.EOL}`));
         }
     });
 }
 exports.cabalPlanLicenseReport = cabalPlanLicenseReport;
+
+
+/***/ }),
+
+/***/ 8583:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.chmod = void 0;
+const exec = __importStar(__nccwpck_require__(4369));
+const opts = __importStar(__nccwpck_require__(1352));
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
+function chmod(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        (0, node_assert_1.default)(opts.platform !== 'win32', 'MSYS2 does not support chmod');
+        return yield exec.getOutput('chmod', args);
+    });
+}
+exports.chmod = chmod;
+
+
+/***/ }),
+
+/***/ 463:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.dumpbin = void 0;
+const exec = __importStar(__nccwpck_require__(4369));
+function dumpbin(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield exec.getOutput('dumpbin', args);
+    });
+}
+exports.dumpbin = dumpbin;
+
+
+/***/ }),
+
+/***/ 3942:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getPackageSource = exports.resolvePackageVersion = exports.getPackageInfo = exports.mergePackageInfoCache = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const httpm = __importStar(__nccwpck_require__(6255));
+const tc = __importStar(__nccwpck_require__(7784));
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
+const os = __importStar(__nccwpck_require__(612));
+const path = __importStar(__nccwpck_require__(9411));
+const simver = __importStar(__nccwpck_require__(7609));
+function mergePackageInfoCache(packageInfoCache1, packageInfoCache2) {
+    const lastModifiedDate1 = new Date(packageInfoCache1.lastModified);
+    const lastModifiedDate2 = new Date(packageInfoCache2.lastModified);
+    return {
+        packageInfo: Object.assign(Object.assign({}, packageInfoCache1.packageInfo), packageInfoCache2.packageInfo),
+        lastModified: lastModifiedDate1.getTime() > lastModifiedDate2.getTime()
+            ? packageInfoCache1.lastModified
+            : packageInfoCache2.lastModified
+    };
+}
+exports.mergePackageInfoCache = mergePackageInfoCache;
+// Functions for getting package information:
+function packageInfoUrl(packageName) {
+    return `https://hackage.haskell.org/package/${packageName}.json`;
+}
+function packageUrl(packageName, packageVersion) {
+    return `https://hackage.haskell.org/package/${packageName}-${packageVersion}/${packageName}-${packageVersion}.tar.gz`;
+}
+function getPackageInfo(packageName, options) {
+    var _a, _b, _c;
+    return __awaiter(this, void 0, void 0, function* () {
+        const fetchPackageInfo = (_a = options === null || options === void 0 ? void 0 : options.fetchPackageInfo) !== null && _a !== void 0 ? _a : true;
+        const returnCacheOnError = (_b = options === null || options === void 0 ? void 0 : options.returnCacheOnError) !== null && _b !== void 0 ? _b : true;
+        const packageInfoCache = options === null || options === void 0 ? void 0 : options.packageInfoCache;
+        if (fetchPackageInfo !== true && packageInfoCache === undefined) {
+            throw Error('getPackageInfo: if fetchPackageInfo is false, packageInfoCache must be passed');
+        }
+        else if (returnCacheOnError !== true && packageInfoCache === undefined) {
+            throw Error('getPackageInfo: if returnCacheOnError is false, packageInfoCache must be passed');
+        }
+        else if (fetchPackageInfo !== true && packageInfoCache !== undefined) {
+            return packageInfoCache;
+        }
+        else {
+            const httpClient = new httpm.HttpClient('setup-agda');
+            const headers = (_c = options === null || options === void 0 ? void 0 : options.packageInfoHeaders) !== null && _c !== void 0 ? _c : {};
+            if (packageInfoCache !== undefined) {
+                headers['if-modified-since'] = packageInfoCache.lastModified;
+            }
+            const resp = yield httpClient.get(packageInfoUrl(packageName), headers);
+            core.info(`getPackageInfo: received '${resp.message.statusCode}: ${resp.message.statusMessage}' for package ${packageName}`);
+            if (resp.message.statusCode === 200) {
+                const respBody = yield resp.readBody();
+                const packageInfo = JSON.parse(respBody);
+                return {
+                    packageInfo,
+                    lastModified: new Date(Date.now()).toUTCString()
+                };
+            }
+            else if ((packageInfoCache === null || packageInfoCache === void 0 ? void 0 : packageInfoCache.packageInfo) !== undefined &&
+                resp.message.statusCode === 304) {
+                return packageInfoCache;
+            }
+            else {
+                const errorMessage = [
+                    `Could not get package info for ${packageName}:`,
+                    `${resp.message.statusCode}: ${resp.message.statusMessage}`
+                ].join(os.EOL);
+                if (returnCacheOnError !== true && packageInfoCache !== undefined) {
+                    core.warning(errorMessage);
+                    return packageInfoCache;
+                }
+                else {
+                    throw Error(errorMessage);
+                }
+            }
+        }
+    });
+}
+exports.getPackageInfo = getPackageInfo;
+function getPackageLatestVersion(packageName, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const updatedPackageInfo = yield getPackageInfo(packageName, options);
+        const versions = Object.keys(updatedPackageInfo.packageInfo)
+            .filter(version => updatedPackageInfo.packageInfo[version] === 'normal')
+            .map(simver.parse);
+        const maxVersion = simver.max(versions);
+        if (maxVersion === null) {
+            throw Error(`Could not determine latest version from [${versions.join(', ')}]`);
+        }
+        else {
+            return maxVersion;
+        }
+    });
+}
+function validatePackageVersion(packageName, packageVersion, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const packageInfo = yield getPackageInfo(packageName, options);
+        const packageVersionStatus = packageInfo.packageInfo[packageVersion];
+        if (packageVersionStatus === undefined) {
+            throw Error(`Could not find ${packageName} version ${packageVersion}`);
+        }
+        else if (packageVersionStatus === 'deprecated') {
+            throw Error(`${packageName} version ${packageVersion} is deprecated`);
+        }
+        else {
+            (0, node_assert_1.default)(packageVersionStatus === 'normal', `Unexpected package version status for ${packageName}-${packageVersion}: ${packageVersionStatus}`);
+            return packageVersion;
+        }
+    });
+}
+function resolvePackageVersion(packageName, packageVersion, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (packageVersion === 'latest') {
+            return yield getPackageLatestVersion(packageName, options);
+        }
+        else {
+            return yield validatePackageVersion(packageName, packageVersion, options);
+        }
+    });
+}
+exports.resolvePackageVersion = resolvePackageVersion;
+function getPackageSource(packageName, options) {
+    var _a, _b;
+    return __awaiter(this, void 0, void 0, function* () {
+        let packageVersion = (_a = options === null || options === void 0 ? void 0 : options.packageVersion) !== null && _a !== void 0 ? _a : 'latest';
+        const validateVersion = (_b = options === null || options === void 0 ? void 0 : options.validateVersion) !== null && _b !== void 0 ? _b : true;
+        if (packageVersion === 'latest' || validateVersion) {
+            packageVersion = yield resolvePackageVersion(packageName, packageVersion, options);
+        }
+        const packageArchive = yield tc.downloadTool(packageUrl(packageName, packageVersion), options === null || options === void 0 ? void 0 : options.archivePath, options === null || options === void 0 ? void 0 : options.downloadAuth, options === null || options === void 0 ? void 0 : options.downloadHeaders);
+        let packageDir = yield tc.extractTar(packageArchive, options === null || options === void 0 ? void 0 : options.extractToPath, options === null || options === void 0 ? void 0 : options.tarFlags);
+        packageDir = path.join(packageDir, `${packageName}-${packageVersion}`);
+        return { packageVersion, packageDir };
+    });
+}
+exports.getPackageSource = getPackageSource;
+
+
+/***/ }),
+
+/***/ 6961:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.stackGetLocalBin = exports.stackGetVersion = exports.cabalMaybeGetVersion = exports.cabalGetVersion = exports.ghcMaybeGetVersion = exports.ghcGetVersion = exports.stack = exports.cabal = exports.ghc = exports.getGhcInfo = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const exec = __importStar(__nccwpck_require__(4369));
+const ensure_error_1 = __importDefault(__nccwpck_require__(1151));
+function getGhcInfo(execOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let ghcInfoString = yield ghc(['--info'], execOptions);
+        ghcInfoString = ghcInfoString.replace(/\(/g, '[').replace(/\)/g, ']');
+        const ghcInfo = JSON.parse(ghcInfoString);
+        return Object.fromEntries(ghcInfo.map(entry => [
+            // "Target platform" -> 'ghc-info-target-platform'
+            `ghc-info-${entry[0].toLowerCase().replace(/ /g, '-')}`,
+            entry[1]
+        ]));
+    });
+}
+exports.getGhcInfo = getGhcInfo;
+function ghc(args, execOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield exec.getOutput('ghc', args, execOptions);
+    });
+}
+exports.ghc = ghc;
+function cabal(args, execOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield exec.getOutput('cabal', args, execOptions);
+    });
+}
+exports.cabal = cabal;
+function stack(args, execOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield exec.getOutput('stack', args, execOptions);
+    });
+}
+exports.stack = stack;
+function ghcGetVersion(using) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (using !== undefined &&
+            using['enable-stack'] &&
+            using['stack-no-global']) {
+            const output = yield stack(['exec', 'ghc', '--', '--numeric-version'], {
+                silent: true
+            });
+            return output.trim();
+        }
+        else {
+            return exec.getVersion('ghc', {
+                versionFlag: '--numeric-version',
+                silent: true
+            });
+        }
+    });
+}
+exports.ghcGetVersion = ghcGetVersion;
+function ghcMaybeGetVersion(using) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            return yield ghcGetVersion(using);
+        }
+        catch (error) {
+            core.info(`Could not get installed GHC version: ${(0, ensure_error_1.default)(error).message}`);
+            return null;
+        }
+    });
+}
+exports.ghcMaybeGetVersion = ghcMaybeGetVersion;
+function cabalGetVersion(using) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (using !== undefined &&
+            using['enable-stack'] &&
+            using['stack-no-global']) {
+            const output = yield stack(['exec', 'cabal', '--', '--numeric-version'], {
+                silent: true
+            });
+            return output.trim();
+        }
+        else {
+            return exec.getVersion('cabal', {
+                versionFlag: '--numeric-version',
+                silent: true
+            });
+        }
+    });
+}
+exports.cabalGetVersion = cabalGetVersion;
+function cabalMaybeGetVersion(using) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            return yield cabalGetVersion(using);
+        }
+        catch (error) {
+            core.info(`Could not get installed Cabal version: ${(0, ensure_error_1.default)(error).message}`);
+            return null;
+        }
+    });
+}
+exports.cabalMaybeGetVersion = cabalMaybeGetVersion;
+function stackGetVersion() {
+    return __awaiter(this, void 0, void 0, function* () {
+        return exec.getVersion('stack', {
+            versionFlag: '--numeric-version',
+            silent: true
+        });
+    });
+}
+exports.stackGetVersion = stackGetVersion;
+function stackGetLocalBin(using) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const stackLocalBin = yield stack([
+            `--compiler=ghc-${using['ghc-version']}`,
+            '--system-ghc',
+            '--no-install-ghc',
+            'path',
+            '--local-bin'
+        ]);
+        return stackLocalBin.trim();
+    });
+}
+exports.stackGetLocalBin = stackGetLocalBin;
+
+
+/***/ }),
+
+/***/ 8458:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.brewGetVersion = exports.brew = void 0;
+const exec = __importStar(__nccwpck_require__(4369));
+function brew(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield exec.getOutput('brew', args);
+    });
+}
+exports.brew = brew;
+function brewGetVersion(formula) {
+    var _a, _b, _c;
+    return __awaiter(this, void 0, void 0, function* () {
+        const formulaVersionRegExp = new RegExp(`${formula} (?<version>[\\d._]+)`);
+        const formulaVersions = yield brew('list', '--formula', '--versions');
+        return (_c = (_b = (_a = formulaVersions.match(formulaVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version) === null || _c === void 0 ? void 0 : _c.trim();
+    });
+}
+exports.brewGetVersion = brewGetVersion;
+
+
+/***/ }),
+
+/***/ 6870:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.installNameTool = void 0;
+const exec = __importStar(__nccwpck_require__(4369));
+function installNameTool(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield exec.getOutput('install_name_tool', args);
+    });
+}
+exports.installNameTool = installNameTool;
+
+
+/***/ }),
+
+/***/ 3309:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.otool = void 0;
+const exec = __importStar(__nccwpck_require__(4369));
+function otool(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield exec.getOutput('otool', args);
+    });
+}
+exports.otool = otool;
+
+
+/***/ }),
+
+/***/ 905:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.pacmanGetVersion = exports.pacman = void 0;
+const exec = __importStar(__nccwpck_require__(4369));
+function pacman(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield exec.getOutput('pacman', args);
+    });
+}
+exports.pacman = pacman;
+function pacmanGetVersion(pkg) {
+    var _a, _b, _c;
+    return __awaiter(this, void 0, void 0, function* () {
+        const pkgInfo = yield pacman('--noconfirm', '-Qs', pkg);
+        const pkgVersionRegExp = /(?<version>\d[\d.]+\d)/;
+        const pkgVersion = (_c = (_b = (_a = pkgInfo.match(pkgVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version) === null || _c === void 0 ? void 0 : _c.trim();
+        if (pkgVersion !== undefined)
+            return pkgVersion;
+        else
+            throw Error(`Could not determine version of ${pkg}`);
+    });
+}
+exports.pacmanGetVersion = pacmanGetVersion;
+
+
+/***/ }),
+
+/***/ 8483:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.patchelf = void 0;
+const exec = __importStar(__nccwpck_require__(4369));
+function patchelf(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield exec.getOutput('patchelf', args);
+    });
+}
+exports.patchelf = patchelf;
+
+
+/***/ }),
+
+/***/ 1016:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.addPkgConfigPath = exports.pkgConfigGetInfo = exports.pkgConfigGetVariable = exports.pkgConfigGetVersion = exports.pkgConfig = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const os = __importStar(__nccwpck_require__(612));
+const exec = __importStar(__nccwpck_require__(4369));
+const opts = __importStar(__nccwpck_require__(1352));
+function pkgConfig(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield exec.getOutput('pkg-config', args);
+    });
+}
+exports.pkgConfig = pkgConfig;
+function pkgConfigGetList(name, listName) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return (yield pkgConfig(`--print-${listName}`, name))
+            .split(os.EOL)
+            .map(variableName => variableName.trim())
+            .filter(variableName => variableName !== '');
+    });
+}
+function pkgConfigGetVersion(name) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return (yield pkgConfig('--modversion', name)).trim();
+    });
+}
+exports.pkgConfigGetVersion = pkgConfigGetVersion;
+function pkgConfigGetVariable(name, variable) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return (yield pkgConfig('--variable', variable, name)).trim();
+    });
+}
+exports.pkgConfigGetVariable = pkgConfigGetVariable;
+function pkgConfigGetInfo(name, seen) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (seen === null || seen === void 0 ? void 0 : seen.includes(name)) {
+            throw Error(`Cyclic dependency: ${seen.join(', ')}`);
+        }
+        else {
+            const variables = {};
+            for (const vn of yield pkgConfigGetList(name, 'variables'))
+                variables[vn] = yield pkgConfigGetVariable(name, vn);
+            const requires = [];
+            for (const rn of yield pkgConfigGetList(name, 'requires'))
+                requires.push(yield pkgConfigGetInfo(rn, [...(seen !== null && seen !== void 0 ? seen : []), name]));
+            return { name, variables, requires };
+        }
+    });
+}
+exports.pkgConfigGetInfo = pkgConfigGetInfo;
+function addPkgConfigPath(pkgConfigDir) {
+    var _a;
+    const pathSep = opts.platform === 'win32' ? ';' : ':';
+    const pkgConfigPath = (_a = process.env.PKG_CONFIG_PATH) !== null && _a !== void 0 ? _a : '';
+    const pkgConfigDirs = pkgConfigPath
+        .split(pathSep)
+        .map(dir => dir.trim())
+        .filter(dir => dir !== '');
+    core.exportVariable('PKG_CONFIG_PATH', [pkgConfigDir, ...pkgConfigDirs].join(pathSep));
+}
+exports.addPkgConfigPath = addPkgConfigPath;
+
+
+/***/ }),
+
+/***/ 602:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.upxSetup = void 0;
+const tc = __importStar(__nccwpck_require__(7784));
+const path = __importStar(__nccwpck_require__(9411));
+const opts = __importStar(__nccwpck_require__(1352));
+const homebrew_1 = __nccwpck_require__(8458);
+const simver = __importStar(__nccwpck_require__(7609));
+function upxSetup(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        switch (opts.platform) {
+            case 'linux':
+                return yield upxSetupForLinux(options);
+            case 'darwin':
+                return yield upxSetupForMacOS(options);
+            case 'win32':
+                return yield upxSetupForWindows(options);
+        }
+    });
+}
+exports.upxSetup = upxSetup;
+function upxSetupForLinux(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const upxVersion = '3.96';
+        options['upx-version'] = upxVersion;
+        const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-amd64_linux.tar.xz`;
+        const upxDir = opts.setupAgdaCacheDir(path.join('upx', upxVersion));
+        const upxTar = yield tc.downloadTool(upxPkgUrl);
+        const upxDirTC = yield tc.extractTar(upxTar, upxDir, [
+            '--extract',
+            '--xz',
+            '--preserve-permissions',
+            '--strip-components=1'
+        ]);
+        return path.join(upxDirTC, 'upx');
+    });
+}
+function upxSetupForMacOS(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Ensure UPX is installed and is the correct version:
+        // NOTE: patch version '3.96_1' and (presumably) later versions are OK
+        let upxVersion = yield (0, homebrew_1.brewGetVersion)('upx');
+        if (upxVersion === undefined)
+            yield (0, homebrew_1.brew)('install', 'upx');
+        else if (simver.lt(upxVersion, '3.96_1'))
+            yield (0, homebrew_1.brew)('upgrade', 'upx');
+        upxVersion = yield (0, homebrew_1.brewGetVersion)('upx');
+        if (upxVersion === undefined)
+            throw Error(`Could not install UPX`);
+        options['upx-version'] = upxVersion;
+        return 'upx';
+    });
+}
+function upxSetupForWindows(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const upxVersion = '3.96';
+        options['upx-version'] = upxVersion;
+        const upxDir = opts.setupAgdaCacheDir(path.join('upx', upxVersion));
+        const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-win64.zip`;
+        const upxZip = yield tc.downloadTool(upxPkgUrl);
+        const upxDirTC = yield tc.extractZip(upxZip, upxDir);
+        return path.join(upxDirTC, `upx-${upxVersion}-win64`, 'upx');
+    });
+}
+
+
+/***/ }),
+
+/***/ 6913:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.xattr = void 0;
+const exec = __importStar(__nccwpck_require__(4369));
+function xattr(...args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield exec.getOutput('xattr', args);
+    });
+}
+exports.xattr = xattr;
 
 
 /***/ }),
@@ -3855,410 +4833,7 @@ exports.getVersion = getVersion;
 
 /***/ }),
 
-/***/ 903:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getPackageSource = exports.resolvePackageVersion = exports.getPackageInfo = exports.mergePackageInfoCache = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const httpm = __importStar(__nccwpck_require__(6255));
-const tc = __importStar(__nccwpck_require__(7784));
-const node_assert_1 = __importDefault(__nccwpck_require__(8061));
-const os = __importStar(__nccwpck_require__(612));
-const path = __importStar(__nccwpck_require__(9411));
-const simver = __importStar(__nccwpck_require__(7609));
-function mergePackageInfoCache(packageInfoCache1, packageInfoCache2) {
-    const lastModifiedDate1 = new Date(packageInfoCache1.lastModified);
-    const lastModifiedDate2 = new Date(packageInfoCache2.lastModified);
-    return {
-        packageInfo: Object.assign(Object.assign({}, packageInfoCache1.packageInfo), packageInfoCache2.packageInfo),
-        lastModified: lastModifiedDate1.getTime() > lastModifiedDate2.getTime()
-            ? packageInfoCache1.lastModified
-            : packageInfoCache2.lastModified
-    };
-}
-exports.mergePackageInfoCache = mergePackageInfoCache;
-// Functions for getting package information:
-function packageInfoUrl(packageName) {
-    return `https://hackage.haskell.org/package/${packageName}.json`;
-}
-function packageUrl(packageName, packageVersion) {
-    return `https://hackage.haskell.org/package/${packageName}-${packageVersion}/${packageName}-${packageVersion}.tar.gz`;
-}
-function getPackageInfo(packageName, options) {
-    var _a, _b, _c;
-    return __awaiter(this, void 0, void 0, function* () {
-        const fetchPackageInfo = (_a = options === null || options === void 0 ? void 0 : options.fetchPackageInfo) !== null && _a !== void 0 ? _a : true;
-        const returnCacheOnError = (_b = options === null || options === void 0 ? void 0 : options.returnCacheOnError) !== null && _b !== void 0 ? _b : true;
-        const packageInfoCache = options === null || options === void 0 ? void 0 : options.packageInfoCache;
-        if (fetchPackageInfo !== true && packageInfoCache === undefined) {
-            throw Error('getPackageInfo: if fetchPackageInfo is false, packageInfoCache must be passed');
-        }
-        else if (returnCacheOnError !== true && packageInfoCache === undefined) {
-            throw Error('getPackageInfo: if returnCacheOnError is false, packageInfoCache must be passed');
-        }
-        else if (fetchPackageInfo !== true && packageInfoCache !== undefined) {
-            return packageInfoCache;
-        }
-        else {
-            const httpClient = new httpm.HttpClient('setup-agda');
-            const headers = (_c = options === null || options === void 0 ? void 0 : options.packageInfoHeaders) !== null && _c !== void 0 ? _c : {};
-            if (packageInfoCache !== undefined) {
-                headers['if-modified-since'] = packageInfoCache.lastModified;
-            }
-            const resp = yield httpClient.get(packageInfoUrl(packageName), headers);
-            core.info(`getPackageInfo: received '${resp.message.statusCode}: ${resp.message.statusMessage}' for package ${packageName}`);
-            if (resp.message.statusCode === 200) {
-                const respBody = yield resp.readBody();
-                const packageInfo = JSON.parse(respBody);
-                return {
-                    packageInfo,
-                    lastModified: new Date(Date.now()).toUTCString()
-                };
-            }
-            else if ((packageInfoCache === null || packageInfoCache === void 0 ? void 0 : packageInfoCache.packageInfo) !== undefined &&
-                resp.message.statusCode === 304) {
-                return packageInfoCache;
-            }
-            else {
-                const errorMessage = [
-                    `Could not get package info for ${packageName}:`,
-                    `${resp.message.statusCode}: ${resp.message.statusMessage}`
-                ].join(os.EOL);
-                if (returnCacheOnError !== true && packageInfoCache !== undefined) {
-                    core.warning(errorMessage);
-                    return packageInfoCache;
-                }
-                else {
-                    throw Error(errorMessage);
-                }
-            }
-        }
-    });
-}
-exports.getPackageInfo = getPackageInfo;
-function getPackageLatestVersion(packageName, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const updatedPackageInfo = yield getPackageInfo(packageName, options);
-        const versions = Object.keys(updatedPackageInfo.packageInfo)
-            .filter(version => updatedPackageInfo.packageInfo[version] === 'normal')
-            .map(simver.parse);
-        const maxVersion = simver.max(versions);
-        if (maxVersion === null) {
-            throw Error(`Could not determine latest version from [${versions.join(', ')}]`);
-        }
-        else {
-            return maxVersion;
-        }
-    });
-}
-function validatePackageVersion(packageName, packageVersion, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const packageInfo = yield getPackageInfo(packageName, options);
-        const packageVersionStatus = packageInfo.packageInfo[packageVersion];
-        if (packageVersionStatus === undefined) {
-            throw Error(`Could not find ${packageName} version ${packageVersion}`);
-        }
-        else if (packageVersionStatus === 'deprecated') {
-            throw Error(`${packageName} version ${packageVersion} is deprecated`);
-        }
-        else {
-            (0, node_assert_1.default)(packageVersionStatus === 'normal', `Unexpected package version status for ${packageName}-${packageVersion}: ${packageVersionStatus}`);
-            return packageVersion;
-        }
-    });
-}
-function resolvePackageVersion(packageName, packageVersion, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (packageVersion === 'latest') {
-            return yield getPackageLatestVersion(packageName, options);
-        }
-        else {
-            return yield validatePackageVersion(packageName, packageVersion, options);
-        }
-    });
-}
-exports.resolvePackageVersion = resolvePackageVersion;
-function getPackageSource(packageName, options) {
-    var _a, _b;
-    return __awaiter(this, void 0, void 0, function* () {
-        let packageVersion = (_a = options === null || options === void 0 ? void 0 : options.packageVersion) !== null && _a !== void 0 ? _a : 'latest';
-        const validateVersion = (_b = options === null || options === void 0 ? void 0 : options.validateVersion) !== null && _b !== void 0 ? _b : true;
-        if (packageVersion === 'latest' || validateVersion) {
-            packageVersion = yield resolvePackageVersion(packageName, packageVersion, options);
-        }
-        const packageArchive = yield tc.downloadTool(packageUrl(packageName, packageVersion), options === null || options === void 0 ? void 0 : options.archivePath, options === null || options === void 0 ? void 0 : options.downloadAuth, options === null || options === void 0 ? void 0 : options.downloadHeaders);
-        let packageDir = yield tc.extractTar(packageArchive, options === null || options === void 0 ? void 0 : options.extractToPath, options === null || options === void 0 ? void 0 : options.tarFlags);
-        packageDir = path.join(packageDir, `${packageName}-${packageVersion}`);
-        return { packageVersion, packageDir };
-    });
-}
-exports.getPackageSource = getPackageSource;
-
-
-/***/ }),
-
-/***/ 1310:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.stackGetLocalBin = exports.stackGetVersion = exports.cabalMaybeGetVersion = exports.cabalGetVersion = exports.ghcMaybeGetVersion = exports.ghcGetVersion = exports.stack = exports.cabal = exports.ghc = exports.getGhcInfo = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const exec = __importStar(__nccwpck_require__(4369));
-const ensure_error_1 = __importDefault(__nccwpck_require__(1151));
-function getGhcInfo(execOptions) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let ghcInfoString = yield ghc(['--info'], execOptions);
-        ghcInfoString = ghcInfoString.replace(/\(/g, '[').replace(/\)/g, ']');
-        const ghcInfo = JSON.parse(ghcInfoString);
-        return Object.fromEntries(ghcInfo.map(entry => [
-            // "Target platform" -> 'ghc-info-target-platform'
-            `ghc-info-${entry[0].toLowerCase().replace(/ /g, '-')}`,
-            entry[1]
-        ]));
-    });
-}
-exports.getGhcInfo = getGhcInfo;
-function ghc(args, execOptions) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield exec.getOutput('ghc', args, execOptions);
-    });
-}
-exports.ghc = ghc;
-function cabal(args, execOptions) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield exec.getOutput('cabal', args, execOptions);
-    });
-}
-exports.cabal = cabal;
-function stack(args, execOptions) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield exec.getOutput('stack', args, execOptions);
-    });
-}
-exports.stack = stack;
-function ghcGetVersion(using) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (using !== undefined &&
-            using['enable-stack'] &&
-            using['stack-no-global']) {
-            const output = yield stack(['exec', 'ghc', '--', '--numeric-version'], {
-                silent: true
-            });
-            return output.trim();
-        }
-        else {
-            return exec.getVersion('ghc', {
-                versionFlag: '--numeric-version',
-                silent: true
-            });
-        }
-    });
-}
-exports.ghcGetVersion = ghcGetVersion;
-function ghcMaybeGetVersion(using) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            return yield ghcGetVersion(using);
-        }
-        catch (error) {
-            core.info(`Could not get installed GHC version: ${(0, ensure_error_1.default)(error).message}`);
-            return null;
-        }
-    });
-}
-exports.ghcMaybeGetVersion = ghcMaybeGetVersion;
-function cabalGetVersion(using) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (using !== undefined &&
-            using['enable-stack'] &&
-            using['stack-no-global']) {
-            const output = yield stack(['exec', 'cabal', '--', '--numeric-version'], {
-                silent: true
-            });
-            return output.trim();
-        }
-        else {
-            return exec.getVersion('cabal', {
-                versionFlag: '--numeric-version',
-                silent: true
-            });
-        }
-    });
-}
-exports.cabalGetVersion = cabalGetVersion;
-function cabalMaybeGetVersion(using) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            return yield cabalGetVersion(using);
-        }
-        catch (error) {
-            core.info(`Could not get installed Cabal version: ${(0, ensure_error_1.default)(error).message}`);
-            return null;
-        }
-    });
-}
-exports.cabalMaybeGetVersion = cabalMaybeGetVersion;
-function stackGetVersion() {
-    return __awaiter(this, void 0, void 0, function* () {
-        return exec.getVersion('stack', {
-            versionFlag: '--numeric-version',
-            silent: true
-        });
-    });
-}
-exports.stackGetVersion = stackGetVersion;
-function stackGetLocalBin(using) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const stackLocalBin = yield stack([
-            `--compiler=ghc-${using['ghc-version']}`,
-            '--system-ghc',
-            '--no-install-ghc',
-            'path',
-            '--local-bin'
-        ]);
-        return stackLocalBin.trim();
-    });
-}
-exports.stackGetLocalBin = stackGetLocalBin;
-
-
-/***/ }),
-
-/***/ 6295:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.brewGetVersion = exports.brew = void 0;
-const exec = __importStar(__nccwpck_require__(4369));
-function brew(...args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield exec.getOutput('brew', args);
-    });
-}
-exports.brew = brew;
-function brewGetVersion(formula) {
-    var _a, _b, _c;
-    return __awaiter(this, void 0, void 0, function* () {
-        const formulaVersionRegExp = new RegExp(`${formula} (?<version>[\\d._]+)`);
-        const formulaVersions = yield brew('list', '--formula', '--versions');
-        return (_c = (_b = (_a = formulaVersions.match(formulaVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version) === null || _c === void 0 ? void 0 : _c.trim();
-    });
-}
-exports.brewGetVersion = brewGetVersion;
-
-
-/***/ }),
-
-/***/ 9358:
+/***/ 8526:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -4303,14 +4878,15 @@ exports.icuWriteLicense = exports.icuBundle = exports.icuSetup = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const tc = __importStar(__nccwpck_require__(7784));
 const opts = __importStar(__nccwpck_require__(1352));
-const util = __importStar(__nccwpck_require__(4024));
 const path = __importStar(__nccwpck_require__(9411));
 const fs = __importStar(__nccwpck_require__(7561));
 const icu_1 = __importDefault(__nccwpck_require__(8457));
-const linux_1 = __nccwpck_require__(9866);
-const macos_1 = __nccwpck_require__(6608);
-const windows_1 = __nccwpck_require__(8986);
+const linux_1 = __nccwpck_require__(2983);
+const macos_1 = __nccwpck_require__(8095);
+const windows_1 = __nccwpck_require__(831);
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
+const ensure_error_1 = __importDefault(__nccwpck_require__(1151));
+const exec_1 = __nccwpck_require__(4369);
 function icuSetup(options) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (opts.platform) {
@@ -4352,7 +4928,7 @@ function icuWriteLicense(licenseDir, options) {
         // Create the ICU license directory:
         const icuLicenseDir = path.join(licenseDir, `icu-${options['icu-version']}`);
         const icuLicenseFile = path.join(icuLicenseDir, `LICENSE`);
-        yield util.mkdirP(icuLicenseDir);
+        yield (0, exec_1.mkdirP)(icuLicenseDir);
         // Transform the ICU version, e.g., "71.1_1", to something we can use in the URL, such as "71-1"
         const icuVersion = options['icu-version']
             .trim()
@@ -4366,7 +4942,7 @@ function icuWriteLicense(licenseDir, options) {
         }
         catch (error) {
             // If anything goes wrong, write the backup license:
-            core.warning(util.ensureError(error));
+            core.warning((0, ensure_error_1.default)(error));
             fs.writeFileSync(icuLicenseFile, icu_1.default);
         }
     });
@@ -4376,7 +4952,7 @@ exports.icuWriteLicense = icuWriteLicense;
 
 /***/ }),
 
-/***/ 9866:
+/***/ 2983:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -4413,6 +4989,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.bundleForLinux = exports.setupForLinux = void 0;
 const core = __importStar(__nccwpck_require__(2186));
@@ -4420,20 +4999,24 @@ const glob = __importStar(__nccwpck_require__(8090));
 const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
-const util = __importStar(__nccwpck_require__(4024));
+const patchelf_1 = __nccwpck_require__(8483);
+const pkg_config_1 = __nccwpck_require__(1016);
+const ensure_error_1 = __importDefault(__nccwpck_require__(1151));
+const exec_1 = __nccwpck_require__(4369);
+const simver = __importStar(__nccwpck_require__(7609));
 function setupForLinux(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Find the ICU version:
-        options['icu-version'] = yield util.pkgConfigGetVersion('icu-i18n');
+        options['icu-version'] = yield (0, pkg_config_1.pkgConfigGetVersion)('icu-i18n');
         // Add extra-{include,lib}-dirs:
-        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'includedir')));
-        options['extra-lib-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'libdir')));
+        options['extra-include-dirs'].push(core.toPlatformPath(yield (0, pkg_config_1.pkgConfigGetVariable)('icu-i18n', 'includedir')));
+        options['extra-lib-dirs'].push(core.toPlatformPath(yield (0, pkg_config_1.pkgConfigGetVariable)('icu-i18n', 'libdir')));
         // Print ICU package info:
         try {
-            core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-i18n')));
+            core.info(JSON.stringify(yield (0, pkg_config_1.pkgConfigGetInfo)('icu-i18n')));
         }
         catch (error) {
-            core.info(util.ensureError(error).message);
+            core.info((0, ensure_error_1.default)(error).message);
         }
     });
 }
@@ -4445,8 +5028,8 @@ function bundleForLinux(distDir, options) {
         // Gather information
         core.info(`Bundle ICU version ${options['icu-version']}`);
         const libDirsFrom = new Set();
-        libDirsFrom.add(yield util.pkgConfigGetVariable('icu-i18n', 'libdir'));
-        libDirsFrom.add(yield util.pkgConfigGetVariable('icu-uc', 'libdir'));
+        libDirsFrom.add(yield (0, pkg_config_1.pkgConfigGetVariable)('icu-i18n', 'libdir'));
+        libDirsFrom.add(yield (0, pkg_config_1.pkgConfigGetVariable)('icu-uc', 'libdir'));
         const libFromPatterns = [...libDirsFrom]
             .flatMap(libDir => ['libicui18n', 'libicuuc', 'libicudata'].flatMap(libName => path.join(libDir, `${libName}.so.${options['icu-version']}`)))
             .join(os.EOL);
@@ -4459,19 +5042,19 @@ function bundleForLinux(distDir, options) {
         const distBinDir = path.join(distDir, 'bin');
         // Copy library files & change their IDs
         core.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
-        yield util.mkdirP(distLibDir);
+        yield (0, exec_1.mkdirP)(distLibDir);
         for (const libFrom of libsFrom) {
             const icuVersion = options['icu-version'].trim();
             const libName = path.basename(libFrom, `.so.${icuVersion}`);
             const libNameTo = `agda-${options['agda-version']}-${libName}.so`;
             const libTo = path.join(distLibDir, libNameTo);
             // Copy the library:
-            yield util.cp(libFrom, libTo);
+            yield (0, exec_1.cp)(libFrom, libTo);
             // Change the library ID:
-            yield util.patchelf('--set-soname', libNameTo, libTo);
+            yield (0, patchelf_1.patchelf)('--set-soname', libNameTo, libTo);
         }
         // Change internal dependencies between libraries:
-        const icuVerMaj = util.simver.major(options['icu-version']);
+        const icuVerMaj = simver.major(options['icu-version']);
         const libDepsToChange = [
             ['libicui18n', ['libicuuc']],
             ['libicuuc', ['libicudata']]
@@ -4483,10 +5066,10 @@ function bundleForLinux(distDir, options) {
             for (const depName of depNames) {
                 const depFrom = `${depName}.so.${icuVerMaj}`;
                 const depTo = `agda-${agdaVersion}-${depName}.so`;
-                yield util.patchelf('--replace-needed', depFrom, depTo, libTo);
+                yield (0, patchelf_1.patchelf)('--replace-needed', depFrom, depTo, libTo);
             }
             // NOTE: This overrides any previously set run path.
-            yield util.patchelf('--set-rpath', '$ORIGIN', libTo);
+            yield (0, patchelf_1.patchelf)('--set-rpath', '$ORIGIN', libTo);
         }
         // Change dependencies on Agda executable:
         const agdaExePath = path.join(distBinDir, opts.agdaComponents['Agda:exe:agda'].exe);
@@ -4494,10 +5077,10 @@ function bundleForLinux(distDir, options) {
         for (const depName of binDepsToChange) {
             const depNameFrom = `${depName}.so.${icuVerMaj}`;
             const depNameTo = `agda-${options['agda-version']}-${depName}.so`;
-            yield util.patchelf('--replace-needed', depNameFrom, depNameTo, agdaExePath);
+            yield (0, patchelf_1.patchelf)('--replace-needed', depNameFrom, depNameTo, agdaExePath);
         }
         // NOTE: This overrides any previously set run path.
-        yield util.patchelf('--set-rpath', '$ORIGIN/../lib', agdaExePath);
+        yield (0, patchelf_1.patchelf)('--set-rpath', '$ORIGIN/../lib', agdaExePath);
     });
 }
 exports.bundleForLinux = bundleForLinux;
@@ -4505,7 +5088,7 @@ exports.bundleForLinux = bundleForLinux;
 
 /***/ }),
 
-/***/ 6608:
+/***/ 8095:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -4550,22 +5133,27 @@ exports.bundleForMacOS = exports.setupForMacOS = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
-const util = __importStar(__nccwpck_require__(4024));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
+const install_name_tool_1 = __nccwpck_require__(6870);
+const exec_1 = __nccwpck_require__(4369);
+const homebrew_1 = __nccwpck_require__(8458);
+const pkg_config_1 = __nccwpck_require__(1016);
+const ensure_error_1 = __importDefault(__nccwpck_require__(1151));
+const simver = __importStar(__nccwpck_require__(7609));
 // MacOS
 function installDirForMacOS() {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield util.brew('--prefix', 'icu4c');
+        return yield (0, homebrew_1.brew)('--prefix', 'icu4c');
     });
 }
 function setupForMacOS(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Ensure ICU is installed:
-        let icuVersion = yield util.brewGetVersion('icu4c');
+        let icuVersion = yield (0, homebrew_1.brewGetVersion)('icu4c');
         core.info(`Found ICU version: ${icuVersion}`);
         if (icuVersion === undefined) {
-            yield util.brew('install', 'icu4c');
-            icuVersion = yield util.brewGetVersion('icu4c');
+            yield (0, homebrew_1.brew)('install', 'icu4c');
+            icuVersion = yield (0, homebrew_1.brewGetVersion)('icu4c');
             core.info(`Installed ICU version: ${icuVersion}`);
         }
         if (icuVersion === undefined)
@@ -4575,19 +5163,19 @@ function setupForMacOS(options) {
         core.info(`Found ICU version ${icuVersion} at ${prefix}`);
         // Add to PKG_CONFIG_PATH:
         const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig');
-        util.addPkgConfigPath(pkgConfigDir);
+        (0, pkg_config_1.addPkgConfigPath)(pkgConfigDir);
         // Find the ICU version:
-        options['icu-version'] = yield util.pkgConfigGetVersion('icu-i18n');
+        options['icu-version'] = yield (0, pkg_config_1.pkgConfigGetVersion)('icu-i18n');
         (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version reported by Homebrew differs from ICU version reported by pkg-config');
         // Add extra-{include,lib}-dirs:
-        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'includedir')));
-        options['extra-lib-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'libdir')));
+        options['extra-include-dirs'].push(core.toPlatformPath(yield (0, pkg_config_1.pkgConfigGetVariable)('icu-i18n', 'includedir')));
+        options['extra-lib-dirs'].push(core.toPlatformPath(yield (0, pkg_config_1.pkgConfigGetVariable)('icu-i18n', 'libdir')));
         // Print ICU package info:
         try {
-            core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-i18n')));
+            core.info(JSON.stringify(yield (0, pkg_config_1.pkgConfigGetInfo)('icu-i18n')));
         }
         catch (error) {
-            core.info(util.ensureError(error).message);
+            core.info((0, ensure_error_1.default)(error).message);
         }
     });
 }
@@ -4604,19 +5192,19 @@ function bundleForMacOS(distDir, options) {
         const distBinDir = path.join(distDir, 'bin');
         // Copy library files & change their IDs
         core.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
-        yield util.mkdirP(distLibDir);
+        yield (0, exec_1.mkdirP)(distLibDir);
         for (const libName of ['libicui18n', 'libicuuc', 'libicudata']) {
             const libNameFrom = `${libName}.${options['icu-version']}.dylib`;
             const libFrom = path.join(prefix, 'lib', libNameFrom);
             const libNameTo = `agda-${options['agda-version']}-${libName}.dylib`;
             const libTo = path.join(distLibDir, libNameTo);
             // Copy the library:
-            yield util.cp(libFrom, libTo);
+            yield (0, exec_1.cp)(libFrom, libTo);
             // Change the library ID:
-            yield util.installNameTool('-id', libNameTo, libTo);
+            yield (0, install_name_tool_1.installNameTool)('-id', libNameTo, libTo);
         }
         // Change internal dependencies between libraries:
-        const icuVerMaj = util.simver.major(options['icu-version']);
+        const icuVerMaj = simver.major(options['icu-version']);
         const libDepsToChange = [
             ['libicui18n', ['libicudata', 'libicuuc']],
             ['libicuuc', ['libicudata']]
@@ -4627,7 +5215,7 @@ function bundleForMacOS(distDir, options) {
             for (const depName of depNames) {
                 const depFrom = `@loader_path/${depName}.${icuVerMaj}.dylib`;
                 const depTo = `@loader_path/agda-${options['agda-version']}-${depName}.dylib`;
-                yield util.installNameTool('-change', depFrom, depTo, libTo);
+                yield (0, install_name_tool_1.installNameTool)('-change', depFrom, depTo, libTo);
             }
         }
         // Change dependencies on Agda executable:
@@ -4638,7 +5226,7 @@ function bundleForMacOS(distDir, options) {
             const libFrom = path.join(prefix, 'lib', libNameFrom);
             const libNameTo = `agda-${options['agda-version']}-${libName}.dylib`;
             const libTo = `@executable_path/../lib/${libNameTo}`;
-            yield util.installNameTool('-change', libFrom, libTo, agdaExePath);
+            yield (0, install_name_tool_1.installNameTool)('-change', libFrom, libTo, agdaExePath);
         }
     });
 }
@@ -4647,7 +5235,7 @@ exports.bundleForMacOS = bundleForMacOS;
 
 /***/ }),
 
-/***/ 8986:
+/***/ 831:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -4684,24 +5272,31 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.bundleForWindows = exports.setupForWindows = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
-const util = __importStar(__nccwpck_require__(4024));
+const pacman_1 = __nccwpck_require__(905);
+const pkg_config_1 = __nccwpck_require__(1016);
+const ensure_error_1 = __importDefault(__nccwpck_require__(1151));
+const exec_1 = __nccwpck_require__(4369);
+const simver = __importStar(__nccwpck_require__(7609));
 // Windows
 function setupForWindows(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Install pkg-config & ICU:
         core.addPath('C:\\msys64\\mingw64\\bin');
         core.addPath('C:\\msys64\\usr\\bin');
-        yield util.pacman('-v', '--noconfirm', '-Sy', 'mingw-w64-x86_64-pkg-config', 'mingw-w64-x86_64-icu');
+        yield (0, pacman_1.pacman)('-v', '--noconfirm', '-Sy', 'mingw-w64-x86_64-pkg-config', 'mingw-w64-x86_64-icu');
         // Find the ICU version:
-        options['icu-version'] = yield util.pkgConfigGetVersion('icu-i18n');
+        options['icu-version'] = yield (0, pkg_config_1.pkgConfigGetVersion)('icu-i18n');
         // Add extra-{include,lib}-dirs:
-        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'includedir')));
+        options['extra-include-dirs'].push(core.toPlatformPath(yield (0, pkg_config_1.pkgConfigGetVariable)('icu-i18n', 'includedir')));
         // NOTE:
         //   The libdir (C:\msys64\mingw64\lib) only contains libicu*.dll.a,
         //   not libicu*.dll. I'm not sure what the .dll.a files are?
@@ -4709,10 +5304,10 @@ function setupForWindows(options) {
             options['extra-lib-dirs'].push(libDir);
         // Print ICU package info:
         try {
-            core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-io')));
+            core.info(JSON.stringify(yield (0, pkg_config_1.pkgConfigGetInfo)('icu-io')));
         }
         catch (error) {
-            core.info(util.ensureError(error).message);
+            core.info((0, ensure_error_1.default)(error).message);
         }
     });
 }
@@ -4722,7 +5317,7 @@ function bundleForWindows(distDir, options) {
         if (options['icu-version'] === undefined)
             throw Error('No ICU version');
         core.info(`Bundle ICU version ${options['icu-version']}`);
-        const libVerMaj = util.simver.major(options['icu-version']);
+        const libVerMaj = simver.major(options['icu-version']);
         const libDirsFrom = yield icuGetLibDirs();
         const libFromPatterns = [...libDirsFrom]
             .flatMap(libDir => ['libicuin', 'libicuuc', 'libicudt', 'libicuio'].flatMap(libName => path.join(libDir, `${libName}${libVerMaj}.dll`)))
@@ -4734,21 +5329,21 @@ function bundleForWindows(distDir, options) {
         // Copy library files
         const libDirTo = path.join(distDir, 'bin');
         core.info(`Copy ICU ${options['icu-version']} in ${libDirTo}`);
-        yield util.mkdirP(libDirTo);
+        yield (0, exec_1.mkdirP)(libDirTo);
         for (const libFrom of libsFrom) {
             const libName = path.basename(libFrom);
             const libTo = path.join(libDirTo, libName);
             // Copy the library:
-            yield util.cp(libFrom, libTo);
+            yield (0, exec_1.cp)(libFrom, libTo);
         }
     });
 }
 exports.bundleForWindows = bundleForWindows;
 function icuGetLibDirs() {
     return __awaiter(this, void 0, void 0, function* () {
-        const icuInLibDir = yield util.pkgConfigGetVariable('icu-i18n', 'libdir');
-        const icuUcLibDir = yield util.pkgConfigGetVariable('icu-uc', 'libdir');
-        const icuIoLibDir = yield util.pkgConfigGetVariable('icu-io', 'libdir');
+        const icuInLibDir = yield (0, pkg_config_1.pkgConfigGetVariable)('icu-i18n', 'libdir');
+        const icuUcLibDir = yield (0, pkg_config_1.pkgConfigGetVariable)('icu-uc', 'libdir');
+        const icuIoLibDir = yield (0, pkg_config_1.pkgConfigGetVariable)('icu-io', 'libdir');
         return new Set([
             'C:\\msys64\\mingw64\\bin',
             'C:\\msys64\\usr\\bin',
@@ -4776,69 +5371,6 @@ function splitLines(string) {
         .filter(line => line.length > 0);
 }
 exports.splitLines = splitLines;
-
-
-/***/ }),
-
-/***/ 5066:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.pacmanGetVersion = exports.pacman = void 0;
-const exec = __importStar(__nccwpck_require__(4369));
-function pacman(...args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield exec.getOutput('pacman', args);
-    });
-}
-exports.pacman = pacman;
-function pacmanGetVersion(pkg) {
-    var _a, _b, _c;
-    return __awaiter(this, void 0, void 0, function* () {
-        const pkgInfo = yield pacman('--noconfirm', '-Qs', pkg);
-        const pkgVersionRegExp = /(?<version>\d[\d.]+\d)/;
-        const pkgVersion = (_c = (_b = (_a = pkgInfo.match(pkgVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version) === null || _c === void 0 ? void 0 : _c.trim();
-        if (pkgVersion !== undefined)
-            return pkgVersion;
-        else
-            throw Error(`Could not determine version of ${pkg}`);
-    });
-}
-exports.pacmanGetVersion = pacmanGetVersion;
 
 
 /***/ }),
@@ -4871,6 +5403,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -4884,27 +5419,32 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.dumpbin = exports.installNameTool = exports.otool = exports.patchelf = exports.printNeeded = void 0;
+exports.printNeeded = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const os = __importStar(__nccwpck_require__(612));
 const opts = __importStar(__nccwpck_require__(1352));
 const ensure_error_1 = __importDefault(__nccwpck_require__(1151));
-const exec = __importStar(__nccwpck_require__(4369));
+const patchelf_1 = __nccwpck_require__(8483);
+const otool_1 = __nccwpck_require__(3309);
+const dumpbin_1 = __nccwpck_require__(463);
+__exportStar(__nccwpck_require__(8483), exports);
+__exportStar(__nccwpck_require__(3309), exports);
+__exportStar(__nccwpck_require__(463), exports);
 function printNeeded(binPath) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             let output = '';
             switch (opts.platform) {
                 case 'linux': {
-                    output = yield patchelf('--print-needed', binPath);
+                    output = yield (0, patchelf_1.patchelf)('--print-needed', binPath);
                     break;
                 }
                 case 'darwin': {
-                    output = yield otool('-L', binPath);
+                    output = yield (0, otool_1.otool)('-L', binPath);
                     break;
                 }
                 case 'win32': {
-                    output = yield dumpbin('/imports', binPath);
+                    output = yield (0, dumpbin_1.dumpbin)('/imports', binPath);
                     break;
                 }
             }
@@ -4916,30 +5456,6 @@ function printNeeded(binPath) {
     });
 }
 exports.printNeeded = printNeeded;
-function patchelf(...args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield exec.getOutput('patchelf', args);
-    });
-}
-exports.patchelf = patchelf;
-function otool(...args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield exec.getOutput('otool', args);
-    });
-}
-exports.otool = otool;
-function installNameTool(...args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield exec.getOutput('install_name_tool', args);
-    });
-}
-exports.installNameTool = installNameTool;
-function dumpbin(...args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield exec.getOutput('dumpbin', args);
-    });
-}
-exports.dumpbin = dumpbin;
 
 
 /***/ }),
@@ -4960,149 +5476,12 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
 }));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.xattr = exports.chmod = void 0;
-const exec = __importStar(__nccwpck_require__(4369));
-const opts = __importStar(__nccwpck_require__(1352));
-const node_assert_1 = __importDefault(__nccwpck_require__(8061));
-function chmod(...args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        (0, node_assert_1.default)(opts.platform !== 'win32', 'MSYS2 does not support chmod');
-        return yield exec.getOutput('chmod', args);
-    });
-}
-exports.chmod = chmod;
-function xattr(...args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield exec.getOutput('xattr', args);
-    });
-}
-exports.xattr = xattr;
-
-
-/***/ }),
-
-/***/ 7066:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.addPkgConfigPath = exports.pkgConfigGetInfo = exports.pkgConfigGetVariable = exports.pkgConfigGetVersion = exports.pkgConfig = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const os = __importStar(__nccwpck_require__(612));
-const exec = __importStar(__nccwpck_require__(4369));
-const opts = __importStar(__nccwpck_require__(1352));
-function pkgConfig(...args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield exec.getOutput('pkg-config', args);
-    });
-}
-exports.pkgConfig = pkgConfig;
-function pkgConfigGetList(name, listName) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return (yield pkgConfig(`--print-${listName}`, name))
-            .split(os.EOL)
-            .map(variableName => variableName.trim())
-            .filter(variableName => variableName !== '');
-    });
-}
-function pkgConfigGetVersion(name) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return (yield pkgConfig('--modversion', name)).trim();
-    });
-}
-exports.pkgConfigGetVersion = pkgConfigGetVersion;
-function pkgConfigGetVariable(name, variable) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return (yield pkgConfig('--variable', variable, name)).trim();
-    });
-}
-exports.pkgConfigGetVariable = pkgConfigGetVariable;
-function pkgConfigGetInfo(name, seen) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (seen === null || seen === void 0 ? void 0 : seen.includes(name)) {
-            throw Error(`Cyclic dependency: ${seen.join(', ')}`);
-        }
-        else {
-            const variables = {};
-            for (const vn of yield pkgConfigGetList(name, 'variables'))
-                variables[vn] = yield pkgConfigGetVariable(name, vn);
-            const requires = [];
-            for (const rn of yield pkgConfigGetList(name, 'requires'))
-                requires.push(yield pkgConfigGetInfo(rn, [...(seen !== null && seen !== void 0 ? seen : []), name]));
-            return { name, variables, requires };
-        }
-    });
-}
-exports.pkgConfigGetInfo = pkgConfigGetInfo;
-function addPkgConfigPath(pkgConfigDir) {
-    var _a;
-    const pathSep = opts.platform === 'win32' ? ';' : ':';
-    const pkgConfigPath = (_a = process.env.PKG_CONFIG_PATH) !== null && _a !== void 0 ? _a : '';
-    const pkgConfigDirs = pkgConfigPath
-        .split(pathSep)
-        .map(dir => dir.trim())
-        .filter(dir => dir !== '');
-    core.exportVariable('PKG_CONFIG_PATH', [pkgConfigDir, ...pkgConfigDirs].join(pathSep));
-}
-exports.addPkgConfigPath = addPkgConfigPath;
+__exportStar(__nccwpck_require__(8583), exports);
+__exportStar(__nccwpck_require__(6913), exports);
 
 
 /***/ }),
@@ -5213,109 +5592,6 @@ function max(versions) {
     return maxSimVer === null ? null : toString(maxSimVer);
 }
 exports.max = max;
-
-
-/***/ }),
-
-/***/ 6102:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.upxSetup = void 0;
-const tc = __importStar(__nccwpck_require__(7784));
-const path = __importStar(__nccwpck_require__(9411));
-const opts = __importStar(__nccwpck_require__(1352));
-const util = __importStar(__nccwpck_require__(4024));
-function upxSetup(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        switch (opts.platform) {
-            case 'linux':
-                return yield upxSetupForLinux(options);
-            case 'darwin':
-                return yield upxSetupForMacOS(options);
-            case 'win32':
-                return yield upxSetupForWindows(options);
-        }
-    });
-}
-exports.upxSetup = upxSetup;
-function upxSetupForLinux(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const upxVersion = '3.96';
-        options['upx-version'] = upxVersion;
-        const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-amd64_linux.tar.xz`;
-        const upxDir = opts.setupAgdaCacheDir(path.join('upx', upxVersion));
-        const upxTar = yield tc.downloadTool(upxPkgUrl);
-        const upxDirTC = yield tc.extractTar(upxTar, upxDir, [
-            '--extract',
-            '--xz',
-            '--preserve-permissions',
-            '--strip-components=1'
-        ]);
-        return path.join(upxDirTC, 'upx');
-    });
-}
-function upxSetupForMacOS(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Ensure UPX is installed and is the correct version:
-        // NOTE: patch version '3.96_1' and (presumably) later versions are OK
-        let upxVersion = yield util.brewGetVersion('upx');
-        if (upxVersion === undefined)
-            yield util.brew('install', 'upx');
-        else if (util.simver.lt(upxVersion, '3.96_1'))
-            yield util.brew('upgrade', 'upx');
-        upxVersion = yield util.brewGetVersion('upx');
-        if (upxVersion === undefined)
-            throw Error(`Could not install UPX`);
-        options['upx-version'] = upxVersion;
-        return 'upx';
-    });
-}
-function upxSetupForWindows(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const upxVersion = '3.96';
-        options['upx-version'] = upxVersion;
-        const upxDir = opts.setupAgdaCacheDir(path.join('upx', upxVersion));
-        const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-win64.zip`;
-        const upxZip = yield tc.downloadTool(upxPkgUrl);
-        const upxDirTC = yield tc.extractZip(upxZip, upxDir);
-        return path.join(upxDirTC, `upx-${upxVersion}-win64`, 'upx');
-    });
-}
 
 
 /***/ }),

@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as os from 'node:os'
-import * as exec from './exec'
-import * as opts from '../opts'
+import * as exec from '../exec'
+import * as opts from '../../opts'
 
 export async function pkgConfig(...args: string[]): Promise<string> {
   return await exec.getOutput('pkg-config', args)

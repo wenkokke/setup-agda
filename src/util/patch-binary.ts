@@ -2,7 +2,13 @@ import * as core from '@actions/core'
 import * as os from 'node:os'
 import * as opts from '../opts'
 import ensureError from './ensure-error'
-import * as exec from './exec'
+import {patchelf} from './app/patchelf'
+import {otool} from './app/otool'
+import {dumpbin} from './app/dumpbin'
+
+export * from './app/patchelf'
+export * from './app/otool'
+export * from './app/dumpbin'
 
 export async function printNeeded(binPath: string): Promise<void> {
   try {
@@ -25,20 +31,4 @@ export async function printNeeded(binPath: string): Promise<void> {
   } catch (error) {
     core.info(ensureError(error).message)
   }
-}
-
-export async function patchelf(...args: string[]): Promise<string> {
-  return await exec.getOutput('patchelf', args)
-}
-
-export async function otool(...args: string[]): Promise<string> {
-  return await exec.getOutput('otool', args)
-}
-
-export async function installNameTool(...args: string[]): Promise<string> {
-  return await exec.getOutput('install_name_tool', args)
-}
-
-export async function dumpbin(...args: string[]): Promise<string> {
-  return await exec.getOutput('dumpbin', args)
 }

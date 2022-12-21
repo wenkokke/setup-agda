@@ -1,4 +1,4 @@
-import * as exec from './exec'
+import * as exec from '../exec'
 
 export async function pacman(...args: string[]): Promise<string> {
   return await exec.getOutput('pacman', args)
