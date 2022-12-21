@@ -4,6 +4,7 @@ import * as fs from 'node:fs'
 import * as opts from '../opts'
 import * as cabalPlan from '../setup-cabal-plan'
 import setupHaskell from '../setup-haskell'
+import gmpLicense from '../data/licenses/gmp'
 import zlibLicense from '../data/licenses/zlib'
 import * as icu from '../setup-icu'
 import * as util from '../util'
@@ -171,6 +172,12 @@ async function licenseReport(
   )
   await util.mkdirP(agdaLicenseDir)
   await util.cp(path.join(sourceDir, 'LICENSE'), agdaLicenseDir)
+
+  // Copy the gmp license to $licenseDir/gmp/LICENSE:
+  const gmpLicenseDir = path.join(licenseDir, 'gmp')
+  const gmpLicenseFile = path.join(gmpLicenseDir, 'LICENSE')
+  await util.mkdirP(gmpLicenseDir)
+  fs.writeFileSync(gmpLicenseFile, gmpLicense)
 
   // Copy the zlib license to $licenseDir/zlib/LICENSE:
   const zlibLicenseDir = path.join(licenseDir, 'zlib')
