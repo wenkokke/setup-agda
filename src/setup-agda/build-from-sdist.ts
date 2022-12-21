@@ -1,16 +1,14 @@
 import * as core from '@actions/core'
 import * as path from 'node:path'
-import * as fs from 'node:fs'
 import * as opts from '../opts'
 import * as cabalPlan from '../setup-cabal-plan'
 import setupHaskell from '../setup-haskell'
-import gmpLicense from '../data/licenses/gmp'
-import zlibLicense from '../data/licenses/zlib'
 import * as icu from '../setup-icu'
 import * as util from '../util'
 import * as cabal from './build-from-sdist/cabal'
 import * as stack from './build-from-sdist/stack'
 import uploadBdist from './upload-bdist'
+import licenseReport from './license-report'
 
 interface BuildTool {
   name: string
@@ -153,41 +151,4 @@ export default async function buildFromSource(
     })
   }
   return installDir
-}
-
-async function licenseReport(
-  sourceDir: string,
-  installDir: string,
-  options: opts.BuildOptions
-): Promise<void> {
-  // Create the license directory:
-  const licenseDir = path.join(installDir, 'licenses')
-  await util.mkdirP(licenseDir)
-
-  // Copy the Agda license to $licenseDir/Agda-$agdaVersion/LICENSE:
-  core.info(`Copy Agda license to ${licenseDir}`)
-  const agdaLicenseDir = path.join(
-    licenseDir,
-    `Agda-${options['agda-version']}`
-  )
-  await util.mkdirP(agdaLicenseDir)
-  await util.cp(path.join(sourceDir, 'LICENSE'), agdaLicenseDir)
-
-  // Copy the gmp license to $licenseDir/gmp/LICENSE:
-  const gmpLicenseDir = path.join(licenseDir, 'gmp')
-  const gmpLicenseFile = path.join(gmpLicenseDir, 'LICENSE')
-  await util.mkdirP(gmpLicenseDir)
-  fs.writeFileSync(gmpLicenseFile, gmpLicense)
-
-  // Copy the zlib license to $licenseDir/zlib/LICENSE:
-  const zlibLicenseDir = path.join(licenseDir, 'zlib')
-  const zlibLicenseFile = path.join(zlibLicenseDir, 'LICENSE')
-  await util.mkdirP(zlibLicenseDir)
-  fs.writeFileSync(zlibLicenseFile, zlibLicense)
-
-  // Copy the ICU license to $licenseDir/icu-$icuVersion/LICENSE:
-  if (opts.needsIcu(options)) await icu.license(licenseDir, options)
-
-  // Run `cabal-plan license-report` to create a report of the licenses of Agda dependencies:
-  await cabalPlan.licenseReport(sourceDir, licenseDir)
 }

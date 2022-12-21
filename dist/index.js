@@ -2127,17 +2127,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const path = __importStar(__nccwpck_require__(9411));
-const fs = __importStar(__nccwpck_require__(7561));
 const opts = __importStar(__nccwpck_require__(1352));
 const cabalPlan = __importStar(__nccwpck_require__(5497));
 const setup_haskell_1 = __importDefault(__nccwpck_require__(6933));
-const gmp_1 = __importDefault(__nccwpck_require__(5875));
-const zlib_1 = __importDefault(__nccwpck_require__(6127));
 const icu = __importStar(__nccwpck_require__(4173));
 const util = __importStar(__nccwpck_require__(4024));
 const cabal = __importStar(__nccwpck_require__(4772));
 const stack = __importStar(__nccwpck_require__(5674));
 const upload_bdist_1 = __importDefault(__nccwpck_require__(3888));
+const license_report_1 = __importDefault(__nccwpck_require__(4118));
 function buildFromSource(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // If 'agda-version' is 'nightly' we must install from bdist:
@@ -2210,7 +2208,7 @@ function buildFromSource(options) {
                 // Install cabal-plan:
                 yield cabalPlan.setup(options);
                 // Generate license report:
-                licenseReport(sourceDir, installDir, options);
+                (0, license_report_1.default)(sourceDir, installDir, options);
             }));
         }
         // 7. Test:
@@ -2230,33 +2228,6 @@ function buildFromSource(options) {
     });
 }
 exports["default"] = buildFromSource;
-function licenseReport(sourceDir, installDir, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Create the license directory:
-        const licenseDir = path.join(installDir, 'licenses');
-        yield util.mkdirP(licenseDir);
-        // Copy the Agda license to $licenseDir/Agda-$agdaVersion/LICENSE:
-        core.info(`Copy Agda license to ${licenseDir}`);
-        const agdaLicenseDir = path.join(licenseDir, `Agda-${options['agda-version']}`);
-        yield util.mkdirP(agdaLicenseDir);
-        yield util.cp(path.join(sourceDir, 'LICENSE'), agdaLicenseDir);
-        // Copy the gmp license to $licenseDir/gmp/LICENSE:
-        const gmpLicenseDir = path.join(licenseDir, 'gmp');
-        const gmpLicenseFile = path.join(gmpLicenseDir, 'LICENSE');
-        yield util.mkdirP(gmpLicenseDir);
-        fs.writeFileSync(gmpLicenseFile, gmp_1.default);
-        // Copy the zlib license to $licenseDir/zlib/LICENSE:
-        const zlibLicenseDir = path.join(licenseDir, 'zlib');
-        const zlibLicenseFile = path.join(zlibLicenseDir, 'LICENSE');
-        yield util.mkdirP(zlibLicenseDir);
-        fs.writeFileSync(zlibLicenseFile, zlib_1.default);
-        // Copy the ICU license to $licenseDir/icu-$icuVersion/LICENSE:
-        if (opts.needsIcu(options))
-            yield icu.license(licenseDir, options);
-        // Run `cabal-plan license-report` to create a report of the licenses of Agda dependencies:
-        yield cabalPlan.licenseReport(sourceDir, licenseDir);
-    });
-}
 
 
 /***/ }),
@@ -2870,6 +2841,128 @@ function installFromToolCache(options) {
     });
 }
 exports["default"] = installFromToolCache;
+
+
+/***/ }),
+
+/***/ 4118:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
+const glob = __importStar(__nccwpck_require__(8090));
+const path = __importStar(__nccwpck_require__(9411));
+const fs = __importStar(__nccwpck_require__(7561));
+const os = __importStar(__nccwpck_require__(612));
+const opts = __importStar(__nccwpck_require__(1352));
+const cabalPlan = __importStar(__nccwpck_require__(5497));
+const gmp_1 = __importDefault(__nccwpck_require__(5875));
+const zlib_1 = __importDefault(__nccwpck_require__(6127));
+const icu = __importStar(__nccwpck_require__(4173));
+const util = __importStar(__nccwpck_require__(4024));
+function licenseReport(sourceDir, installDir, options) {
+    var _a, e_1, _b, _c;
+    return __awaiter(this, void 0, void 0, function* () {
+        // Create the license directory:
+        const licenseDir = path.join(installDir, 'licenses');
+        yield util.mkdirP(licenseDir);
+        // Copy the gmp license to $licenseDir/gmp/LICENSE:
+        const gmpLicenseDir = path.join(licenseDir, 'gmp');
+        const gmpLicenseFile = path.join(gmpLicenseDir, 'LICENSE');
+        yield util.mkdirP(gmpLicenseDir);
+        fs.writeFileSync(gmpLicenseFile, gmp_1.default);
+        // Copy the zlib license to $licenseDir/zlib/LICENSE:
+        const zlibLicenseDir = path.join(licenseDir, 'zlib');
+        const zlibLicenseFile = path.join(zlibLicenseDir, 'LICENSE');
+        yield util.mkdirP(zlibLicenseDir);
+        fs.writeFileSync(zlibLicenseFile, zlib_1.default);
+        // Copy the ICU license to $licenseDir/icu-$icuVersion/LICENSE:
+        if (opts.needsIcu(options))
+            yield icu.license(licenseDir, options);
+        // Run `cabal-plan license-report` to create a report of the licenses of Agda dependencies:
+        yield cabalPlan.licenseReport(sourceDir, licenseDir);
+        // Generate a single LICENSE file:
+        const licenseFile = path.join(licenseDir, 'licenses.txt');
+        // 1. Append the Agda license to $licenseFile:
+        const agdaLicense = fs.readFileSync(path.join(sourceDir, 'LICENSE'));
+        fs.appendFileSync(licenseFile, agdaLicense);
+        // 2. Append the license for every other dependency to $licenseFile:
+        const licenseGlobber = yield glob.create(path.join(licenseDir, '*', '*'));
+        try {
+            for (var _d = true, _e = __asyncValues(licenseGlobber.globGenerator()), _f; _f = yield _e.next(), _a = _f.done, !_a;) {
+                _c = _f.value;
+                _d = false;
+                try {
+                    const depLicenseFile = _c;
+                    const depName = path.basename(path.dirname(depLicenseFile));
+                    const depLicense = fs.readFileSync(licenseFile);
+                    fs.appendFileSync(licenseFile, `${os.EOL}${depName}${os.EOL}${depLicense}`);
+                }
+                finally {
+                    _d = true;
+                }
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (!_d && !_a && (_b = _e.return)) yield _b.call(_e);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        // 3. Write the Agda license to $licenseDir/Agda-$agdaVersion/LICENSE
+        core.info(`Copy Agda license to ${licenseDir}`);
+        const agdaLicenseDir = path.join(licenseDir, `Agda-${options['agda-version']}`);
+        const agdaLicenseFile = path.join(agdaLicenseDir, 'LICENSE');
+        yield util.mkdirP(agdaLicenseDir);
+        fs.writeFileSync(agdaLicenseFile, agdaLicense);
+    });
+}
+exports["default"] = licenseReport;
 
 
 /***/ }),
