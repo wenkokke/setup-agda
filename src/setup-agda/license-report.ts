@@ -4,10 +4,8 @@ import * as path from 'node:path'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as opts from '../opts'
-import * as cabalPlan from '../setup-cabal-plan'
 import gmpLicense from '../data/licenses/gmp'
 import zlibLicense from '../data/licenses/zlib'
-import * as icu from '../setup-icu'
 import * as util from '../util'
 
 export default async function licenseReport(
@@ -32,10 +30,10 @@ export default async function licenseReport(
   fs.writeFileSync(zlibLicenseFile, zlibLicense)
 
   // Copy the ICU license to $licenseDir/icu-$icuVersion/LICENSE:
-  if (opts.needsIcu(options)) await icu.license(licenseDir, options)
+  if (opts.needsIcu(options)) await util.icuWriteLicense(licenseDir, options)
 
   // Run `cabal-plan license-report` to create a report of the licenses of Agda dependencies:
-  await cabalPlan.licenseReport(sourceDir, licenseDir)
+  await util.cabalPlanLicenseReport(sourceDir, licenseDir)
 
   // Generate a single LICENSE file:
   const licenseFile = path.join(licenseDir, 'licenses.txt')

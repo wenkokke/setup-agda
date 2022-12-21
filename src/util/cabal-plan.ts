@@ -2,11 +2,14 @@ import * as core from '@actions/core'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
-import * as opts from './opts'
-import * as util from './util'
+import * as opts from '../opts'
+import * as util from '../util'
 
-export async function setup(options: opts.BuildOptions): Promise<void> {
+export async function cabalPlanSetup(
+  options: opts.BuildOptions
+): Promise<void> {
   const cabalPlanVersion = '0.7.2.3'
+  options['cabal-plan-version'] = cabalPlanVersion
   const cabalPlanDir = opts.setupAgdaCacheDir(
     path.join('cabal-plan', cabalPlanVersion)
   )
@@ -27,7 +30,7 @@ export async function setup(options: opts.BuildOptions): Promise<void> {
   core.addPath(cabalPlanDir)
 }
 
-export async function licenseReport(
+export async function cabalPlanLicenseReport(
   sourceDir: string,
   licenseDir: string
 ): Promise<void> {

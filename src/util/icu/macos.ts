@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as path from 'node:path'
-import * as opts from '../opts'
-import * as util from '../util'
+import * as opts from '../../opts'
+import * as util from '../../util'
 import assert from 'node:assert'
 
 // MacOS

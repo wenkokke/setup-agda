@@ -1,23 +1,32 @@
 import * as core from '@actions/core'
 import * as tc from '@actions/tool-cache'
-import * as opts from './opts'
-import * as util from './util'
+import * as opts from '../opts'
+import * as util from '../util'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
-import icuLicense from './data/licenses/icu'
-import {setupForLinux, bundleForLinux} from './setup-icu/linux'
-import {setupForMacOS, bundleForMacOS} from './setup-icu/macos'
-import {setupForWindows, bundleForWindows} from './setup-icu/windows'
+import icuLicense from '../data/licenses/icu'
+import {
+  setupForLinux as icuSetupForLinux,
+  bundleForLinux as icuBundleForLinux
+} from './icu/linux'
+import {
+  setupForMacOS as icuSetupForMacOS,
+  bundleForMacOS as icuBundleForMacOS
+} from './icu/macos'
+import {
+  setupForWindows as icuSetupForWindows,
+  bundleForWindows as icuBundleForWindows
+} from './icu/windows'
 import assert from 'node:assert'
 
-export async function setup(options: opts.BuildOptions): Promise<void> {
+export async function icuSetup(options: opts.BuildOptions): Promise<void> {
   switch (opts.platform) {
     case 'linux':
-      return await setupForLinux(options)
+      return await icuSetupForLinux(options)
     case 'darwin':
-      return await setupForMacOS(options)
+      return await icuSetupForMacOS(options)
     case 'win32':
-      return await setupForWindows(options)
+      return await icuSetupForWindows(options)
   }
 }
 
@@ -31,21 +40,21 @@ export async function setup(options: opts.BuildOptions): Promise<void> {
 //       `dumpbin`, `patchelf` and `otool` to find and bundle *all* libraries
 //       that aren't on that list.
 
-export async function bundle(
+export async function icuBundle(
   distDir: string,
   options: opts.BuildOptions
 ): Promise<void> {
   switch (opts.platform) {
     case 'linux':
-      return await bundleForLinux(distDir, options)
+      return await icuBundleForLinux(distDir, options)
     case 'darwin':
-      return await bundleForMacOS(distDir, options)
+      return await icuBundleForMacOS(distDir, options)
     case 'win32':
-      return await bundleForWindows(distDir, options)
+      return await icuBundleForWindows(distDir, options)
   }
 }
 
-export async function license(
+export async function icuWriteLicense(
   licenseDir: string,
   options: opts.BuildOptions
 ): Promise<void> {

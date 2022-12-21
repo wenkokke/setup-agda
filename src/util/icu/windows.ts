@@ -3,8 +3,8 @@ import * as glob from '@actions/glob'
 
 import * as os from 'node:os'
 import * as path from 'node:path'
-import * as opts from '../opts'
-import * as util from '../util'
+import * as opts from '../../opts'
+import * as util from '../../util'
 
 // Windows
 

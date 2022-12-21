@@ -1,14 +1,12 @@
 import * as core from '@actions/core'
 import * as path from 'node:path'
 import * as opts from '../opts'
-import * as cabalPlan from '../setup-cabal-plan'
 import setupHaskell from '../setup-haskell'
-import * as icu from '../setup-icu'
 import * as util from '../util'
 import * as cabal from './build-from-sdist/cabal'
 import * as stack from './build-from-sdist/stack'
-import uploadBdist from './upload-bdist'
 import licenseReport from './license-report'
+import uploadBdist from './upload-bdist'
 
 interface BuildTool {
   name: string
@@ -101,7 +99,7 @@ export default async function buildFromSource(
   if (opts.needsIcu(options)) {
     await core.group('🔠 Installing ICU', async () => {
       try {
-        await icu.setup(options)
+        await util.icuSetup(options)
       } catch (error) {
         core.info('If this fails, try setting "disable-cluster-counting"')
         throw error
@@ -126,7 +124,7 @@ export default async function buildFromSource(
   if (options['bdist-license-report']) {
     await core.group('🪪 Generate license report', async () => {
       // Install cabal-plan:
-      await cabalPlan.setup(options)
+      await util.cabalPlanSetup(options)
       // Generate license report:
       await licenseReport(sourceDir, installDir, options)
     })

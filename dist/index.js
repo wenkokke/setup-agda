@@ -2128,14 +2128,12 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
-const cabalPlan = __importStar(__nccwpck_require__(5497));
 const setup_haskell_1 = __importDefault(__nccwpck_require__(6933));
-const icu = __importStar(__nccwpck_require__(4173));
 const util = __importStar(__nccwpck_require__(4024));
 const cabal = __importStar(__nccwpck_require__(4772));
 const stack = __importStar(__nccwpck_require__(5674));
-const upload_bdist_1 = __importDefault(__nccwpck_require__(3888));
 const license_report_1 = __importDefault(__nccwpck_require__(4118));
+const upload_bdist_1 = __importDefault(__nccwpck_require__(3888));
 function buildFromSource(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // If 'agda-version' is 'nightly' we must install from bdist:
@@ -2187,7 +2185,7 @@ function buildFromSource(options) {
         if (opts.needsIcu(options)) {
             yield core.group('🔠 Installing ICU', () => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    yield icu.setup(options);
+                    yield util.icuSetup(options);
                 }
                 catch (error) {
                     core.info('If this fails, try setting "disable-cluster-counting"');
@@ -2206,7 +2204,7 @@ function buildFromSource(options) {
         if (options['bdist-license-report']) {
             yield core.group('🪪 Generate license report', () => __awaiter(this, void 0, void 0, function* () {
                 // Install cabal-plan:
-                yield cabalPlan.setup(options);
+                yield util.cabalPlanSetup(options);
                 // Generate license report:
                 yield (0, license_report_1.default)(sourceDir, installDir, options);
             }));
@@ -2899,10 +2897,8 @@ const path = __importStar(__nccwpck_require__(9411));
 const fs = __importStar(__nccwpck_require__(7561));
 const os = __importStar(__nccwpck_require__(612));
 const opts = __importStar(__nccwpck_require__(1352));
-const cabalPlan = __importStar(__nccwpck_require__(5497));
 const gmp_1 = __importDefault(__nccwpck_require__(5875));
 const zlib_1 = __importDefault(__nccwpck_require__(6127));
-const icu = __importStar(__nccwpck_require__(4173));
 const util = __importStar(__nccwpck_require__(4024));
 function licenseReport(sourceDir, installDir, options) {
     var _a, e_1, _b, _c;
@@ -2922,9 +2918,9 @@ function licenseReport(sourceDir, installDir, options) {
         fs.writeFileSync(zlibLicenseFile, zlib_1.default);
         // Copy the ICU license to $licenseDir/icu-$icuVersion/LICENSE:
         if (opts.needsIcu(options))
-            yield icu.license(licenseDir, options);
+            yield util.icuWriteLicense(licenseDir, options);
         // Run `cabal-plan license-report` to create a report of the licenses of Agda dependencies:
-        yield cabalPlan.licenseReport(sourceDir, licenseDir);
+        yield util.cabalPlanLicenseReport(sourceDir, licenseDir);
         // Generate a single LICENSE file:
         const licenseFile = path.join(licenseDir, 'licenses.txt');
         // 1. Append the Agda license to $licenseFile:
@@ -3017,8 +3013,6 @@ const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
 const object_pick_1 = __importDefault(__nccwpck_require__(9962));
 const opts = __importStar(__nccwpck_require__(1352));
-const icu = __importStar(__nccwpck_require__(4173));
-const setup_upx_1 = __importDefault(__nccwpck_require__(4245));
 const util = __importStar(__nccwpck_require__(4024));
 function uploadBdist(installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -3034,12 +3028,12 @@ function uploadBdist(installDir, options) {
             yield util.cpR(path.join(installDir, 'licenses'), bdistDir);
         // Bundle libraries:
         if (options['icu-version'] !== undefined) {
-            yield icu.bundle(bdistDir, options);
+            yield util.icuBundle(bdistDir, options);
         }
         // Compress binaries:
         if (options['bdist-compress-exe']) {
             try {
-                const upxExe = yield (0, setup_upx_1.default)(options);
+                const upxExe = yield util.upxSetup(options);
                 for (const component of Object.values(opts.agdaComponents))
                     yield compressBin(upxExe, path.join(bdistDir, 'bin', component.exe));
             }
@@ -3095,93 +3089,6 @@ function renderName(template, options) {
     ])), { arch: os.arch(), platform: os.platform(), release: os.release() }));
 }
 exports.renderName = renderName;
-
-
-/***/ }),
-
-/***/ 5497:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.licenseReport = exports.setup = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const path = __importStar(__nccwpck_require__(9411));
-const fs = __importStar(__nccwpck_require__(7561));
-const os = __importStar(__nccwpck_require__(612));
-const opts = __importStar(__nccwpck_require__(1352));
-const util = __importStar(__nccwpck_require__(4024));
-function setup(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const cabalPlanVersion = '0.7.2.3';
-        const cabalPlanDir = opts.setupAgdaCacheDir(path.join('cabal-plan', cabalPlanVersion));
-        // Update cabal package index
-        yield util.cabal(['update']);
-        // Install cabal-plan to cabalPlanDir
-        yield util.mkdirP(cabalPlanDir);
-        yield util.cabal([
-            'install',
-            `cabal-plan-${cabalPlanVersion}`,
-            '-f+license-report',
-            '--ignore-project',
-            '--install-method=copy',
-            `--installdir=${cabalPlanDir}`,
-            '--overwrite-policy=always'
-        ]);
-        // Add the path to the cabal-plan executable to the PATH
-        core.addPath(cabalPlanDir);
-    });
-}
-exports.setup = setup;
-function licenseReport(sourceDir, licenseDir) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const execOptions = { cwd: sourceDir };
-        for (const component of Object.keys(opts.agdaComponents)) {
-            // Get the short name for the component, e.g., Agda:exe:agda -> agda
-            const componentShortName = component.split(':').at(-1);
-            // Run `cabal-plan license-report`
-            core.info(`Generate license-report for ${componentShortName} in ${licenseDir}`);
-            const licenseReportPath = path.join(licenseDir, `license-report-${componentShortName}.md`);
-            const { output, errors } = yield util.getOutputAndErrors('cabal-plan', ['license-report', `--licensedir=${licenseDir}`, component], execOptions);
-            // Write the generated license report and warnings to a separate file:
-            fs.writeFileSync(licenseReportPath, [output, '## Warnings', errors ? errors : 'No warnings'].join(`${os.EOL}${os.EOL}`));
-        }
-    });
-}
-exports.licenseReport = licenseReport;
 
 
 /***/ }),
@@ -3270,612 +3177,6 @@ function pickSetupHaskellInputs(options) {
 
 /***/ }),
 
-/***/ 4173:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.license = exports.bundle = exports.setup = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const tc = __importStar(__nccwpck_require__(7784));
-const opts = __importStar(__nccwpck_require__(1352));
-const util = __importStar(__nccwpck_require__(4024));
-const path = __importStar(__nccwpck_require__(9411));
-const fs = __importStar(__nccwpck_require__(7561));
-const icu_1 = __importDefault(__nccwpck_require__(8457));
-const linux_1 = __nccwpck_require__(577);
-const macos_1 = __nccwpck_require__(2199);
-const windows_1 = __nccwpck_require__(908);
-const node_assert_1 = __importDefault(__nccwpck_require__(8061));
-function setup(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        switch (opts.platform) {
-            case 'linux':
-                return yield (0, linux_1.setupForLinux)(options);
-            case 'darwin':
-                return yield (0, macos_1.setupForMacOS)(options);
-            case 'win32':
-                return yield (0, windows_1.setupForWindows)(options);
-        }
-    });
-}
-exports.setup = setup;
-// NOTE: This module hardcodes a number of assumptions about libicu which may
-//       not always be true, e.g., library name starts with 'libicu', binaries
-//       are linked against the major version on Linux and Windows but against
-//       the entire version on MacOS, the internal dependencies of ICU, etc.
-// NOTE: This module could be rewritten to be much closer to 'repairwheel' by
-//       maintaining a list of allowed libraries (like 'manylinux') and using
-//       `dumpbin`, `patchelf` and `otool` to find and bundle *all* libraries
-//       that aren't on that list.
-function bundle(distDir, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        switch (opts.platform) {
-            case 'linux':
-                return yield (0, linux_1.bundleForLinux)(distDir, options);
-            case 'darwin':
-                return yield (0, macos_1.bundleForMacOS)(distDir, options);
-            case 'win32':
-                return yield (0, windows_1.bundleForWindows)(distDir, options);
-        }
-    });
-}
-exports.bundle = bundle;
-function license(licenseDir, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (options['icu-version'] === undefined)
-            throw Error(`Cannot download license: no ICU version specified`);
-        // Create the ICU license directory:
-        const icuLicenseDir = path.join(licenseDir, `icu-${options['icu-version']}`);
-        const icuLicenseFile = path.join(icuLicenseDir, `LICENSE`);
-        yield util.mkdirP(icuLicenseDir);
-        // Transform the ICU version, e.g., "71.1_1", to something we can use in the URL, such as "71-1"
-        const icuVersion = options['icu-version']
-            .trim()
-            .split('_')[0]
-            .replace('.', '-');
-        const licenseUrl = `https://raw.githubusercontent.com/unicode-org/icu/release-${icuVersion}/icu4c/LICENSE`;
-        // Download the license file:
-        try {
-            const icuLicenseFileTC = yield tc.downloadTool(licenseUrl, icuLicenseFile);
-            (0, node_assert_1.default)(icuLicenseFile === icuLicenseFileTC, `downloadTool saved license to ${icuLicenseFileTC}, not ${icuLicenseFile}`);
-        }
-        catch (error) {
-            // If anything goes wrong, write the backup license:
-            core.warning(util.ensureError(error));
-            fs.writeFileSync(icuLicenseFile, icu_1.default);
-        }
-    });
-}
-exports.license = license;
-
-
-/***/ }),
-
-/***/ 577:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.bundleForLinux = exports.setupForLinux = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const glob = __importStar(__nccwpck_require__(8090));
-const os = __importStar(__nccwpck_require__(612));
-const path = __importStar(__nccwpck_require__(9411));
-const opts = __importStar(__nccwpck_require__(1352));
-const util = __importStar(__nccwpck_require__(4024));
-function setupForLinux(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Find the ICU version:
-        options['icu-version'] = yield util.pkgConfigGetVersion('icu-i18n');
-        // Add extra-{include,lib}-dirs:
-        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'includedir')));
-        options['extra-lib-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'libdir')));
-        // Print ICU package info:
-        try {
-            core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-i18n')));
-        }
-        catch (error) {
-            core.info(util.ensureError(error).message);
-        }
-    });
-}
-exports.setupForLinux = setupForLinux;
-function bundleForLinux(distDir, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (options['icu-version'] === undefined)
-            throw Error('No ICU version');
-        // Gather information
-        core.info(`Bundle ICU version ${options['icu-version']}`);
-        const libDirsFrom = new Set();
-        libDirsFrom.add(yield util.pkgConfigGetVariable('icu-i18n', 'libdir'));
-        libDirsFrom.add(yield util.pkgConfigGetVariable('icu-uc', 'libdir'));
-        const libFromPatterns = [...libDirsFrom]
-            .flatMap(libDir => ['libicui18n', 'libicuuc', 'libicudata'].flatMap(libName => path.join(libDir, `${libName}.so.${options['icu-version']}`)))
-            .join(os.EOL);
-        core.info(`Searching with:${os.EOL}${libFromPatterns}`);
-        const libFromGlobber = yield glob.create(libFromPatterns);
-        const libsFrom = yield libFromGlobber.glob();
-        core.info(`Found libraries:${os.EOL}${libsFrom.join(os.EOL)}`);
-        // core.info(`Found ICU version ${options['icu-version']} at ${prefix}`)
-        const distLibDir = path.join(distDir, 'lib');
-        const distBinDir = path.join(distDir, 'bin');
-        // Copy library files & change their IDs
-        core.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
-        yield util.mkdirP(distLibDir);
-        for (const libFrom of libsFrom) {
-            const icuVersion = options['icu-version'].trim();
-            const libName = path.basename(libFrom, `.so.${icuVersion}`);
-            const libNameTo = `agda-${options['agda-version']}-${libName}.so`;
-            const libTo = path.join(distLibDir, libNameTo);
-            // Copy the library:
-            yield util.cp(libFrom, libTo);
-            // Change the library ID:
-            yield util.patchelf('--set-soname', libNameTo, libTo);
-        }
-        // Change internal dependencies between libraries:
-        const icuVerMaj = util.simver.major(options['icu-version']);
-        const libDepsToChange = [
-            ['libicui18n', ['libicuuc']],
-            ['libicuuc', ['libicudata']]
-        ];
-        for (const [libName, depNames] of libDepsToChange) {
-            const agdaVersion = options['agda-version'].trim();
-            const libNameTo = `agda-${agdaVersion}-${libName}.so`;
-            const libTo = path.join(distLibDir, libNameTo);
-            for (const depName of depNames) {
-                const depFrom = `${depName}.so.${icuVerMaj}`;
-                const depTo = `agda-${agdaVersion}-${depName}.so`;
-                yield util.patchelf('--replace-needed', depFrom, depTo, libTo);
-            }
-            // NOTE: This overrides any previously set run path.
-            yield util.patchelf('--set-rpath', '$ORIGIN', libTo);
-        }
-        // Change dependencies on Agda executable:
-        const agdaExePath = path.join(distBinDir, opts.agdaComponents['Agda:exe:agda'].exe);
-        const binDepsToChange = ['libicui18n', 'libicuuc', 'libicudata'];
-        for (const depName of binDepsToChange) {
-            const depNameFrom = `${depName}.so.${icuVerMaj}`;
-            const depNameTo = `agda-${options['agda-version']}-${depName}.so`;
-            yield util.patchelf('--replace-needed', depNameFrom, depNameTo, agdaExePath);
-        }
-        // NOTE: This overrides any previously set run path.
-        yield util.patchelf('--set-rpath', '$ORIGIN/../lib', agdaExePath);
-    });
-}
-exports.bundleForLinux = bundleForLinux;
-
-
-/***/ }),
-
-/***/ 2199:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.bundleForMacOS = exports.setupForMacOS = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const path = __importStar(__nccwpck_require__(9411));
-const opts = __importStar(__nccwpck_require__(1352));
-const util = __importStar(__nccwpck_require__(4024));
-const node_assert_1 = __importDefault(__nccwpck_require__(8061));
-// MacOS
-function installDirForMacOS() {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield util.brew('--prefix', 'icu4c');
-    });
-}
-function setupForMacOS(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Ensure ICU is installed:
-        let icuVersion = yield util.brewGetVersion('icu4c');
-        core.info(`Found ICU version: ${icuVersion}`);
-        if (icuVersion === undefined) {
-            yield util.brew('install', 'icu4c');
-            icuVersion = yield util.brewGetVersion('icu4c');
-            core.info(`Installed ICU version: ${icuVersion}`);
-        }
-        if (icuVersion === undefined)
-            throw Error('Could not install icu4c');
-        // Find the ICU installation location:
-        const prefix = yield installDirForMacOS();
-        core.info(`Found ICU version ${icuVersion} at ${prefix}`);
-        // Add to PKG_CONFIG_PATH:
-        const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig');
-        util.addPkgConfigPath(pkgConfigDir);
-        // Find the ICU version:
-        options['icu-version'] = yield util.pkgConfigGetVersion('icu-i18n');
-        (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version reported by Homebrew differs from ICU version reported by pkg-config');
-        // Add extra-{include,lib}-dirs:
-        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'includedir')));
-        options['extra-lib-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'libdir')));
-        // Print ICU package info:
-        try {
-            core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-i18n')));
-        }
-        catch (error) {
-            core.info(util.ensureError(error).message);
-        }
-    });
-}
-exports.setupForMacOS = setupForMacOS;
-function bundleForMacOS(distDir, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (options['icu-version'] === undefined)
-            throw Error('No ICU version');
-        // Gather information
-        core.info(`Bundle ICU version ${options['icu-version']}`);
-        const prefix = yield installDirForMacOS();
-        core.info(`Found ICU version ${options['icu-version']} at ${prefix}`);
-        const distLibDir = path.join(distDir, 'lib');
-        const distBinDir = path.join(distDir, 'bin');
-        // Copy library files & change their IDs
-        core.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
-        yield util.mkdirP(distLibDir);
-        for (const libName of ['libicui18n', 'libicuuc', 'libicudata']) {
-            const libNameFrom = `${libName}.${options['icu-version']}.dylib`;
-            const libFrom = path.join(prefix, 'lib', libNameFrom);
-            const libNameTo = `agda-${options['agda-version']}-${libName}.dylib`;
-            const libTo = path.join(distLibDir, libNameTo);
-            // Copy the library:
-            yield util.cp(libFrom, libTo);
-            // Change the library ID:
-            yield util.installNameTool('-id', libNameTo, libTo);
-        }
-        // Change internal dependencies between libraries:
-        const icuVerMaj = util.simver.major(options['icu-version']);
-        const libDepsToChange = [
-            ['libicui18n', ['libicudata', 'libicuuc']],
-            ['libicuuc', ['libicudata']]
-        ];
-        for (const [libName, depNames] of libDepsToChange) {
-            const libNameTo = `agda-${options['agda-version']}-${libName}.dylib`;
-            const libTo = path.join(distLibDir, libNameTo);
-            for (const depName of depNames) {
-                const depFrom = `@loader_path/${depName}.${icuVerMaj}.dylib`;
-                const depTo = `@loader_path/agda-${options['agda-version']}-${depName}.dylib`;
-                yield util.installNameTool('-change', depFrom, depTo, libTo);
-            }
-        }
-        // Change dependencies on Agda executable:
-        const agdaExePath = path.join(distBinDir, opts.agdaComponents['Agda:exe:agda'].exe);
-        const binDepsToChange = ['libicui18n', 'libicuuc'];
-        for (const libName of binDepsToChange) {
-            const libNameFrom = `${libName}.${options['icu-version']}.dylib`;
-            const libFrom = path.join(prefix, 'lib', libNameFrom);
-            const libNameTo = `agda-${options['agda-version']}-${libName}.dylib`;
-            const libTo = `@executable_path/../lib/${libNameTo}`;
-            yield util.installNameTool('-change', libFrom, libTo, agdaExePath);
-        }
-    });
-}
-exports.bundleForMacOS = bundleForMacOS;
-
-
-/***/ }),
-
-/***/ 908:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.bundleForWindows = exports.setupForWindows = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const glob = __importStar(__nccwpck_require__(8090));
-const os = __importStar(__nccwpck_require__(612));
-const path = __importStar(__nccwpck_require__(9411));
-const util = __importStar(__nccwpck_require__(4024));
-// Windows
-function setupForWindows(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Install pkg-config & ICU:
-        core.addPath('C:\\msys64\\mingw64\\bin');
-        core.addPath('C:\\msys64\\usr\\bin');
-        yield util.pacman('-v', '--noconfirm', '-Sy', 'mingw-w64-x86_64-pkg-config', 'mingw-w64-x86_64-icu');
-        // Find the ICU version:
-        options['icu-version'] = yield util.pkgConfigGetVersion('icu-i18n');
-        // Add extra-{include,lib}-dirs:
-        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'includedir')));
-        // NOTE:
-        //   The libdir (C:\msys64\mingw64\lib) only contains libicu*.dll.a,
-        //   not libicu*.dll. I'm not sure what the .dll.a files are?
-        for (const libDir of yield icuGetLibDirs())
-            options['extra-lib-dirs'].push(libDir);
-        // Print ICU package info:
-        try {
-            core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-io')));
-        }
-        catch (error) {
-            core.info(util.ensureError(error).message);
-        }
-    });
-}
-exports.setupForWindows = setupForWindows;
-function bundleForWindows(distDir, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (options['icu-version'] === undefined)
-            throw Error('No ICU version');
-        core.info(`Bundle ICU version ${options['icu-version']}`);
-        const libVerMaj = util.simver.major(options['icu-version']);
-        const libDirsFrom = yield icuGetLibDirs();
-        const libFromPatterns = [...libDirsFrom]
-            .flatMap(libDir => ['libicuin', 'libicuuc', 'libicudt', 'libicuio'].flatMap(libName => path.join(libDir, `${libName}${libVerMaj}.dll`)))
-            .join(os.EOL);
-        core.info(`Searching with:${os.EOL}${libFromPatterns}`);
-        const libFromGlobber = yield glob.create(libFromPatterns);
-        const libsFrom = yield libFromGlobber.glob();
-        core.info(`Found libraries:${os.EOL}${libsFrom.join(os.EOL)}`);
-        // Copy library files
-        const libDirTo = path.join(distDir, 'bin');
-        core.info(`Copy ICU ${options['icu-version']} in ${libDirTo}`);
-        yield util.mkdirP(libDirTo);
-        for (const libFrom of libsFrom) {
-            const libName = path.basename(libFrom);
-            const libTo = path.join(libDirTo, libName);
-            // Copy the library:
-            yield util.cp(libFrom, libTo);
-        }
-    });
-}
-exports.bundleForWindows = bundleForWindows;
-function icuGetLibDirs() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const icuInLibDir = yield util.pkgConfigGetVariable('icu-i18n', 'libdir');
-        const icuUcLibDir = yield util.pkgConfigGetVariable('icu-uc', 'libdir');
-        const icuIoLibDir = yield util.pkgConfigGetVariable('icu-io', 'libdir');
-        return new Set([
-            'C:\\msys64\\mingw64\\bin',
-            'C:\\msys64\\usr\\bin',
-            core.toPlatformPath(icuInLibDir),
-            core.toPlatformPath(icuUcLibDir),
-            core.toPlatformPath(icuIoLibDir)
-        ]);
-    });
-}
-
-
-/***/ }),
-
-/***/ 4245:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const tc = __importStar(__nccwpck_require__(7784));
-const path = __importStar(__nccwpck_require__(9411));
-const opts = __importStar(__nccwpck_require__(1352));
-const util = __importStar(__nccwpck_require__(4024));
-function setup(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        switch (opts.platform) {
-            case 'linux':
-                return yield setupLinux(options);
-            case 'darwin':
-                return yield setupMacOS(options);
-            case 'win32':
-                return yield setupWindows(options);
-        }
-    });
-}
-exports["default"] = setup;
-function setupLinux(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const upxVersion = '3.96';
-        options['upx-version'] = upxVersion;
-        const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-amd64_linux.tar.xz`;
-        const upxDir = opts.setupAgdaCacheDir(path.join('upx', upxVersion));
-        const upxTar = yield tc.downloadTool(upxPkgUrl);
-        const upxDirTC = yield tc.extractTar(upxTar, upxDir, [
-            '--extract',
-            '--xz',
-            '--preserve-permissions',
-            '--strip-components=1'
-        ]);
-        return path.join(upxDirTC, 'upx');
-    });
-}
-function setupMacOS(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Ensure UPX is installed and is the correct version:
-        // NOTE: patch version '3.96_1' and (presumably) later versions are OK
-        let upxVersion = yield util.brewGetVersion('upx');
-        if (upxVersion === undefined)
-            yield util.brew('install', 'upx');
-        else if (util.simver.lt(upxVersion, '3.96_1'))
-            yield util.brew('upgrade', 'upx');
-        upxVersion = yield util.brewGetVersion('upx');
-        if (upxVersion === undefined)
-            throw Error(`Could not install UPX`);
-        options['upx-version'] = upxVersion;
-        return 'upx';
-    });
-}
-function setupWindows(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const upxVersion = '3.96';
-        options['upx-version'] = upxVersion;
-        const upxDir = opts.setupAgdaCacheDir(path.join('upx', upxVersion));
-        const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-win64.zip`;
-        const upxZip = yield tc.downloadTool(upxPkgUrl);
-        const upxDirTC = yield tc.extractZip(upxZip, upxDir);
-        return path.join(upxDirTC, `upx-${upxVersion}-win64`, 'upx');
-    });
-}
-
-
-/***/ }),
-
 /***/ 4024:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -3913,16 +3214,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.simver = exports.ensureError = void 0;
 __exportStar(__nccwpck_require__(9552), exports);
+__exportStar(__nccwpck_require__(8455), exports);
 var ensure_error_1 = __nccwpck_require__(1151);
 Object.defineProperty(exports, "ensureError", ({ enumerable: true, get: function () { return __importDefault(ensure_error_1).default; } }));
 __exportStar(__nccwpck_require__(4369), exports);
 __exportStar(__nccwpck_require__(1310), exports);
 __exportStar(__nccwpck_require__(6295), exports);
+__exportStar(__nccwpck_require__(9358), exports);
 __exportStar(__nccwpck_require__(5066), exports);
 __exportStar(__nccwpck_require__(8398), exports);
 __exportStar(__nccwpck_require__(1311), exports);
 __exportStar(__nccwpck_require__(7066), exports);
 exports.simver = __importStar(__nccwpck_require__(7609));
+__exportStar(__nccwpck_require__(6102), exports);
 
 
 /***/ }),
@@ -4198,6 +3502,94 @@ function configureEnvFor(installDir) {
     });
 }
 exports.configureEnvFor = configureEnvFor;
+
+
+/***/ }),
+
+/***/ 8455:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.cabalPlanLicenseReport = exports.cabalPlanSetup = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const path = __importStar(__nccwpck_require__(9411));
+const fs = __importStar(__nccwpck_require__(7561));
+const os = __importStar(__nccwpck_require__(612));
+const opts = __importStar(__nccwpck_require__(1352));
+const util = __importStar(__nccwpck_require__(4024));
+function cabalPlanSetup(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const cabalPlanVersion = '0.7.2.3';
+        options['cabal-plan-version'] = cabalPlanVersion;
+        const cabalPlanDir = opts.setupAgdaCacheDir(path.join('cabal-plan', cabalPlanVersion));
+        // Update cabal package index
+        yield util.cabal(['update']);
+        // Install cabal-plan to cabalPlanDir
+        yield util.mkdirP(cabalPlanDir);
+        yield util.cabal([
+            'install',
+            `cabal-plan-${cabalPlanVersion}`,
+            '-f+license-report',
+            '--ignore-project',
+            '--install-method=copy',
+            `--installdir=${cabalPlanDir}`,
+            '--overwrite-policy=always'
+        ]);
+        // Add the path to the cabal-plan executable to the PATH
+        core.addPath(cabalPlanDir);
+    });
+}
+exports.cabalPlanSetup = cabalPlanSetup;
+function cabalPlanLicenseReport(sourceDir, licenseDir) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const execOptions = { cwd: sourceDir };
+        for (const component of Object.keys(opts.agdaComponents)) {
+            // Get the short name for the component, e.g., Agda:exe:agda -> agda
+            const componentShortName = component.split(':').at(-1);
+            // Run `cabal-plan license-report`
+            core.info(`Generate license-report for ${componentShortName} in ${licenseDir}`);
+            const licenseReportPath = path.join(licenseDir, `license-report-${componentShortName}.md`);
+            const { output, errors } = yield util.getOutputAndErrors('cabal-plan', ['license-report', `--licensedir=${licenseDir}`, component], execOptions);
+            // Write the generated license report and warnings to a separate file:
+            fs.writeFileSync(licenseReportPath, [output, '## Warnings', errors ? errors : 'No warnings'].join(`${os.EOL}${os.EOL}`));
+        }
+    });
+}
+exports.cabalPlanLicenseReport = cabalPlanLicenseReport;
 
 
 /***/ }),
@@ -4856,6 +4248,510 @@ exports.brewGetVersion = brewGetVersion;
 
 /***/ }),
 
+/***/ 9358:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.icuWriteLicense = exports.icuBundle = exports.icuSetup = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const tc = __importStar(__nccwpck_require__(7784));
+const opts = __importStar(__nccwpck_require__(1352));
+const util = __importStar(__nccwpck_require__(4024));
+const path = __importStar(__nccwpck_require__(9411));
+const fs = __importStar(__nccwpck_require__(7561));
+const icu_1 = __importDefault(__nccwpck_require__(8457));
+const linux_1 = __nccwpck_require__(9866);
+const macos_1 = __nccwpck_require__(6608);
+const windows_1 = __nccwpck_require__(8986);
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
+function icuSetup(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        switch (opts.platform) {
+            case 'linux':
+                return yield (0, linux_1.setupForLinux)(options);
+            case 'darwin':
+                return yield (0, macos_1.setupForMacOS)(options);
+            case 'win32':
+                return yield (0, windows_1.setupForWindows)(options);
+        }
+    });
+}
+exports.icuSetup = icuSetup;
+// NOTE: This module hardcodes a number of assumptions about libicu which may
+//       not always be true, e.g., library name starts with 'libicu', binaries
+//       are linked against the major version on Linux and Windows but against
+//       the entire version on MacOS, the internal dependencies of ICU, etc.
+// NOTE: This module could be rewritten to be much closer to 'repairwheel' by
+//       maintaining a list of allowed libraries (like 'manylinux') and using
+//       `dumpbin`, `patchelf` and `otool` to find and bundle *all* libraries
+//       that aren't on that list.
+function icuBundle(distDir, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        switch (opts.platform) {
+            case 'linux':
+                return yield (0, linux_1.bundleForLinux)(distDir, options);
+            case 'darwin':
+                return yield (0, macos_1.bundleForMacOS)(distDir, options);
+            case 'win32':
+                return yield (0, windows_1.bundleForWindows)(distDir, options);
+        }
+    });
+}
+exports.icuBundle = icuBundle;
+function icuWriteLicense(licenseDir, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (options['icu-version'] === undefined)
+            throw Error(`Cannot download license: no ICU version specified`);
+        // Create the ICU license directory:
+        const icuLicenseDir = path.join(licenseDir, `icu-${options['icu-version']}`);
+        const icuLicenseFile = path.join(icuLicenseDir, `LICENSE`);
+        yield util.mkdirP(icuLicenseDir);
+        // Transform the ICU version, e.g., "71.1_1", to something we can use in the URL, such as "71-1"
+        const icuVersion = options['icu-version']
+            .trim()
+            .split('_')[0]
+            .replace('.', '-');
+        const licenseUrl = `https://raw.githubusercontent.com/unicode-org/icu/release-${icuVersion}/icu4c/LICENSE`;
+        // Download the license file:
+        try {
+            const icuLicenseFileTC = yield tc.downloadTool(licenseUrl, icuLicenseFile);
+            (0, node_assert_1.default)(icuLicenseFile === icuLicenseFileTC, `downloadTool saved license to ${icuLicenseFileTC}, not ${icuLicenseFile}`);
+        }
+        catch (error) {
+            // If anything goes wrong, write the backup license:
+            core.warning(util.ensureError(error));
+            fs.writeFileSync(icuLicenseFile, icu_1.default);
+        }
+    });
+}
+exports.icuWriteLicense = icuWriteLicense;
+
+
+/***/ }),
+
+/***/ 9866:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.bundleForLinux = exports.setupForLinux = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const glob = __importStar(__nccwpck_require__(8090));
+const os = __importStar(__nccwpck_require__(612));
+const path = __importStar(__nccwpck_require__(9411));
+const opts = __importStar(__nccwpck_require__(1352));
+const util = __importStar(__nccwpck_require__(4024));
+function setupForLinux(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Find the ICU version:
+        options['icu-version'] = yield util.pkgConfigGetVersion('icu-i18n');
+        // Add extra-{include,lib}-dirs:
+        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'includedir')));
+        options['extra-lib-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'libdir')));
+        // Print ICU package info:
+        try {
+            core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-i18n')));
+        }
+        catch (error) {
+            core.info(util.ensureError(error).message);
+        }
+    });
+}
+exports.setupForLinux = setupForLinux;
+function bundleForLinux(distDir, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (options['icu-version'] === undefined)
+            throw Error('No ICU version');
+        // Gather information
+        core.info(`Bundle ICU version ${options['icu-version']}`);
+        const libDirsFrom = new Set();
+        libDirsFrom.add(yield util.pkgConfigGetVariable('icu-i18n', 'libdir'));
+        libDirsFrom.add(yield util.pkgConfigGetVariable('icu-uc', 'libdir'));
+        const libFromPatterns = [...libDirsFrom]
+            .flatMap(libDir => ['libicui18n', 'libicuuc', 'libicudata'].flatMap(libName => path.join(libDir, `${libName}.so.${options['icu-version']}`)))
+            .join(os.EOL);
+        core.info(`Searching with:${os.EOL}${libFromPatterns}`);
+        const libFromGlobber = yield glob.create(libFromPatterns);
+        const libsFrom = yield libFromGlobber.glob();
+        core.info(`Found libraries:${os.EOL}${libsFrom.join(os.EOL)}`);
+        // core.info(`Found ICU version ${options['icu-version']} at ${prefix}`)
+        const distLibDir = path.join(distDir, 'lib');
+        const distBinDir = path.join(distDir, 'bin');
+        // Copy library files & change their IDs
+        core.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
+        yield util.mkdirP(distLibDir);
+        for (const libFrom of libsFrom) {
+            const icuVersion = options['icu-version'].trim();
+            const libName = path.basename(libFrom, `.so.${icuVersion}`);
+            const libNameTo = `agda-${options['agda-version']}-${libName}.so`;
+            const libTo = path.join(distLibDir, libNameTo);
+            // Copy the library:
+            yield util.cp(libFrom, libTo);
+            // Change the library ID:
+            yield util.patchelf('--set-soname', libNameTo, libTo);
+        }
+        // Change internal dependencies between libraries:
+        const icuVerMaj = util.simver.major(options['icu-version']);
+        const libDepsToChange = [
+            ['libicui18n', ['libicuuc']],
+            ['libicuuc', ['libicudata']]
+        ];
+        for (const [libName, depNames] of libDepsToChange) {
+            const agdaVersion = options['agda-version'].trim();
+            const libNameTo = `agda-${agdaVersion}-${libName}.so`;
+            const libTo = path.join(distLibDir, libNameTo);
+            for (const depName of depNames) {
+                const depFrom = `${depName}.so.${icuVerMaj}`;
+                const depTo = `agda-${agdaVersion}-${depName}.so`;
+                yield util.patchelf('--replace-needed', depFrom, depTo, libTo);
+            }
+            // NOTE: This overrides any previously set run path.
+            yield util.patchelf('--set-rpath', '$ORIGIN', libTo);
+        }
+        // Change dependencies on Agda executable:
+        const agdaExePath = path.join(distBinDir, opts.agdaComponents['Agda:exe:agda'].exe);
+        const binDepsToChange = ['libicui18n', 'libicuuc', 'libicudata'];
+        for (const depName of binDepsToChange) {
+            const depNameFrom = `${depName}.so.${icuVerMaj}`;
+            const depNameTo = `agda-${options['agda-version']}-${depName}.so`;
+            yield util.patchelf('--replace-needed', depNameFrom, depNameTo, agdaExePath);
+        }
+        // NOTE: This overrides any previously set run path.
+        yield util.patchelf('--set-rpath', '$ORIGIN/../lib', agdaExePath);
+    });
+}
+exports.bundleForLinux = bundleForLinux;
+
+
+/***/ }),
+
+/***/ 6608:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.bundleForMacOS = exports.setupForMacOS = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const path = __importStar(__nccwpck_require__(9411));
+const opts = __importStar(__nccwpck_require__(1352));
+const util = __importStar(__nccwpck_require__(4024));
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
+// MacOS
+function installDirForMacOS() {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield util.brew('--prefix', 'icu4c');
+    });
+}
+function setupForMacOS(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Ensure ICU is installed:
+        let icuVersion = yield util.brewGetVersion('icu4c');
+        core.info(`Found ICU version: ${icuVersion}`);
+        if (icuVersion === undefined) {
+            yield util.brew('install', 'icu4c');
+            icuVersion = yield util.brewGetVersion('icu4c');
+            core.info(`Installed ICU version: ${icuVersion}`);
+        }
+        if (icuVersion === undefined)
+            throw Error('Could not install icu4c');
+        // Find the ICU installation location:
+        const prefix = yield installDirForMacOS();
+        core.info(`Found ICU version ${icuVersion} at ${prefix}`);
+        // Add to PKG_CONFIG_PATH:
+        const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig');
+        util.addPkgConfigPath(pkgConfigDir);
+        // Find the ICU version:
+        options['icu-version'] = yield util.pkgConfigGetVersion('icu-i18n');
+        (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version reported by Homebrew differs from ICU version reported by pkg-config');
+        // Add extra-{include,lib}-dirs:
+        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'includedir')));
+        options['extra-lib-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'libdir')));
+        // Print ICU package info:
+        try {
+            core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-i18n')));
+        }
+        catch (error) {
+            core.info(util.ensureError(error).message);
+        }
+    });
+}
+exports.setupForMacOS = setupForMacOS;
+function bundleForMacOS(distDir, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (options['icu-version'] === undefined)
+            throw Error('No ICU version');
+        // Gather information
+        core.info(`Bundle ICU version ${options['icu-version']}`);
+        const prefix = yield installDirForMacOS();
+        core.info(`Found ICU version ${options['icu-version']} at ${prefix}`);
+        const distLibDir = path.join(distDir, 'lib');
+        const distBinDir = path.join(distDir, 'bin');
+        // Copy library files & change their IDs
+        core.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
+        yield util.mkdirP(distLibDir);
+        for (const libName of ['libicui18n', 'libicuuc', 'libicudata']) {
+            const libNameFrom = `${libName}.${options['icu-version']}.dylib`;
+            const libFrom = path.join(prefix, 'lib', libNameFrom);
+            const libNameTo = `agda-${options['agda-version']}-${libName}.dylib`;
+            const libTo = path.join(distLibDir, libNameTo);
+            // Copy the library:
+            yield util.cp(libFrom, libTo);
+            // Change the library ID:
+            yield util.installNameTool('-id', libNameTo, libTo);
+        }
+        // Change internal dependencies between libraries:
+        const icuVerMaj = util.simver.major(options['icu-version']);
+        const libDepsToChange = [
+            ['libicui18n', ['libicudata', 'libicuuc']],
+            ['libicuuc', ['libicudata']]
+        ];
+        for (const [libName, depNames] of libDepsToChange) {
+            const libNameTo = `agda-${options['agda-version']}-${libName}.dylib`;
+            const libTo = path.join(distLibDir, libNameTo);
+            for (const depName of depNames) {
+                const depFrom = `@loader_path/${depName}.${icuVerMaj}.dylib`;
+                const depTo = `@loader_path/agda-${options['agda-version']}-${depName}.dylib`;
+                yield util.installNameTool('-change', depFrom, depTo, libTo);
+            }
+        }
+        // Change dependencies on Agda executable:
+        const agdaExePath = path.join(distBinDir, opts.agdaComponents['Agda:exe:agda'].exe);
+        const binDepsToChange = ['libicui18n', 'libicuuc'];
+        for (const libName of binDepsToChange) {
+            const libNameFrom = `${libName}.${options['icu-version']}.dylib`;
+            const libFrom = path.join(prefix, 'lib', libNameFrom);
+            const libNameTo = `agda-${options['agda-version']}-${libName}.dylib`;
+            const libTo = `@executable_path/../lib/${libNameTo}`;
+            yield util.installNameTool('-change', libFrom, libTo, agdaExePath);
+        }
+    });
+}
+exports.bundleForMacOS = bundleForMacOS;
+
+
+/***/ }),
+
+/***/ 8986:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.bundleForWindows = exports.setupForWindows = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const glob = __importStar(__nccwpck_require__(8090));
+const os = __importStar(__nccwpck_require__(612));
+const path = __importStar(__nccwpck_require__(9411));
+const util = __importStar(__nccwpck_require__(4024));
+// Windows
+function setupForWindows(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Install pkg-config & ICU:
+        core.addPath('C:\\msys64\\mingw64\\bin');
+        core.addPath('C:\\msys64\\usr\\bin');
+        yield util.pacman('-v', '--noconfirm', '-Sy', 'mingw-w64-x86_64-pkg-config', 'mingw-w64-x86_64-icu');
+        // Find the ICU version:
+        options['icu-version'] = yield util.pkgConfigGetVersion('icu-i18n');
+        // Add extra-{include,lib}-dirs:
+        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'includedir')));
+        // NOTE:
+        //   The libdir (C:\msys64\mingw64\lib) only contains libicu*.dll.a,
+        //   not libicu*.dll. I'm not sure what the .dll.a files are?
+        for (const libDir of yield icuGetLibDirs())
+            options['extra-lib-dirs'].push(libDir);
+        // Print ICU package info:
+        try {
+            core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-io')));
+        }
+        catch (error) {
+            core.info(util.ensureError(error).message);
+        }
+    });
+}
+exports.setupForWindows = setupForWindows;
+function bundleForWindows(distDir, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (options['icu-version'] === undefined)
+            throw Error('No ICU version');
+        core.info(`Bundle ICU version ${options['icu-version']}`);
+        const libVerMaj = util.simver.major(options['icu-version']);
+        const libDirsFrom = yield icuGetLibDirs();
+        const libFromPatterns = [...libDirsFrom]
+            .flatMap(libDir => ['libicuin', 'libicuuc', 'libicudt', 'libicuio'].flatMap(libName => path.join(libDir, `${libName}${libVerMaj}.dll`)))
+            .join(os.EOL);
+        core.info(`Searching with:${os.EOL}${libFromPatterns}`);
+        const libFromGlobber = yield glob.create(libFromPatterns);
+        const libsFrom = yield libFromGlobber.glob();
+        core.info(`Found libraries:${os.EOL}${libsFrom.join(os.EOL)}`);
+        // Copy library files
+        const libDirTo = path.join(distDir, 'bin');
+        core.info(`Copy ICU ${options['icu-version']} in ${libDirTo}`);
+        yield util.mkdirP(libDirTo);
+        for (const libFrom of libsFrom) {
+            const libName = path.basename(libFrom);
+            const libTo = path.join(libDirTo, libName);
+            // Copy the library:
+            yield util.cp(libFrom, libTo);
+        }
+    });
+}
+exports.bundleForWindows = bundleForWindows;
+function icuGetLibDirs() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const icuInLibDir = yield util.pkgConfigGetVariable('icu-i18n', 'libdir');
+        const icuUcLibDir = yield util.pkgConfigGetVariable('icu-uc', 'libdir');
+        const icuIoLibDir = yield util.pkgConfigGetVariable('icu-io', 'libdir');
+        return new Set([
+            'C:\\msys64\\mingw64\\bin',
+            'C:\\msys64\\usr\\bin',
+            core.toPlatformPath(icuInLibDir),
+            core.toPlatformPath(icuUcLibDir),
+            core.toPlatformPath(icuIoLibDir)
+        ]);
+    });
+}
+
+
+/***/ }),
+
 /***/ 9152:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -5307,6 +5203,109 @@ function max(versions) {
     return maxSimVer === null ? null : toString(maxSimVer);
 }
 exports.max = max;
+
+
+/***/ }),
+
+/***/ 6102:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.upxSetup = void 0;
+const tc = __importStar(__nccwpck_require__(7784));
+const path = __importStar(__nccwpck_require__(9411));
+const opts = __importStar(__nccwpck_require__(1352));
+const util = __importStar(__nccwpck_require__(4024));
+function upxSetup(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        switch (opts.platform) {
+            case 'linux':
+                return yield upxSetupForLinux(options);
+            case 'darwin':
+                return yield upxSetupForMacOS(options);
+            case 'win32':
+                return yield upxSetupForWindows(options);
+        }
+    });
+}
+exports.upxSetup = upxSetup;
+function upxSetupForLinux(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const upxVersion = '3.96';
+        options['upx-version'] = upxVersion;
+        const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-amd64_linux.tar.xz`;
+        const upxDir = opts.setupAgdaCacheDir(path.join('upx', upxVersion));
+        const upxTar = yield tc.downloadTool(upxPkgUrl);
+        const upxDirTC = yield tc.extractTar(upxTar, upxDir, [
+            '--extract',
+            '--xz',
+            '--preserve-permissions',
+            '--strip-components=1'
+        ]);
+        return path.join(upxDirTC, 'upx');
+    });
+}
+function upxSetupForMacOS(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Ensure UPX is installed and is the correct version:
+        // NOTE: patch version '3.96_1' and (presumably) later versions are OK
+        let upxVersion = yield util.brewGetVersion('upx');
+        if (upxVersion === undefined)
+            yield util.brew('install', 'upx');
+        else if (util.simver.lt(upxVersion, '3.96_1'))
+            yield util.brew('upgrade', 'upx');
+        upxVersion = yield util.brewGetVersion('upx');
+        if (upxVersion === undefined)
+            throw Error(`Could not install UPX`);
+        options['upx-version'] = upxVersion;
+        return 'upx';
+    });
+}
+function upxSetupForWindows(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const upxVersion = '3.96';
+        options['upx-version'] = upxVersion;
+        const upxDir = opts.setupAgdaCacheDir(path.join('upx', upxVersion));
+        const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-win64.zip`;
+        const upxZip = yield tc.downloadTool(upxPkgUrl);
+        const upxDirTC = yield tc.extractZip(upxZip, upxDir);
+        return path.join(upxDirTC, `upx-${upxVersion}-win64`, 'upx');
+    });
+}
 
 
 /***/ }),

@@ -6,8 +6,6 @@ import * as os from 'node:os'
 import * as path from 'node:path'
 import pick from 'object.pick'
 import * as opts from '../opts'
-import * as icu from '../setup-icu'
-import setupUpx from '../setup-upx'
 import * as util from '../util'
 
 export default async function uploadBdist(
@@ -29,13 +27,13 @@ export default async function uploadBdist(
 
   // Bundle libraries:
   if (options['icu-version'] !== undefined) {
-    await icu.bundle(bdistDir, options)
+    await util.icuBundle(bdistDir, options)
   }
 
   // Compress binaries:
   if (options['bdist-compress-exe']) {
     try {
-      const upxExe = await setupUpx(options)
+      const upxExe = await util.upxSetup(options)
       for (const component of Object.values(opts.agdaComponents))
         await compressBin(upxExe, path.join(bdistDir, 'bin', component.exe))
     } catch (error) {
