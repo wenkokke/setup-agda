@@ -3038,9 +3038,8 @@ function uploadBdist(installDir, options) {
         if (options['bdist-license-report'])
             yield util.cpR(path.join(installDir, 'licenses'), bdistDir);
         // Bundle libraries:
-        if (options['icu-version'] !== undefined) {
+        if (options['icu-version'] !== undefined)
             yield util.icuBundle(bdistDir, options);
-        }
         // Compress binaries:
         if (options['bdist-compress-exe']) {
             try {
