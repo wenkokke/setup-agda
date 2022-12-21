@@ -128,7 +128,7 @@ export default async function buildFromSource(
       // Install cabal-plan:
       await cabalPlan.setup(options)
       // Generate license report:
-      licenseReport(sourceDir, installDir, options)
+      await licenseReport(sourceDir, installDir, options)
     })
   }
 

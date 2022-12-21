@@ -2208,7 +2208,7 @@ function buildFromSource(options) {
                 // Install cabal-plan:
                 yield cabalPlan.setup(options);
                 // Generate license report:
-                (0, license_report_1.default)(sourceDir, installDir, options);
+                yield (0, license_report_1.default)(sourceDir, installDir, options);
             }));
         }
         // 7. Test:
