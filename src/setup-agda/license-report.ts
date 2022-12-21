@@ -46,10 +46,16 @@ export default async function licenseReport(
   const licenseGlobber = await glob.create(path.join(licenseDir, '*', '*'))
   for await (const depLicenseFile of licenseGlobber.globGenerator()) {
     const depName = path.basename(path.dirname(depLicenseFile))
-    const depLicenseReadStream = fs.createReadStream(depLicenseFile)
+    licenseFileWriteStream.write(os.EOL)
+    licenseFileWriteStream.write(os.EOL)
+    licenseFileWriteStream.write(
+      '--------------------------------------------------------------------------------'
+    )
+    licenseFileWriteStream.write(os.EOL)
     licenseFileWriteStream.write(os.EOL)
     licenseFileWriteStream.write(depName)
     licenseFileWriteStream.write(os.EOL)
+    const depLicenseReadStream = fs.createReadStream(depLicenseFile)
     depLicenseReadStream.pipe(licenseFileWriteStream, {end: false})
   }
   // 3. Close licenseFileWriteStream

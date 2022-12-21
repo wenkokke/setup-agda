@@ -2937,10 +2937,14 @@ function licenseReport(sourceDir, installDir, options) {
                 try {
                     const depLicenseFile = _c;
                     const depName = path.basename(path.dirname(depLicenseFile));
-                    const depLicenseReadStream = fs.createReadStream(depLicenseFile);
+                    licenseFileWriteStream.write(os.EOL);
+                    licenseFileWriteStream.write(os.EOL);
+                    licenseFileWriteStream.write('--------------------------------------------------------------------------------');
+                    licenseFileWriteStream.write(os.EOL);
                     licenseFileWriteStream.write(os.EOL);
                     licenseFileWriteStream.write(depName);
                     licenseFileWriteStream.write(os.EOL);
+                    const depLicenseReadStream = fs.createReadStream(depLicenseFile);
                     depLicenseReadStream.pipe(licenseFileWriteStream, { end: false });
                 }
                 finally {
