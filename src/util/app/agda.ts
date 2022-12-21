@@ -1,3 +1,4 @@
+import * as logging from '../logging'
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import assert from 'node:assert'
@@ -48,7 +49,7 @@ export function registerAgdaLibrary(
   // Load the current libraries file:
   const oldLibraries = readLibrariesSync()
   if (oldLibraries.some(oldLibrary => oldLibrary.name === newLibrary.name))
-    core.warning(
+    logging.warning(
       `Agda libraries file already contains a copy of ${newLibrary.name}`
     )
   const newLibraries = [...oldLibraries, newLibrary]
@@ -81,12 +82,12 @@ export async function getAgdaSdist(
 
   const agdaVersion = options['agda-version']
   if (opts.isAgdaVersion(agdaVersion)) {
-    core.info(
+    logging.info(
       `Downloading source distribution for Agda ${agdaVersion} from Hackage`
     )
     return await getAgdaSdistFromHackage(agdaVersion)
   } else {
-    core.info(
+    logging.info(
       `Downloading source distribution for Agda ${agdaVersion} from GitHub`
     )
     return await getAgdaSdistFromGitHub(agdaVersion)
@@ -99,7 +100,7 @@ async function getAgdaSdistFromGitHub(
   agdaVersion: opts.AgdaGitRef
 ): Promise<string> {
   if (agdaVersion === 'HEAD') {
-    core.info(`Cloning from ${agdaGitUrl}`)
+    logging.info(`Cloning from ${agdaGitUrl}`)
     const sourceDir = opts.setupAgdaCacheDir('agda-HEAD')
     await exec.getOutput('git', [
       'clone',
@@ -214,9 +215,9 @@ export async function agdaTest(
   options?: exec.ExecOptions
 ): Promise<void> {
   const versionString = await agdaGetVersion(agdaOptions)
-  core.info(`Found Agda version ${versionString} on PATH`)
+  logging.info(`Found Agda version ${versionString} on PATH`)
   const dataDir = await agdaGetDataDir(agdaOptions)
-  core.info(`Found Agda data directory at ${dataDir}`)
+  logging.info(`Found Agda data directory at ${dataDir}`)
   const globber = await glob.create(
     path.join(dataDir, 'lib', 'prim', '**', '*.agda'),
     {
@@ -226,7 +227,7 @@ export async function agdaTest(
     }
   )
   for await (const agdaFile of globber.globGenerator()) {
-    core.info(`Compiling ${agdaFile}`)
+    logging.info(`Compiling ${agdaFile}`)
     await agda(['-v0', agdaFile], agdaOptions, {
       ...options,
       cwd: path.join(dataDir, 'lib', 'prim')
@@ -236,18 +237,18 @@ export async function agdaTest(
 
 export async function configureEnvFor(installDir: string): Promise<void> {
   const dataDir = path.join(installDir, 'data')
-  core.info(`Set Agda_datadir to ${dataDir}`)
+  logging.info(`Set Agda_datadir to ${dataDir}`)
   core.exportVariable('Agda_datadir', dataDir)
-  core.setOutput('agda-data-path', dataDir)
+  logging.setOutput('agda-data-path', dataDir)
   const binDir = path.join(installDir, 'bin')
-  core.info(`Add ${binDir} to PATH`)
+  logging.info(`Add ${binDir} to PATH`)
   core.addPath(binDir)
-  core.setOutput('agda-path', binDir)
-  core.setOutput(
+  logging.setOutput('agda-path', binDir)
+  logging.setOutput(
     'agda-exe',
     path.join(binDir, opts.agdaComponents['Agda:exe:agda'].exe)
   )
-  core.setOutput(
+  logging.setOutput(
     'agda-mode-exe',
     path.join(binDir, opts.agdaComponents['Agda:exe:agda-mode'].exe)
   )

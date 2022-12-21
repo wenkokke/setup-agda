@@ -1,4 +1,3 @@
-import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as path from 'node:path'
 import * as opts from '../opts'
@@ -17,7 +16,7 @@ export default async function installFromBdist(
         options['agda-version']
       ]
     if (bdistIndexEntry === undefined) {
-      core.info(
+      util.logging.info(
         [
           `Could not find binary distribution for`,
           `Agda ${options['agda-version']} on ${opts.arch}-${opts.platform}`
@@ -30,7 +29,7 @@ export default async function installFromBdist(
       // If needed, repair file permissions:
       await repairPermissions(bdistDir)
       // Test package:
-      core.info(`Testing Agda ${options['agda-version']} package`)
+      util.logging.info(`Testing Agda ${options['agda-version']} package`)
       try {
         await util.agdaTest({
           agdaExePath: path.join(
@@ -44,17 +43,17 @@ export default async function installFromBdist(
       } catch (error) {
         const warning = util.ensureError(error)
         warning.message = `Rejecting Agda ${options['agda-version']} package: ${warning.message}`
-        core.warning(warning)
+        util.logging.warning(warning)
         return null
       }
     } catch (error) {
-      core.warning(
+      util.logging.warning(
         `Failed to download package: ${util.ensureError(error).message}`
       )
       return null
     }
   } catch (error) {
-    core.warning(util.ensureError(error))
+    util.logging.warning(util.ensureError(error))
     return null
   }
 }
@@ -63,7 +62,7 @@ async function repairPermissions(bdistDir: string): Promise<void> {
   switch (opts.platform) {
     case 'linux': {
       // Repair file permissions
-      core.info('Repairing file permissions')
+      util.logging.info('Repairing file permissions')
       for (const component of Object.values(opts.agdaComponents)) {
         await util.chmod('+x', path.join(bdistDir, 'bin', component.exe))
       }
@@ -71,7 +70,7 @@ async function repairPermissions(bdistDir: string): Promise<void> {
     }
     case 'darwin': {
       // Repair file permissions
-      core.info('Repairing file permissions')
+      util.logging.info('Repairing file permissions')
       // Repair file permissions on executables
       for (const component of Object.values(opts.agdaComponents)) {
         await util.chmod('+x', path.join(bdistDir, 'bin', component.exe))

@@ -1,10 +1,10 @@
 import * as exec from '@actions/exec'
 import * as os from 'node:os'
 import * as path from 'node:path'
-import * as core from '@actions/core'
 import * as io from '@actions/io'
 import * as opts from '../opts'
 import ensureError from './ensure-error'
+import * as logging from '../util/logging'
 
 export {ExecOptions} from '@actions/exec'
 export {findInPath, which} from '@actions/io'
@@ -58,7 +58,7 @@ export async function cp(
 ): Promise<void> {
   source = escape(source)
   dest = escape(dest)
-  core.info(`cp ${source} ${dest}`)
+  logging.info(`cp ${source} ${dest}`)
   try {
     return await io.cp(source, dest, options)
   } catch (error) {
@@ -95,26 +95,26 @@ export async function mv(
 ): Promise<void> {
   source = escape(source)
   dest = escape(dest)
-  core.info(`mv ${source} ${dest}`)
+  logging.info(`mv ${source} ${dest}`)
   return await io.mv(source, dest, options)
 }
 
 export async function mkdirP(dir: string): Promise<void> {
   dir = escape(dir)
-  core.info(`mkdir -p ${dir}`)
+  logging.info(`mkdir -p ${dir}`)
   return await io.mkdirP(dir)
 }
 
 export async function rmRF(inputPath: string): Promise<void> {
   inputPath = escape(inputPath)
-  core.info(`rm -rf ${inputPath}`)
+  logging.info(`rm -rf ${inputPath}`)
   return await io.rmRF(inputPath)
 }
 
 export async function lsR(inputPath: string): Promise<string> {
   try {
     inputPath = escape(inputPath)
-    core.info(`ls -R ${inputPath}`)
+    logging.info(`ls -R ${inputPath}`)
     return await getOutput('ls', ['-R', inputPath])
   } catch (error) {
     return ensureError(error).message

@@ -1,19 +1,20 @@
-import * as core from '@actions/core'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as opts from '../../opts'
+import * as logging from '../logging'
 import {cabal} from './haskell'
 import {ExecOptions, getOutputAndErrors, mkdirP} from '../exec'
 
 export async function cabalPlanSetup(
   options: opts.BuildOptions
-): Promise<void> {
+): Promise<string> {
   const cabalPlanVersion = '0.7.2.3'
   options['cabal-plan-version'] = cabalPlanVersion
   const cabalPlanDir = opts.setupAgdaCacheDir(
     path.join('cabal-plan', cabalPlanVersion)
   )
+  logging.info(`Install cabal-plan ${cabalPlanVersion} to ${cabalPlanDir}`)
   // Update cabal package index
   await cabal(['update'])
   // Install cabal-plan to cabalPlanDir
@@ -27,11 +28,14 @@ export async function cabalPlanSetup(
     `--installdir=${cabalPlanDir}`,
     '--overwrite-policy=always'
   ])
-  // Add the path to the cabal-plan executable to the PATH
-  core.addPath(cabalPlanDir)
+  // Return the path to the cabal-plan executable:
+  return opts.platform === 'win32'
+    ? path.join(cabalPlanDir, 'cabal-plan.exe')
+    : path.join(cabalPlanDir, 'cabal-plan')
 }
 
 export async function cabalPlanLicenseReport(
+  cabalPlan: string,
   sourceDir: string,
   licenseDir: string
 ): Promise<void> {
@@ -41,7 +45,7 @@ export async function cabalPlanLicenseReport(
     const componentShortName = component.split(':').at(-1)
 
     // Run `cabal-plan license-report`
-    core.info(
+    logging.info(
       `Generate license-report for ${componentShortName} in ${licenseDir}`
     )
     const licenseReportPath = path.join(
@@ -49,7 +53,7 @@ export async function cabalPlanLicenseReport(
       `license-report-${componentShortName}.md`
     )
     const {output, errors} = await getOutputAndErrors(
-      'cabal-plan',
+      cabalPlan,
       ['license-report', `--licensedir=${licenseDir}`, component],
       execOptions
     )

@@ -1,4 +1,3 @@
-import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as path from 'node:path'
 import * as os from 'node:os'
@@ -12,7 +11,7 @@ export default async function setup(
   // Coerce string to {url: string; dir?: string; tag?: string}
   if (typeof dist === 'string') dist = {url: dist}
 
-  core.info(`Download from ${dist.url}`)
+  util.logging.info(`Download from ${dist.url}`)
   const tmpDir = await opts.downloadDist(dist)
   const agdaLibraryFiles = await findAgdaLibraryFiles(tmpDir)
   for (const agdaLibraryFile of agdaLibraryFiles) {
@@ -22,7 +21,7 @@ export default async function setup(
     const libraryExperimental = dist.tag === undefined
     const libraryRelativeDir =
       path.relative(tmpDir, libraryFrom) ?? 'repository root'
-    core.info(
+    util.logging.info(
       `Found ${libraryName} version ${libraryVersion} at ${libraryRelativeDir}`
     )
     const libraryTo = opts.agdaLibraryInstallDir(
@@ -30,13 +29,14 @@ export default async function setup(
       libraryVersion,
       libraryExperimental
     )
-    core.info(`Install ${libraryName} to ${libraryTo}`)
+    util.logging.info(`Install ${libraryName} to ${libraryTo}`)
     await util.mkdirP(path.dirname(libraryTo))
     await util.cpR(libraryFrom, libraryTo)
     // TODO: clean up libraryFrom
     const libraryIsDefault =
       options['agda-libraries-default'].includes(libraryName)
-    if (libraryIsDefault) core.info(`Register ${libraryName} as default`)
+    if (libraryIsDefault)
+      util.logging.info(`Register ${libraryName} as default`)
     util.registerAgdaLibrary(
       path.join(libraryTo, `${libraryName}.agda-lib`),
       libraryIsDefault

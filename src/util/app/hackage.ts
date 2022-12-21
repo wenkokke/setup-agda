@@ -1,4 +1,4 @@
-import * as core from '@actions/core'
+import * as logging from '../logging'
 import * as httpm from '@actions/http-client'
 import * as tc from '@actions/tool-cache'
 import assert from 'node:assert'
@@ -87,7 +87,7 @@ export async function getPackageInfo(
       headers['if-modified-since'] = packageInfoCache.lastModified
     }
     const resp = await httpClient.get(packageInfoUrl(packageName), headers)
-    core.info(
+    logging.info(
       `getPackageInfo: received '${resp.message.statusCode}: ${resp.message.statusMessage}' for package ${packageName}`
     )
     if (resp.message.statusCode === 200) {
@@ -108,7 +108,7 @@ export async function getPackageInfo(
         `${resp.message.statusCode}: ${resp.message.statusMessage}`
       ].join(os.EOL)
       if (returnCacheOnError !== true && packageInfoCache !== undefined) {
-        core.warning(errorMessage)
+        logging.warning(errorMessage)
         return packageInfoCache
       } else {
         throw Error(errorMessage)

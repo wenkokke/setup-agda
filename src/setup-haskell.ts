@@ -1,4 +1,3 @@
-import * as core from '@actions/core'
 import assert from 'node:assert'
 import pick from 'object.pick'
 import setupHaskell from 'setup-haskell'
@@ -18,7 +17,7 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
       })
     )
   )
-  core.setOutput('haskell-setup', 'true')
+  util.logging.setOutput('haskell-setup', 'true')
 
   // Update the GHC version:
   options['ghc-version'] = await util.ghcGetVersion(

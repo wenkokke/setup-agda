@@ -1,4 +1,4 @@
-import * as core from '@actions/core'
+import * as logging from '../util/logging'
 import * as yaml from 'js-yaml'
 import Mustache from 'mustache'
 import * as fs from 'node:fs'
@@ -6,12 +6,12 @@ import * as os from 'node:os'
 import * as path from 'node:path'
 import * as semver from 'semver'
 import ensureError from '../util/ensure-error'
-import * as plat from './platform'
+import * as exec from '../util/exec'
+import {splitLines} from '../util/lines'
+import {platform} from './platform'
 import resolveAgdaStdlibVersion from './resolve-agda-stdlib-version'
 import resolveAgdaVersion from './resolve-agda-version'
 import * as opts from './types'
-import * as exec from '../util/exec'
-import {splitLines} from '../util/lines'
 
 export default async function getOptions(
   inputs?:
@@ -23,7 +23,7 @@ export default async function getOptions(
   function getOption(k: opts.SetupAgdaOption): string {
     const rawInputValue = typeof inputs === 'function' ? inputs(k) : inputs?.[k]
     const inputValue = rawInputValue?.trim() ?? getDefault(k, actionYml) ?? ''
-    core.debug(`Input ${k}: ${rawInputValue} => ${inputValue}`)
+    logging.debug(`Input ${k}: ${rawInputValue} => ${inputValue}`)
     return inputValue
   }
   function getFlag(k: opts.SetupAgdaFlag): boolean {
@@ -35,7 +35,7 @@ export default async function getOptions(
       rawInputValue === '' ||
       rawInputValue === 'false'
     )
-    core.debug(`Input ${k}: ${rawInputValue} => ${inputValue}`)
+    logging.debug(`Input ${k}: ${rawInputValue} => ${inputValue}`)
     return inputValue
   }
   function getFlagPair(
@@ -196,10 +196,10 @@ export default async function getOptions(
     'agda-executables-list': agdaExecutablesList
   }
   // Print options:
-  core.info(
+  logging.info(
     [
       'Options:',
-      ...Object.entries({os: plat.platform, ...options}).map(entry => {
+      ...Object.entries({os: platform, ...options}).map(entry => {
         const [key, value] = entry
         return `- ${key}: ${JSON.stringify(value)}`
       })

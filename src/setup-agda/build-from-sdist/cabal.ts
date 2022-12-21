@@ -1,4 +1,3 @@
-import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
@@ -22,18 +21,18 @@ export async function build(
   await util.cabal(['update'])
 
   // Run `cabal configure`:
-  core.info(`Configure Agda-${options['agda-version']}`)
+  util.logging.info(`Configure Agda-${options['agda-version']}`)
   await util.cabal(['configure', ...buildFlags(options)], execOptions)
 
   // Run the pre-build hook:
   await opts.runPreBuildHook(options, execOptions)
 
   // Run `cabal build`:
-  core.info(`Build Agda-${options['agda-version']}`)
+  util.logging.info(`Build Agda-${options['agda-version']}`)
   await util.cabal(['build', 'exe:agda', 'exe:agda-mode'], execOptions)
 
   // Run `cabal install`:
-  core.info(`Install Agda-${options['agda-version']} to ${installDir}`)
+  util.logging.info(`Install Agda-${options['agda-version']} to ${installDir}`)
   const installBinDir = path.join(installDir, 'bin')
   await util.mkdirP(installBinDir)
   await util.cabal(
@@ -99,7 +98,7 @@ export async function supportedGhcVersions(
       if (semver.valid(match.groups.version) !== null) {
         versions.push(match.groups.version)
       } else {
-        core.warning(
+        util.logging.warning(
           `Could not parse GHC version '${match.groups.version}' in: ${cabalFilePath}`
         )
       }

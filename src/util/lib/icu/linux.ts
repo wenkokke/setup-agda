@@ -3,6 +3,7 @@ import * as glob from '@actions/glob'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import * as opts from '../../../opts'
+import * as logging from '../../logging'
 import {patchelf} from '../../app/patchelf'
 import {
   pkgConfigGetInfo,
@@ -27,9 +28,9 @@ export async function setupForLinux(options: opts.BuildOptions): Promise<void> {
 
   // Print ICU package info:
   try {
-    core.info(JSON.stringify(await pkgConfigGetInfo('icu-i18n')))
+    logging.info(JSON.stringify(await pkgConfigGetInfo('icu-i18n')))
   } catch (error) {
-    core.info(ensureError(error).message)
+    logging.info(ensureError(error).message)
   }
 }
 
@@ -40,7 +41,7 @@ export async function bundleForLinux(
   if (options['icu-version'] === undefined) throw Error('No ICU version')
 
   // Gather information
-  core.info(`Bundle ICU version ${options['icu-version']}`)
+  logging.info(`Bundle ICU version ${options['icu-version']}`)
   const libDirsFrom = new Set<string>()
   libDirsFrom.add(await pkgConfigGetVariable('icu-i18n', 'libdir'))
   libDirsFrom.add(await pkgConfigGetVariable('icu-uc', 'libdir'))
@@ -51,17 +52,17 @@ export async function bundleForLinux(
       )
     )
     .join(os.EOL)
-  core.info(`Searching with:${os.EOL}${libFromPatterns}`)
+  logging.info(`Searching with:${os.EOL}${libFromPatterns}`)
   const libFromGlobber = await glob.create(libFromPatterns)
   const libsFrom = await libFromGlobber.glob()
-  core.info(`Found libraries:${os.EOL}${libsFrom.join(os.EOL)}`)
+  logging.info(`Found libraries:${os.EOL}${libsFrom.join(os.EOL)}`)
 
-  // core.info(`Found ICU version ${options['icu-version']} at ${prefix}`)
+  // logging.info(`Found ICU version ${options['icu-version']} at ${prefix}`)
   const distLibDir = path.join(distDir, 'lib')
   const distBinDir = path.join(distDir, 'bin')
 
   // Copy library files & change their IDs
-  core.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`)
+  logging.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`)
   await mkdirP(distLibDir)
   for (const libFrom of libsFrom) {
     const icuVersion = options['icu-version'].trim()

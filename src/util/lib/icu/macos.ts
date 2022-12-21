@@ -1,4 +1,5 @@
 import * as core from '@actions/core'
+import * as logging from '../../logging'
 import * as path from 'node:path'
 import * as opts from '../../../opts'
 import assert from 'node:assert'
@@ -23,17 +24,17 @@ async function installDirForMacOS(): Promise<string> {
 export async function setupForMacOS(options: opts.BuildOptions): Promise<void> {
   // Ensure ICU is installed:
   let icuVersion = await brewGetVersion('icu4c')
-  core.info(`Found ICU version: ${icuVersion}`)
+  logging.info(`Found ICU version: ${icuVersion}`)
   if (icuVersion === undefined) {
     await brew('install', 'icu4c')
     icuVersion = await brewGetVersion('icu4c')
-    core.info(`Installed ICU version: ${icuVersion}`)
+    logging.info(`Installed ICU version: ${icuVersion}`)
   }
   if (icuVersion === undefined) throw Error('Could not install icu4c')
 
   // Find the ICU installation location:
   const prefix = await installDirForMacOS()
-  core.info(`Found ICU version ${icuVersion} at ${prefix}`)
+  logging.info(`Found ICU version ${icuVersion} at ${prefix}`)
 
   // Add to PKG_CONFIG_PATH:
   const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig')
@@ -56,9 +57,9 @@ export async function setupForMacOS(options: opts.BuildOptions): Promise<void> {
 
   // Print ICU package info:
   try {
-    core.info(JSON.stringify(await pkgConfigGetInfo('icu-i18n')))
+    logging.info(JSON.stringify(await pkgConfigGetInfo('icu-i18n')))
   } catch (error) {
-    core.info(ensureError(error).message)
+    logging.info(ensureError(error).message)
   }
 }
 
@@ -69,14 +70,14 @@ export async function bundleForMacOS(
   if (options['icu-version'] === undefined) throw Error('No ICU version')
 
   // Gather information
-  core.info(`Bundle ICU version ${options['icu-version']}`)
+  logging.info(`Bundle ICU version ${options['icu-version']}`)
   const prefix = await installDirForMacOS()
-  core.info(`Found ICU version ${options['icu-version']} at ${prefix}`)
+  logging.info(`Found ICU version ${options['icu-version']} at ${prefix}`)
   const distLibDir = path.join(distDir, 'lib')
   const distBinDir = path.join(distDir, 'bin')
 
   // Copy library files & change their IDs
-  core.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`)
+  logging.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`)
   await mkdirP(distLibDir)
   for (const libName of ['libicui18n', 'libicuuc', 'libicudata']) {
     const libNameFrom = `${libName}.${options['icu-version']}.dylib`

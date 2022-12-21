@@ -1,4 +1,3 @@
-import * as core from '@actions/core'
 import * as path from 'node:path'
 import * as opts from '../opts'
 import setupHaskell from '../setup-haskell'
@@ -32,17 +31,17 @@ export default async function buildFromSource(
   // If 'agda-version' is 'nightly' we must install from bdist:
   if (options['agda-version'] === 'nightly') return null
 
-  const buildInfo = await core.group(
+  const buildInfo = await util.logging.group(
     '🛠 Preparing to build Agda from source',
     async (): Promise<BuildInfo> => {
       // Download the source:
-      core.info('Download source distribution')
+      util.logging.info('Download source distribution')
       const sourceDir = await util.getAgdaSdist(options)
-      core.info(`Downloaded source distribution to ${sourceDir}`)
+      util.logging.info(`Downloaded source distribution to ${sourceDir}`)
 
       // Determine the build tool:
       const buildTool = options['enable-stack'] ? stack : cabal
-      core.info(`Set build tool to ${buildTool.name}`)
+      util.logging.info(`Set build tool to ${buildTool.name}`)
 
       // Determine the GHC version:
       const currentGhcVersion = await util.ghcMaybeGetVersion()
@@ -61,7 +60,7 @@ export default async function buildFromSource(
         options['ghc-version'] !== 'latest' &&
         options['ghc-version'] !== currentGhcVersion
       ) {
-        core.info(
+        util.logging.info(
           `Building with specified options requires a different GHC version`
         )
         requireSetup = true
@@ -70,13 +69,13 @@ export default async function buildFromSource(
         options['cabal-version'] !== 'latest' &&
         options['cabal-version'] !== currentCabalVersion
       ) {
-        core.info(
+        util.logging.info(
           `Building with specified options requires a different Cabal version`
         )
         requireSetup = true
       }
       if (options['enable-stack']) {
-        core.info(`Building with specified options requires Stack`)
+        util.logging.info(`Building with specified options requires Stack`)
         requireSetup = true
       }
       return {
@@ -91,17 +90,19 @@ export default async function buildFromSource(
 
   // 3. Setup GHC via <haskell/actions/setup>:
   if (buildInfo.requireSetup) {
-    core.info('📞 Calling "haskell/actions/setup"')
+    util.logging.info('📞 Calling "haskell/actions/setup"')
     await setupHaskell(options)
   }
 
   // 4. Install ICU:
   if (opts.needsIcu(options)) {
-    await core.group('🔠 Installing ICU', async () => {
+    await util.logging.group('🔠 Installing ICU', async () => {
       try {
         await util.icuSetup(options)
       } catch (error) {
-        core.info('If this fails, try setting "disable-cluster-counting"')
+        util.logging.info(
+          'If this fails, try setting "disable-cluster-counting"'
+        )
         throw error
       }
     })
@@ -110,7 +111,7 @@ export default async function buildFromSource(
   // 5. Build:
   const installDir = opts.agdaInstallDir(options['agda-version'])
   const {buildTool, sourceDir, matchingGhcVersionsThatCanBuildAgda} = buildInfo
-  await core.group('🏗 Building Agda', async () => {
+  await util.logging.group('🏗 Building Agda', async () => {
     await buildTool.build(
       sourceDir,
       installDir,
@@ -122,16 +123,16 @@ export default async function buildFromSource(
 
   // 6. Generate license report:
   if (options['bdist-license-report']) {
-    await core.group('🪪 Generate license report', async () => {
+    await util.logging.group('🪪 Generate license report', async () => {
       // Install cabal-plan:
-      await util.cabalPlanSetup(options)
+      const cabalPlan = await util.cabalPlanSetup(options)
       // Generate license report:
-      await licenseReport(sourceDir, installDir, options)
+      await licenseReport(cabalPlan, sourceDir, installDir, options)
     })
   }
 
   // 7. Test:
-  await core.group('👩🏾‍🔬 Testing Agda build', async () => {
+  await util.logging.group('👩🏾‍🔬 Testing Agda build', async () => {
     const agdaExePath = path.join(
       installDir,
       'bin',
@@ -143,9 +144,9 @@ export default async function buildFromSource(
 
   // 8. If 'bdist-upload' is specified, upload as a package:
   if (options['bdist-upload']) {
-    await core.group('📦 Upload package', async () => {
+    await util.logging.group('📦 Upload package', async () => {
       const bdistName = await uploadBdist(installDir, options)
-      core.info(`Uploaded package as '${bdistName}'`)
+      util.logging.info(`Uploaded package as '${bdistName}'`)
     })
   }
   return installDir

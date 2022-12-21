@@ -1,5 +1,4 @@
 import * as artifact from '@actions/artifact'
-import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as Mustache from 'mustache'
 import * as os from 'node:os'
@@ -36,7 +35,7 @@ export default async function uploadBdist(
       for (const component of Object.values(opts.agdaComponents))
         await compressBin(upxExe, path.join(bdistDir, 'bin', component.exe))
     } catch (error) {
-      core.info(util.ensureError(error).message)
+      util.logging.info(util.ensureError(error).message)
     }
   }
 
@@ -72,7 +71,9 @@ export default async function uploadBdist(
 
   // Report any errors:
   if (uploadInfo.failedItems.length > 0) {
-    core.error(['Failed to upload:', ...uploadInfo.failedItems].join(os.EOL))
+    util.logging.error(
+      ['Failed to upload:', ...uploadInfo.failedItems].join(os.EOL)
+    )
   }
 
   // Return artifact name

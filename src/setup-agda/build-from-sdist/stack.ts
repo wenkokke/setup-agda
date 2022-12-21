@@ -1,4 +1,3 @@
-import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
@@ -41,7 +40,7 @@ export async function build(
 
   // Print the contents of stack.yaml:
   const stackYamlContents = fs.readFileSync(path.join(sourceDir, stackYaml))
-  core.info(`${stackYaml}:${os.EOL}${stackYamlContents}`)
+  util.logging.info(`${stackYaml}:${os.EOL}${stackYamlContents}`)
 
   // Configure, Build, and Install:
   const installBinDir = path.join(installDir, 'bin')
@@ -106,7 +105,7 @@ export async function supportedGhcVersions(
     if (semver.valid(version) !== null) {
       versions.push(version)
     } else {
-      core.warning(
+      util.logging.warning(
         `Could not parse GHC version '${version}' from ${stackYamlPath}`
       )
     }
@@ -141,7 +140,7 @@ async function findStackYaml(
     assert(ghcVersionWithStackYaml !== null)
   }
   const stackYamlName = `stack-${ghcVersionWithStackYaml}.yaml`
-  core.info(`stack: Using ${stackYamlName}`)
+  util.logging.info(`stack: Using ${stackYamlName}`)
   assert(fs.existsSync(path.join(sourceDir, stackYamlName)))
   return stackYamlName
 }
@@ -169,7 +168,7 @@ async function findAgdaBins(
     const agdaBinPaths = await agdaBinGlobber.glob()
     if (agdaBinPaths.length === 0) throw Error(`Could not find Agda binary`)
     else if (agdaBinPaths.length > 1)
-      core.warning(
+      util.logging.warning(
         `Found multiple Agda binaries:${os.EOL}${agdaBinPaths
           .map(p => `- ${p}`)
           .join(os.EOL)}`
@@ -185,7 +184,7 @@ async function findAgdaBins(
     const agdaModeBinPaths = await agdaModeBinGlobber.glob()
     if (agdaModeBinPaths.length === 0) throw Error(`Could not find Agda binary`)
     else if (agdaModeBinPaths.length > 1)
-      core.warning(
+      util.logging.warning(
         `Found multiple Agda binaries:${os.EOL}${agdaModeBinPaths
           .map(p => `- ${p}`)
           .join(os.EOL)}`
@@ -202,7 +201,7 @@ async function findAgdaBins(
     const agdaBinPaths = await agdaBinGlobber.glob()
     if (agdaBinPaths.length === 0) throw Error(`Could not find Agda binary`)
     else if (agdaBinPaths.length > 1)
-      core.warning(
+      util.logging.warning(
         `Found multiple Agda binaries:${os.EOL}${agdaBinPaths
           .map(p => `- ${p}`)
           .join(os.EOL)}`
@@ -218,7 +217,7 @@ async function findAgdaBins(
     const agdaModeBinPaths = await agdaModeBinGlobber.glob()
     if (agdaModeBinPaths.length === 0) throw Error(`Could not find Agda binary`)
     else if (agdaModeBinPaths.length > 1)
-      core.warning(
+      util.logging.warning(
         `Found multiple Agda binaries:${os.EOL}${agdaModeBinPaths
           .map(p => `- ${p}`)
           .join(os.EOL)}`

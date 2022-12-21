@@ -1,6 +1,6 @@
-import * as core from '@actions/core'
 import * as tc from '@actions/tool-cache'
 import * as opts from '../../opts'
+import * as logging from '../logging'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
 import icuLicense from '../../data/licenses/icu'
@@ -83,7 +83,7 @@ export async function icuWriteLicense(
     )
   } catch (error) {
     // If anything goes wrong, write the backup license:
-    core.warning(ensureError(error))
+    logging.warning(ensureError(error))
     fs.writeFileSync(icuLicenseFile, icuLicense)
   }
 }

@@ -1,4 +1,4 @@
-import * as core from '@actions/core'
+import * as logging from './logging'
 import * as os from 'node:os'
 import * as opts from '../opts'
 import ensureError from './ensure-error'
@@ -27,8 +27,8 @@ export async function printNeeded(binPath: string): Promise<void> {
         break
       }
     }
-    core.info(`Needed libraries:${os.EOL}${output}`)
+    logging.info(`Needed libraries:${os.EOL}${output}`)
   } catch (error) {
-    core.info(ensureError(error).message)
+    logging.info(ensureError(error).message)
   }
 }
