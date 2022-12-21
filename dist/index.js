@@ -2923,9 +2923,11 @@ function licenseReport(sourceDir, installDir, options) {
         yield util.cabalPlanLicenseReport(sourceDir, licenseDir);
         // Generate a single LICENSE file:
         const licenseFile = path.join(licenseDir, 'licenses.txt');
+        const licenseFileWriteStream = fs.createWriteStream(licenseFile, { flags: 'a' });
         // 1. Append the Agda license to $licenseFile:
-        const agdaLicense = fs.readFileSync(path.join(sourceDir, 'LICENSE'));
-        fs.appendFileSync(licenseFile, agdaLicense);
+        const agdaLicenseFileSource = path.join(sourceDir, 'LICENSE');
+        const agdaLicenseReadStream = fs.createReadStream(agdaLicenseFileSource);
+        agdaLicenseReadStream.pipe(licenseFileWriteStream, { end: false });
         // 2. Append the license for every other dependency to $licenseFile:
         const licenseGlobber = yield glob.create(path.join(licenseDir, '*', '*'));
         try {
@@ -2935,8 +2937,11 @@ function licenseReport(sourceDir, installDir, options) {
                 try {
                     const depLicenseFile = _c;
                     const depName = path.basename(path.dirname(depLicenseFile));
-                    const depLicense = fs.readFileSync(licenseFile);
-                    fs.appendFileSync(licenseFile, `${os.EOL}${depName}${os.EOL}${depLicense}`);
+                    const depLicenseReadStream = fs.createReadStream(depLicenseFile);
+                    licenseFileWriteStream.write(os.EOL);
+                    licenseFileWriteStream.write(depName);
+                    licenseFileWriteStream.write(os.EOL);
+                    depLicenseReadStream.pipe(licenseFileWriteStream, { end: false });
                 }
                 finally {
                     _d = true;
@@ -2950,12 +2955,14 @@ function licenseReport(sourceDir, installDir, options) {
             }
             finally { if (e_1) throw e_1.error; }
         }
-        // 3. Write the Agda license to $licenseDir/Agda-$agdaVersion/LICENSE
+        // 3. Close licenseFileWriteStream
+        licenseFileWriteStream.end();
+        // 4. Write the Agda license to $licenseDir/Agda-$agdaVersion/LICENSE
         core.info(`Copy Agda license to ${licenseDir}`);
         const agdaLicenseDir = path.join(licenseDir, `Agda-${options['agda-version']}`);
-        const agdaLicenseFile = path.join(agdaLicenseDir, 'LICENSE');
+        const agdaLicenseFileTarget = path.join(agdaLicenseDir, 'LICENSE');
         yield util.mkdirP(agdaLicenseDir);
-        fs.writeFileSync(agdaLicenseFile, agdaLicense);
+        yield util.cp(agdaLicenseFileSource, agdaLicenseFileTarget);
     });
 }
 exports["default"] = licenseReport;
