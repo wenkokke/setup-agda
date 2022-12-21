@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as path from 'node:path'
 import * as opts from '../opts'
-import setupCabalPlan from '../setup-cabal-plan'
+import * as cabalPlan from '../setup-cabal-plan'
 import setupHaskell from '../setup-haskell'
 import * as icu from '../setup-icu'
 import * as util from '../util'
@@ -108,52 +108,71 @@ export default async function buildFromSource(
     })
   }
 
-  // 5. Install cabal-plan:
-  if (options['bdist-license-report']) {
-    await core.group('🪪 Installing cabal-plan', async () => {
-      try {
-        await setupCabalPlan(options)
-      } catch (error) {
-        core.info('If this fails, try removing "bdist-license-report"')
-        throw error
-      }
-    })
-  }
-
   // 5. Build:
-  const agdaDir = opts.agdaInstallDir(options['agda-version'])
+  const installDir = opts.agdaInstallDir(options['agda-version'])
+  const {buildTool, sourceDir, matchingGhcVersionsThatCanBuildAgda} = buildInfo
   await core.group('🏗 Building Agda', async () => {
-    const {buildTool, sourceDir, matchingGhcVersionsThatCanBuildAgda} =
-      buildInfo
     await buildTool.build(
       sourceDir,
-      agdaDir,
+      installDir,
       options,
       matchingGhcVersionsThatCanBuildAgda
     )
-    await util.cpR(path.join(sourceDir, 'src', 'data'), agdaDir)
+    await util.cpR(path.join(sourceDir, 'src', 'data'), installDir)
   })
 
-  // 6. Test:
-  await core.group(
-    '👩🏾‍🔬 Testing Agda build',
-    async () =>
-      await util.agdaTest({
-        agdaExePath: path.join(
-          agdaDir,
-          'bin',
-          opts.agdaComponents['Agda:exe:agda'].exe
-        ),
-        agdaDataDir: path.join(agdaDir, 'data')
-      })
-  )
+  // 6. Generate license report:
+  if (options['bdist-license-report']) {
+    await core.group('🪪 Generate license report', async () => {
+      // Install cabal-plan:
+      await cabalPlan.setup(options)
+      // Generate license report:
+      licenseReport(sourceDir, installDir, options)
+    })
+  }
 
-  // 7. If 'bdist-upload' is specified, upload as a package:
+  // 7. Test:
+  await core.group('👩🏾‍🔬 Testing Agda build', async () => {
+    const agdaExePath = path.join(
+      installDir,
+      'bin',
+      opts.agdaComponents['Agda:exe:agda'].exe
+    )
+    const agdaDataDir = path.join(installDir, 'data')
+    await util.agdaTest({agdaExePath, agdaDataDir})
+  })
+
+  // 8. If 'bdist-upload' is specified, upload as a package:
   if (options['bdist-upload']) {
     await core.group('📦 Upload package', async () => {
-      const bdistName = await uploadBdist(agdaDir, options)
+      const bdistName = await uploadBdist(installDir, options)
       core.info(`Uploaded package as '${bdistName}'`)
     })
   }
-  return agdaDir
+  return installDir
+}
+
+async function licenseReport(
+  sourceDir: string,
+  installDir: string,
+  options: opts.BuildOptions
+): Promise<void> {
+  // Create the license directory:
+  const licenseDir = path.join(installDir, 'licenses')
+  await util.mkdirP(licenseDir)
+
+  // Copy the Agda license to $licenseDir/Agda-$agdaVersion/LICENSE:
+  core.info(`Copy Agda license to ${licenseDir}`)
+  const agdaLicenseDir = path.join(
+    licenseDir,
+    `Agda-${options['agda-version']}`
+  )
+  await util.mkdirP(agdaLicenseDir)
+  await util.cp(path.join(sourceDir, 'LICENSE'), agdaLicenseDir)
+
+  // Copy the ICU license to $licenseDir/icu-$icuVersion/LICENSE:
+  if (opts.needsIcu(options)) await icu.license(licenseDir, options)
+
+  // Run `cabal-plan license-report` to create a report of the licenses of Agda dependencies:
+  await cabalPlan.licenseReport(sourceDir, licenseDir)
 }

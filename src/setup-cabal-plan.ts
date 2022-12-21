@@ -1,9 +1,11 @@
 import * as core from '@actions/core'
 import * as path from 'node:path'
+import * as fs from 'node:fs'
+import * as os from 'node:os'
 import * as opts from './opts'
 import * as util from './util'
 
-export default async function setup(options: opts.BuildOptions): Promise<void> {
+export async function setup(options: opts.BuildOptions): Promise<void> {
   const cabalPlanVersion = '0.7.2.3'
   const cabalPlanDir = opts.setupAgdaCacheDir(
     path.join('cabal-plan', cabalPlanVersion)
@@ -23,4 +25,37 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
   ])
   // Add the path to the cabal-plan executable to the PATH
   core.addPath(cabalPlanDir)
+}
+
+export async function licenseReport(
+  sourceDir: string,
+  licenseDir: string
+): Promise<void> {
+  const execOptions: util.ExecOptions = {cwd: sourceDir}
+  for (const component of Object.keys(opts.agdaComponents)) {
+    // Get the short name for the component, e.g., Agda:exe:agda -> agda
+    const componentShortName = component.split(':').at(-1)
+
+    // Run `cabal-plan license-report`
+    core.info(
+      `Generate license-report for ${componentShortName} in ${licenseDir}`
+    )
+    const licenseReportPath = path.join(
+      licenseDir,
+      `license-report-${componentShortName}.md`
+    )
+    const {output, errors} = await util.getOutputAndErrors(
+      'cabal-plan',
+      ['license-report', `--licensedir=${licenseDir}`, component],
+      execOptions
+    )
+
+    // Write the generated license report and warnings to a separate file:
+    fs.writeFileSync(
+      licenseReportPath,
+      [output, '## Warnings', errors ? errors : 'No warnings'].join(
+        `${os.EOL}${os.EOL}`
+      )
+    )
+  }
 }

@@ -6,7 +6,6 @@ import * as path from 'node:path'
 import * as semver from 'semver'
 import * as opts from '../../opts'
 import * as util from '../../util'
-import setupCabalPlan from '../../setup-cabal-plan'
 
 export const name = 'cabal'
 
@@ -32,32 +31,6 @@ export async function build(
   // Run `cabal build`:
   core.info(`Build Agda-${options['agda-version']}`)
   await util.cabal(['build', 'exe:agda', 'exe:agda-mode'], execOptions)
-
-  // Install & Run `cabal-plan license-report`:
-  core.info(`Generate license-report in ${installDir}`)
-  const installLicenseDir = path.join(installDir, 'licenses')
-  await util.mkdirP(installLicenseDir)
-  const components = [
-    ['agda', 'Agda:exe:agda'],
-    ['agda-mode', 'Agda:exe:agda-mode']
-  ]
-  for (const [componentName, component] of components) {
-    const licenseReportPath = path.join(
-      installLicenseDir,
-      `license-report-${componentName}.md`
-    )
-    const {output, errors} = await util.getOutputAndErrors(
-      'cabal-plan',
-      ['license-report', `--licensedir=${installLicenseDir}`, component],
-      execOptions
-    )
-    fs.writeFileSync(
-      licenseReportPath,
-      [output, '## Warnings', errors ? errors : 'No warnings'].join(
-        `${os.EOL}${os.EOL}`
-      )
-    )
-  }
 
   // Run `cabal install`:
   core.info(`Install Agda-${options['agda-version']} to ${installDir}`)
