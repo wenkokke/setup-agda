@@ -60,15 +60,15 @@ export default async function getOptions(
   const agdaStdlibVersionSpec = getOption('agda-stdlib-version')
   if (!opts.isAgdaStdlibVersionSpec(agdaStdlibVersionSpec))
     throw Error(
-      `Unsupported value for input 'agda-stdlib-version': '${agdaStdlibVersionSpec}'`
+      `Unsupported value for input \`agda-stdlib-version\`: '${agdaStdlibVersionSpec}'`
     )
   const agdaStdlibVersion: opts.AgdaStdlibVersion | 'experimental' | 'none' =
     resolveAgdaStdlibVersion(agdaVersion, agdaStdlibVersionSpec)
 
-  // Validate ghc-version-range:
+  // Check `ghc-version-range`:
   const ghcVersionRange = getOption('ghc-version-range')
   if (!semver.validRange(ghcVersionRange))
-    throw Error('Input "ghc-version-range" is not a valid version range')
+    throw Error('Input `ghc-version-range` is not a valid version range')
 
   // Check for contradictory options:
   const [forceBuild, forceNoBuild] = getFlagPair(
@@ -84,6 +84,18 @@ export default async function getOptions(
     'force-no-optimise-heavily'
   )
 
+  // Check compatibility for `bdist-license-report`:
+  const bdistLicenseReport = getFlag('bdist-license-report')
+  const enableStack = getFlag('enable-stack')
+  if (bdistLicenseReport && enableStack)
+    throw Error(
+      'Input `bdist-license-report` is incompatible with `enable-stack`'
+    )
+  if (bdistLicenseReport && forceNoBuild)
+    throw Error(
+      'Input `bdist-license-report` is incompatible with `force-no-build`'
+    )
+
   // Parse the bdist name:
   const bdistName = parseBdistName(getOption('bdist-name'))
   const bdistRetentionDays = getOption('bdist-retention-days')
@@ -91,8 +103,8 @@ export default async function getOptions(
   if (!(0 <= bdistRetentionDaysInt && bdistRetentionDaysInt <= 90))
     throw Error(
       [
-        `Input "bdist-rentention-days" must be a number between 0 and 90.`,
-        `Found "${bdistRetentionDays}".`
+        'Input `bdist-rentention-days` must be a number between 0 and 90.',
+        `Found '${bdistRetentionDays}'.`
       ].join(' ')
     )
 
@@ -122,7 +134,9 @@ export default async function getOptions(
     // Add standard-library to agda-libraries-dist:
     let dist = opts.agdaStdlibSdistIndex[agdaStdlibVersion]
     if (dist === undefined)
-      throw Error(`Unsupported agda-stdlib version ${agdaStdlibVersion}`)
+      throw Error(
+        `Unsupported value for input \`agda-stdlib-version\`: '${agdaStdlibVersion}'`
+      )
     if (typeof dist === 'string') dist = {url: dist}
     if (dist.tag === undefined) dist.tag = agdaStdlibVersion
     agdaLibrariesListSDist.push(dist)
@@ -142,7 +156,7 @@ export default async function getOptions(
 
   // Create build options:
   const options: opts.BuildOptions = {
-    // Specified in Agdaopts.SetupInputs
+    // Specified in opts.SetupAgdaInputs
     'agda-version': agdaVersion,
     'agda-stdlib-version': agdaStdlibVersion,
     'agda-stdlib-default': agdaStdlibDefault,
@@ -150,6 +164,7 @@ export default async function getOptions(
     'agda-defaults': agdaDefaults,
     'agda-executables': agdaExecutables,
     'bdist-compress-exe': getFlag('bdist-compress-exe'),
+    'bdist-license-report': getFlag('bdist-license-report'),
     'bdist-name': bdistName,
     'bdist-retention-days': bdistRetentionDays,
     'bdist-upload': getFlag('bdist-upload'),
@@ -163,10 +178,10 @@ export default async function getOptions(
     'ghc-version-range': ghcVersionRange,
     'pre-build-hook': getOption('pre-build-hook'),
 
-    // Specified in Haskellopts.SetupInputs
+    // Specified in opts.SetupHaskellInputs:
     'cabal-version': getOption('cabal-version'),
     'disable-matcher': getFlag('disable-matcher'),
-    'enable-stack': getFlag('enable-stack'),
+    'enable-stack': enableStack,
     'ghc-version': getOption('ghc-version'),
     'stack-no-global': getFlag('stack-no-global'),
     'stack-setup-ghc': getFlag('stack-setup-ghc'),

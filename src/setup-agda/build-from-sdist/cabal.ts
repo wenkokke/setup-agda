@@ -19,29 +19,30 @@ export async function build(
   const execOptions: util.ExecOptions = {cwd: sourceDir}
 
   // Run `cabal update`
-  await util.cabal(['v2-update'])
+  await util.cabal(['update'])
 
   // Run `cabal configure`:
   core.info(`Configure Agda-${options['agda-version']}`)
-  await util.cabal(['v2-configure', ...buildFlags(options)], execOptions)
+  await util.cabal(['configure', ...buildFlags(options)], execOptions)
 
   // Run the pre-build hook:
   await opts.runPreBuildHook(options, execOptions)
 
   // Run `cabal build`:
   core.info(`Build Agda-${options['agda-version']}`)
-  await util.cabal(['v2-build', 'exe:agda', 'exe:agda-mode'], execOptions)
+  await util.cabal(['build', 'exe:agda', 'exe:agda-mode'], execOptions)
 
   // Run `cabal install`:
   core.info(`Install Agda-${options['agda-version']} to ${installDir}`)
-  await util.mkdirP(path.join(installDir, 'bin'))
+  const installBinDir = path.join(installDir, 'bin')
+  await util.mkdirP(installBinDir)
   await util.cabal(
     [
-      'v2-install',
+      'install',
       'exe:agda',
       'exe:agda-mode',
       '--install-method=copy',
-      `--installdir=${path.join(installDir, 'bin')}`
+      `--installdir=${installBinDir}`
     ],
     execOptions
   )

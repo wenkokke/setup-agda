@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as path from 'node:path'
-import * as opts from '../opts'
-import * as util from '../util'
+import * as opts from '../../opts'
+import * as util from '../../util'
 import assert from 'node:assert'
 
 // MacOS
@@ -30,7 +30,7 @@ export async function setupForMacOS(options: opts.BuildOptions): Promise<void> {
   util.addPkgConfigPath(pkgConfigDir)
 
   // Find the ICU version:
-  options['icu-version'] = await util.pkgConfig('--modversion', 'icu-i18n')
+  options['icu-version'] = await util.pkgConfigGetVersion('icu-i18n')
   assert(
     icuVersion === options['icu-version'],
     'ICU version reported by Homebrew differs from ICU version reported by pkg-config'
@@ -39,13 +39,11 @@ export async function setupForMacOS(options: opts.BuildOptions): Promise<void> {
   // Add extra-{include,lib}-dirs:
   options['extra-include-dirs'].push(
     core.toPlatformPath(
-      await util.pkgConfig('--variable', 'includedir', 'icu-i18n')
+      await util.pkgConfigGetVariable('icu-i18n', 'includedir')
     )
   )
   options['extra-lib-dirs'].push(
-    core.toPlatformPath(
-      await util.pkgConfig('--variable', 'libdir', 'icu-i18n')
-    )
+    core.toPlatformPath(await util.pkgConfigGetVariable('icu-i18n', 'libdir'))
   )
 
   // Print ICU package info:

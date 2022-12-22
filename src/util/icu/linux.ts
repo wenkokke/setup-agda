@@ -3,23 +3,21 @@ import * as glob from '@actions/glob'
 
 import * as os from 'node:os'
 import * as path from 'node:path'
-import * as opts from '../opts'
-import * as util from '../util'
+import * as opts from '../../opts'
+import * as util from '../../util'
 
 export async function setupForLinux(options: opts.BuildOptions): Promise<void> {
   // Find the ICU version:
-  options['icu-version'] = await util.pkgConfig('--modversion', 'icu-i18n')
+  options['icu-version'] = await util.pkgConfigGetVersion('icu-i18n')
 
   // Add extra-{include,lib}-dirs:
   options['extra-include-dirs'].push(
     core.toPlatformPath(
-      await util.pkgConfig('--variable', 'includedir', 'icu-i18n')
+      await util.pkgConfigGetVariable('icu-i18n', 'includedir')
     )
   )
   options['extra-lib-dirs'].push(
-    core.toPlatformPath(
-      await util.pkgConfig('--variable', 'libdir', 'icu-i18n')
-    )
+    core.toPlatformPath(await util.pkgConfigGetVariable('icu-i18n', 'libdir'))
   )
 
   // Print ICU package info:
@@ -39,8 +37,8 @@ export async function bundleForLinux(
   // Gather information
   core.info(`Bundle ICU version ${options['icu-version']}`)
   const libDirsFrom = new Set<string>()
-  libDirsFrom.add(await util.pkgConfig('--variable', 'libdir', 'icu-i18n'))
-  libDirsFrom.add(await util.pkgConfig('--variable', 'libdir', 'icu-uc'))
+  libDirsFrom.add(await util.pkgConfigGetVariable('icu-i18n', 'libdir'))
+  libDirsFrom.add(await util.pkgConfigGetVariable('icu-uc', 'libdir'))
   const libFromPatterns = [...libDirsFrom]
     .flatMap<string>(libDir =>
       ['libicui18n', 'libicuuc', 'libicudata'].flatMap<string>(libName =>
@@ -61,7 +59,8 @@ export async function bundleForLinux(
   core.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`)
   await util.mkdirP(distLibDir)
   for (const libFrom of libsFrom) {
-    const libName = path.basename(libFrom, `.so.${options['icu-version']}`)
+    const icuVersion = options['icu-version'].trim()
+    const libName = path.basename(libFrom, `.so.${icuVersion}`)
     const libNameTo = `agda-${options['agda-version']}-${libName}.so`
     const libTo = path.join(distLibDir, libNameTo)
     // Copy the library:
@@ -77,11 +76,12 @@ export async function bundleForLinux(
     ['libicuuc', ['libicudata']]
   ]
   for (const [libName, depNames] of libDepsToChange) {
-    const libNameTo = `agda-${options['agda-version']}-${libName}.so`
+    const agdaVersion = options['agda-version'].trim()
+    const libNameTo = `agda-${agdaVersion}-${libName}.so`
     const libTo = path.join(distLibDir, libNameTo)
     for (const depName of depNames) {
       const depFrom = `${depName}.so.${icuVerMaj}`
-      const depTo = `agda-${options['agda-version']}-${depName}.so`
+      const depTo = `agda-${agdaVersion}-${depName}.so`
       await util.patchelf('--replace-needed', depFrom, depTo, libTo)
     }
     // NOTE: This overrides any previously set run path.

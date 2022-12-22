@@ -1,22 +1,20 @@
 import * as tc from '@actions/tool-cache'
 import * as path from 'node:path'
-import * as opts from './opts'
-import * as util from './util'
+import * as opts from '../opts'
+import * as util from '../util'
 
-export default async function setup(
-  options: opts.BuildOptions
-): Promise<string> {
+export async function upxSetup(options: opts.BuildOptions): Promise<string> {
   switch (opts.platform) {
     case 'linux':
-      return await setupLinux(options)
+      return await upxSetupForLinux(options)
     case 'darwin':
-      return await setupMacOS(options)
+      return await upxSetupForMacOS(options)
     case 'win32':
-      return await setupWindows(options)
+      return await upxSetupForWindows(options)
   }
 }
 
-async function setupLinux(options: opts.BuildOptions): Promise<string> {
+async function upxSetupForLinux(options: opts.BuildOptions): Promise<string> {
   const upxVersion = '3.96'
   options['upx-version'] = upxVersion
   const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-amd64_linux.tar.xz`
@@ -31,7 +29,7 @@ async function setupLinux(options: opts.BuildOptions): Promise<string> {
   return path.join(upxDirTC, 'upx')
 }
 
-async function setupMacOS(options: opts.BuildOptions): Promise<string> {
+async function upxSetupForMacOS(options: opts.BuildOptions): Promise<string> {
   // Ensure UPX is installed and is the correct version:
   // NOTE: patch version '3.96_1' and (presumably) later versions are OK
   let upxVersion = await util.brewGetVersion('upx')
@@ -44,7 +42,7 @@ async function setupMacOS(options: opts.BuildOptions): Promise<string> {
   return 'upx'
 }
 
-async function setupWindows(options: opts.BuildOptions): Promise<string> {
+async function upxSetupForWindows(options: opts.BuildOptions): Promise<string> {
   const upxVersion = '3.96'
   options['upx-version'] = upxVersion
   const upxDir = opts.setupAgdaCacheDir(path.join('upx', upxVersion))

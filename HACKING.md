@@ -1,3 +1,46 @@
+# How to add an input?
+
+There are two types of inputs: boolean flags and string options. Some of the steps below are conditional on which type of input you're specifying. These will be prefixed by (Flag) or (Option).
+
+1. Add the input to the `inputs` dictionary in `action.yml`:
+
+   - Create a new entry in `inputs` where the key is the option name.
+   - Add a description field. Descriptions are automatically included in the `README.md`, and can be styled using Markdown.
+   - Add `required: false`. No input should be mandatory.
+   - (Flag)
+     The default value is always false, do not specify `default`.
+   - (Option)
+     Specify a default value as `default: XXX`.
+
+2. Add the input to `BuildOptions` in `opts/types.ts`:
+
+   - (Flag)
+     Add the input name to the `SetupAgdaFlag` type in `opts/types.ts`; or
+   - (Option)
+     Add the input name to the `SetupAgdaOption` type in `opts/types.ts`.
+
+   The `SetupAgdaFlag` and `SetupAgdaOption` types are merged into the `SetupAgdaInputs` type, which is itself merged into `BuildOptions`.
+
+3. Set the input in the `getOptions` function in `opts/get-options.ts`:
+
+   Set the input in the defintion of `options` in the body of `getOptions`.
+   Options defined in `SetupAgdaInputs` are set in alphabetical order, under the following comment:
+
+   ```javascript
+   // Specified in opts.SetupAgdaInputs
+   ```
+
+   For most inputs, you can simply add the following line:
+
+   - (Flag)
+     Add `'flag-name': getFlag('flag-name'),` .
+   - (Option)
+     Add `'option-name': getOption('option-name'),`.
+
+   If your input needs validation or special handling, you can add this in the body of `getOptions` above the definition of the `options` object, _e.g._, as done for `agda-version`.
+
+4. Congratulations, you're done!
+
 # How does `setup-agda` work?
 
 `setup-agda` is a GitHub Action which downloads or builds various Agda

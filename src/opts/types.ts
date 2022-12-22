@@ -202,6 +202,7 @@ export type SetupAgdaOption =
 export type SetupAgdaFlag =
   | 'agda-stdlib-default'
   | 'bdist-compress-exe'
+  | 'bdist-license-report'
   | 'bdist-upload'
   | 'force-cluster-counting'
   | 'force-no-cluster-counting'
@@ -236,4 +237,5 @@ export interface BuildOptions extends SetupAgdaInputs {
   // Versions of other software:
   'icu-version'?: string
   'upx-version'?: string
+  'cabal-plan-version'?: string
 }

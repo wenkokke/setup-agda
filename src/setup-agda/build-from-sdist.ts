@@ -2,10 +2,10 @@ import * as core from '@actions/core'
 import * as path from 'node:path'
 import * as opts from '../opts'
 import setupHaskell from '../setup-haskell'
-import * as icu from '../setup-icu'
 import * as util from '../util'
 import * as cabal from './build-from-sdist/cabal'
 import * as stack from './build-from-sdist/stack'
+import licenseReport from './license-report'
 import uploadBdist from './upload-bdist'
 
 interface BuildTool {
@@ -99,7 +99,7 @@ export default async function buildFromSource(
   if (opts.needsIcu(options)) {
     await core.group('🔠 Installing ICU', async () => {
       try {
-        await icu.setup(options)
+        await util.icuSetup(options)
       } catch (error) {
         core.info('If this fails, try setting "disable-cluster-counting"')
         throw error
@@ -108,39 +108,45 @@ export default async function buildFromSource(
   }
 
   // 5. Build:
-  const agdaDir = opts.agdaInstallDir(options['agda-version'])
+  const installDir = opts.agdaInstallDir(options['agda-version'])
+  const {buildTool, sourceDir, matchingGhcVersionsThatCanBuildAgda} = buildInfo
   await core.group('🏗 Building Agda', async () => {
-    const {buildTool, sourceDir, matchingGhcVersionsThatCanBuildAgda} =
-      buildInfo
     await buildTool.build(
       sourceDir,
-      agdaDir,
+      installDir,
       options,
       matchingGhcVersionsThatCanBuildAgda
     )
-    await util.cpR(path.join(sourceDir, 'src', 'data'), agdaDir)
+    await util.cpR(path.join(sourceDir, 'src', 'data'), installDir)
   })
 
-  // 6. Test:
-  await core.group(
-    '👩🏾‍🔬 Testing Agda build',
-    async () =>
-      await util.agdaTest({
-        agdaExePath: path.join(
-          agdaDir,
-          'bin',
-          opts.agdaComponents['Agda:exe:agda'].exe
-        ),
-        agdaDataDir: path.join(agdaDir, 'data')
-      })
-  )
+  // 6. Generate license report:
+  if (options['bdist-license-report']) {
+    await core.group('🪪 Generate license report', async () => {
+      // Install cabal-plan:
+      await util.cabalPlanSetup(options)
+      // Generate license report:
+      await licenseReport(sourceDir, installDir, options)
+    })
+  }
 
-  // 7. If 'bdist-upload' is specified, upload as a package:
+  // 7. Test:
+  await core.group('👩🏾‍🔬 Testing Agda build', async () => {
+    const agdaExePath = path.join(
+      installDir,
+      'bin',
+      opts.agdaComponents['Agda:exe:agda'].exe
+    )
+    const agdaDataDir = path.join(installDir, 'data')
+    await util.agdaTest({agdaExePath, agdaDataDir})
+  })
+
+  // 8. If 'bdist-upload' is specified, upload as a package:
   if (options['bdist-upload']) {
     await core.group('📦 Upload package', async () => {
-      const bdistName = await uploadBdist(agdaDir, options)
+      const bdistName = await uploadBdist(installDir, options)
       core.info(`Uploaded package as '${bdistName}'`)
     })
   }
-  return agdaDir
+  return installDir
 }

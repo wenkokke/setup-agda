@@ -1,6 +1,745 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 5875:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const license = `		   GNU LESSER GENERAL PUBLIC LICENSE
+Version 3, 29 June 2007
+
+Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
+Everyone is permitted to copy and distribute verbatim copies
+of this license document, but changing it is not allowed.
+
+
+This version of the GNU Lesser General Public License incorporates
+the terms and conditions of version 3 of the GNU General Public
+License, supplemented by the additional permissions listed below.
+
+0. Additional Definitions.
+
+As used herein, "this License" refers to version 3 of the GNU Lesser
+General Public License, and the "GNU GPL" refers to version 3 of the GNU
+General Public License.
+
+"The Library" refers to a covered work governed by this License,
+other than an Application or a Combined Work as defined below.
+
+An "Application" is any work that makes use of an interface provided
+by the Library, but which is not otherwise based on the Library.
+Defining a subclass of a class defined by the Library is deemed a mode
+of using an interface provided by the Library.
+
+A "Combined Work" is a work produced by combining or linking an
+Application with the Library.  The particular version of the Library
+with which the Combined Work was made is also called the "Linked
+Version".
+
+The "Minimal Corresponding Source" for a Combined Work means the
+Corresponding Source for the Combined Work, excluding any source code
+for portions of the Combined Work that, considered in isolation, are
+based on the Application, and not on the Linked Version.
+
+The "Corresponding Application Code" for a Combined Work means the
+object code and/or source code for the Application, including any data
+and utility programs needed for reproducing the Combined Work from the
+Application, but excluding the System Libraries of the Combined Work.
+
+1. Exception to Section 3 of the GNU GPL.
+
+You may convey a covered work under sections 3 and 4 of this License
+without being bound by section 3 of the GNU GPL.
+
+2. Conveying Modified Versions.
+
+If you modify a copy of the Library, and, in your modifications, a
+facility refers to a function or data to be supplied by an Application
+that uses the facility (other than as an argument passed when the
+facility is invoked), then you may convey a copy of the modified
+version:
+
+a) under this License, provided that you make a good faith effort to
+ensure that, in the event an Application does not supply the
+function or data, the facility still operates, and performs
+whatever part of its purpose remains meaningful, or
+
+b) under the GNU GPL, with none of the additional permissions of
+this License applicable to that copy.
+
+3. Object Code Incorporating Material from Library Header Files.
+
+The object code form of an Application may incorporate material from
+a header file that is part of the Library.  You may convey such object
+code under terms of your choice, provided that, if the incorporated
+material is not limited to numerical parameters, data structure
+layouts and accessors, or small macros, inline functions and templates
+(ten or fewer lines in length), you do both of the following:
+
+a) Give prominent notice with each copy of the object code that the
+Library is used in it and that the Library and its use are
+covered by this License.
+
+b) Accompany the object code with a copy of the GNU GPL and this license
+document.
+
+4. Combined Works.
+
+You may convey a Combined Work under terms of your choice that,
+taken together, effectively do not restrict modification of the
+portions of the Library contained in the Combined Work and reverse
+engineering for debugging such modifications, if you also do each of
+the following:
+
+a) Give prominent notice with each copy of the Combined Work that
+the Library is used in it and that the Library and its use are
+covered by this License.
+
+b) Accompany the Combined Work with a copy of the GNU GPL and this license
+document.
+
+c) For a Combined Work that displays copyright notices during
+execution, include the copyright notice for the Library among
+these notices, as well as a reference directing the user to the
+copies of the GNU GPL and this license document.
+
+d) Do one of the following:
+
+0) Convey the Minimal Corresponding Source under the terms of this
+License, and the Corresponding Application Code in a form
+suitable for, and under terms that permit, the user to
+recombine or relink the Application with a modified version of
+the Linked Version to produce a modified Combined Work, in the
+manner specified by section 6 of the GNU GPL for conveying
+Corresponding Source.
+
+1) Use a suitable shared library mechanism for linking with the
+Library.  A suitable mechanism is one that (a) uses at run time
+a copy of the Library already present on the user's computer
+system, and (b) will operate properly with a modified version
+of the Library that is interface-compatible with the Linked
+Version.
+
+e) Provide Installation Information, but only if you would otherwise
+be required to provide such information under section 6 of the
+GNU GPL, and only to the extent that such information is
+necessary to install and execute a modified version of the
+Combined Work produced by recombining or relinking the
+Application with a modified version of the Linked Version. (If
+you use option 4d0, the Installation Information must accompany
+the Minimal Corresponding Source and Corresponding Application
+Code. If you use option 4d1, you must provide the Installation
+Information in the manner specified by section 6 of the GNU GPL
+for conveying Corresponding Source.)
+
+5. Combined Libraries.
+
+You may place library facilities that are a work based on the
+Library side by side in a single library together with other library
+facilities that are not Applications and are not covered by this
+License, and convey such a combined library under terms of your
+choice, if you do both of the following:
+
+a) Accompany the combined library with a copy of the same work based
+on the Library, uncombined with any other library facilities,
+conveyed under the terms of this License.
+
+b) Give prominent notice with the combined library that part of it
+is a work based on the Library, and explaining where to find the
+accompanying uncombined form of the same work.
+
+6. Revised Versions of the GNU Lesser General Public License.
+
+The Free Software Foundation may publish revised and/or new versions
+of the GNU Lesser General Public License from time to time. Such new
+versions will be similar in spirit to the present version, but may
+differ in detail to address new problems or concerns.
+
+Each version is given a distinguishing version number. If the
+Library as you received it specifies that a certain numbered version
+of the GNU Lesser General Public License "or any later version"
+applies to it, you have the option of following the terms and
+conditions either of that published version or of any later version
+published by the Free Software Foundation. If the Library as you
+received it does not specify a version number of the GNU Lesser
+General Public License, you may choose any version of the GNU Lesser
+General Public License ever published by the Free Software Foundation.
+
+If the Library as you received it specifies that a proxy can decide
+whether future versions of the GNU Lesser General Public License shall
+apply, that proxy's public statement of acceptance of any version is
+permanent authorization for you to choose that version for the
+Library.`;
+exports["default"] = license;
+
+
+/***/ }),
+
+/***/ 8457:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const license = `UNICODE, INC. LICENSE AGREEMENT - DATA FILES AND SOFTWARE
+
+See Terms of Use <https://www.unicode.org/copyright.html>
+for definitions of Unicode Inc.’s Data Files and Software.
+
+NOTICE TO USER: Carefully read the following legal agreement.
+BY DOWNLOADING, INSTALLING, COPYING OR OTHERWISE USING UNICODE INC.'S
+DATA FILES ("DATA FILES"), AND/OR SOFTWARE ("SOFTWARE"),
+YOU UNEQUIVOCALLY ACCEPT, AND AGREE TO BE BOUND BY, ALL OF THE
+TERMS AND CONDITIONS OF THIS AGREEMENT.
+IF YOU DO NOT AGREE, DO NOT DOWNLOAD, INSTALL, COPY, DISTRIBUTE OR USE
+THE DATA FILES OR SOFTWARE.
+
+COPYRIGHT AND PERMISSION NOTICE
+
+Copyright © 1991-2022 Unicode, Inc. All rights reserved.
+Distributed under the Terms of Use in https://www.unicode.org/copyright.html.
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Unicode data files and any associated documentation
+(the "Data Files") or Unicode software and any associated documentation
+(the "Software") to deal in the Data Files or Software
+without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, and/or sell copies of
+the Data Files or Software, and to permit persons to whom the Data Files
+or Software are furnished to do so, provided that either
+(a) this copyright and permission notice appear with all copies
+of the Data Files or Software, or
+(b) this copyright and permission notice appear in associated
+Documentation.
+
+THE DATA FILES AND SOFTWARE ARE PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT OF THIRD PARTY RIGHTS.
+IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN THIS
+NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSEQUENTIAL
+DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THE DATA FILES OR SOFTWARE.
+
+Except as contained in this notice, the name of a copyright holder
+shall not be used in advertising or otherwise to promote the sale,
+use or other dealings in these Data Files or Software without prior
+written authorization of the copyright holder.
+
+----------------------------------------------------------------------
+
+Third-Party Software Licenses
+
+This section contains third-party software notices and/or additional
+terms for licensed third-party software components included within ICU
+libraries.
+
+----------------------------------------------------------------------
+
+ICU License - ICU 1.8.1 to ICU 57.1
+
+COPYRIGHT AND PERMISSION NOTICE
+
+Copyright (c) 1995-2016 International Business Machines Corporation and others
+All rights reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, and/or sell copies of the Software, and to permit persons
+to whom the Software is furnished to do so, provided that the above
+copyright notice(s) and this permission notice appear in all copies of
+the Software and that both the above copyright notice(s) and this
+permission notice appear in supporting documentation.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+OF THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+HOLDERS INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY
+SPECIAL INDIRECT OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER
+RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
+CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+Except as contained in this notice, the name of a copyright holder
+shall not be used in advertising or otherwise to promote the sale, use
+or other dealings in this Software without prior written authorization
+of the copyright holder.
+
+All trademarks and registered trademarks mentioned herein are the
+property of their respective owners.
+
+----------------------------------------------------------------------
+
+Chinese/Japanese Word Break Dictionary Data (cjdict.txt)
+
+ #     The Google Chrome software developed by Google is licensed under
+ # the BSD license. Other software included in this distribution is
+ # provided under other licenses, as set forth below.
+ #
+ #  The BSD License
+ #  http://opensource.org/licenses/bsd-license.php
+ #  Copyright (C) 2006-2008, Google Inc.
+ #
+ #  All rights reserved.
+ #
+ #  Redistribution and use in source and binary forms, with or without
+ # modification, are permitted provided that the following conditions are met:
+ #
+ #  Redistributions of source code must retain the above copyright notice,
+ # this list of conditions and the following disclaimer.
+ #  Redistributions in binary form must reproduce the above
+ # copyright notice, this list of conditions and the following
+ # disclaimer in the documentation and/or other materials provided with
+ # the distribution.
+ #  Neither the name of  Google Inc. nor the names of its
+ # contributors may be used to endorse or promote products derived from
+ # this software without specific prior written permission.
+ #
+ #
+ #  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ # CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ # INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ # MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ # DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ # LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ # CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ # SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ # BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ #
+ #
+ #  The word list in cjdict.txt are generated by combining three word lists
+ # listed below with further processing for compound word breaking. The
+ # frequency is generated with an iterative training against Google web
+ # corpora.
+ #
+ #  * Libtabe (Chinese)
+ #    - https://sourceforge.net/project/?group_id=1519
+ #    - Its license terms and conditions are shown below.
+ #
+ #  * IPADIC (Japanese)
+ #    - http://chasen.aist-nara.ac.jp/chasen/distribution.html
+ #    - Its license terms and conditions are shown below.
+ #
+ #  ---------COPYING.libtabe ---- BEGIN--------------------
+ #
+ #  /*
+ #   * Copyright (c) 1999 TaBE Project.
+ #   * Copyright (c) 1999 Pai-Hsiang Hsiao.
+ #   * All rights reserved.
+ #   *
+ #   * Redistribution and use in source and binary forms, with or without
+ #   * modification, are permitted provided that the following conditions
+ #   * are met:
+ #   *
+ #   * . Redistributions of source code must retain the above copyright
+ #   *   notice, this list of conditions and the following disclaimer.
+ #   * . Redistributions in binary form must reproduce the above copyright
+ #   *   notice, this list of conditions and the following disclaimer in
+ #   *   the documentation and/or other materials provided with the
+ #   *   distribution.
+ #   * . Neither the name of the TaBE Project nor the names of its
+ #   *   contributors may be used to endorse or promote products derived
+ #   *   from this software without specific prior written permission.
+ #   *
+ #   * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ #   * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ #   * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ #   * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ #   * REGENTS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ #   * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ #   * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ #   * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ #   * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ #   * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ #   * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ #   * OF THE POSSIBILITY OF SUCH DAMAGE.
+ #   */
+ #
+ #  /*
+ #   * Copyright (c) 1999 Computer Systems and Communication Lab,
+ #   *                    Institute of Information Science, Academia
+ #       *                    Sinica. All rights reserved.
+ #   *
+ #   * Redistribution and use in source and binary forms, with or without
+ #   * modification, are permitted provided that the following conditions
+ #   * are met:
+ #   *
+ #   * . Redistributions of source code must retain the above copyright
+ #   *   notice, this list of conditions and the following disclaimer.
+ #   * . Redistributions in binary form must reproduce the above copyright
+ #   *   notice, this list of conditions and the following disclaimer in
+ #   *   the documentation and/or other materials provided with the
+ #   *   distribution.
+ #   * . Neither the name of the Computer Systems and Communication Lab
+ #   *   nor the names of its contributors may be used to endorse or
+ #   *   promote products derived from this software without specific
+ #   *   prior written permission.
+ #   *
+ #   * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ #   * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ #   * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ #   * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ #   * REGENTS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ #   * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ #   * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ #   * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ #   * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ #   * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ #   * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ #   * OF THE POSSIBILITY OF SUCH DAMAGE.
+ #   */
+ #
+ #  Copyright 1996 Chih-Hao Tsai @ Beckman Institute,
+ #      University of Illinois
+ #  c-tsai4@uiuc.edu  http://casper.beckman.uiuc.edu/~c-tsai4
+ #
+ #  ---------------COPYING.libtabe-----END--------------------------------
+ #
+ #
+ #  ---------------COPYING.ipadic-----BEGIN-------------------------------
+ #
+ #  Copyright 2000, 2001, 2002, 2003 Nara Institute of Science
+ #  and Technology.  All Rights Reserved.
+ #
+ #  Use, reproduction, and distribution of this software is permitted.
+ #  Any copy of this software, whether in its original form or modified,
+ #  must include both the above copyright notice and the following
+ #  paragraphs.
+ #
+ #  Nara Institute of Science and Technology (NAIST),
+ #  the copyright holders, disclaims all warranties with regard to this
+ #  software, including all implied warranties of merchantability and
+ #  fitness, in no event shall NAIST be liable for
+ #  any special, indirect or consequential damages or any damages
+ #  whatsoever resulting from loss of use, data or profits, whether in an
+ #  action of contract, negligence or other tortuous action, arising out
+ #  of or in connection with the use or performance of this software.
+ #
+ #  A large portion of the dictionary entries
+ #  originate from ICOT Free Software.  The following conditions for ICOT
+ #  Free Software applies to the current dictionary as well.
+ #
+ #  Each User may also freely distribute the Program, whether in its
+ #  original form or modified, to any third party or parties, PROVIDED
+ #  that the provisions of Section 3 ("NO WARRANTY") will ALWAYS appear
+ #  on, or be attached to, the Program, which is distributed substantially
+ #  in the same form as set out herein and that such intended
+ #  distribution, if actually made, will neither violate or otherwise
+ #  contravene any of the laws and regulations of the countries having
+ #  jurisdiction over the User or the intended distribution itself.
+ #
+ #  NO WARRANTY
+ #
+ #  The program was produced on an experimental basis in the course of the
+ #  research and development conducted during the project and is provided
+ #  to users as so produced on an experimental basis.  Accordingly, the
+ #  program is provided without any warranty whatsoever, whether express,
+ #  implied, statutory or otherwise.  The term "warranty" used herein
+ #  includes, but is not limited to, any warranty of the quality,
+ #  performance, merchantability and fitness for a particular purpose of
+ #  the program and the nonexistence of any infringement or violation of
+ #  any right of any third party.
+ #
+ #  Each user of the program will agree and understand, and be deemed to
+ #  have agreed and understood, that there is no warranty whatsoever for
+ #  the program and, accordingly, the entire risk arising from or
+ #  otherwise connected with the program is assumed by the user.
+ #
+ #  Therefore, neither ICOT, the copyright holder, or any other
+ #  organization that participated in or was otherwise related to the
+ #  development of the program and their respective officials, directors,
+ #  officers and other employees shall be held liable for any and all
+ #  damages, including, without limitation, general, special, incidental
+ #  and consequential damages, arising out of or otherwise in connection
+ #  with the use or inability to use the program or any product, material
+ #  or result produced or otherwise obtained by using the program,
+ #  regardless of whether they have been advised of, or otherwise had
+ #  knowledge of, the possibility of such damages at any time during the
+ #  project or thereafter.  Each user will be deemed to have agreed to the
+ #  foregoing by his or her commencement of use of the program.  The term
+ #  "use" as used herein includes, but is not limited to, the use,
+ #  modification, copying and distribution of the program and the
+ #  production of secondary products from the program.
+ #
+ #  In the case where the program, whether in its original form or
+ #  modified, was distributed or delivered to or received by a user from
+ #  any person, organization or entity other than ICOT, unless it makes or
+ #  grants independently of ICOT any specific warranty to the user in
+ #  writing, such person, organization or entity, will also be exempted
+ #  from and not be held liable to the user for any such damages as noted
+ #  above as far as the program is concerned.
+ #
+ #  ---------------COPYING.ipadic-----END----------------------------------
+
+----------------------------------------------------------------------
+
+Lao Word Break Dictionary Data (laodict.txt)
+
+ # Copyright (C) 2016 and later: Unicode, Inc. and others.
+ # License & terms of use: http://www.unicode.org/copyright.html
+ # Copyright (c) 2015 International Business Machines Corporation
+ # and others. All Rights Reserved.
+ #
+ # Project: https://github.com/rober42539/lao-dictionary
+ # Dictionary: https://github.com/rober42539/lao-dictionary/laodict.txt
+ # License: https://github.com/rober42539/lao-dictionary/LICENSE.txt
+ #          (copied below)
+ #
+ #	This file is derived from the above dictionary version of Nov 22, 2020
+ #  ----------------------------------------------------------------------
+ #  Copyright (C) 2013 Brian Eugene Wilson, Robert Martin Campbell.
+ #  All rights reserved.
+ #
+ #  Redistribution and use in source and binary forms, with or without
+ #  modification, are permitted provided that the following conditions are met:
+ #
+ #  Redistributions of source code must retain the above copyright notice, this
+ #  list of conditions and the following disclaimer. Redistributions in binary
+ #  form must reproduce the above copyright notice, this list of conditions and
+ #  the following disclaimer in the documentation and/or other materials
+ #  provided with the distribution.
+ #
+ # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ # FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ # COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ # INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ # (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ # HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ # STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ # OF THE POSSIBILITY OF SUCH DAMAGE.
+ #  --------------------------------------------------------------------------
+
+----------------------------------------------------------------------
+
+Burmese Word Break Dictionary Data (burmesedict.txt)
+
+ #  Copyright (c) 2014 International Business Machines Corporation
+ #  and others. All Rights Reserved.
+ #
+ #  This list is part of a project hosted at:
+ #    github.com/kanyawtech/myanmar-karen-word-lists
+ #
+ #  --------------------------------------------------------------------------
+ #  Copyright (c) 2013, LeRoy Benjamin Sharon
+ #  All rights reserved.
+ #
+ #  Redistribution and use in source and binary forms, with or without
+ #  modification, are permitted provided that the following conditions
+ #  are met: Redistributions of source code must retain the above
+ #  copyright notice, this list of conditions and the following
+ #  disclaimer.  Redistributions in binary form must reproduce the
+ #  above copyright notice, this list of conditions and the following
+ #  disclaimer in the documentation and/or other materials provided
+ #  with the distribution.
+ #
+ #    Neither the name Myanmar Karen Word Lists, nor the names of its
+ #    contributors may be used to endorse or promote products derived
+ #    from this software without specific prior written permission.
+ #
+ #  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ #  CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ #  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ #  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ #  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
+ #  BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ #  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ #  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ #  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ #  ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+ #  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+ #  THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ #  SUCH DAMAGE.
+ #  --------------------------------------------------------------------------
+
+----------------------------------------------------------------------
+
+Time Zone Database
+
+  ICU uses the public domain data and code derived from Time Zone
+Database for its time zone support. The ownership of the TZ database
+is explained in BCP 175: Procedure for Maintaining the Time Zone
+Database section 7.
+
+ # 7.  Database Ownership
+ #
+ #    The TZ database itself is not an IETF Contribution or an IETF
+ #    document.  Rather it is a pre-existing and regularly updated work
+ #    that is in the public domain, and is intended to remain in the
+ #    public domain.  Therefore, BCPs 78 [RFC5378] and 79 [RFC3979] do
+ #    not apply to the TZ Database or contributions that individuals make
+ #    to it.  Should any claims be made and substantiated against the TZ
+ #    Database, the organization that is providing the IANA
+ #    Considerations defined in this RFC, under the memorandum of
+ #    understanding with the IETF, currently ICANN, may act in accordance
+ #    with all competent court orders.  No ownership claims will be made
+ #    by ICANN or the IETF Trust on the database or the code.  Any person
+ #    making a contribution to the database or code waives all rights to
+ #    future claims in that contribution or in the TZ Database.
+
+----------------------------------------------------------------------
+
+Google double-conversion
+
+Copyright 2006-2011, the V8 project authors. All rights reserved.
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+      copyright notice, this list of conditions and the following
+      disclaimer in the documentation and/or other materials provided
+      with the distribution.
+    * Neither the name of Google Inc. nor the names of its
+      contributors may be used to endorse or promote products derived
+      from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+----------------------------------------------------------------------
+
+File: aclocal.m4 (only for ICU4C)
+Section: pkg.m4 - Macros to locate and utilise pkg-config.
+
+
+Copyright © 2004 Scott James Remnant <scott@netsplit.com>.
+Copyright © 2012-2015 Dan Nicholson <dbn.lists@gmail.com>
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+
+As a special exception to the GNU General Public License, if you
+distribute this file as part of a program that contains a
+configuration script generated by Autoconf, you may include it under
+the same distribution terms that you use for the rest of that
+program.
+
+
+(The condition for the exception is fulfilled because
+ICU4C includes a configuration script generated by Autoconf,
+namely the \`configure\` script.)
+
+----------------------------------------------------------------------
+
+File: config.guess (only for ICU4C)
+
+
+This file is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <https://www.gnu.org/licenses/>.
+
+As a special exception to the GNU General Public License, if you
+distribute this file as part of a program that contains a
+configuration script generated by Autoconf, you may include it under
+the same distribution terms that you use for the rest of that
+program.  This Exception is an additional permission under section 7
+of the GNU General Public License, version 3 ("GPLv3").
+
+
+(The condition for the exception is fulfilled because
+ICU4C includes a configuration script generated by Autoconf,
+namely the \`configure\` script.)
+
+----------------------------------------------------------------------
+
+File: install-sh (only for ICU4C)
+
+
+Copyright 1991 by the Massachusetts Institute of Technology
+
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name of M.I.T. not be used in advertising or
+publicity pertaining to distribution of the software without specific,
+written prior permission.  M.I.T. makes no representations about the
+suitability of this software for any purpose.  It is provided "as is"
+without express or implied warranty.`;
+exports["default"] = license;
+
+
+/***/ }),
+
+/***/ 6127:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const license = `Copyright notice:
+
+(C) 1995-2022 Jean-loup Gailly and Mark Adler
+
+ This software is provided 'as-is', without any express or implied
+ warranty.  In no event will the authors be held liable for any damages
+ arising from the use of this software.
+
+ Permission is granted to anyone to use this software for any purpose,
+ including commercial applications, and to alter it and redistribute it
+ freely, subject to the following restrictions:
+
+ 1. The origin of this software must not be misrepresented; you must not
+    claim that you wrote the original software. If you use this software
+    in a product, an acknowledgment in the product documentation would be
+    appreciated but is not required.
+ 2. Altered source versions must be plainly marked as such, and must not be
+    misrepresented as being the original software.
+ 3. This notice may not be removed or altered from any source distribution.
+
+ Jean-loup Gailly        Mark Adler
+ jloup@gzip.org          madler@alumni.caltech.edu`;
+exports["default"] = license;
+
+
+/***/ }),
+
 /***/ 3109:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -528,24 +1267,31 @@ function getOptions(inputs, actionYml) {
         // Resolve agda-stdlib version:
         const agdaStdlibVersionSpec = getOption('agda-stdlib-version');
         if (!opts.isAgdaStdlibVersionSpec(agdaStdlibVersionSpec))
-            throw Error(`Unsupported value for input 'agda-stdlib-version': '${agdaStdlibVersionSpec}'`);
+            throw Error(`Unsupported value for input \`agda-stdlib-version\`: '${agdaStdlibVersionSpec}'`);
         const agdaStdlibVersion = (0, resolve_agda_stdlib_version_1.default)(agdaVersion, agdaStdlibVersionSpec);
-        // Validate ghc-version-range:
+        // Check `ghc-version-range`:
         const ghcVersionRange = getOption('ghc-version-range');
         if (!semver.validRange(ghcVersionRange))
-            throw Error('Input "ghc-version-range" is not a valid version range');
+            throw Error('Input `ghc-version-range` is not a valid version range');
         // Check for contradictory options:
         const [forceBuild, forceNoBuild] = getFlagPair('force-build', 'force-no-build');
         const [forceClusterCounting, forceNoClusterCounting] = getFlagPair('force-cluster-counting', 'force-no-cluster-counting');
         const [forceOptimiseHeavily, forceNoOptimiseHeavily] = getFlagPair('force-optimise-heavily', 'force-no-optimise-heavily');
+        // Check compatibility for `bdist-license-report`:
+        const bdistLicenseReport = getFlag('bdist-license-report');
+        const enableStack = getFlag('enable-stack');
+        if (bdistLicenseReport && enableStack)
+            throw Error('Input `bdist-license-report` is incompatible with `enable-stack`');
+        if (bdistLicenseReport && forceNoBuild)
+            throw Error('Input `bdist-license-report` is incompatible with `force-no-build`');
         // Parse the bdist name:
         const bdistName = parseBdistName(getOption('bdist-name'));
         const bdistRetentionDays = getOption('bdist-retention-days');
         const bdistRetentionDaysInt = parseInt(bdistRetentionDays);
         if (!(0 <= bdistRetentionDaysInt && bdistRetentionDaysInt <= 90))
             throw Error([
-                `Input "bdist-rentention-days" must be a number between 0 and 90.`,
-                `Found "${bdistRetentionDays}".`
+                'Input `bdist-rentention-days` must be a number between 0 and 90.',
+                `Found '${bdistRetentionDays}'.`
             ].join(' '));
         // Parse agda-libraries:
         const agdaLibraries = getOption('agda-libraries');
@@ -574,7 +1320,7 @@ function getOptions(inputs, actionYml) {
             // Add standard-library to agda-libraries-dist:
             let dist = opts.agdaStdlibSdistIndex[agdaStdlibVersion];
             if (dist === undefined)
-                throw Error(`Unsupported agda-stdlib version ${agdaStdlibVersion}`);
+                throw Error(`Unsupported value for input \`agda-stdlib-version\`: '${agdaStdlibVersion}'`);
             if (typeof dist === 'string')
                 dist = { url: dist };
             if (dist.tag === undefined)
@@ -597,7 +1343,7 @@ function getOptions(inputs, actionYml) {
         }
         // Create build options:
         const options = {
-            // Specified in Agdaopts.SetupInputs
+            // Specified in opts.SetupAgdaInputs
             'agda-version': agdaVersion,
             'agda-stdlib-version': agdaStdlibVersion,
             'agda-stdlib-default': agdaStdlibDefault,
@@ -605,6 +1351,7 @@ function getOptions(inputs, actionYml) {
             'agda-defaults': agdaDefaults,
             'agda-executables': agdaExecutables,
             'bdist-compress-exe': getFlag('bdist-compress-exe'),
+            'bdist-license-report': getFlag('bdist-license-report'),
             'bdist-name': bdistName,
             'bdist-retention-days': bdistRetentionDays,
             'bdist-upload': getFlag('bdist-upload'),
@@ -617,10 +1364,10 @@ function getOptions(inputs, actionYml) {
             'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
             'ghc-version-range': ghcVersionRange,
             'pre-build-hook': getOption('pre-build-hook'),
-            // Specified in Haskellopts.SetupInputs
+            // Specified in opts.SetupHaskellInputs:
             'cabal-version': getOption('cabal-version'),
             'disable-matcher': getFlag('disable-matcher'),
-            'enable-stack': getFlag('enable-stack'),
+            'enable-stack': enableStack,
             'ghc-version': getOption('ghc-version'),
             'stack-no-global': getFlag('stack-no-global'),
             'stack-setup-ghc': getFlag('stack-setup-ghc'),
@@ -1382,10 +2129,10 @@ const core = __importStar(__nccwpck_require__(2186));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const setup_haskell_1 = __importDefault(__nccwpck_require__(6933));
-const icu = __importStar(__nccwpck_require__(4173));
 const util = __importStar(__nccwpck_require__(4024));
 const cabal = __importStar(__nccwpck_require__(4772));
 const stack = __importStar(__nccwpck_require__(5674));
+const license_report_1 = __importDefault(__nccwpck_require__(4118));
 const upload_bdist_1 = __importDefault(__nccwpck_require__(3888));
 function buildFromSource(options) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -1438,7 +2185,7 @@ function buildFromSource(options) {
         if (opts.needsIcu(options)) {
             yield core.group('🔠 Installing ICU', () => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    yield icu.setup(options);
+                    yield util.icuSetup(options);
                 }
                 catch (error) {
                     core.info('If this fails, try setting "disable-cluster-counting"');
@@ -1447,27 +2194,35 @@ function buildFromSource(options) {
             }));
         }
         // 5. Build:
-        const agdaDir = opts.agdaInstallDir(options['agda-version']);
+        const installDir = opts.agdaInstallDir(options['agda-version']);
+        const { buildTool, sourceDir, matchingGhcVersionsThatCanBuildAgda } = buildInfo;
         yield core.group('🏗 Building Agda', () => __awaiter(this, void 0, void 0, function* () {
-            const { buildTool, sourceDir, matchingGhcVersionsThatCanBuildAgda } = buildInfo;
-            yield buildTool.build(sourceDir, agdaDir, options, matchingGhcVersionsThatCanBuildAgda);
-            yield util.cpR(path.join(sourceDir, 'src', 'data'), agdaDir);
+            yield buildTool.build(sourceDir, installDir, options, matchingGhcVersionsThatCanBuildAgda);
+            yield util.cpR(path.join(sourceDir, 'src', 'data'), installDir);
         }));
-        // 6. Test:
+        // 6. Generate license report:
+        if (options['bdist-license-report']) {
+            yield core.group('🪪 Generate license report', () => __awaiter(this, void 0, void 0, function* () {
+                // Install cabal-plan:
+                yield util.cabalPlanSetup(options);
+                // Generate license report:
+                yield (0, license_report_1.default)(sourceDir, installDir, options);
+            }));
+        }
+        // 7. Test:
         yield core.group('👩🏾‍🔬 Testing Agda build', () => __awaiter(this, void 0, void 0, function* () {
-            return yield util.agdaTest({
-                agdaExePath: path.join(agdaDir, 'bin', opts.agdaComponents['Agda:exe:agda'].exe),
-                agdaDataDir: path.join(agdaDir, 'data')
-            });
+            const agdaExePath = path.join(installDir, 'bin', opts.agdaComponents['Agda:exe:agda'].exe);
+            const agdaDataDir = path.join(installDir, 'data');
+            yield util.agdaTest({ agdaExePath, agdaDataDir });
         }));
-        // 7. If 'bdist-upload' is specified, upload as a package:
+        // 8. If 'bdist-upload' is specified, upload as a package:
         if (options['bdist-upload']) {
             yield core.group('📦 Upload package', () => __awaiter(this, void 0, void 0, function* () {
-                const bdistName = yield (0, upload_bdist_1.default)(agdaDir, options);
+                const bdistName = yield (0, upload_bdist_1.default)(installDir, options);
                 core.info(`Uploaded package as '${bdistName}'`);
             }));
         }
-        return agdaDir;
+        return installDir;
     });
 }
 exports["default"] = buildFromSource;
@@ -1529,24 +2284,25 @@ matchingGhcVersionsThatCanBuildAgda) {
     return __awaiter(this, void 0, void 0, function* () {
         const execOptions = { cwd: sourceDir };
         // Run `cabal update`
-        yield util.cabal(['v2-update']);
+        yield util.cabal(['update']);
         // Run `cabal configure`:
         core.info(`Configure Agda-${options['agda-version']}`);
-        yield util.cabal(['v2-configure', ...buildFlags(options)], execOptions);
+        yield util.cabal(['configure', ...buildFlags(options)], execOptions);
         // Run the pre-build hook:
         yield opts.runPreBuildHook(options, execOptions);
         // Run `cabal build`:
         core.info(`Build Agda-${options['agda-version']}`);
-        yield util.cabal(['v2-build', 'exe:agda', 'exe:agda-mode'], execOptions);
+        yield util.cabal(['build', 'exe:agda', 'exe:agda-mode'], execOptions);
         // Run `cabal install`:
         core.info(`Install Agda-${options['agda-version']} to ${installDir}`);
-        yield util.mkdirP(path.join(installDir, 'bin'));
+        const installBinDir = path.join(installDir, 'bin');
+        yield util.mkdirP(installBinDir);
         yield util.cabal([
-            'v2-install',
+            'install',
             'exe:agda',
             'exe:agda-mode',
             '--install-method=copy',
-            `--installdir=${path.join(installDir, 'bin')}`
+            `--installdir=${installBinDir}`
         ], execOptions);
     });
 }
@@ -2087,6 +2843,137 @@ exports["default"] = installFromToolCache;
 
 /***/ }),
 
+/***/ 4118:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
+const glob = __importStar(__nccwpck_require__(8090));
+const path = __importStar(__nccwpck_require__(9411));
+const fs = __importStar(__nccwpck_require__(7561));
+const os = __importStar(__nccwpck_require__(612));
+const opts = __importStar(__nccwpck_require__(1352));
+const gmp_1 = __importDefault(__nccwpck_require__(5875));
+const zlib_1 = __importDefault(__nccwpck_require__(6127));
+const util = __importStar(__nccwpck_require__(4024));
+function licenseReport(sourceDir, installDir, options) {
+    var _a, e_1, _b, _c;
+    return __awaiter(this, void 0, void 0, function* () {
+        // Create the license directory:
+        const licenseDir = path.join(installDir, 'licenses');
+        yield util.mkdirP(licenseDir);
+        // Copy the gmp license to $licenseDir/gmp/LICENSE:
+        const gmpLicenseDir = path.join(licenseDir, 'gmp');
+        const gmpLicenseFile = path.join(gmpLicenseDir, 'LICENSE');
+        yield util.mkdirP(gmpLicenseDir);
+        fs.writeFileSync(gmpLicenseFile, gmp_1.default);
+        // Copy the zlib license to $licenseDir/zlib/LICENSE:
+        const zlibLicenseDir = path.join(licenseDir, 'zlib');
+        const zlibLicenseFile = path.join(zlibLicenseDir, 'LICENSE');
+        yield util.mkdirP(zlibLicenseDir);
+        fs.writeFileSync(zlibLicenseFile, zlib_1.default);
+        // Copy the ICU license to $licenseDir/icu-$icuVersion/LICENSE:
+        if (opts.needsIcu(options))
+            yield util.icuWriteLicense(licenseDir, options);
+        // Run `cabal-plan license-report` to create a report of the licenses of Agda dependencies:
+        yield util.cabalPlanLicenseReport(sourceDir, licenseDir);
+        // Generate a single LICENSE file:
+        const licenseFile = path.join(licenseDir, 'licenses.txt');
+        const licenseFileWriteStream = fs.createWriteStream(licenseFile, { flags: 'a' });
+        // 1. Append the Agda license to $licenseFile:
+        const agdaLicenseFileSource = path.join(sourceDir, 'LICENSE');
+        const agdaLicenseReadStream = fs.createReadStream(agdaLicenseFileSource);
+        agdaLicenseReadStream.pipe(licenseFileWriteStream, { end: false });
+        // 2. Append the license for every other dependency to $licenseFile:
+        const licenseGlobber = yield glob.create(path.join(licenseDir, '*', '*'));
+        try {
+            for (var _d = true, _e = __asyncValues(licenseGlobber.globGenerator()), _f; _f = yield _e.next(), _a = _f.done, !_a;) {
+                _c = _f.value;
+                _d = false;
+                try {
+                    const depLicenseFile = _c;
+                    const depName = path.basename(path.dirname(depLicenseFile));
+                    licenseFileWriteStream.write(os.EOL);
+                    licenseFileWriteStream.write(os.EOL);
+                    licenseFileWriteStream.write('--------------------------------------------------------------------------------');
+                    licenseFileWriteStream.write(os.EOL);
+                    licenseFileWriteStream.write(os.EOL);
+                    licenseFileWriteStream.write(depName);
+                    licenseFileWriteStream.write(os.EOL);
+                    const depLicenseReadStream = fs.createReadStream(depLicenseFile);
+                    depLicenseReadStream.pipe(licenseFileWriteStream, { end: false });
+                }
+                finally {
+                    _d = true;
+                }
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (!_d && !_a && (_b = _e.return)) yield _b.call(_e);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        // 3. Close licenseFileWriteStream
+        licenseFileWriteStream.end();
+        // 4. Write the Agda license to $licenseDir/Agda-$agdaVersion/LICENSE
+        core.info(`Copy Agda license to ${licenseDir}`);
+        const agdaLicenseDir = path.join(licenseDir, `Agda-${options['agda-version']}`);
+        const agdaLicenseFileTarget = path.join(agdaLicenseDir, 'LICENSE');
+        yield util.mkdirP(agdaLicenseDir);
+        yield util.cp(agdaLicenseFileSource, agdaLicenseFileTarget);
+    });
+}
+exports["default"] = licenseReport;
+
+
+/***/ }),
+
 /***/ 3888:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -2137,8 +3024,6 @@ const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
 const object_pick_1 = __importDefault(__nccwpck_require__(9962));
 const opts = __importStar(__nccwpck_require__(1352));
-const icu = __importStar(__nccwpck_require__(4173));
-const setup_upx_1 = __importDefault(__nccwpck_require__(4245));
 const util = __importStar(__nccwpck_require__(4024));
 function uploadBdist(installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -2149,14 +3034,17 @@ function uploadBdist(installDir, options) {
         // Copy binaries & data:
         yield util.cpR(path.join(installDir, 'bin'), bdistDir);
         yield util.cpR(path.join(installDir, 'data'), bdistDir);
+        // Copy license reports:
+        if (options['bdist-license-report'])
+            yield util.cpR(path.join(installDir, 'licenses'), bdistDir);
         // Bundle libraries:
         if (options['icu-version'] !== undefined) {
-            yield icu.bundle(bdistDir, options);
+            yield util.icuBundle(bdistDir, options);
         }
         // Compress binaries:
         if (options['bdist-compress-exe']) {
             try {
-                const upxExe = yield (0, setup_upx_1.default)(options);
+                const upxExe = yield util.upxSetup(options);
                 for (const component of Object.values(opts.agdaComponents))
                     yield compressBin(upxExe, path.join(bdistDir, 'bin', component.exe));
             }
@@ -2300,573 +3188,6 @@ function pickSetupHaskellInputs(options) {
 
 /***/ }),
 
-/***/ 4173:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.bundle = exports.setup = void 0;
-const opts = __importStar(__nccwpck_require__(1352));
-const linux_1 = __nccwpck_require__(577);
-const macos_1 = __nccwpck_require__(2199);
-const windows_1 = __nccwpck_require__(908);
-function setup(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        switch (opts.platform) {
-            case 'linux':
-                return yield (0, linux_1.setupForLinux)(options);
-            case 'darwin':
-                return yield (0, macos_1.setupForMacOS)(options);
-            case 'win32':
-                return yield (0, windows_1.setupForWindows)(options);
-        }
-    });
-}
-exports.setup = setup;
-// NOTE: This module hardcodes a number of assumptions about libicu which may
-//       not always be true, e.g., library name starts with 'libicu', binaries
-//       are linked against the major version on Linux and Windows but against
-//       the entire version on MacOS, the internal dependencies of ICU, etc.
-// NOTE: This module could be rewritten to be much closer to 'repairwheel' by
-//       maintaining a list of allowed libraries (like 'manylinux') and using
-//       `dumpbin`, `patchelf` and `otool` to find and bundle *all* libraries
-//       that aren't on that list.
-function bundle(distDir, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        switch (opts.platform) {
-            case 'linux':
-                return yield (0, linux_1.bundleForLinux)(distDir, options);
-            case 'darwin':
-                return yield (0, macos_1.bundleForMacOS)(distDir, options);
-            case 'win32':
-                return yield (0, windows_1.bundleForWindows)(distDir, options);
-        }
-    });
-}
-exports.bundle = bundle;
-
-
-/***/ }),
-
-/***/ 577:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.bundleForLinux = exports.setupForLinux = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const glob = __importStar(__nccwpck_require__(8090));
-const os = __importStar(__nccwpck_require__(612));
-const path = __importStar(__nccwpck_require__(9411));
-const opts = __importStar(__nccwpck_require__(1352));
-const util = __importStar(__nccwpck_require__(4024));
-function setupForLinux(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Find the ICU version:
-        options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
-        // Add extra-{include,lib}-dirs:
-        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfig('--variable', 'includedir', 'icu-i18n')));
-        options['extra-lib-dirs'].push(core.toPlatformPath(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n')));
-        // Print ICU package info:
-        try {
-            core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-i18n')));
-        }
-        catch (error) {
-            core.info(util.ensureError(error).message);
-        }
-    });
-}
-exports.setupForLinux = setupForLinux;
-function bundleForLinux(distDir, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (options['icu-version'] === undefined)
-            throw Error('No ICU version');
-        // Gather information
-        core.info(`Bundle ICU version ${options['icu-version']}`);
-        const libDirsFrom = new Set();
-        libDirsFrom.add(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n'));
-        libDirsFrom.add(yield util.pkgConfig('--variable', 'libdir', 'icu-uc'));
-        const libFromPatterns = [...libDirsFrom]
-            .flatMap(libDir => ['libicui18n', 'libicuuc', 'libicudata'].flatMap(libName => path.join(libDir, `${libName}.so.${options['icu-version']}`)))
-            .join(os.EOL);
-        core.info(`Searching with:${os.EOL}${libFromPatterns}`);
-        const libFromGlobber = yield glob.create(libFromPatterns);
-        const libsFrom = yield libFromGlobber.glob();
-        core.info(`Found libraries:${os.EOL}${libsFrom.join(os.EOL)}`);
-        // core.info(`Found ICU version ${options['icu-version']} at ${prefix}`)
-        const distLibDir = path.join(distDir, 'lib');
-        const distBinDir = path.join(distDir, 'bin');
-        // Copy library files & change their IDs
-        core.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
-        yield util.mkdirP(distLibDir);
-        for (const libFrom of libsFrom) {
-            const libName = path.basename(libFrom, `.so.${options['icu-version']}`);
-            const libNameTo = `agda-${options['agda-version']}-${libName}.so`;
-            const libTo = path.join(distLibDir, libNameTo);
-            // Copy the library:
-            yield util.cp(libFrom, libTo);
-            // Change the library ID:
-            yield util.patchelf('--set-soname', libNameTo, libTo);
-        }
-        // Change internal dependencies between libraries:
-        const icuVerMaj = util.simver.major(options['icu-version']);
-        const libDepsToChange = [
-            ['libicui18n', ['libicuuc']],
-            ['libicuuc', ['libicudata']]
-        ];
-        for (const [libName, depNames] of libDepsToChange) {
-            const libNameTo = `agda-${options['agda-version']}-${libName}.so`;
-            const libTo = path.join(distLibDir, libNameTo);
-            for (const depName of depNames) {
-                const depFrom = `${depName}.so.${icuVerMaj}`;
-                const depTo = `agda-${options['agda-version']}-${depName}.so`;
-                yield util.patchelf('--replace-needed', depFrom, depTo, libTo);
-            }
-            // NOTE: This overrides any previously set run path.
-            yield util.patchelf('--set-rpath', '$ORIGIN', libTo);
-        }
-        // Change dependencies on Agda executable:
-        const agdaExePath = path.join(distBinDir, opts.agdaComponents['Agda:exe:agda'].exe);
-        const binDepsToChange = ['libicui18n', 'libicuuc', 'libicudata'];
-        for (const depName of binDepsToChange) {
-            const depNameFrom = `${depName}.so.${icuVerMaj}`;
-            const depNameTo = `agda-${options['agda-version']}-${depName}.so`;
-            yield util.patchelf('--replace-needed', depNameFrom, depNameTo, agdaExePath);
-        }
-        // NOTE: This overrides any previously set run path.
-        yield util.patchelf('--set-rpath', '$ORIGIN/../lib', agdaExePath);
-    });
-}
-exports.bundleForLinux = bundleForLinux;
-
-
-/***/ }),
-
-/***/ 2199:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.bundleForMacOS = exports.setupForMacOS = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const path = __importStar(__nccwpck_require__(9411));
-const opts = __importStar(__nccwpck_require__(1352));
-const util = __importStar(__nccwpck_require__(4024));
-const node_assert_1 = __importDefault(__nccwpck_require__(8061));
-// MacOS
-function installDirForMacOS() {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield util.brew('--prefix', 'icu4c');
-    });
-}
-function setupForMacOS(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Ensure ICU is installed:
-        let icuVersion = yield util.brewGetVersion('icu4c');
-        core.info(`Found ICU version: ${icuVersion}`);
-        if (icuVersion === undefined) {
-            yield util.brew('install', 'icu4c');
-            icuVersion = yield util.brewGetVersion('icu4c');
-            core.info(`Installed ICU version: ${icuVersion}`);
-        }
-        if (icuVersion === undefined)
-            throw Error('Could not install icu4c');
-        // Find the ICU installation location:
-        const prefix = yield installDirForMacOS();
-        core.info(`Found ICU version ${icuVersion} at ${prefix}`);
-        // Add to PKG_CONFIG_PATH:
-        const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig');
-        util.addPkgConfigPath(pkgConfigDir);
-        // Find the ICU version:
-        options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
-        (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version reported by Homebrew differs from ICU version reported by pkg-config');
-        // Add extra-{include,lib}-dirs:
-        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfig('--variable', 'includedir', 'icu-i18n')));
-        options['extra-lib-dirs'].push(core.toPlatformPath(yield util.pkgConfig('--variable', 'libdir', 'icu-i18n')));
-        // Print ICU package info:
-        try {
-            core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-i18n')));
-        }
-        catch (error) {
-            core.info(util.ensureError(error).message);
-        }
-    });
-}
-exports.setupForMacOS = setupForMacOS;
-function bundleForMacOS(distDir, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (options['icu-version'] === undefined)
-            throw Error('No ICU version');
-        // Gather information
-        core.info(`Bundle ICU version ${options['icu-version']}`);
-        const prefix = yield installDirForMacOS();
-        core.info(`Found ICU version ${options['icu-version']} at ${prefix}`);
-        const distLibDir = path.join(distDir, 'lib');
-        const distBinDir = path.join(distDir, 'bin');
-        // Copy library files & change their IDs
-        core.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
-        yield util.mkdirP(distLibDir);
-        for (const libName of ['libicui18n', 'libicuuc', 'libicudata']) {
-            const libNameFrom = `${libName}.${options['icu-version']}.dylib`;
-            const libFrom = path.join(prefix, 'lib', libNameFrom);
-            const libNameTo = `agda-${options['agda-version']}-${libName}.dylib`;
-            const libTo = path.join(distLibDir, libNameTo);
-            // Copy the library:
-            yield util.cp(libFrom, libTo);
-            // Change the library ID:
-            yield util.installNameTool('-id', libNameTo, libTo);
-        }
-        // Change internal dependencies between libraries:
-        const icuVerMaj = util.simver.major(options['icu-version']);
-        const libDepsToChange = [
-            ['libicui18n', ['libicudata', 'libicuuc']],
-            ['libicuuc', ['libicudata']]
-        ];
-        for (const [libName, depNames] of libDepsToChange) {
-            const libNameTo = `agda-${options['agda-version']}-${libName}.dylib`;
-            const libTo = path.join(distLibDir, libNameTo);
-            for (const depName of depNames) {
-                const depFrom = `@loader_path/${depName}.${icuVerMaj}.dylib`;
-                const depTo = `@loader_path/agda-${options['agda-version']}-${depName}.dylib`;
-                yield util.installNameTool('-change', depFrom, depTo, libTo);
-            }
-        }
-        // Change dependencies on Agda executable:
-        const agdaExePath = path.join(distBinDir, opts.agdaComponents['Agda:exe:agda'].exe);
-        const binDepsToChange = ['libicui18n', 'libicuuc'];
-        for (const libName of binDepsToChange) {
-            const libNameFrom = `${libName}.${options['icu-version']}.dylib`;
-            const libFrom = path.join(prefix, 'lib', libNameFrom);
-            const libNameTo = `agda-${options['agda-version']}-${libName}.dylib`;
-            const libTo = `@executable_path/../lib/${libNameTo}`;
-            yield util.installNameTool('-change', libFrom, libTo, agdaExePath);
-        }
-    });
-}
-exports.bundleForMacOS = bundleForMacOS;
-
-
-/***/ }),
-
-/***/ 908:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.bundleForWindows = exports.setupForWindows = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const glob = __importStar(__nccwpck_require__(8090));
-const os = __importStar(__nccwpck_require__(612));
-const path = __importStar(__nccwpck_require__(9411));
-const util = __importStar(__nccwpck_require__(4024));
-// Windows
-function setupForWindows(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Install pkg-config & ICU:
-        core.addPath('C:\\msys64\\mingw64\\bin');
-        core.addPath('C:\\msys64\\usr\\bin');
-        yield util.pacman('-v', '--noconfirm', '-Sy', 'mingw-w64-x86_64-pkg-config', 'mingw-w64-x86_64-icu');
-        // Find the ICU version:
-        options['icu-version'] = yield util.pkgConfig('--modversion', 'icu-i18n');
-        // Add extra-{include,lib}-dirs:
-        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfig('--variable', 'includedir', 'icu-i18n')));
-        // NOTE:
-        //   The libdir (C:\msys64\mingw64\lib) only contains libicu*.dll.a,
-        //   not libicu*.dll. I'm not sure what the .dll.a files are?
-        for (const libDir of yield icuGetLibDirs())
-            options['extra-lib-dirs'].push(libDir);
-        // Print ICU package info:
-        try {
-            core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-io')));
-        }
-        catch (error) {
-            core.info(util.ensureError(error).message);
-        }
-    });
-}
-exports.setupForWindows = setupForWindows;
-function bundleForWindows(distDir, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (options['icu-version'] === undefined)
-            throw Error('No ICU version');
-        core.info(`Bundle ICU version ${options['icu-version']}`);
-        const libVerMaj = util.simver.major(options['icu-version']);
-        const libDirsFrom = yield icuGetLibDirs();
-        const libFromPatterns = [...libDirsFrom]
-            .flatMap(libDir => ['libicuin', 'libicuuc', 'libicudt', 'libicuio'].flatMap(libName => path.join(libDir, `${libName}${libVerMaj}.dll`)))
-            .join(os.EOL);
-        core.info(`Searching with:${os.EOL}${libFromPatterns}`);
-        const libFromGlobber = yield glob.create(libFromPatterns);
-        const libsFrom = yield libFromGlobber.glob();
-        core.info(`Found libraries:${os.EOL}${libsFrom.join(os.EOL)}`);
-        // Copy library files
-        const libDirTo = path.join(distDir, 'bin');
-        core.info(`Copy ICU ${options['icu-version']} in ${libDirTo}`);
-        yield util.mkdirP(libDirTo);
-        for (const libFrom of libsFrom) {
-            const libName = path.basename(libFrom);
-            const libTo = path.join(libDirTo, libName);
-            // Copy the library:
-            yield util.cp(libFrom, libTo);
-        }
-    });
-}
-exports.bundleForWindows = bundleForWindows;
-function icuGetLibDirs() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const icuInLibDir = yield util.pkgConfig('--variable', 'libdir', 'icu-i18n');
-        const icuUcLibDir = yield util.pkgConfig('--variable', 'libdir', 'icu-uc');
-        const icuIoLibDir = yield util.pkgConfig('--variable', 'libdir', 'icu-io');
-        return new Set([
-            'C:\\msys64\\mingw64\\bin',
-            'C:\\msys64\\usr\\bin',
-            core.toPlatformPath(icuInLibDir),
-            core.toPlatformPath(icuUcLibDir),
-            core.toPlatformPath(icuIoLibDir)
-        ]);
-    });
-}
-
-
-/***/ }),
-
-/***/ 4245:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const tc = __importStar(__nccwpck_require__(7784));
-const path = __importStar(__nccwpck_require__(9411));
-const opts = __importStar(__nccwpck_require__(1352));
-const util = __importStar(__nccwpck_require__(4024));
-function setup(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        switch (opts.platform) {
-            case 'linux':
-                return yield setupLinux(options);
-            case 'darwin':
-                return yield setupMacOS(options);
-            case 'win32':
-                return yield setupWindows(options);
-        }
-    });
-}
-exports["default"] = setup;
-function setupLinux(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const upxVersion = '3.96';
-        options['upx-version'] = upxVersion;
-        const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-amd64_linux.tar.xz`;
-        const upxDir = opts.setupAgdaCacheDir(path.join('upx', upxVersion));
-        const upxTar = yield tc.downloadTool(upxPkgUrl);
-        const upxDirTC = yield tc.extractTar(upxTar, upxDir, [
-            '--extract',
-            '--xz',
-            '--preserve-permissions',
-            '--strip-components=1'
-        ]);
-        return path.join(upxDirTC, 'upx');
-    });
-}
-function setupMacOS(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Ensure UPX is installed and is the correct version:
-        // NOTE: patch version '3.96_1' and (presumably) later versions are OK
-        let upxVersion = yield util.brewGetVersion('upx');
-        if (upxVersion === undefined)
-            yield util.brew('install', 'upx');
-        else if (util.simver.lt(upxVersion, '3.96_1'))
-            yield util.brew('upgrade', 'upx');
-        upxVersion = yield util.brewGetVersion('upx');
-        if (upxVersion === undefined)
-            throw Error(`Could not install UPX`);
-        options['upx-version'] = upxVersion;
-        return 'upx';
-    });
-}
-function setupWindows(options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const upxVersion = '3.96';
-        options['upx-version'] = upxVersion;
-        const upxDir = opts.setupAgdaCacheDir(path.join('upx', upxVersion));
-        const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-win64.zip`;
-        const upxZip = yield tc.downloadTool(upxPkgUrl);
-        const upxDirTC = yield tc.extractZip(upxZip, upxDir);
-        return path.join(upxDirTC, `upx-${upxVersion}-win64`, 'upx');
-    });
-}
-
-
-/***/ }),
-
 /***/ 4024:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -2904,16 +3225,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.simver = exports.ensureError = void 0;
 __exportStar(__nccwpck_require__(9552), exports);
+__exportStar(__nccwpck_require__(8455), exports);
 var ensure_error_1 = __nccwpck_require__(1151);
 Object.defineProperty(exports, "ensureError", ({ enumerable: true, get: function () { return __importDefault(ensure_error_1).default; } }));
 __exportStar(__nccwpck_require__(4369), exports);
 __exportStar(__nccwpck_require__(1310), exports);
 __exportStar(__nccwpck_require__(6295), exports);
+__exportStar(__nccwpck_require__(9358), exports);
 __exportStar(__nccwpck_require__(5066), exports);
 __exportStar(__nccwpck_require__(8398), exports);
 __exportStar(__nccwpck_require__(1311), exports);
 __exportStar(__nccwpck_require__(7066), exports);
 exports.simver = __importStar(__nccwpck_require__(7609));
+__exportStar(__nccwpck_require__(6102), exports);
 
 
 /***/ }),
@@ -3193,6 +3517,94 @@ exports.configureEnvFor = configureEnvFor;
 
 /***/ }),
 
+/***/ 8455:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.cabalPlanLicenseReport = exports.cabalPlanSetup = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const path = __importStar(__nccwpck_require__(9411));
+const fs = __importStar(__nccwpck_require__(7561));
+const os = __importStar(__nccwpck_require__(612));
+const opts = __importStar(__nccwpck_require__(1352));
+const util = __importStar(__nccwpck_require__(4024));
+function cabalPlanSetup(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const cabalPlanVersion = '0.7.2.3';
+        options['cabal-plan-version'] = cabalPlanVersion;
+        const cabalPlanDir = opts.setupAgdaCacheDir(path.join('cabal-plan', cabalPlanVersion));
+        // Update cabal package index
+        yield util.cabal(['update']);
+        // Install cabal-plan to cabalPlanDir
+        yield util.mkdirP(cabalPlanDir);
+        yield util.cabal([
+            'install',
+            `cabal-plan-${cabalPlanVersion}`,
+            '-f+license-report',
+            '--ignore-project',
+            '--install-method=copy',
+            `--installdir=${cabalPlanDir}`,
+            '--overwrite-policy=always'
+        ]);
+        // Add the path to the cabal-plan executable to the PATH
+        core.addPath(cabalPlanDir);
+    });
+}
+exports.cabalPlanSetup = cabalPlanSetup;
+function cabalPlanLicenseReport(sourceDir, licenseDir) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const execOptions = { cwd: sourceDir };
+        for (const component of Object.keys(opts.agdaComponents)) {
+            // Get the short name for the component, e.g., Agda:exe:agda -> agda
+            const componentShortName = component.split(':').at(-1);
+            // Run `cabal-plan license-report`
+            core.info(`Generate license-report for ${componentShortName} in ${licenseDir}`);
+            const licenseReportPath = path.join(licenseDir, `license-report-${componentShortName}.md`);
+            const { output, errors } = yield util.getOutputAndErrors('cabal-plan', ['license-report', `--licensedir=${licenseDir}`, component], execOptions);
+            // Write the generated license report and warnings to a separate file:
+            fs.writeFileSync(licenseReportPath, [output, '## Warnings', errors ? errors : 'No warnings'].join(`${os.EOL}${os.EOL}`));
+        }
+    });
+}
+exports.cabalPlanLicenseReport = cabalPlanLicenseReport;
+
+
+/***/ }),
+
 /***/ 1151:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -3306,7 +3718,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getVersion = exports.lsR = exports.rmRF = exports.mkdirP = exports.mv = exports.cpR = exports.cp = exports.getOutput = exports.which = exports.findInPath = void 0;
+exports.getVersion = exports.lsR = exports.rmRF = exports.mkdirP = exports.mv = exports.cpR = exports.cp = exports.getOutputAndErrors = exports.getOutput = exports.which = exports.findInPath = void 0;
 const exec = __importStar(__nccwpck_require__(1514));
 const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
@@ -3319,28 +3731,37 @@ Object.defineProperty(exports, "findInPath", ({ enumerable: true, get: function 
 Object.defineProperty(exports, "which", ({ enumerable: true, get: function () { return io_1.which; } }));
 function getOutput(prog, args, execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
-        let progOutput = '';
-        let progErrors = '';
+        const { output } = yield getOutputAndErrors(prog, args, execOptions);
+        return output;
+    });
+}
+exports.getOutput = getOutput;
+function getOutputAndErrors(prog, args, execOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let output = '';
+        let errors = '';
         execOptions = execOptions !== null && execOptions !== void 0 ? execOptions : {};
         execOptions.ignoreReturnCode = true;
         execOptions.listeners = {
             stdout: (data) => {
-                progOutput += data.toString();
+                output += data.toString();
             },
             stderr: (data) => {
-                progErrors += data.toString();
+                errors += data.toString();
             }
         };
+        output = output.trim();
+        errors = errors.trim();
         const exitCode = yield exec.exec(prog, args, execOptions);
         if (exitCode === 0) {
-            return progOutput.trim();
+            return { output, errors };
         }
         else {
-            throw Error(`The call to ${prog} failed with exit code ${exitCode}:${os.EOL}${progErrors}`);
+            throw Error(`The call to ${prog} failed with exit code ${exitCode}:${os.EOL}${errors}`);
         }
     });
 }
-exports.getOutput = getOutput;
+exports.getOutputAndErrors = getOutputAndErrors;
 function cp(source, dest, options) {
     return __awaiter(this, void 0, void 0, function* () {
         source = escape(source);
@@ -3351,10 +3772,13 @@ function cp(source, dest, options) {
         }
         catch (error) {
             const theError = (0, ensure_error_1.default)(error);
+            const truncate = (str) => str.split(os.EOL).slice(undefined, 10).join(os.EOL);
+            const sourceDirContents = yield lsR(path.dirname(source));
+            const destDirContents = yield lsR(path.dirname(dest));
             theError.message = [
                 theError.message,
-                `- sourceDir: ${yield lsR(path.dirname(source))}`,
-                `- destDir: ${yield lsR(path.dirname(dest))}`,
+                `- sourceDir: ${truncate(sourceDirContents)}`,
+                `- destDir: ${truncate(destDirContents)}`,
                 `- options: ${JSON.stringify(options)}`
             ].join(os.EOL);
             throw theError;
@@ -3835,6 +4259,510 @@ exports.brewGetVersion = brewGetVersion;
 
 /***/ }),
 
+/***/ 9358:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.icuWriteLicense = exports.icuBundle = exports.icuSetup = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const tc = __importStar(__nccwpck_require__(7784));
+const opts = __importStar(__nccwpck_require__(1352));
+const util = __importStar(__nccwpck_require__(4024));
+const path = __importStar(__nccwpck_require__(9411));
+const fs = __importStar(__nccwpck_require__(7561));
+const icu_1 = __importDefault(__nccwpck_require__(8457));
+const linux_1 = __nccwpck_require__(9866);
+const macos_1 = __nccwpck_require__(6608);
+const windows_1 = __nccwpck_require__(8986);
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
+function icuSetup(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        switch (opts.platform) {
+            case 'linux':
+                return yield (0, linux_1.setupForLinux)(options);
+            case 'darwin':
+                return yield (0, macos_1.setupForMacOS)(options);
+            case 'win32':
+                return yield (0, windows_1.setupForWindows)(options);
+        }
+    });
+}
+exports.icuSetup = icuSetup;
+// NOTE: This module hardcodes a number of assumptions about libicu which may
+//       not always be true, e.g., library name starts with 'libicu', binaries
+//       are linked against the major version on Linux and Windows but against
+//       the entire version on MacOS, the internal dependencies of ICU, etc.
+// NOTE: This module could be rewritten to be much closer to 'repairwheel' by
+//       maintaining a list of allowed libraries (like 'manylinux') and using
+//       `dumpbin`, `patchelf` and `otool` to find and bundle *all* libraries
+//       that aren't on that list.
+function icuBundle(distDir, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        switch (opts.platform) {
+            case 'linux':
+                return yield (0, linux_1.bundleForLinux)(distDir, options);
+            case 'darwin':
+                return yield (0, macos_1.bundleForMacOS)(distDir, options);
+            case 'win32':
+                return yield (0, windows_1.bundleForWindows)(distDir, options);
+        }
+    });
+}
+exports.icuBundle = icuBundle;
+function icuWriteLicense(licenseDir, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (options['icu-version'] === undefined)
+            throw Error(`Cannot download license: no ICU version specified`);
+        // Create the ICU license directory:
+        const icuLicenseDir = path.join(licenseDir, `icu-${options['icu-version']}`);
+        const icuLicenseFile = path.join(icuLicenseDir, `LICENSE`);
+        yield util.mkdirP(icuLicenseDir);
+        // Transform the ICU version, e.g., "71.1_1", to something we can use in the URL, such as "71-1"
+        const icuVersion = options['icu-version']
+            .trim()
+            .split('_')[0]
+            .replace('.', '-');
+        const licenseUrl = `https://raw.githubusercontent.com/unicode-org/icu/release-${icuVersion}/icu4c/LICENSE`;
+        // Download the license file:
+        try {
+            const icuLicenseFileTC = yield tc.downloadTool(licenseUrl, icuLicenseFile);
+            (0, node_assert_1.default)(icuLicenseFile === icuLicenseFileTC, `downloadTool saved license to ${icuLicenseFileTC}, not ${icuLicenseFile}`);
+        }
+        catch (error) {
+            // If anything goes wrong, write the backup license:
+            core.warning(util.ensureError(error));
+            fs.writeFileSync(icuLicenseFile, icu_1.default);
+        }
+    });
+}
+exports.icuWriteLicense = icuWriteLicense;
+
+
+/***/ }),
+
+/***/ 9866:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.bundleForLinux = exports.setupForLinux = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const glob = __importStar(__nccwpck_require__(8090));
+const os = __importStar(__nccwpck_require__(612));
+const path = __importStar(__nccwpck_require__(9411));
+const opts = __importStar(__nccwpck_require__(1352));
+const util = __importStar(__nccwpck_require__(4024));
+function setupForLinux(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Find the ICU version:
+        options['icu-version'] = yield util.pkgConfigGetVersion('icu-i18n');
+        // Add extra-{include,lib}-dirs:
+        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'includedir')));
+        options['extra-lib-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'libdir')));
+        // Print ICU package info:
+        try {
+            core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-i18n')));
+        }
+        catch (error) {
+            core.info(util.ensureError(error).message);
+        }
+    });
+}
+exports.setupForLinux = setupForLinux;
+function bundleForLinux(distDir, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (options['icu-version'] === undefined)
+            throw Error('No ICU version');
+        // Gather information
+        core.info(`Bundle ICU version ${options['icu-version']}`);
+        const libDirsFrom = new Set();
+        libDirsFrom.add(yield util.pkgConfigGetVariable('icu-i18n', 'libdir'));
+        libDirsFrom.add(yield util.pkgConfigGetVariable('icu-uc', 'libdir'));
+        const libFromPatterns = [...libDirsFrom]
+            .flatMap(libDir => ['libicui18n', 'libicuuc', 'libicudata'].flatMap(libName => path.join(libDir, `${libName}.so.${options['icu-version']}`)))
+            .join(os.EOL);
+        core.info(`Searching with:${os.EOL}${libFromPatterns}`);
+        const libFromGlobber = yield glob.create(libFromPatterns);
+        const libsFrom = yield libFromGlobber.glob();
+        core.info(`Found libraries:${os.EOL}${libsFrom.join(os.EOL)}`);
+        // core.info(`Found ICU version ${options['icu-version']} at ${prefix}`)
+        const distLibDir = path.join(distDir, 'lib');
+        const distBinDir = path.join(distDir, 'bin');
+        // Copy library files & change their IDs
+        core.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
+        yield util.mkdirP(distLibDir);
+        for (const libFrom of libsFrom) {
+            const icuVersion = options['icu-version'].trim();
+            const libName = path.basename(libFrom, `.so.${icuVersion}`);
+            const libNameTo = `agda-${options['agda-version']}-${libName}.so`;
+            const libTo = path.join(distLibDir, libNameTo);
+            // Copy the library:
+            yield util.cp(libFrom, libTo);
+            // Change the library ID:
+            yield util.patchelf('--set-soname', libNameTo, libTo);
+        }
+        // Change internal dependencies between libraries:
+        const icuVerMaj = util.simver.major(options['icu-version']);
+        const libDepsToChange = [
+            ['libicui18n', ['libicuuc']],
+            ['libicuuc', ['libicudata']]
+        ];
+        for (const [libName, depNames] of libDepsToChange) {
+            const agdaVersion = options['agda-version'].trim();
+            const libNameTo = `agda-${agdaVersion}-${libName}.so`;
+            const libTo = path.join(distLibDir, libNameTo);
+            for (const depName of depNames) {
+                const depFrom = `${depName}.so.${icuVerMaj}`;
+                const depTo = `agda-${agdaVersion}-${depName}.so`;
+                yield util.patchelf('--replace-needed', depFrom, depTo, libTo);
+            }
+            // NOTE: This overrides any previously set run path.
+            yield util.patchelf('--set-rpath', '$ORIGIN', libTo);
+        }
+        // Change dependencies on Agda executable:
+        const agdaExePath = path.join(distBinDir, opts.agdaComponents['Agda:exe:agda'].exe);
+        const binDepsToChange = ['libicui18n', 'libicuuc', 'libicudata'];
+        for (const depName of binDepsToChange) {
+            const depNameFrom = `${depName}.so.${icuVerMaj}`;
+            const depNameTo = `agda-${options['agda-version']}-${depName}.so`;
+            yield util.patchelf('--replace-needed', depNameFrom, depNameTo, agdaExePath);
+        }
+        // NOTE: This overrides any previously set run path.
+        yield util.patchelf('--set-rpath', '$ORIGIN/../lib', agdaExePath);
+    });
+}
+exports.bundleForLinux = bundleForLinux;
+
+
+/***/ }),
+
+/***/ 6608:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.bundleForMacOS = exports.setupForMacOS = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const path = __importStar(__nccwpck_require__(9411));
+const opts = __importStar(__nccwpck_require__(1352));
+const util = __importStar(__nccwpck_require__(4024));
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
+// MacOS
+function installDirForMacOS() {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield util.brew('--prefix', 'icu4c');
+    });
+}
+function setupForMacOS(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Ensure ICU is installed:
+        let icuVersion = yield util.brewGetVersion('icu4c');
+        core.info(`Found ICU version: ${icuVersion}`);
+        if (icuVersion === undefined) {
+            yield util.brew('install', 'icu4c');
+            icuVersion = yield util.brewGetVersion('icu4c');
+            core.info(`Installed ICU version: ${icuVersion}`);
+        }
+        if (icuVersion === undefined)
+            throw Error('Could not install icu4c');
+        // Find the ICU installation location:
+        const prefix = yield installDirForMacOS();
+        core.info(`Found ICU version ${icuVersion} at ${prefix}`);
+        // Add to PKG_CONFIG_PATH:
+        const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig');
+        util.addPkgConfigPath(pkgConfigDir);
+        // Find the ICU version:
+        options['icu-version'] = yield util.pkgConfigGetVersion('icu-i18n');
+        (0, node_assert_1.default)(icuVersion === options['icu-version'], 'ICU version reported by Homebrew differs from ICU version reported by pkg-config');
+        // Add extra-{include,lib}-dirs:
+        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'includedir')));
+        options['extra-lib-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'libdir')));
+        // Print ICU package info:
+        try {
+            core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-i18n')));
+        }
+        catch (error) {
+            core.info(util.ensureError(error).message);
+        }
+    });
+}
+exports.setupForMacOS = setupForMacOS;
+function bundleForMacOS(distDir, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (options['icu-version'] === undefined)
+            throw Error('No ICU version');
+        // Gather information
+        core.info(`Bundle ICU version ${options['icu-version']}`);
+        const prefix = yield installDirForMacOS();
+        core.info(`Found ICU version ${options['icu-version']} at ${prefix}`);
+        const distLibDir = path.join(distDir, 'lib');
+        const distBinDir = path.join(distDir, 'bin');
+        // Copy library files & change their IDs
+        core.info(`Copy ICU ${options['icu-version']} in ${distLibDir}`);
+        yield util.mkdirP(distLibDir);
+        for (const libName of ['libicui18n', 'libicuuc', 'libicudata']) {
+            const libNameFrom = `${libName}.${options['icu-version']}.dylib`;
+            const libFrom = path.join(prefix, 'lib', libNameFrom);
+            const libNameTo = `agda-${options['agda-version']}-${libName}.dylib`;
+            const libTo = path.join(distLibDir, libNameTo);
+            // Copy the library:
+            yield util.cp(libFrom, libTo);
+            // Change the library ID:
+            yield util.installNameTool('-id', libNameTo, libTo);
+        }
+        // Change internal dependencies between libraries:
+        const icuVerMaj = util.simver.major(options['icu-version']);
+        const libDepsToChange = [
+            ['libicui18n', ['libicudata', 'libicuuc']],
+            ['libicuuc', ['libicudata']]
+        ];
+        for (const [libName, depNames] of libDepsToChange) {
+            const libNameTo = `agda-${options['agda-version']}-${libName}.dylib`;
+            const libTo = path.join(distLibDir, libNameTo);
+            for (const depName of depNames) {
+                const depFrom = `@loader_path/${depName}.${icuVerMaj}.dylib`;
+                const depTo = `@loader_path/agda-${options['agda-version']}-${depName}.dylib`;
+                yield util.installNameTool('-change', depFrom, depTo, libTo);
+            }
+        }
+        // Change dependencies on Agda executable:
+        const agdaExePath = path.join(distBinDir, opts.agdaComponents['Agda:exe:agda'].exe);
+        const binDepsToChange = ['libicui18n', 'libicuuc'];
+        for (const libName of binDepsToChange) {
+            const libNameFrom = `${libName}.${options['icu-version']}.dylib`;
+            const libFrom = path.join(prefix, 'lib', libNameFrom);
+            const libNameTo = `agda-${options['agda-version']}-${libName}.dylib`;
+            const libTo = `@executable_path/../lib/${libNameTo}`;
+            yield util.installNameTool('-change', libFrom, libTo, agdaExePath);
+        }
+    });
+}
+exports.bundleForMacOS = bundleForMacOS;
+
+
+/***/ }),
+
+/***/ 8986:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.bundleForWindows = exports.setupForWindows = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const glob = __importStar(__nccwpck_require__(8090));
+const os = __importStar(__nccwpck_require__(612));
+const path = __importStar(__nccwpck_require__(9411));
+const util = __importStar(__nccwpck_require__(4024));
+// Windows
+function setupForWindows(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Install pkg-config & ICU:
+        core.addPath('C:\\msys64\\mingw64\\bin');
+        core.addPath('C:\\msys64\\usr\\bin');
+        yield util.pacman('-v', '--noconfirm', '-Sy', 'mingw-w64-x86_64-pkg-config', 'mingw-w64-x86_64-icu');
+        // Find the ICU version:
+        options['icu-version'] = yield util.pkgConfigGetVersion('icu-i18n');
+        // Add extra-{include,lib}-dirs:
+        options['extra-include-dirs'].push(core.toPlatformPath(yield util.pkgConfigGetVariable('icu-i18n', 'includedir')));
+        // NOTE:
+        //   The libdir (C:\msys64\mingw64\lib) only contains libicu*.dll.a,
+        //   not libicu*.dll. I'm not sure what the .dll.a files are?
+        for (const libDir of yield icuGetLibDirs())
+            options['extra-lib-dirs'].push(libDir);
+        // Print ICU package info:
+        try {
+            core.info(JSON.stringify(yield util.pkgConfigGetInfo('icu-io')));
+        }
+        catch (error) {
+            core.info(util.ensureError(error).message);
+        }
+    });
+}
+exports.setupForWindows = setupForWindows;
+function bundleForWindows(distDir, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (options['icu-version'] === undefined)
+            throw Error('No ICU version');
+        core.info(`Bundle ICU version ${options['icu-version']}`);
+        const libVerMaj = util.simver.major(options['icu-version']);
+        const libDirsFrom = yield icuGetLibDirs();
+        const libFromPatterns = [...libDirsFrom]
+            .flatMap(libDir => ['libicuin', 'libicuuc', 'libicudt', 'libicuio'].flatMap(libName => path.join(libDir, `${libName}${libVerMaj}.dll`)))
+            .join(os.EOL);
+        core.info(`Searching with:${os.EOL}${libFromPatterns}`);
+        const libFromGlobber = yield glob.create(libFromPatterns);
+        const libsFrom = yield libFromGlobber.glob();
+        core.info(`Found libraries:${os.EOL}${libsFrom.join(os.EOL)}`);
+        // Copy library files
+        const libDirTo = path.join(distDir, 'bin');
+        core.info(`Copy ICU ${options['icu-version']} in ${libDirTo}`);
+        yield util.mkdirP(libDirTo);
+        for (const libFrom of libsFrom) {
+            const libName = path.basename(libFrom);
+            const libTo = path.join(libDirTo, libName);
+            // Copy the library:
+            yield util.cp(libFrom, libTo);
+        }
+    });
+}
+exports.bundleForWindows = bundleForWindows;
+function icuGetLibDirs() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const icuInLibDir = yield util.pkgConfigGetVariable('icu-i18n', 'libdir');
+        const icuUcLibDir = yield util.pkgConfigGetVariable('icu-uc', 'libdir');
+        const icuIoLibDir = yield util.pkgConfigGetVariable('icu-io', 'libdir');
+        return new Set([
+            'C:\\msys64\\mingw64\\bin',
+            'C:\\msys64\\usr\\bin',
+            core.toPlatformPath(icuInLibDir),
+            core.toPlatformPath(icuUcLibDir),
+            core.toPlatformPath(icuIoLibDir)
+        ]);
+    });
+}
+
+
+/***/ }),
+
 /***/ 9152:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -4117,7 +5045,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.addPkgConfigPath = exports.pkgConfigGetInfo = exports.pkgConfig = void 0;
+exports.addPkgConfigPath = exports.pkgConfigGetInfo = exports.pkgConfigGetVariable = exports.pkgConfigGetVersion = exports.pkgConfig = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const os = __importStar(__nccwpck_require__(612));
 const exec = __importStar(__nccwpck_require__(4369));
@@ -4136,6 +5064,18 @@ function pkgConfigGetList(name, listName) {
             .filter(variableName => variableName !== '');
     });
 }
+function pkgConfigGetVersion(name) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return (yield pkgConfig('--modversion', name)).trim();
+    });
+}
+exports.pkgConfigGetVersion = pkgConfigGetVersion;
+function pkgConfigGetVariable(name, variable) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return (yield pkgConfig('--variable', variable, name)).trim();
+    });
+}
+exports.pkgConfigGetVariable = pkgConfigGetVariable;
 function pkgConfigGetInfo(name, seen) {
     return __awaiter(this, void 0, void 0, function* () {
         if (seen === null || seen === void 0 ? void 0 : seen.includes(name)) {
@@ -4144,7 +5084,7 @@ function pkgConfigGetInfo(name, seen) {
         else {
             const variables = {};
             for (const vn of yield pkgConfigGetList(name, 'variables'))
-                variables[vn] = yield pkgConfig('--variable', vn, name);
+                variables[vn] = yield pkgConfigGetVariable(name, vn);
             const requires = [];
             for (const rn of yield pkgConfigGetList(name, 'requires'))
                 requires.push(yield pkgConfigGetInfo(rn, [...(seen !== null && seen !== void 0 ? seen : []), name]));
@@ -4157,7 +5097,10 @@ function addPkgConfigPath(pkgConfigDir) {
     var _a;
     const pathSep = opts.platform === 'win32' ? ';' : ':';
     const pkgConfigPath = (_a = process.env.PKG_CONFIG_PATH) !== null && _a !== void 0 ? _a : '';
-    const pkgConfigDirs = pkgConfigPath.split(pathSep).filter(dir => dir !== '');
+    const pkgConfigDirs = pkgConfigPath
+        .split(pathSep)
+        .map(dir => dir.trim())
+        .filter(dir => dir !== '');
     core.exportVariable('PKG_CONFIG_PATH', [pkgConfigDir, ...pkgConfigDirs].join(pathSep));
 }
 exports.addPkgConfigPath = addPkgConfigPath;
@@ -4271,6 +5214,109 @@ function max(versions) {
     return maxSimVer === null ? null : toString(maxSimVer);
 }
 exports.max = max;
+
+
+/***/ }),
+
+/***/ 6102:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.upxSetup = void 0;
+const tc = __importStar(__nccwpck_require__(7784));
+const path = __importStar(__nccwpck_require__(9411));
+const opts = __importStar(__nccwpck_require__(1352));
+const util = __importStar(__nccwpck_require__(4024));
+function upxSetup(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        switch (opts.platform) {
+            case 'linux':
+                return yield upxSetupForLinux(options);
+            case 'darwin':
+                return yield upxSetupForMacOS(options);
+            case 'win32':
+                return yield upxSetupForWindows(options);
+        }
+    });
+}
+exports.upxSetup = upxSetup;
+function upxSetupForLinux(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const upxVersion = '3.96';
+        options['upx-version'] = upxVersion;
+        const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-amd64_linux.tar.xz`;
+        const upxDir = opts.setupAgdaCacheDir(path.join('upx', upxVersion));
+        const upxTar = yield tc.downloadTool(upxPkgUrl);
+        const upxDirTC = yield tc.extractTar(upxTar, upxDir, [
+            '--extract',
+            '--xz',
+            '--preserve-permissions',
+            '--strip-components=1'
+        ]);
+        return path.join(upxDirTC, 'upx');
+    });
+}
+function upxSetupForMacOS(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Ensure UPX is installed and is the correct version:
+        // NOTE: patch version '3.96_1' and (presumably) later versions are OK
+        let upxVersion = yield util.brewGetVersion('upx');
+        if (upxVersion === undefined)
+            yield util.brew('install', 'upx');
+        else if (util.simver.lt(upxVersion, '3.96_1'))
+            yield util.brew('upgrade', 'upx');
+        upxVersion = yield util.brewGetVersion('upx');
+        if (upxVersion === undefined)
+            throw Error(`Could not install UPX`);
+        options['upx-version'] = upxVersion;
+        return 'upx';
+    });
+}
+function upxSetupForWindows(options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const upxVersion = '3.96';
+        options['upx-version'] = upxVersion;
+        const upxDir = opts.setupAgdaCacheDir(path.join('upx', upxVersion));
+        const upxPkgUrl = `https://github.com/upx/upx/releases/download/v${upxVersion}/upx-${upxVersion}-win64.zip`;
+        const upxZip = yield tc.downloadTool(upxPkgUrl);
+        const upxDirTC = yield tc.extractZip(upxZip, upxDir);
+        return path.join(upxDirTC, `upx-${upxVersion}-win64`, 'upx');
+    });
+}
 
 
 /***/ }),

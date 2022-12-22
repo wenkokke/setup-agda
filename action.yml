@@ -159,6 +159,15 @@ inputs:
 
       Only used when `bdist-upload` is specified.
     required: false
+  bdist-license-report:
+    description: |
+      If specified, include a license report in the binary distribution.
+
+      The `bdist-license-report` option is incompatible with `enable-stack`, since
+      it relies on [`cabal-plan`](https://hackage.haskell.org/package/cabal-plan).
+
+      Only used when `bdist-upload` is specified.
+    required: false
   bdist-compress-exe:
     description: |
       If specified, the executables are compressed with [UPX](https://upx.github.io).
