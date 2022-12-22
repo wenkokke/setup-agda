@@ -6,6 +6,9 @@
   "author": "Wen Kokke",
   "license": "MIT",
   "main": "lib/main.js",
+  "engines": {
+    "node": ">=16"
+  },
   "dependencies": {
     "@actions/artifact": "^1.1.0",
     "@actions/core": "^1.6.0",

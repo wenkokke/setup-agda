@@ -1,10 +1,13 @@
-import * as glob from '@actions/glob'
-import * as path from 'node:path'
+import * as core from '@actions/core'
+import assert from 'node:assert'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
-import * as opts from '../opts'
+import * as path from 'node:path'
+import {pipeline} from 'node:stream/promises'
 import gmpLicense from '../data/licenses/gmp'
+import icuLicense from '../data/licenses/icu'
 import zlibLicense from '../data/licenses/zlib'
+import * as opts from '../opts'
 import * as util from '../util'
 
 export default async function licenseReport(
@@ -13,60 +16,57 @@ export default async function licenseReport(
   installDir: string,
   options: opts.BuildOptions
 ): Promise<void> {
-  // Create the license directory:
-  const licenseDir = path.join(installDir, 'licenses')
-  await util.mkdirP(licenseDir)
+  // Create the license cache directory:
+  const agdaWithVersion = `Agda-${options['agda-version']}`
+  const agdaCacheDir = opts.setupAgdaCacheDir(agdaWithVersion)
+  const licenseCacheDir = path.join(agdaCacheDir, 'licenses')
+  await util.mkdirP(licenseCacheDir)
 
-  // Copy the gmp license to $licenseDir/gmp/LICENSE:
-  const gmpLicenseDir = path.join(licenseDir, 'gmp')
-  const gmpLicenseFile = path.join(gmpLicenseDir, 'LICENSE')
-  await util.mkdirP(gmpLicenseDir)
-  fs.writeFileSync(gmpLicenseFile, gmpLicense)
+  // Write licenses.txt:
+  const licensesTxt = path.join(installDir, 'licenses.txt')
+  const licensesTxtAppendStream = async (rs: fs.ReadStream): Promise<void> =>
+    await pipeline(rs, fs.createWriteStream(licensesTxt, {flags: 'a'}))
+  const depHeader = (depName: string): string =>
+    ['', '-'.repeat(80), '', depName, ''].join(os.EOL)
 
-  // Copy the zlib license to $licenseDir/zlib/LICENSE:
-  const zlibLicenseDir = path.join(licenseDir, 'zlib')
-  const zlibLicenseFile = path.join(zlibLicenseDir, 'LICENSE')
-  await util.mkdirP(zlibLicenseDir)
-  fs.writeFileSync(zlibLicenseFile, zlibLicense)
-
-  // Copy the ICU license to $licenseDir/icu-$icuVersion/LICENSE:
-  if (opts.needsIcu(options)) await util.icuWriteLicense(licenseDir, options)
-
-  // Run `cabal-plan license-report` to create a report of the licenses of Agda dependencies:
-  await util.cabalPlanLicenseReport(cabalPlan, sourceDir, licenseDir)
-
-  // Generate a single LICENSE file:
-  const licenseFile = path.join(licenseDir, 'licenses.txt')
-  const licenseFileWriteStream = fs.createWriteStream(licenseFile, {flags: 'a'})
   // 1. Append the Agda license to $licenseFile:
-  const agdaLicenseFileSource = path.join(sourceDir, 'LICENSE')
-  const agdaLicenseReadStream = fs.createReadStream(agdaLicenseFileSource)
-  agdaLicenseReadStream.pipe(licenseFileWriteStream, {end: false})
-  // 2. Append the license for every other dependency to $licenseFile:
-  const licenseGlobber = await glob.create(path.join(licenseDir, '*', '*'))
-  for await (const depLicenseFile of licenseGlobber.globGenerator()) {
-    const depName = path.basename(path.dirname(depLicenseFile))
-    licenseFileWriteStream.write(os.EOL)
-    licenseFileWriteStream.write(os.EOL)
-    licenseFileWriteStream.write(
-      '--------------------------------------------------------------------------------'
-    )
-    licenseFileWriteStream.write(os.EOL)
-    licenseFileWriteStream.write(os.EOL)
-    licenseFileWriteStream.write(depName)
-    licenseFileWriteStream.write(os.EOL)
-    const depLicenseReadStream = fs.createReadStream(depLicenseFile)
-    depLicenseReadStream.pipe(licenseFileWriteStream, {end: false})
-  }
-  // 3. Close licenseFileWriteStream
-  licenseFileWriteStream.end()
-  // 4. Write the Agda license to $licenseDir/Agda-$agdaVersion/LICENSE
-  util.logging.info(`Copy Agda license to ${licenseDir}`)
-  const agdaLicenseDir = path.join(
-    licenseDir,
-    `Agda-${options['agda-version']}`
+  const agdaLicensePath = path.join(sourceDir, 'LICENSE')
+  await licensesTxtAppendStream(fs.createReadStream(agdaLicensePath))
+
+  // 2. Append the licenses of the Haskell dependencies:
+  const cabalPlanLicenses = await util.cabalPlanGetLicenses(
+    cabalPlan,
+    sourceDir,
+    Object.keys(opts.agdaComponents),
+    licenseCacheDir
   )
-  const agdaLicenseFileTarget = path.join(agdaLicenseDir, 'LICENSE')
-  await util.mkdirP(agdaLicenseDir)
-  await util.cp(agdaLicenseFileSource, agdaLicenseFileTarget)
+  for (const [depName, depLicensePath] of Object.entries(cabalPlanLicenses)) {
+    assert(depLicensePath !== undefined)
+    fs.appendFileSync(licensesTxt, depHeader(depName))
+    await licensesTxtAppendStream(fs.createReadStream(depLicensePath))
+  }
+
+  // 3. Add the gmp license
+  fs.appendFileSync(licensesTxt, depHeader('gmp'))
+  fs.appendFileSync(licensesTxt, gmpLicense)
+
+  // 4. Add the icu license
+  if (opts.needsIcu(options)) {
+    try {
+      const {icuName, icuLicensePath} = await util.icuGetLicense(
+        licenseCacheDir,
+        options
+      )
+      fs.appendFileSync(licensesTxt, depHeader(icuName))
+      await licensesTxtAppendStream(fs.createReadStream(icuLicensePath))
+    } catch (error) {
+      core.warning(util.ensureError(error))
+      fs.appendFileSync(licensesTxt, depHeader('icu'))
+      fs.appendFileSync(licensesTxt, icuLicense)
+    }
+  }
+
+  // 5. Add the zlib license
+  fs.appendFileSync(licensesTxt, depHeader('zlib'))
+  fs.appendFileSync(licensesTxt, zlibLicense)
 }

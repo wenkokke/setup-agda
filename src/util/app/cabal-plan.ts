@@ -1,10 +1,13 @@
-import * as path from 'node:path'
+import * as glob from '@actions/glob'
 import * as fs from 'node:fs'
+import * as http from 'node:http'
 import * as os from 'node:os'
+import * as path from 'node:path'
+import {pipeline} from 'node:stream/promises'
 import * as opts from '../../opts'
+import {ExecOptions, getOutputAndErrors, mkdirP} from '../exec'
 import * as logging from '../logging'
 import {cabal} from './haskell'
-import {ExecOptions, getOutputAndErrors, mkdirP} from '../exec'
 
 export async function cabalPlanSetup(
   options: opts.BuildOptions
@@ -34,36 +37,60 @@ export async function cabalPlanSetup(
     : path.join(cabalPlanDir, 'cabal-plan')
 }
 
-export async function cabalPlanLicenseReport(
+const cabalPlanWarningPattern =
+  /WARNING: license files for (?<depName>\S+) \(global\/GHC bundled\) not copied/
+
+// Guess the URL at which the package _might_ store its license.
+const hackageLicenseUrl = (slug: string): string =>
+  `http://hackage.haskell.org/package/${slug}/src/LICENSE`
+
+export async function cabalPlanGetLicenses(
   cabalPlan: string,
   sourceDir: string,
+  components: string[],
   licenseDir: string
-): Promise<void> {
+): Promise<Partial<Record<string, string>>> {
   const execOptions: ExecOptions = {cwd: sourceDir}
-  for (const component of Object.keys(opts.agdaComponents)) {
-    // Get the short name for the component, e.g., Agda:exe:agda -> agda
-    const componentShortName = component.split(':').at(-1)
-
-    // Run `cabal-plan license-report`
-    logging.info(
-      `Generate license-report for ${componentShortName} in ${licenseDir}`
-    )
-    const licenseReportPath = path.join(
-      licenseDir,
-      `license-report-${componentShortName}.md`
-    )
-    const {output, errors} = await getOutputAndErrors(
+  const licenses: Partial<Record<string, string>> = {}
+  for (const component of components) {
+    // Run `cabal-plan license-report` and save the licenses to $licenseDir:
+    const {errors} = await getOutputAndErrors(
       cabalPlan,
       ['license-report', `--licensedir=${licenseDir}`, component],
       execOptions
     )
-
-    // Write the generated license report and warnings to a separate file:
-    fs.writeFileSync(
-      licenseReportPath,
-      [output, '## Warnings', errors ? errors : 'No warnings'].join(
-        `${os.EOL}${os.EOL}`
-      )
-    )
+    // Read the generated licenses, and add them to $licenses:
+    const licenseGlobber = await glob.create(path.join(licenseDir, '*', '*'))
+    for (const depLicensePath of await licenseGlobber.glob()) {
+      const depName = path.basename(path.dirname(depLicensePath))
+      licenses[depName] = depLicensePath
+    }
+    // Process the warnings and download the missing licenses:
+    for (const error of errors.split(os.EOL)) {
+      const warningMatch = error.match(cabalPlanWarningPattern)
+      const depName = warningMatch?.groups?.packageName
+      if (depName !== undefined) {
+        const depLicenseUrl = hackageLicenseUrl(depName)
+        await new Promise<void>((resolve, reject) => {
+          http.get(
+            depLicenseUrl,
+            async (res: http.IncomingMessage): Promise<void> => {
+              const {statusCode} = res
+              if (statusCode === 200) {
+                const depLicensePath = path.join(licenseDir, depName, 'LICENSE')
+                await mkdirP(path.join(licenseDir, depName))
+                await pipeline(res, fs.createWriteStream(depLicensePath))
+                licenses[depName] = depLicensePath
+                resolve()
+              } else {
+                reject(Error(`Could not get license for ${depName}`))
+              }
+            }
+          )
+        })
+      }
+    }
   }
+  // Return the licenses
+  return licenses
 }
