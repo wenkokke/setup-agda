@@ -33,7 +33,7 @@ export function readDefaultsSync(): string[] {
 export function readExecutablesSync(): string[] {
   if (!fs.existsSync(opts.agdaExecutablesFile())) return []
   const defaultsFileContents = fs
-    .readFileSync(opts.agdaDefaultsFile())
+    .readFileSync(opts.agdaExecutablesFile())
     .toString()
   return splitLines(defaultsFileContents)
 }
