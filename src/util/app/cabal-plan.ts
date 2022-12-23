@@ -1,23 +1,25 @@
-import * as core from '@actions/core'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
-import * as opts from '../opts'
-import * as util from '../util'
+import * as opts from '../../opts'
+import * as logging from '../logging'
+import {cabal} from './haskell'
+import {ExecOptions, getOutputAndErrors, mkdirP} from '../exec'
 
 export async function cabalPlanSetup(
   options: opts.BuildOptions
-): Promise<void> {
+): Promise<string> {
   const cabalPlanVersion = '0.7.2.3'
   options['cabal-plan-version'] = cabalPlanVersion
   const cabalPlanDir = opts.setupAgdaCacheDir(
     path.join('cabal-plan', cabalPlanVersion)
   )
+  logging.info(`Install cabal-plan ${cabalPlanVersion} to ${cabalPlanDir}`)
   // Update cabal package index
-  await util.cabal(['update'])
+  await cabal(['update'])
   // Install cabal-plan to cabalPlanDir
-  await util.mkdirP(cabalPlanDir)
-  await util.cabal([
+  await mkdirP(cabalPlanDir)
+  await cabal([
     'install',
     `cabal-plan-${cabalPlanVersion}`,
     '-f+license-report',
@@ -26,29 +28,32 @@ export async function cabalPlanSetup(
     `--installdir=${cabalPlanDir}`,
     '--overwrite-policy=always'
   ])
-  // Add the path to the cabal-plan executable to the PATH
-  core.addPath(cabalPlanDir)
+  // Return the path to the cabal-plan executable:
+  return opts.platform === 'win32'
+    ? path.join(cabalPlanDir, 'cabal-plan.exe')
+    : path.join(cabalPlanDir, 'cabal-plan')
 }
 
 export async function cabalPlanLicenseReport(
+  cabalPlan: string,
   sourceDir: string,
   licenseDir: string
 ): Promise<void> {
-  const execOptions: util.ExecOptions = {cwd: sourceDir}
+  const execOptions: ExecOptions = {cwd: sourceDir}
   for (const component of Object.keys(opts.agdaComponents)) {
     // Get the short name for the component, e.g., Agda:exe:agda -> agda
     const componentShortName = component.split(':').at(-1)
 
     // Run `cabal-plan license-report`
-    core.info(
+    logging.info(
       `Generate license-report for ${componentShortName} in ${licenseDir}`
     )
     const licenseReportPath = path.join(
       licenseDir,
       `license-report-${componentShortName}.md`
     )
-    const {output, errors} = await util.getOutputAndErrors(
-      'cabal-plan',
+    const {output, errors} = await getOutputAndErrors(
+      cabalPlan,
       ['license-report', `--licensedir=${licenseDir}`, component],
       execOptions
     )

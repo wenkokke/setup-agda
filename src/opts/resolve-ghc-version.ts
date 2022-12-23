@@ -1,21 +1,21 @@
-import * as core from '@actions/core'
 import assert from 'node:assert'
 import os from 'node:os'
 import semver from 'semver'
 import bundledHaskellVersionInfo from '../data/Haskell.versions.json'
-import {BuildOptions} from './types'
+import * as logging from '../util/logging'
+import * as opts from './types'
 
 // Resolving the GHC version to use:
 
 export default function resolveGhcVersion(
-  options: BuildOptions,
+  options: opts.BuildOptions,
   currentVersion: string | null,
   versionsThatCanBuildAgda: string[]
 ): {version: string; matchingVersionsThatCanBuildAgda: string[]} {
   assert(versionsThatCanBuildAgda.length > 0)
   // Print configuration:
   const versionsThatCanBeSetUp = bundledHaskellVersionInfo.ghc
-  core.info(
+  logging.info(
     [
       'Resolving GHC version:',
       options['ghc-version'] === 'recommended'
@@ -56,7 +56,7 @@ export default function resolveGhcVersion(
       options['ghc-version']
     )
     if (!matchingVersionsThatCanBuildAgda)
-      core.warning(
+      logging.warning(
         [
           `User-specified GHC ${options['ghc-version']}`,
           `is not supported by Agda ${options['agda-version']}`
@@ -68,13 +68,13 @@ export default function resolveGhcVersion(
       (currentVersion === null ||
         !match(options['ghc-version'], currentVersion))
     )
-      core.warning(
+      logging.warning(
         [
           `User-specified GHC ${options['ghc-version']}`,
           'is not supported by haskell/actions/setup'
         ].join(' ')
       )
-    core.info(`Selecting GHC ${options['ghc-version']}: user-specified`)
+    logging.info(`Selecting GHC ${options['ghc-version']}: user-specified`)
     return {
       version: options['ghc-version'],
       matchingVersionsThatCanBuildAgda
@@ -85,13 +85,13 @@ export default function resolveGhcVersion(
   if (currentVersion !== null) {
     const matchingVersionsThatCanBuildAgda = canBuildAgda(currentVersion)
     if (matchingVersionsThatCanBuildAgda.length > 0) {
-      core.info(`Selecting GHC ${currentVersion}: it is currently installed`)
+      logging.info(`Selecting GHC ${currentVersion}: it is currently installed`)
       return {version: currentVersion, matchingVersionsThatCanBuildAgda}
     }
   }
 
   // Find which versions are supported:
-  core.info('Compiling list of GHC version candidates...')
+  logging.info('Compiling list of GHC version candidates...')
   const candidates: {
     version: string
     matchingVersionsThatCanBuildAgda: string[]
@@ -106,7 +106,7 @@ export default function resolveGhcVersion(
     //       the list of versions that can build Agda.
     for (const version of versionsThatCanBuildAgda)
       if (!semver.satisfies(version, options['ghc-version-range']))
-        core.info(`Reject GHC ${version}: excluded by user-provided range`)
+        logging.info(`Reject GHC ${version}: excluded by user-provided range`)
       else
         candidates.push({
           version,
@@ -121,9 +121,9 @@ export default function resolveGhcVersion(
     for (const version of versionsThatCanBeSetUp) {
       const matchingVersionsThatCanBuildAgda = canBuildAgda(version)
       if (matchingVersionsThatCanBuildAgda.length === 0)
-        core.info(`Reject GHC ${version}: unsupported by Agda`)
+        logging.info(`Reject GHC ${version}: unsupported by Agda`)
       else if (!semver.satisfies(version, options['ghc-version-range']))
-        core.info(`Reject GHC ${version}: excluded by user-provided range`)
+        logging.info(`Reject GHC ${version}: excluded by user-provided range`)
       else
         candidates.push({
           version,
@@ -135,13 +135,13 @@ export default function resolveGhcVersion(
     throw Error('No GHC version candidates')
   } else {
     const versions = candidates.map(info => info.version)
-    core.info(`GHC version candidates: ${versions.join(', ')}`)
+    logging.info(`GHC version candidates: ${versions.join(', ')}`)
   }
 
   // Select the latest GHC version from the list of candidates:
   const selected = candidates.reduce((latest, current) =>
     semver.gte(latest.version, current.version) ? latest : current
   )
-  core.info(`Selecting GHC ${selected.version}: latest supported version`)
+  logging.info(`Selecting GHC ${selected.version}: latest supported version`)
   return selected
 }

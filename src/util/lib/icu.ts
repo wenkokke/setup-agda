@@ -1,10 +1,9 @@
-import * as core from '@actions/core'
 import * as tc from '@actions/tool-cache'
-import * as opts from '../opts'
-import * as util from '../util'
+import * as opts from '../../opts'
+import * as logging from '../logging'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
-import icuLicense from '../data/licenses/icu'
+import icuLicense from '../../data/licenses/icu'
 import {
   setupForLinux as icuSetupForLinux,
   bundleForLinux as icuBundleForLinux
@@ -18,6 +17,8 @@ import {
   bundleForWindows as icuBundleForWindows
 } from './icu/windows'
 import assert from 'node:assert'
+import ensureError from '../ensure-error'
+import {mkdirP} from '../exec'
 
 export async function icuSetup(options: opts.BuildOptions): Promise<void> {
   switch (opts.platform) {
@@ -64,7 +65,7 @@ export async function icuWriteLicense(
   // Create the ICU license directory:
   const icuLicenseDir = path.join(licenseDir, `icu-${options['icu-version']}`)
   const icuLicenseFile = path.join(icuLicenseDir, `LICENSE`)
-  await util.mkdirP(icuLicenseDir)
+  await mkdirP(icuLicenseDir)
 
   // Transform the ICU version, e.g., "71.1_1", to something we can use in the URL, such as "71-1"
   const icuVersion = options['icu-version']
@@ -82,7 +83,7 @@ export async function icuWriteLicense(
     )
   } catch (error) {
     // If anything goes wrong, write the backup license:
-    core.warning(util.ensureError(error))
+    logging.warning(ensureError(error))
     fs.writeFileSync(icuLicenseFile, icuLicense)
   }
 }

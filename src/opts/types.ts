@@ -1,4 +1,4 @@
-import * as hackage from '../util/hackage'
+import * as hackage from '../util/app/hackage'
 import bundledAgdaBdistIndex from '../data/Agda.bdist.json'
 import bundledAgdaStdlibSdistIndex from '../data/agda-stdlib.sdist.json'
 import bundledAgdaPackageInfoCacheForDeprecatedVersions from '../data/Agda.versions.deprecated.json'

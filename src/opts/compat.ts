@@ -1,7 +1,7 @@
-import * as core from '@actions/core'
 import * as exec from '@actions/exec'
 import * as os from 'node:os'
-import {simver} from '../util'
+import * as simver from '../util/simver'
+import * as logging from '../util/logging'
 import {platform} from './platform'
 import * as opts from './types'
 
@@ -10,7 +10,7 @@ export async function runPreBuildHook(
   execOptions?: exec.ExecOptions
 ): Promise<void> {
   if (options['pre-build-hook'] !== '') {
-    core.info(`Running pre-build hook:${os.EOL}${options['pre-build-hook']}`)
+    logging.info(`Running pre-build hook:${os.EOL}${options['pre-build-hook']}`)
     execOptions = execOptions ?? {}
     execOptions.input = Buffer.from(options['pre-build-hook'], 'utf-8')
     await exec.exec('bash', [], execOptions)

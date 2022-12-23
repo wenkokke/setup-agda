@@ -1,4 +1,3 @@
-import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
@@ -9,6 +8,7 @@ import zlibLicense from '../data/licenses/zlib'
 import * as util from '../util'
 
 export default async function licenseReport(
+  cabalPlan: string,
   sourceDir: string,
   installDir: string,
   options: opts.BuildOptions
@@ -33,7 +33,7 @@ export default async function licenseReport(
   if (opts.needsIcu(options)) await util.icuWriteLicense(licenseDir, options)
 
   // Run `cabal-plan license-report` to create a report of the licenses of Agda dependencies:
-  await util.cabalPlanLicenseReport(sourceDir, licenseDir)
+  await util.cabalPlanLicenseReport(cabalPlan, sourceDir, licenseDir)
 
   // Generate a single LICENSE file:
   const licenseFile = path.join(licenseDir, 'licenses.txt')
@@ -61,7 +61,7 @@ export default async function licenseReport(
   // 3. Close licenseFileWriteStream
   licenseFileWriteStream.end()
   // 4. Write the Agda license to $licenseDir/Agda-$agdaVersion/LICENSE
-  core.info(`Copy Agda license to ${licenseDir}`)
+  util.logging.info(`Copy Agda license to ${licenseDir}`)
   const agdaLicenseDir = path.join(
     licenseDir,
     `Agda-${options['agda-version']}`

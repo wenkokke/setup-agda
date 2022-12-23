@@ -1,5 +1,5 @@
-import * as core from '@actions/core'
 import assert from 'node:assert'
+import * as logging from '../util/logging'
 import * as simver from '../util/simver'
 import * as opts from './types'
 
@@ -25,7 +25,7 @@ export default function resolveAgdaStdlibVersion(
         `not in list of known versions [${opts.agdaStdlibVersions.join(', ')}]`
       ].join(' ')
     )
-    core.info(`Resolved latest Agda version to ${latest}`)
+    logging.info(`Resolved latest Agda version to ${latest}`)
     return latest
   } else if (agdaStdlibVersionSpec === 'recommended') {
     if (agdaVersion === 'HEAD' || agdaVersion === 'nightly') {

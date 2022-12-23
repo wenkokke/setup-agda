@@ -1,4 +1,4 @@
-import * as core from '@actions/core'
+import * as logging from '../util/logging'
 
 export type Platform = 'linux' | 'darwin' | 'win32'
 
@@ -29,6 +29,6 @@ export type Arch =
 
 export const arch: Arch = (() => {
   if (process.arch !== 'x64')
-    core.warning(`Support for ${process.arch} is experimental`)
+    logging.warning(`Support for ${process.arch} is experimental`)
   return process.arch
 })()

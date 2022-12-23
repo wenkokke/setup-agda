@@ -1,11 +1,11 @@
-import * as core from '@actions/core'
 import * as tc from '@actions/tool-cache'
-import * as opts from './types'
 import * as crypto from 'node:crypto'
-import {setupAgdaCacheDir} from './appdirs'
 import * as httpm from 'node:http'
 import * as path from 'node:path'
-import * as util from '../util'
+import * as exec from '../util/exec'
+import * as logging from '../util/logging'
+import {setupAgdaCacheDir} from './appdirs'
+import * as opts from './types'
 
 export default async function downloadDist(
   entry: opts.Dist,
@@ -17,7 +17,7 @@ export default async function downloadDist(
   if (typeof entry === 'string') entry = {url: entry}
 
   // Download package depending on the type of URL:
-  core.info(`Downloading package from ${entry.url}`)
+  logging.info(`Downloading package from ${entry.url}`)
   switch (entry.distType ?? inferDistType(entry.url)) {
     case 'zip': {
       const arc = await tc.downloadTool(entry.url, undefined, auth, headers)
@@ -40,7 +40,7 @@ export default async function downloadDist(
           crypto.createHash('sha256').update(entry.url).digest('hex')
         )
       }
-      await util.getOutput(
+      await exec.getOutput(
         'git',
         [
           ['clone'],

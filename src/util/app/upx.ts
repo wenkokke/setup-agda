@@ -1,7 +1,8 @@
 import * as tc from '@actions/tool-cache'
 import * as path from 'node:path'
-import * as opts from '../opts'
-import * as util from '../util'
+import * as opts from '../../opts'
+import {brew, brewGetVersion} from './homebrew'
+import * as simver from '../simver'
 
 export async function upxSetup(options: opts.BuildOptions): Promise<string> {
   switch (opts.platform) {
@@ -32,11 +33,10 @@ async function upxSetupForLinux(options: opts.BuildOptions): Promise<string> {
 async function upxSetupForMacOS(options: opts.BuildOptions): Promise<string> {
   // Ensure UPX is installed and is the correct version:
   // NOTE: patch version '3.96_1' and (presumably) later versions are OK
-  let upxVersion = await util.brewGetVersion('upx')
-  if (upxVersion === undefined) await util.brew('install', 'upx')
-  else if (util.simver.lt(upxVersion, '3.96_1'))
-    await util.brew('upgrade', 'upx')
-  upxVersion = await util.brewGetVersion('upx')
+  let upxVersion = await brewGetVersion('upx')
+  if (upxVersion === undefined) await brew('install', 'upx')
+  else if (simver.lt(upxVersion, '3.96_1')) await brew('upgrade', 'upx')
+  upxVersion = await brewGetVersion('upx')
   if (upxVersion === undefined) throw Error(`Could not install UPX`)
   options['upx-version'] = upxVersion
   return 'upx'

@@ -1,6 +1,6 @@
-import * as core from '@actions/core'
-import * as exec from './exec'
-import ensureError from './ensure-error'
+import * as logging from '../logging'
+import * as exec from '../exec'
+import ensureError from '../ensure-error'
 
 export async function getGhcInfo(
   execOptions?: exec.ExecOptions
@@ -66,7 +66,7 @@ export async function ghcMaybeGetVersion(using?: {
   try {
     return await ghcGetVersion(using)
   } catch (error) {
-    core.info(
+    logging.info(
       `Could not get installed GHC version: ${ensureError(error).message}`
     )
     return null
@@ -101,7 +101,7 @@ export async function cabalMaybeGetVersion(using?: {
   try {
     return await cabalGetVersion(using)
   } catch (error) {
-    core.info(
+    logging.info(
       `Could not get installed Cabal version: ${ensureError(error).message}`
     )
     return null
