@@ -3318,7 +3318,7 @@ function readExecutablesSync() {
     if (!fs.existsSync(opts.agdaExecutablesFile()))
         return [];
     const defaultsFileContents = fs
-        .readFileSync(opts.agdaDefaultsFile())
+        .readFileSync(opts.agdaExecutablesFile())
         .toString();
     return (0, lines_1.splitLines)(defaultsFileContents);
 }
