@@ -33,7 +33,10 @@ export default async function uploadBdist(
     try {
       const upxExe = await util.upxSetup(options)
       for (const component of Object.values(opts.agdaComponents))
-        await compressBin(upxExe, path.join(bdistDir, 'bin', component.exe))
+        await util.getOutput(upxExe, [
+          '--best',
+          path.join(bdistDir, 'bin', component.exe)
+        ])
     } catch (error) {
       util.logging.info(util.ensureError(error).message)
     }
@@ -78,15 +81,6 @@ export default async function uploadBdist(
 
   // Return artifact name
   return uploadInfo.artifactName
-}
-
-async function compressBin(upxExe: string, binPath: string): Promise<void> {
-  // Print the needed libraries before compressing:
-  await util.printNeeded(binPath)
-  // Compress with UPX:
-  await util.getOutput(upxExe, ['--best', binPath])
-  // Print the needed libraries after compressing:
-  await util.printNeeded(binPath)
 }
 
 export function renderName(

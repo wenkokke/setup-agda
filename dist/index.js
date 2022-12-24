@@ -3013,7 +3013,10 @@ function uploadBdist(installDir, options) {
             try {
                 const upxExe = yield util.upxSetup(options);
                 for (const component of Object.values(opts.agdaComponents))
-                    yield compressBin(upxExe, path.join(bdistDir, 'bin', component.exe));
+                    yield util.getOutput(upxExe, [
+                        '--best',
+                        path.join(bdistDir, 'bin', component.exe)
+                    ]);
             }
             catch (error) {
                 util.logging.info(util.ensureError(error).message);
@@ -3046,16 +3049,6 @@ function uploadBdist(installDir, options) {
     });
 }
 exports["default"] = uploadBdist;
-function compressBin(upxExe, binPath) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Print the needed libraries before compressing:
-        yield util.printNeeded(binPath);
-        // Compress with UPX:
-        yield util.getOutput(upxExe, ['--best', binPath]);
-        // Print the needed libraries after compressing:
-        yield util.printNeeded(binPath);
-    });
-}
 function renderName(template, options) {
     return Mustache.render(template, Object.assign(Object.assign({}, (0, object_pick_1.default)(options, [
         'agda-version',
@@ -3199,8 +3192,11 @@ __exportStar(__nccwpck_require__(6961), exports);
 __exportStar(__nccwpck_require__(8458), exports);
 __exportStar(__nccwpck_require__(8526), exports);
 __exportStar(__nccwpck_require__(905), exports);
-__exportStar(__nccwpck_require__(8398), exports);
-__exportStar(__nccwpck_require__(1311), exports);
+__exportStar(__nccwpck_require__(8483), exports);
+__exportStar(__nccwpck_require__(3309), exports);
+__exportStar(__nccwpck_require__(463), exports);
+__exportStar(__nccwpck_require__(8583), exports);
+__exportStar(__nccwpck_require__(6913), exports);
 __exportStar(__nccwpck_require__(1016), exports);
 exports.simver = __importStar(__nccwpck_require__(7609));
 exports.logging = __importStar(__nccwpck_require__(1942));
@@ -5416,117 +5412,6 @@ var core_5 = __nccwpck_require__(2186);
 Object.defineProperty(exports, "group", ({ enumerable: true, get: function () { return core_5.group; } }));
 var core_6 = __nccwpck_require__(2186);
 Object.defineProperty(exports, "setOutput", ({ enumerable: true, get: function () { return core_6.setOutput; } }));
-
-
-/***/ }),
-
-/***/ 8398:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.printNeeded = void 0;
-const logging = __importStar(__nccwpck_require__(1942));
-const os = __importStar(__nccwpck_require__(612));
-const opts = __importStar(__nccwpck_require__(1352));
-const ensure_error_1 = __importDefault(__nccwpck_require__(1151));
-const patchelf_1 = __nccwpck_require__(8483);
-const otool_1 = __nccwpck_require__(3309);
-const dumpbin_1 = __nccwpck_require__(463);
-__exportStar(__nccwpck_require__(8483), exports);
-__exportStar(__nccwpck_require__(3309), exports);
-__exportStar(__nccwpck_require__(463), exports);
-function printNeeded(binPath) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            let output = '';
-            switch (opts.platform) {
-                case 'linux': {
-                    output = yield (0, patchelf_1.patchelf)('--print-needed', binPath);
-                    break;
-                }
-                case 'darwin': {
-                    output = yield (0, otool_1.otool)('-L', binPath);
-                    break;
-                }
-                case 'win32': {
-                    output = yield (0, dumpbin_1.dumpbin)('/imports', binPath);
-                    break;
-                }
-            }
-            logging.info(`Needed libraries:${os.EOL}${output}`);
-        }
-        catch (error) {
-            logging.info((0, ensure_error_1.default)(error).message);
-        }
-    });
-}
-exports.printNeeded = printNeeded;
-
-
-/***/ }),
-
-/***/ 1311:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__nccwpck_require__(8583), exports);
-__exportStar(__nccwpck_require__(6913), exports);
 
 
 /***/ }),
