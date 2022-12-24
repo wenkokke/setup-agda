@@ -15,22 +15,6 @@ on:
   workflow_call:
   workflow_dispatch:
 
-env:
-  # A yq script which fixes the text-icu version bounds in stack.yaml.
-  # Used by Agda versions 2.5.3 - 2.6.2.
-  YQ_SCRIPT_FIX_TEXT_ICU: |
-    . *+ {
-      "allow-newer": true,
-      "extra-deps": ["text-icu-0.7.1.0"],
-      "configure-options": {"Agda": ["--constraint=text-icu>=0.7.1.0"]}
-    }
-  # A yq script which fixes the amount of memory available for compiling Agda.
-  # Used by almost all legacy Agda versions.
-  YQ_SCRIPT_ADD_MEMORY: |
-    . *+ {
-      "ghc-options": {"Agda": "+RTS -M6G -RTS"}
-    }
-
 jobs:
   # Build Agda 2.6.2.2 with Cabal:
   build-2_6_2_2-cabal:
@@ -42,7 +26,6 @@ jobs:
         uses: ./
         with:
           agda-version: '2.6.2.2'
-          bdist-upload: true
           bdist-name: |
             agda-{{{agda-version}}}
                 -{{{arch}}}
@@ -50,43 +33,20 @@ jobs:
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
-          cabal-version: '3.6'
-          force-build: true
-          ghc-version-match-exact: true
-    strategy:
-      matrix:
-        os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12, windows-2022]
-
-  # Build Agda 2.6.2.2 with Stack:
-  build-2_6_2_2-stack:
-    name: Build Agda (2.6.2.2) on ${{ matrix.os }} with Stack
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Build Agda (2.6.2.2)
-        uses: ./
-        with:
-          agda-version: '2.6.2.2'
+                -cabal{{{stack-version}}}
+          bdist-license-report: true
           bdist-upload: true
-          bdist-name: |
-            agda-{{{agda-version}}}
-                -{{{arch}}}
-                -${{ matrix.os }}
-                -icu{{{icu-version}}}
-                -ghc{{{ghc-version}}}
-                -cabal{{{cabal-version}}}
-                -stack{{{stack-version}}}
-          cabal-version: '3.4'
-          enable-stack: true
+          cabal-version: '3.8'
           force-build: true
+          force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
           ghc-version-match-exact: true
     strategy:
       matrix:
         os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12, windows-2022]
 
-  # Build Agda 2.6.2.1 with Stack:
-  build-2_6_2_1-stack:
-    name: Build Agda (2.6.2.1) on ${{ matrix.os }} with Stack
+  # Build Agda 2.6.2.1 with Cabal:
+  build-2_6_2_1-cabal:
+    name: Build Agda (2.6.2.1) on ${{ matrix.os }} with Cabal
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -96,7 +56,6 @@ jobs:
         uses: ./
         with:
           agda-version: '2.6.2'
-          bdist-upload: true
           bdist-name: |
             agda-{{{agda-version}}}
                 -{{{arch}}}
@@ -104,22 +63,20 @@ jobs:
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
-                -stack{{{stack-version}}}
-          cabal-version: '2.4'
-          enable-stack: true
+                -cabal{{{stack-version}}}
+          bdist-license-report: true
+          bdist-upload: true
+          cabal-version: '3.8'
           force-build: true
           force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
           ghc-version-match-exact: true
-          pre-build-hook: |
-            yq -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
-            cat $STACK_YAML
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-11, windows-2022]
+        os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12, windows-2022]
 
-  # Build Agda 2.6.2 with Stack:
-  build-2_6_2-stack:
-    name: Build Agda (2.6.2) on ${{ matrix.os }} with Stack
+  # Build Agda 2.6.2 with Cabal:
+  build-2_6_2-cabal:
+    name: Build Agda (2.6.2) on ${{ matrix.os }} with Cabal
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -129,7 +86,6 @@ jobs:
         uses: ./
         with:
           agda-version: '2.6.2'
-          bdist-upload: true
           bdist-name: |
             agda-{{{agda-version}}}
                 -{{{arch}}}
@@ -137,22 +93,20 @@ jobs:
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
-                -stack{{{stack-version}}}
-          cabal-version: '2.4'
-          enable-stack: true
+                -cabal{{{stack-version}}}
+          bdist-license-report: true
+          bdist-upload: true
+          cabal-version: '3.8'
           force-build: true
           force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
           ghc-version-match-exact: true
-          pre-build-hook: |
-            yq -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
-            cat $STACK_YAML
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-11, windows-2022]
+        os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12, windows-2022]
 
-  # Build Agda 2.6.1.3 with Stack:
-  build-2_6_1_3-stack:
-    name: Build Agda (2.6.1.3) on ${{ matrix.os }} with Stack
+  # Build Agda 2.6.1.3 with Cabal:
+  build-2_6_1_3-cabal:
+    name: Build Agda (2.6.1.3) on ${{ matrix.os }} with Cabal
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -162,7 +116,6 @@ jobs:
         uses: ./
         with:
           agda-version: '2.6.1.3'
-          bdist-upload: true
           bdist-name: |
             agda-{{{agda-version}}}
                 -{{{arch}}}
@@ -170,22 +123,20 @@ jobs:
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
-                -stack{{{stack-version}}}
-          cabal-version: '2.4'
-          enable-stack: true
+                -cabal{{{stack-version}}}
+          bdist-license-report: true
+          bdist-upload: true
+          cabal-version: '3.8'
           force-build: true
+          force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
           ghc-version-match-exact: true
-          pre-build-hook: |
-            yq -i '${{ env.YQ_SCRIPT_FIX_TEXT_ICU }}' $STACK_YAML
-            yq -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
-            cat $STACK_YAML
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-11, windows-2022]
+        os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12, windows-2022]
 
-  # Build Agda 2.6.0.1 with Stack:
-  build-2_6_0_1-stack:
-    name: Build Agda (2.6.0.1) on ${{ matrix.os }} with Stack
+  # Build Agda 2.6.0.1 with Cabal:
+  build-2_6_0_1-cabal:
+    name: Build Agda (2.6.0.1) on ${{ matrix.os }} with Cabal
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -195,7 +146,6 @@ jobs:
         uses: ./
         with:
           agda-version: '2.6.0.1'
-          bdist-upload: true
           bdist-name: |
             agda-{{{agda-version}}}
                 -{{{arch}}}
@@ -203,22 +153,20 @@ jobs:
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
-                -stack{{{stack-version}}}
-          cabal-version: '2.4'
-          enable-stack: true
+                -cabal{{{stack-version}}}
+          bdist-license-report: true
+          bdist-upload: true
+          cabal-version: '3.8'
           force-build: true
+          force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
           ghc-version-match-exact: true
-          pre-build-hook: |
-            yq -i '${{ env.YQ_SCRIPT_FIX_TEXT_ICU }}' $STACK_YAML
-            yq -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
-            cat $STACK_YAML
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-11]
+        os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12]
 
-  # Build Agda 2.5.4.2 with Stack:
-  build-2_5_4_2-stack:
-    name: Build Agda (2.5.4.2) on ${{ matrix.os }} with Stack
+  # Build Agda 2.5.4.2 with Cabal:
+  build-2_5_4_2-cabal:
+    name: Build Agda (2.5.4.2) on ${{ matrix.os }} with Cabal
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -228,7 +176,6 @@ jobs:
         uses: ./
         with:
           agda-version: '2.5.4.2'
-          bdist-upload: true
           bdist-name: |
             agda-{{{agda-version}}}
                 -{{{arch}}}
@@ -236,22 +183,20 @@ jobs:
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
-                -stack{{{stack-version}}}
-          cabal-version: '2.4'
-          enable-stack: true
+                -cabal{{{stack-version}}}
+          bdist-license-report: true
+          bdist-upload: true
+          cabal-version: '3.8'
           force-build: true
+          force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
           ghc-version-match-exact: true
-          pre-build-hook: |
-            yq -i '${{ env.YQ_SCRIPT_FIX_TEXT_ICU }}' $STACK_YAML
-            yq -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
-            cat $STACK_YAML
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-11]
+        os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12]
 
-  # Build Agda 2.5.2 with Stack:
-  build-2_5_2-stack:
-    name: Build Agda (2.5.2) on ${{ matrix.os }} with Stack
+  # Build Agda 2.5.2 with Cabal:
+  build-2_5_2-cabal:
+    name: Build Agda (2.5.2) on ${{ matrix.os }} with Cabal
     runs-on: ${{ matrix.os }}
     continue-on-error: true
     steps:
@@ -262,7 +207,6 @@ jobs:
         uses: ./
         with:
           agda-version: '2.5.2'
-          bdist-upload: true
           bdist-name: |
             agda-{{{agda-version}}}
                 -{{{arch}}}
@@ -270,19 +214,13 @@ jobs:
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
-                -stack{{{stack-version}}}
-          cabal-version: '2.4'
-          enable-stack: true
+                -cabal{{{stack-version}}}
+          bdist-license-report: true
+          bdist-upload: true
+          cabal-version: '3.8'
           force-build: true
-          ghc-version: '8.0.2'
-          ghc-version-match-exact: false
-          pre-build-hook: |
-            stack config set resolver lts-9.21
-            stack install alex-3.2.1
-            stack install happy-1.19.4
-            yq -i '${{ env.YQ_SCRIPT_FIX_TEXT_ICU }}' $STACK_YAML
-            yq -i '${{ env.YQ_SCRIPT_ADD_MEMORY }}' $STACK_YAML
-            cat $STACK_YAML
+          force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
+          ghc-version-match-exact: true
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-11]
+        os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12]
