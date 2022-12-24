@@ -2124,6 +2124,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const setup_haskell_1 = __importDefault(__nccwpck_require__(6933));
@@ -2174,6 +2175,15 @@ function buildFromSource(options) {
                 matchingGhcVersionsThatCanBuildAgda: selectedGhc.matchingVersionsThatCanBuildAgda
             };
         }));
+        // 3. Install cabal-plan:
+        let cabalPlan;
+        if (options['bdist-license-report']) {
+            yield util.logging.group('🪪 Install cabal-plan', () => __awaiter(this, void 0, void 0, function* () {
+                // TODO: this relies on the GitHub runner having a version of GHC and
+                //       Cabal available before we call <haskell/actions/setup>
+                cabalPlan = yield util.cabalPlanSetup(options);
+            }));
+        }
         // 3. Setup GHC via <haskell/actions/setup>:
         if (buildInfo.requireSetup) {
             util.logging.info('📞 Calling "haskell/actions/setup"');
@@ -2198,22 +2208,20 @@ function buildFromSource(options) {
             yield buildTool.build(sourceDir, installDir, options, matchingGhcVersionsThatCanBuildAgda);
             yield util.cpR(path.join(sourceDir, 'src', 'data'), installDir);
         }));
-        // 6. Generate license report:
+        // 7. Generate license report:
         if (options['bdist-license-report']) {
             yield util.logging.group('🪪 Generate license report', () => __awaiter(this, void 0, void 0, function* () {
-                // Install cabal-plan:
-                const cabalPlan = yield util.cabalPlanSetup(options);
-                // Generate license report:
+                (0, node_assert_1.default)(cabalPlan !== undefined);
                 yield (0, license_report_1.default)(cabalPlan, sourceDir, installDir, options);
             }));
         }
-        // 7. Test:
+        // 8. Test:
         yield util.logging.group('👩🏾‍🔬 Testing Agda build', () => __awaiter(this, void 0, void 0, function* () {
             const agdaExePath = path.join(installDir, 'bin', opts.agdaComponents['Agda:exe:agda'].exe);
             const agdaDataDir = path.join(installDir, 'data');
             yield util.agdaTest({ agdaExePath, agdaDataDir });
         }));
-        // 8. If 'bdist-upload' is specified, upload as a package:
+        // 9. If 'bdist-upload' is specified, upload as a package:
         if (options['bdist-upload']) {
             yield util.logging.group('📦 Upload package', () => __awaiter(this, void 0, void 0, function* () {
                 const bdistName = yield (0, upload_bdist_1.default)(installDir, options);
