@@ -48,7 +48,7 @@ export async function build(
   await util.stack(
     [
       'build',
-      ...buildFlags(options),
+      ...stackGetBuildFlagsFor(options),
       '--copy-bins',
       `--local-bin-path=${installBinDir}`
     ],
@@ -56,7 +56,7 @@ export async function build(
   )
 }
 
-function buildFlags(options: opts.BuildOptions): string[] {
+function stackGetBuildFlagsFor(options: opts.BuildOptions): string[] {
   // NOTE:
   //   We set the build flags following Agda's deploy workflow, which builds
   //   the nightly distributions, except that we disable --cluster-counting

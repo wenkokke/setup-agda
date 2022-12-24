@@ -2282,11 +2282,18 @@ matchingGhcVersionsThatCanBuildAgda) {
         const execOptions = { cwd: sourceDir };
         // Run `cabal update`
         yield util.cabal(['update']);
-        // Run `cabal configure`:
-        util.logging.info(`Configure Agda-${options['agda-version']}`);
-        yield util.cabal(['configure', ...buildFlags(options)], execOptions);
         // Run the pre-build hook:
-        yield opts.runPreBuildHook(options, execOptions);
+        // We pass the configuration flags to the pre-build hook, so
+        // the pre-build hook can call `cabal configure` if desired:
+        util.logging.info(`Run pre-build hook`);
+        const configFlags = cabalGetConfigFlagsFor(options);
+        const preBuildEnv = Object.assign(Object.assign({}, process.env), { CABAL_CONFIG_FLAGS: configFlags.join(' ') });
+        yield opts.runPreBuildHook(options, Object.assign(Object.assign({}, execOptions), { env: preBuildEnv }));
+        // If no configuration exists, run `cabal configure` with $configFlags:
+        if (!fs.existsSync(path.join(sourceDir, 'cabal.project.local'))) {
+            util.logging.info(`Configure Agda-${options['agda-version']}`);
+            yield util.cabal(['configure', ...configFlags], execOptions);
+        }
         // Run `cabal build`:
         util.logging.info(`Build Agda-${options['agda-version']}`);
         yield util.cabal(['build', 'exe:agda', 'exe:agda-mode'], execOptions);
@@ -2304,7 +2311,7 @@ matchingGhcVersionsThatCanBuildAgda) {
     });
 }
 exports.build = build;
-function buildFlags(options) {
+function cabalGetConfigFlagsFor(options) {
     // NOTE:
     //   We set the build flags following Agda's deploy workflow, which builds
     //   the nightly distributions, except that we disable --cluster-counting
@@ -2465,14 +2472,14 @@ function build(sourceDir, installDir, options, matchingGhcVersionsThatCanBuildAg
         yield util.mkdirP(installBinDir);
         yield util.stack([
             'build',
-            ...buildFlags(options),
+            ...stackGetBuildFlagsFor(options),
             '--copy-bins',
             `--local-bin-path=${installBinDir}`
         ], execOptions);
     });
 }
 exports.build = build;
-function buildFlags(options) {
+function stackGetBuildFlagsFor(options) {
     // NOTE:
     //   We set the build flags following Agda's deploy workflow, which builds
     //   the nightly distributions, except that we disable --cluster-counting
