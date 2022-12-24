@@ -20,12 +20,22 @@ export async function build(
   // Run `cabal update`
   await util.cabal(['update'])
 
-  // Run `cabal configure`:
-  util.logging.info(`Configure Agda-${options['agda-version']}`)
-  await util.cabal(['configure', ...buildFlags(options)], execOptions)
-
   // Run the pre-build hook:
-  await opts.runPreBuildHook(options, execOptions)
+  // We pass the configuration flags to the pre-build hook, so
+  // the pre-build hook can call `cabal configure` if desired:
+  util.logging.info(`Run pre-build hook`)
+  const configFlags = cabalGetConfigFlagsFor(options)
+  const preBuildEnv = {
+    ...process.env,
+    CABAL_CONFIG_FLAGS: configFlags.join(' ')
+  }
+  await opts.runPreBuildHook(options, {...execOptions, env: preBuildEnv})
+
+  // If no configuration exists, run `cabal configure` with $configFlags:
+  if (!fs.existsSync(path.join(sourceDir, 'cabal.project.local'))) {
+    util.logging.info(`Configure Agda-${options['agda-version']}`)
+    await util.cabal(['configure', ...configFlags], execOptions)
+  }
 
   // Run `cabal build`:
   util.logging.info(`Build Agda-${options['agda-version']}`)
@@ -47,7 +57,7 @@ export async function build(
   )
 }
 
-function buildFlags(options: opts.BuildOptions): string[] {
+function cabalGetConfigFlagsFor(options: opts.BuildOptions): string[] {
   // NOTE:
   //   We set the build flags following Agda's deploy workflow, which builds
   //   the nightly distributions, except that we disable --cluster-counting
