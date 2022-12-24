@@ -1,3 +1,4 @@
+import assert from 'node:assert'
 import * as path from 'node:path'
 import * as opts from '../opts'
 import setupHaskell from '../setup-haskell'
@@ -88,6 +89,16 @@ export default async function buildFromSource(
     }
   )
 
+  // 3. Install cabal-plan:
+  let cabalPlan: string
+  if (options['bdist-license-report']) {
+    await util.logging.group('🪪 Install cabal-plan', async () => {
+      // TODO: this relies on the GitHub runner having a version of GHC and
+      //       Cabal available before we call <haskell/actions/setup>
+      cabalPlan = await util.cabalPlanSetup(options)
+    })
+  }
+
   // 3. Setup GHC via <haskell/actions/setup>:
   if (buildInfo.requireSetup) {
     util.logging.info('📞 Calling "haskell/actions/setup"')
@@ -121,17 +132,15 @@ export default async function buildFromSource(
     await util.cpR(path.join(sourceDir, 'src', 'data'), installDir)
   })
 
-  // 6. Generate license report:
+  // 7. Generate license report:
   if (options['bdist-license-report']) {
     await util.logging.group('🪪 Generate license report', async () => {
-      // Install cabal-plan:
-      const cabalPlan = await util.cabalPlanSetup(options)
-      // Generate license report:
+      assert(cabalPlan !== undefined)
       await licenseReport(cabalPlan, sourceDir, installDir, options)
     })
   }
 
-  // 7. Test:
+  // 8. Test:
   await util.logging.group('👩🏾‍🔬 Testing Agda build', async () => {
     const agdaExePath = path.join(
       installDir,
@@ -142,7 +151,7 @@ export default async function buildFromSource(
     await util.agdaTest({agdaExePath, agdaDataDir})
   })
 
-  // 8. If 'bdist-upload' is specified, upload as a package:
+  // 9. If 'bdist-upload' is specified, upload as a package:
   if (options['bdist-upload']) {
     await util.logging.group('📦 Upload package', async () => {
       const bdistName = await uploadBdist(installDir, options)
