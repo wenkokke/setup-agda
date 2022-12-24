@@ -281,7 +281,7 @@ jobs:
           ghc-version: '8.0.2'
     strategy:
       matrix:
-        os: [ubuntu-20.04] # os: [ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-18.04] # os: [ubuntu-22.04, macos-11, macos-12]
 
   # Build Agda 2.4.2.5 with Cabal:
   build-2_4_2_5-cabal:

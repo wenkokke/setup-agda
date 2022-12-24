@@ -33,5 +33,6 @@ jobs:
           force-build: true
           force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
