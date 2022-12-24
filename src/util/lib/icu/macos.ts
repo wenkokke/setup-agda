@@ -1,11 +1,13 @@
 import * as core from '@actions/core'
+import * as glob from '@actions/glob'
 import * as logging from '../../logging'
 import * as path from 'node:path'
+import * as fs from 'node:fs'
 import * as opts from '../../../opts'
 import assert from 'node:assert'
 import {installNameTool} from '../../app/install-name-tool'
 import {cp, mkdirP} from '../../exec'
-import {brew, brewGetVersion} from '../../app/homebrew'
+import {brew, brewGetPrefixFor, brewGetVersion} from '../../app/homebrew'
 import {
   addPkgConfigPath,
   pkgConfigGetInfo,
@@ -17,27 +19,30 @@ import * as simver from '../../simver'
 
 // MacOS
 
-async function installDirForMacOS(): Promise<string> {
-  return await brew('--prefix', 'icu4c')
-}
+const HOMEBREW_FORMULA = 'icu4c'
 
 export async function setupForMacOS(options: opts.BuildOptions): Promise<void> {
   // Ensure ICU is installed:
-  let icuVersion = await brewGetVersion('icu4c')
+  let icuVersion = await brewGetVersion(HOMEBREW_FORMULA)
   logging.info(`Found ICU version: ${icuVersion}`)
   if (icuVersion === undefined) {
-    await brew('install', 'icu4c')
-    icuVersion = await brewGetVersion('icu4c')
+    await brew('install', HOMEBREW_FORMULA)
+    icuVersion = await brewGetVersion(HOMEBREW_FORMULA)
     logging.info(`Installed ICU version: ${icuVersion}`)
   }
   if (icuVersion === undefined) throw Error('Could not install icu4c')
 
   // Find the ICU installation location:
-  const prefix = await installDirForMacOS()
-  logging.info(`Found ICU version ${icuVersion} at ${prefix}`)
-
+  const prefix = fs.realpathSync(await brewGetPrefixFor(HOMEBREW_FORMULA))
+  const pkgConfigPattern = path.join(prefix, '**', 'icu-i18n.pc')
+  const pkgConfigGlobber = await glob.create(pkgConfigPattern)
+  const [pkgConfigFile] = await pkgConfigGlobber.glob()
+  if (pkgConfigFile === undefined)
+    throw Error(`Could not find icu-i18n.pc in ${prefix}`)
+  const pkgConfigDir = path.dirname(pkgConfigFile)
+  logging.info(`Found ICU version ${icuVersion} at ${pkgConfigDir}`)
   // Add to PKG_CONFIG_PATH:
-  const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig')
+  // TODO: set PKG_CONFIG_PATH in options.env rather than the system env
   addPkgConfigPath(pkgConfigDir)
 
   // Find the ICU version:
@@ -71,7 +76,7 @@ export async function bundleForMacOS(
 
   // Gather information
   logging.info(`Bundle ICU version ${options['icu-version']}`)
-  const prefix = await installDirForMacOS()
+  const prefix = await brewGetPrefixFor(HOMEBREW_FORMULA)
   logging.info(`Found ICU version ${options['icu-version']} at ${prefix}`)
   const distLibDir = path.join(distDir, 'lib')
   const distBinDir = path.join(distDir, 'bin')

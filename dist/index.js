@@ -4092,7 +4092,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.brewGetVersion = exports.brew = void 0;
+exports.brewGetPrefixFor = exports.brewGetVersion = exports.brew = void 0;
 const exec = __importStar(__nccwpck_require__(4369));
 function brew(...args) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -4109,6 +4109,12 @@ function brewGetVersion(formula) {
     });
 }
 exports.brewGetVersion = brewGetVersion;
+function brewGetPrefixFor(formula) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield brew('--prefix', formula);
+    });
+}
+exports.brewGetPrefixFor = brewGetPrefixFor;
 
 
 /***/ }),
@@ -5131,8 +5137,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.bundleForMacOS = exports.setupForMacOS = void 0;
 const core = __importStar(__nccwpck_require__(2186));
+const glob = __importStar(__nccwpck_require__(8090));
 const logging = __importStar(__nccwpck_require__(1942));
 const path = __importStar(__nccwpck_require__(9411));
+const fs = __importStar(__nccwpck_require__(7561));
 const opts = __importStar(__nccwpck_require__(1352));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const install_name_tool_1 = __nccwpck_require__(6870);
@@ -5142,28 +5150,30 @@ const pkg_config_1 = __nccwpck_require__(1016);
 const ensure_error_1 = __importDefault(__nccwpck_require__(1151));
 const simver = __importStar(__nccwpck_require__(7609));
 // MacOS
-function installDirForMacOS() {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield (0, homebrew_1.brew)('--prefix', 'icu4c');
-    });
-}
+const HOMEBREW_FORMULA = 'icu4c';
 function setupForMacOS(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // Ensure ICU is installed:
-        let icuVersion = yield (0, homebrew_1.brewGetVersion)('icu4c');
+        let icuVersion = yield (0, homebrew_1.brewGetVersion)(HOMEBREW_FORMULA);
         logging.info(`Found ICU version: ${icuVersion}`);
         if (icuVersion === undefined) {
-            yield (0, homebrew_1.brew)('install', 'icu4c');
-            icuVersion = yield (0, homebrew_1.brewGetVersion)('icu4c');
+            yield (0, homebrew_1.brew)('install', HOMEBREW_FORMULA);
+            icuVersion = yield (0, homebrew_1.brewGetVersion)(HOMEBREW_FORMULA);
             logging.info(`Installed ICU version: ${icuVersion}`);
         }
         if (icuVersion === undefined)
             throw Error('Could not install icu4c');
         // Find the ICU installation location:
-        const prefix = yield installDirForMacOS();
-        logging.info(`Found ICU version ${icuVersion} at ${prefix}`);
+        const prefix = fs.realpathSync(yield (0, homebrew_1.brewGetPrefixFor)(HOMEBREW_FORMULA));
+        const pkgConfigPattern = path.join(prefix, '**', 'icu-i18n.pc');
+        const pkgConfigGlobber = yield glob.create(pkgConfigPattern);
+        const [pkgConfigFile] = yield pkgConfigGlobber.glob();
+        if (pkgConfigFile === undefined)
+            throw Error(`Could not find icu-i18n.pc in ${prefix}`);
+        const pkgConfigDir = path.dirname(pkgConfigFile);
+        logging.info(`Found ICU version ${icuVersion} at ${pkgConfigDir}`);
         // Add to PKG_CONFIG_PATH:
-        const pkgConfigDir = path.join(prefix, 'lib', 'pkgconfig');
+        // TODO: set PKG_CONFIG_PATH in options.env rather than the system env
         (0, pkg_config_1.addPkgConfigPath)(pkgConfigDir);
         // Find the ICU version:
         options['icu-version'] = yield (0, pkg_config_1.pkgConfigGetVersion)('icu-i18n');
@@ -5187,7 +5197,7 @@ function bundleForMacOS(distDir, options) {
             throw Error('No ICU version');
         // Gather information
         logging.info(`Bundle ICU version ${options['icu-version']}`);
-        const prefix = yield installDirForMacOS();
+        const prefix = yield (0, homebrew_1.brewGetPrefixFor)(HOMEBREW_FORMULA);
         logging.info(`Found ICU version ${options['icu-version']} at ${prefix}`);
         const distLibDir = path.join(distDir, 'lib');
         const distBinDir = path.join(distDir, 'bin');

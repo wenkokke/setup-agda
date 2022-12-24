@@ -11,3 +11,7 @@ export async function brewGetVersion(
   const formulaVersions = await brew('list', '--formula', '--versions')
   return formulaVersions.match(formulaVersionRegExp)?.groups?.version?.trim()
 }
+
+export async function brewGetPrefixFor(formula: string): Promise<string> {
+  return await brew('--prefix', formula)
+}
