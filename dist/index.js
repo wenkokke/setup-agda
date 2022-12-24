@@ -2874,92 +2874,61 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __asyncValues = (this && this.__asyncValues) || function (o) {
-    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-    var m = o[Symbol.asyncIterator], i;
-    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
-    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
-    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const glob = __importStar(__nccwpck_require__(8090));
-const path = __importStar(__nccwpck_require__(9411));
+const core = __importStar(__nccwpck_require__(2186));
+const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const fs = __importStar(__nccwpck_require__(7561));
 const os = __importStar(__nccwpck_require__(612));
-const opts = __importStar(__nccwpck_require__(1352));
+const path = __importStar(__nccwpck_require__(9411));
+const promises_1 = __nccwpck_require__(6402);
 const gmp_1 = __importDefault(__nccwpck_require__(5875));
+const icu_1 = __importDefault(__nccwpck_require__(8457));
 const zlib_1 = __importDefault(__nccwpck_require__(6127));
+const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
 function licenseReport(cabalPlan, sourceDir, installDir, options) {
-    var _a, e_1, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
-        // Create the license directory:
-        const licenseDir = path.join(installDir, 'licenses');
-        yield util.mkdirP(licenseDir);
-        // Copy the gmp license to $licenseDir/gmp/LICENSE:
-        const gmpLicenseDir = path.join(licenseDir, 'gmp');
-        const gmpLicenseFile = path.join(gmpLicenseDir, 'LICENSE');
-        yield util.mkdirP(gmpLicenseDir);
-        fs.writeFileSync(gmpLicenseFile, gmp_1.default);
-        // Copy the zlib license to $licenseDir/zlib/LICENSE:
-        const zlibLicenseDir = path.join(licenseDir, 'zlib');
-        const zlibLicenseFile = path.join(zlibLicenseDir, 'LICENSE');
-        yield util.mkdirP(zlibLicenseDir);
-        fs.writeFileSync(zlibLicenseFile, zlib_1.default);
-        // Copy the ICU license to $licenseDir/icu-$icuVersion/LICENSE:
-        if (opts.needsIcu(options))
-            yield util.icuWriteLicense(licenseDir, options);
-        // Run `cabal-plan license-report` to create a report of the licenses of Agda dependencies:
-        yield util.cabalPlanLicenseReport(cabalPlan, sourceDir, licenseDir);
-        // Generate a single LICENSE file:
-        const licenseFile = path.join(licenseDir, 'licenses.txt');
-        const licenseFileWriteStream = fs.createWriteStream(licenseFile, { flags: 'a' });
+        // Create the license cache directory:
+        const agdaWithVersion = `Agda-${options['agda-version']}`;
+        const agdaCacheDir = opts.setupAgdaCacheDir(agdaWithVersion);
+        const licenseCacheDir = path.join(agdaCacheDir, 'licenses');
+        yield util.mkdirP(licenseCacheDir);
+        // Write licenses.txt:
+        const licensesTxt = path.join(installDir, 'licenses.txt');
+        const licensesTxtAppendStream = (rs) => __awaiter(this, void 0, void 0, function* () { return yield (0, promises_1.pipeline)(rs, fs.createWriteStream(licensesTxt, { flags: 'a' })); });
+        const depHeader = (depName) => ['', '-'.repeat(80), '', depName, ''].join(os.EOL);
         // 1. Append the Agda license to $licenseFile:
-        const agdaLicenseFileSource = path.join(sourceDir, 'LICENSE');
-        const agdaLicenseReadStream = fs.createReadStream(agdaLicenseFileSource);
-        agdaLicenseReadStream.pipe(licenseFileWriteStream, { end: false });
-        // 2. Append the license for every other dependency to $licenseFile:
-        const licenseGlobber = yield glob.create(path.join(licenseDir, '*', '*'));
-        try {
-            for (var _d = true, _e = __asyncValues(licenseGlobber.globGenerator()), _f; _f = yield _e.next(), _a = _f.done, !_a;) {
-                _c = _f.value;
-                _d = false;
-                try {
-                    const depLicenseFile = _c;
-                    const depName = path.basename(path.dirname(depLicenseFile));
-                    licenseFileWriteStream.write(os.EOL);
-                    licenseFileWriteStream.write(os.EOL);
-                    licenseFileWriteStream.write('--------------------------------------------------------------------------------');
-                    licenseFileWriteStream.write(os.EOL);
-                    licenseFileWriteStream.write(os.EOL);
-                    licenseFileWriteStream.write(depName);
-                    licenseFileWriteStream.write(os.EOL);
-                    const depLicenseReadStream = fs.createReadStream(depLicenseFile);
-                    depLicenseReadStream.pipe(licenseFileWriteStream, { end: false });
-                }
-                finally {
-                    _d = true;
-                }
-            }
+        const agdaLicensePath = path.join(sourceDir, 'LICENSE');
+        yield licensesTxtAppendStream(fs.createReadStream(agdaLicensePath));
+        // 2. Append the licenses of the Haskell dependencies:
+        const cabalPlanLicenses = yield util.cabalPlanGetLicenses(cabalPlan, sourceDir, Object.keys(opts.agdaComponents), licenseCacheDir);
+        for (const [depName, depLicensePath] of Object.entries(cabalPlanLicenses)) {
+            (0, node_assert_1.default)(depLicensePath !== undefined);
+            fs.appendFileSync(licensesTxt, depHeader(depName));
+            yield licensesTxtAppendStream(fs.createReadStream(depLicensePath));
         }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
+        // 3. Add the gmp license
+        fs.appendFileSync(licensesTxt, depHeader('gmp'));
+        fs.appendFileSync(licensesTxt, gmp_1.default);
+        // 4. Add the icu license
+        if (opts.needsIcu(options)) {
             try {
-                if (!_d && !_a && (_b = _e.return)) yield _b.call(_e);
+                const { icuName, icuLicensePath } = yield util.icuGetLicense(licenseCacheDir, options);
+                fs.appendFileSync(licensesTxt, depHeader(icuName));
+                yield licensesTxtAppendStream(fs.createReadStream(icuLicensePath));
             }
-            finally { if (e_1) throw e_1.error; }
+            catch (error) {
+                core.warning(util.ensureError(error));
+                fs.appendFileSync(licensesTxt, depHeader('icu'));
+                fs.appendFileSync(licensesTxt, icu_1.default);
+            }
         }
-        // 3. Close licenseFileWriteStream
-        licenseFileWriteStream.end();
-        // 4. Write the Agda license to $licenseDir/Agda-$agdaVersion/LICENSE
-        util.logging.info(`Copy Agda license to ${licenseDir}`);
-        const agdaLicenseDir = path.join(licenseDir, `Agda-${options['agda-version']}`);
-        const agdaLicenseFileTarget = path.join(agdaLicenseDir, 'LICENSE');
-        yield util.mkdirP(agdaLicenseDir);
-        yield util.cp(agdaLicenseFileSource, agdaLicenseFileTarget);
+        // 5. Add the zlib license
+        fs.appendFileSync(licensesTxt, depHeader('zlib'));
+        fs.appendFileSync(licensesTxt, zlib_1.default);
     });
 }
 exports["default"] = licenseReport;
@@ -3026,9 +2995,9 @@ function uploadBdist(installDir, options) {
         // Copy binaries & data:
         yield util.cpR(path.join(installDir, 'bin'), bdistDir);
         yield util.cpR(path.join(installDir, 'data'), bdistDir);
-        // Copy license reports:
+        // Copy licenses.txt:
         if (options['bdist-license-report'])
-            yield util.cpR(path.join(installDir, 'licenses'), bdistDir);
+            yield util.cp(path.join(installDir, 'licenses.txt'), bdistDir);
         // Bundle libraries:
         if (options['icu-version'] !== undefined)
             yield util.icuBundle(bdistDir, options);
@@ -3547,14 +3516,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.cabalPlanLicenseReport = exports.cabalPlanSetup = void 0;
-const path = __importStar(__nccwpck_require__(9411));
+exports.cabalPlanGetLicenses = exports.cabalPlanSetup = void 0;
+const glob = __importStar(__nccwpck_require__(8090));
 const fs = __importStar(__nccwpck_require__(7561));
+const http = __importStar(__nccwpck_require__(8849));
 const os = __importStar(__nccwpck_require__(612));
+const path = __importStar(__nccwpck_require__(9411));
+const promises_1 = __nccwpck_require__(6402);
 const opts = __importStar(__nccwpck_require__(1352));
+const exec_1 = __nccwpck_require__(4369);
 const logging = __importStar(__nccwpck_require__(1942));
 const haskell_1 = __nccwpck_require__(6961);
-const exec_1 = __nccwpck_require__(4369);
 function cabalPlanSetup(options) {
     return __awaiter(this, void 0, void 0, function* () {
         const cabalPlanVersion = '0.7.2.3';
@@ -3581,22 +3553,53 @@ function cabalPlanSetup(options) {
     });
 }
 exports.cabalPlanSetup = cabalPlanSetup;
-function cabalPlanLicenseReport(cabalPlan, sourceDir, licenseDir) {
+const cabalPlanWarningPattern = /WARNING: license files for (?<depName>\S+) \(global\/GHC bundled\) not copied/;
+// Guess the URL at which the package _might_ store its license.
+const hackageLicenseUrl = (slug) => `http://hackage.haskell.org/package/${slug}/src/LICENSE`;
+function cabalPlanGetLicenses(cabalPlan, sourceDir, components, licenseDir) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const execOptions = { cwd: sourceDir };
-        for (const component of Object.keys(opts.agdaComponents)) {
-            // Get the short name for the component, e.g., Agda:exe:agda -> agda
-            const componentShortName = component.split(':').at(-1);
-            // Run `cabal-plan license-report`
-            logging.info(`Generate license-report for ${componentShortName} in ${licenseDir}`);
-            const licenseReportPath = path.join(licenseDir, `license-report-${componentShortName}.md`);
-            const { output, errors } = yield (0, exec_1.getOutputAndErrors)(cabalPlan, ['license-report', `--licensedir=${licenseDir}`, component], execOptions);
-            // Write the generated license report and warnings to a separate file:
-            fs.writeFileSync(licenseReportPath, [output, '## Warnings', errors ? errors : 'No warnings'].join(`${os.EOL}${os.EOL}`));
+        const licenses = {};
+        for (const component of components) {
+            // Run `cabal-plan license-report` and save the licenses to $licenseDir:
+            const { errors } = yield (0, exec_1.getOutputAndErrors)(cabalPlan, ['license-report', `--licensedir=${licenseDir}`, component], execOptions);
+            // Read the generated licenses, and add them to $licenses:
+            const licenseGlobber = yield glob.create(path.join(licenseDir, '*', '*'));
+            for (const depLicensePath of yield licenseGlobber.glob()) {
+                const depName = path.basename(path.dirname(depLicensePath));
+                licenses[depName] = depLicensePath;
+            }
+            // Process the warnings and download the missing licenses:
+            for (const error of errors.split(os.EOL)) {
+                const warningMatch = error.match(cabalPlanWarningPattern);
+                const depName = (_a = warningMatch === null || warningMatch === void 0 ? void 0 : warningMatch.groups) === null || _a === void 0 ? void 0 : _a.depName;
+                if (depName !== undefined) {
+                    logging.warning(`cabal-plan did not get license for ${depName}`);
+                    const depLicenseUrl = hackageLicenseUrl(depName);
+                    yield new Promise((resolve, reject) => {
+                        http.get(depLicenseUrl, (res) => __awaiter(this, void 0, void 0, function* () {
+                            const { statusCode } = res;
+                            if (statusCode === 200) {
+                                const depLicensePath = path.join(licenseDir, depName, 'LICENSE');
+                                yield (0, exec_1.mkdirP)(path.join(licenseDir, depName));
+                                yield (0, promises_1.pipeline)(res, fs.createWriteStream(depLicensePath));
+                                licenses[depName] = depLicensePath;
+                                resolve();
+                            }
+                            else {
+                                reject(Error(`Could not get license for ${depName}`));
+                            }
+                        }));
+                    });
+                }
+            }
         }
+        // Return the licenses
+        return licenses;
     });
 }
-exports.cabalPlanLicenseReport = cabalPlanLicenseReport;
+exports.cabalPlanGetLicenses = cabalPlanGetLicenses;
 
 
 /***/ }),
@@ -4866,23 +4869,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.icuWriteLicense = exports.icuBundle = exports.icuSetup = void 0;
-const tc = __importStar(__nccwpck_require__(7784));
+exports.icuGetLicense = exports.icuBundle = exports.icuSetup = void 0;
 const opts = __importStar(__nccwpck_require__(1352));
-const logging = __importStar(__nccwpck_require__(1942));
 const path = __importStar(__nccwpck_require__(9411));
+const http = __importStar(__nccwpck_require__(8849));
 const fs = __importStar(__nccwpck_require__(7561));
-const icu_1 = __importDefault(__nccwpck_require__(8457));
 const linux_1 = __nccwpck_require__(2983);
 const macos_1 = __nccwpck_require__(8095);
 const windows_1 = __nccwpck_require__(831);
-const node_assert_1 = __importDefault(__nccwpck_require__(8061));
-const ensure_error_1 = __importDefault(__nccwpck_require__(1151));
 const exec_1 = __nccwpck_require__(4369);
+const promises_1 = __nccwpck_require__(6402);
 function icuSetup(options) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (opts.platform) {
@@ -4917,33 +4914,39 @@ function icuBundle(distDir, options) {
     });
 }
 exports.icuBundle = icuBundle;
-function icuWriteLicense(licenseDir, options) {
+function icuGetLicense(licenseDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         if (options['icu-version'] === undefined)
-            throw Error(`Cannot download license: no ICU version specified`);
-        // Create the ICU license directory:
-        const icuLicenseDir = path.join(licenseDir, `icu-${options['icu-version']}`);
-        const icuLicenseFile = path.join(icuLicenseDir, `LICENSE`);
-        yield (0, exec_1.mkdirP)(icuLicenseDir);
+            throw Error(`Could not download license: no ICU version specified`);
         // Transform the ICU version, e.g., "71.1_1", to something we can use in the URL, such as "71-1"
         const icuVersion = options['icu-version']
             .trim()
             .split('_')[0]
             .replace('.', '-');
-        const licenseUrl = `https://raw.githubusercontent.com/unicode-org/icu/release-${icuVersion}/icu4c/LICENSE`;
+        const licenseUrl = `http://raw.githubusercontent.com/unicode-org/icu/release-${icuVersion}/icu4c/LICENSE`;
+        // Create the license directory:
+        const icuName = `icu-${icuVersion}`;
+        const icuLicenseDir = path.join(licenseDir, icuName);
+        const icuLicensePath = path.join(icuLicenseDir, 'LICENSE');
+        yield (0, exec_1.mkdirP)(icuLicenseDir);
         // Download the license file:
-        try {
-            const icuLicenseFileTC = yield tc.downloadTool(licenseUrl, icuLicenseFile);
-            (0, node_assert_1.default)(icuLicenseFile === icuLicenseFileTC, `downloadTool saved license to ${icuLicenseFileTC}, not ${icuLicenseFile}`);
-        }
-        catch (error) {
-            // If anything goes wrong, write the backup license:
-            logging.warning((0, ensure_error_1.default)(error));
-            fs.writeFileSync(icuLicenseFile, icu_1.default);
-        }
+        yield new Promise((resolve, reject) => {
+            http.get(licenseUrl, (res) => __awaiter(this, void 0, void 0, function* () {
+                var _a;
+                const { statusCode } = res;
+                if (statusCode === 200) {
+                    yield (0, promises_1.pipeline)(res, fs.createWriteStream(icuLicensePath));
+                    resolve();
+                }
+                else {
+                    reject(Error(`Could not download license: ${(_a = res.errored) === null || _a === void 0 ? void 0 : _a.message}`));
+                }
+            }));
+        });
+        return { icuName, icuLicensePath };
     });
 }
-exports.icuWriteLicense = icuWriteLicense;
+exports.icuGetLicense = icuGetLicense;
 
 
 /***/ }),
@@ -33213,6 +33216,14 @@ module.exports = require("node:fs");
 
 /***/ }),
 
+/***/ 8849:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("node:http");
+
+/***/ }),
+
 /***/ 612:
 /***/ ((module) => {
 
@@ -33226,6 +33237,14 @@ module.exports = require("node:os");
 
 "use strict";
 module.exports = require("node:path");
+
+/***/ }),
+
+/***/ 6402:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("node:stream/promises");
 
 /***/ }),
 
