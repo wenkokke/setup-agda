@@ -1,4 +1,5 @@
 import * as exec from '../exec'
+import * as fs from 'node:fs'
 
 export async function brew(...args: string[]): Promise<string> {
   return await exec.getOutput('brew', args)
@@ -13,5 +14,8 @@ export async function brewGetVersion(
 }
 
 export async function brewGetPrefixFor(formula: string): Promise<string> {
-  return await brew('--prefix', formula)
+  let prefix = await brew('--prefix', formula)
+  prefix = prefix.trim()
+  prefix = fs.realpathSync(prefix)
+  return prefix
 }

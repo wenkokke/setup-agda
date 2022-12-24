@@ -33,7 +33,7 @@ export async function setupForMacOS(options: opts.BuildOptions): Promise<void> {
   if (icuVersion === undefined) throw Error('Could not install icu4c')
 
   // Find the ICU installation location:
-  const prefix = fs.realpathSync(await brewGetPrefixFor(HOMEBREW_FORMULA))
+  const prefix = await brewGetPrefixFor(HOMEBREW_FORMULA)
   const pkgConfigPattern = path.join(prefix, '**', 'icu-i18n.pc')
   const pkgConfigGlobber = await glob.create(pkgConfigPattern)
   const [pkgConfigFile] = await pkgConfigGlobber.glob()

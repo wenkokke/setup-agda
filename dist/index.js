@@ -4094,6 +4094,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.brewGetPrefixFor = exports.brewGetVersion = exports.brew = void 0;
 const exec = __importStar(__nccwpck_require__(4369));
+const fs = __importStar(__nccwpck_require__(7561));
 function brew(...args) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield exec.getOutput('brew', args);
@@ -4111,7 +4112,10 @@ function brewGetVersion(formula) {
 exports.brewGetVersion = brewGetVersion;
 function brewGetPrefixFor(formula) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield brew('--prefix', formula);
+        let prefix = yield brew('--prefix', formula);
+        prefix = prefix.trim();
+        prefix = fs.realpathSync(prefix);
+        return prefix;
     });
 }
 exports.brewGetPrefixFor = brewGetPrefixFor;
@@ -5140,7 +5144,6 @@ const core = __importStar(__nccwpck_require__(2186));
 const glob = __importStar(__nccwpck_require__(8090));
 const logging = __importStar(__nccwpck_require__(1942));
 const path = __importStar(__nccwpck_require__(9411));
-const fs = __importStar(__nccwpck_require__(7561));
 const opts = __importStar(__nccwpck_require__(1352));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const install_name_tool_1 = __nccwpck_require__(6870);
@@ -5164,7 +5167,7 @@ function setupForMacOS(options) {
         if (icuVersion === undefined)
             throw Error('Could not install icu4c');
         // Find the ICU installation location:
-        const prefix = fs.realpathSync(yield (0, homebrew_1.brewGetPrefixFor)(HOMEBREW_FORMULA));
+        const prefix = yield (0, homebrew_1.brewGetPrefixFor)(HOMEBREW_FORMULA);
         const pkgConfigPattern = path.join(prefix, '**', 'icu-i18n.pc');
         const pkgConfigGlobber = yield glob.create(pkgConfigPattern);
         const [pkgConfigFile] = yield pkgConfigGlobber.glob();
