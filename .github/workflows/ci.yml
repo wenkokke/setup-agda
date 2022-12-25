@@ -1,4 +1,4 @@
-name: setup
+name: ci
 
 on:
   push:
@@ -14,6 +14,10 @@ jobs:
   check-dist:
     uses: ./.github/workflows/check-dist.yml
 
+  build-latest:
+    needs: [check-dist]
+    uses: ./.github/workflows/setup-latest.yml
+
   setup-latest:
     needs: [check-dist]
     uses: ./.github/workflows/setup-latest.yml
@@ -28,5 +32,6 @@ jobs:
 
   release:
     if: ${{ github.event_name == 'push' }}
-    needs: [check-dist, setup-latest, setup-legacy, setup-libraries]
+    needs:
+      [check-dist, build-latest, setup-latest, setup-legacy, setup-libraries]
     uses: ./.github/workflows/release.yml
