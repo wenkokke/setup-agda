@@ -129,7 +129,9 @@ type WeakAgdaInfo<T> = Record<
   AgdaVersion | 'nightly',
   {
     binary: Partial<Record<Platform, Partial<Record<Arch, Dist[]>>>>
-    'agda-stdlib': T[]
+    compatibility: {
+      'agda-stdlib': T[]
+    }
   }
 >
 export type AgdaInfo = WeakAgdaInfo<AgdaStdlibVersion>
@@ -140,9 +142,12 @@ export type AgdaInfo = WeakAgdaInfo<AgdaStdlibVersion>
 export const agdaInfo = bundledAgdaInfo as WeakAgdaInfo<string> as AgdaInfo
 
 // Validate the type cast from WeakAgdaInfo<string> to WeakAgdaInfo<AgdaStdlibVersion>
-for (const agdaVersion of agdaVersions)
-  for (const agdaStdlibVersionString of agdaInfo[agdaVersion]['agda-stdlib'])
+for (const agdaVersion of agdaVersions) {
+  const {compatibility} = agdaInfo[agdaVersion]
+  for (const agdaStdlibVersionString of compatibility['agda-stdlib']) {
     assert(isAgdaStdlibVersion(agdaStdlibVersionString))
+  }
+}
 
 // List of agda-stdlib source distributions on GitHub:
 //
