@@ -1511,7 +1511,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
-const semver = __importStar(__nccwpck_require__(1383));
 const logging = __importStar(__nccwpck_require__(1942));
 const simver = __importStar(__nccwpck_require__(7609));
 const opts = __importStar(__nccwpck_require__(9150));
@@ -1538,7 +1537,7 @@ function resolveAgdaStdlibVersion(agdaVersion, agdaStdlibVersionSpec) {
         }
         else {
             const { compatibility } = opts.agdaInfo[agdaVersion];
-            const recommended = semver.maxSatisfying(opts.agdaStdlibVersions, compatibility['agda-stdlib'], { loose: true });
+            const recommended = simver.maxSatisfying(opts.agdaStdlibVersions, compatibility['agda-stdlib']);
             (0, node_assert_1.default)(recommended !== null, [
                 `Could not resolve recommended agda-stdlib version`,
                 `from compatible versions ${compatibility['agda-stdlib']}`
@@ -5419,11 +5418,22 @@ Object.defineProperty(exports, "setOutput", ({ enumerable: true, get: function (
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.max = exports.toString = exports.neq = exports.eq = exports.gte = exports.gt = exports.lte = exports.lt = exports.majorMinor = exports.minor = exports.major = exports.compare = exports.parse = void 0;
+exports.max = exports.maxSatisfying = exports.satisfies = exports.toString = exports.neq = exports.eq = exports.gte = exports.gt = exports.lte = exports.lt = exports.majorMinor = exports.minor = exports.major = exports.compare = exports.parseRange = exports.parse = void 0;
 function parse(version) {
     return version.split('.').map(part => part.split('_').map(parseInt));
 }
 exports.parse = parse;
+function parseRange(range) {
+    if (range.includes('-')) {
+        const [minVer, maxVer] = range.split('-', 2);
+        return [parse(minVer), parse(maxVer)];
+    }
+    else {
+        const version = parse(range);
+        return [version, version];
+    }
+}
+exports.parseRange = parseRange;
 function compare(v1, v2) {
     var _a, _b, _c, _d;
     const sv1 = typeof v1 === 'string' ? parse(v1) : v1;
@@ -5496,6 +5506,21 @@ function toString(version) {
     return version.join('.');
 }
 exports.toString = toString;
+function satisfies(version, range) {
+    if (typeof version === 'string')
+        version = parse(version);
+    if (typeof range === 'string')
+        range = parseRange(range);
+    const [minVer, maxVer] = range;
+    return lte(minVer, version) && lte(version, maxVer);
+}
+exports.satisfies = satisfies;
+function maxSatisfying(versions, range) {
+    if (typeof range === 'string')
+        range = parseRange(range);
+    return max(versions.filter(version => satisfies(version, range)));
+}
+exports.maxSatisfying = maxSatisfying;
 function max(versions) {
     const simvers = versions.map(version => {
         if (typeof version === 'string') {

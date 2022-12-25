@@ -4,6 +4,18 @@ export function parse(version: string): SimVer {
   return version.split('.').map(part => part.split('_').map(parseInt))
 }
 
+export type SimRng = [SimVer, SimVer]
+
+export function parseRange(range: string): [SimVer, SimVer] {
+  if (range.includes('-')) {
+    const [minVer, maxVer] = range.split('-', 2)
+    return [parse(minVer), parse(maxVer)]
+  } else {
+    const version = parse(range)
+    return [version, version]
+  }
+}
+
 export type Ordering = -1 | 0 | 1
 
 export function compare(v1: string | SimVer, v2: string | SimVer): Ordering {
@@ -88,6 +100,24 @@ export function neq(
 
 export function toString(version: SimVer): string {
   return version.join('.')
+}
+
+export function satisfies(
+  version: string | SimVer,
+  range: string | SimRng
+): boolean {
+  if (typeof version === 'string') version = parse(version)
+  if (typeof range === 'string') range = parseRange(range)
+  const [minVer, maxVer] = range
+  return lte(minVer, version) && lte(version, maxVer)
+}
+
+export function maxSatisfying(
+  versions: (string | SimVer)[],
+  range: string | SimRng
+): string | null {
+  if (typeof range === 'string') range = parseRange(range)
+  return max(versions.filter(version => satisfies(version, range)))
 }
 
 export function max(versions: (string | SimVer)[]): string | null {

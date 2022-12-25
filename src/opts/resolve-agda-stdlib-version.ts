@@ -1,5 +1,4 @@
 import assert from 'node:assert'
-import * as semver from 'semver'
 import * as logging from '../util/logging'
 import * as simver from '../util/simver'
 import * as opts from './types'
@@ -33,10 +32,9 @@ export default function resolveAgdaStdlibVersion(
       return 'experimental'
     } else {
       const {compatibility} = opts.agdaInfo[agdaVersion]
-      const recommended = semver.maxSatisfying(
+      const recommended = simver.maxSatisfying(
         opts.agdaStdlibVersions,
-        compatibility['agda-stdlib'],
-        {loose: true}
+        compatibility['agda-stdlib']
       )
       assert(
         recommended !== null,
