@@ -1,9 +1,8 @@
 import * as hackage from '../util/app/hackage'
-import bundledAgdaBdistIndex from '../data/Agda.bdist.json'
-import bundledAgdaStdlibSdistIndex from '../data/agda-stdlib.sdist.json'
+import bundledAgdaInfo from '../data/Agda.json'
+import bundledAgdaStdlibInfo from '../data/agda-stdlib.json'
 import bundledAgdaPackageInfoCacheForDeprecatedVersions from '../data/Agda.versions.deprecated.json'
 import bundledAgdaPackageInfoCacheForNormalVersions from '../data/Agda.versions.normal.json'
-import bundledAgdaToAgdaStdlibCompatibilityMap from '../data/Agda.agda-stdlib-compat.json'
 import bundledAgdaComponentsMap from '../data/Agda.components.json'
 import {platform, Platform, Arch} from './platform'
 import assert from 'node:assert'
@@ -78,10 +77,10 @@ export function isAgdaVersionSpec(
 }
 
 // Type of agda-stdlib versions:
-export type AgdaStdlibVersion = keyof typeof bundledAgdaStdlibSdistIndex
+export type AgdaStdlibVersion = keyof typeof bundledAgdaStdlibInfo
 
 export const agdaStdlibVersions = Object.keys(
-  bundledAgdaStdlibSdistIndex
+  bundledAgdaStdlibInfo
 ) as AgdaStdlibVersion[]
 
 // Type guard for agda-stdlib versions:
@@ -130,19 +129,21 @@ export type Dist =
 //
 // NOTE: The type ensures that all binary distributions are indexed under valid
 //       platform, architecture, and Agda version keys.
-export const agdaBdistIndex: Partial<
+export const agdaBinaryIndex: Partial<
   Record<
-    Platform,
-    Partial<Record<Arch, Partial<Record<AgdaVersion | 'nightly', Dist>>>>
+    AgdaVersion | 'nightly',
+    {
+      binary: Partial<Record<Platform, Partial<Record<Arch, Dist[]>>>>
+    }
   >
-> = bundledAgdaBdistIndex
+> = bundledAgdaInfo
 
 // List of agda-stdlib source distributions on GitHub:
 //
 // NOTE: The type ensures that all source distributions are indexed under valid
 //       agda-stdlib version keys.
-export const agdaStdlibSdistIndex = bundledAgdaStdlibSdistIndex as Partial<
-  Record<AgdaStdlibVersion | 'experimental', Dist>
+export const agdaStdlibSourceIndex = bundledAgdaStdlibInfo as Partial<
+  Record<AgdaStdlibVersion | 'experimental', {source: Dist}>
 >
 
 // The compatibility mapping between Agda versions and agda-stdlib versions:
@@ -153,8 +154,8 @@ export const agdaStdlibSdistIndex = bundledAgdaStdlibSdistIndex as Partial<
 //       The second assignment asserts that they are correct, but does not check it.
 const agdaVersionToCompatibleAgdaStdlibVersionStrings: Record<
   AgdaVersion,
-  string[]
-> = bundledAgdaToAgdaStdlibCompatibilityMap
+  Record<'agda-stdlib', string[]>
+> = bundledAgdaInfo
 
 export const agdaVersionToCompatibleAgdaStdlibVersions =
   agdaVersionToCompatibleAgdaStdlibVersionStrings as Record<
