@@ -1,4 +1,5 @@
 import assert from 'node:assert'
+import * as semver from 'semver'
 import * as logging from '../util/logging'
 import * as simver from '../util/simver'
 import * as opts from './types'
@@ -32,20 +33,23 @@ export default function resolveAgdaStdlibVersion(
       return 'experimental'
     } else {
       const {compatibility} = opts.agdaInfo[agdaVersion]
-      const compatibleVersions = compatibility['agda-stdlib']
-      const recommended = simver.max(compatibleVersions)
+      const recommended = semver.maxSatisfying(
+        opts.agdaStdlibVersions,
+        compatibility['agda-stdlib'],
+        {loose: true}
+      )
       assert(
         recommended !== null,
         [
           `Could not resolve recommended agda-stdlib version`,
-          `from compatible versions ${compatibleVersions.join(', ')}`
+          `from compatible versions ${compatibility['agda-stdlib']}`
         ].join(' ')
       )
       assert(
         opts.isAgdaStdlibVersion(recommended),
         [
           `Resolved recommended agda-stdlib version to version '${recommended}'`,
-          `not in list of compatible versions ${compatibleVersions.join(', ')}`
+          `not in list of compatible versions ${compatibility['agda-stdlib']}`
         ].join(' ')
       )
       return recommended

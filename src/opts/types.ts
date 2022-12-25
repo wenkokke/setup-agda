@@ -5,7 +5,6 @@ import bundledAgdaPackageInfoCacheForDeprecatedVersions from '../data/Agda.versi
 import bundledAgdaPackageInfoCacheForNormalVersions from '../data/Agda.versions.normal.json'
 import bundledAgdaComponentsMap from '../data/Agda.components.json'
 import {platform, Platform, Arch} from './platform'
-import assert from 'node:assert'
 
 // Bundled data & derived types:
 
@@ -125,29 +124,20 @@ export type Dist =
   | string
   | {url: string; dir?: string; tag?: string; distType?: DistType}
 
-type WeakAgdaInfo<T> = Record<
+export type AgdaInfo = Record<
   AgdaVersion | 'nightly',
   {
     binary: Partial<Record<Platform, Partial<Record<Arch, Dist[]>>>>
     compatibility: {
-      'agda-stdlib': T[]
+      'agda-stdlib': string
     }
   }
 >
-export type AgdaInfo = WeakAgdaInfo<AgdaStdlibVersion>
 
 // For each Agda version:
 // - A list of all binary distributions
 // - A list of compatible agda-stdlib versions
-export const agdaInfo = bundledAgdaInfo as WeakAgdaInfo<string> as AgdaInfo
-
-// Validate the type cast from WeakAgdaInfo<string> to WeakAgdaInfo<AgdaStdlibVersion>
-for (const agdaVersion of agdaVersions) {
-  const {compatibility} = agdaInfo[agdaVersion]
-  for (const agdaStdlibVersionString of compatibility['agda-stdlib']) {
-    assert(isAgdaStdlibVersion(agdaStdlibVersionString))
-  }
-}
+export const agdaInfo: AgdaInfo = bundledAgdaInfo
 
 // List of agda-stdlib source distributions on GitHub:
 //
