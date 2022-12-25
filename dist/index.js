@@ -2289,7 +2289,7 @@ matchingGhcVersionsThatCanBuildAgda) {
     return __awaiter(this, void 0, void 0, function* () {
         const execOptions = { cwd: sourceDir };
         // Run `cabal update`
-        yield util.cabal(['update']);
+        yield util.cabal(['v2-update']);
         // Run the pre-build hook:
         // We pass the configuration flags to the pre-build hook, so
         // the pre-build hook can call `cabal configure` if desired:
@@ -2300,17 +2300,17 @@ matchingGhcVersionsThatCanBuildAgda) {
         // If no configuration exists, run `cabal configure` with $configFlags:
         if (!fs.existsSync(path.join(sourceDir, 'cabal.project.local'))) {
             util.logging.info(`Configure Agda-${options['agda-version']}`);
-            yield util.cabal(['configure', ...configFlags], execOptions);
+            yield util.cabal(['v2-configure', ...configFlags], execOptions);
         }
         // Run `cabal build`:
         util.logging.info(`Build Agda-${options['agda-version']}`);
-        yield util.cabal(['build', 'exe:agda', 'exe:agda-mode'], execOptions);
+        yield util.cabal(['v2-build', 'exe:agda', 'exe:agda-mode'], execOptions);
         // Run `cabal install`:
         util.logging.info(`Install Agda-${options['agda-version']} to ${installDir}`);
         const installBinDir = path.join(installDir, 'bin');
         yield util.mkdirP(installBinDir);
         yield util.cabal([
-            'install',
+            'v2-install',
             'exe:agda',
             'exe:agda-mode',
             '--install-method=copy',

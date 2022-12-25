@@ -18,7 +18,7 @@ export async function build(
   const execOptions: util.ExecOptions = {cwd: sourceDir}
 
   // Run `cabal update`
-  await util.cabal(['update'])
+  await util.cabal(['v2-update'])
 
   // Run the pre-build hook:
   // We pass the configuration flags to the pre-build hook, so
@@ -34,12 +34,12 @@ export async function build(
   // If no configuration exists, run `cabal configure` with $configFlags:
   if (!fs.existsSync(path.join(sourceDir, 'cabal.project.local'))) {
     util.logging.info(`Configure Agda-${options['agda-version']}`)
-    await util.cabal(['configure', ...configFlags], execOptions)
+    await util.cabal(['v2-configure', ...configFlags], execOptions)
   }
 
   // Run `cabal build`:
   util.logging.info(`Build Agda-${options['agda-version']}`)
-  await util.cabal(['build', 'exe:agda', 'exe:agda-mode'], execOptions)
+  await util.cabal(['v2-build', 'exe:agda', 'exe:agda-mode'], execOptions)
 
   // Run `cabal install`:
   util.logging.info(`Install Agda-${options['agda-version']} to ${installDir}`)
@@ -47,7 +47,7 @@ export async function build(
   await util.mkdirP(installBinDir)
   await util.cabal(
     [
-      'install',
+      'v2-install',
       'exe:agda',
       'exe:agda-mode',
       '--install-method=copy',
