@@ -1,4 +1,4 @@
-name: build with cabal
+name: build bdist
 
 # Build Agda with Cabal using the recommended GHC versions,
 # from: https://wiki.portal.chalmers.se/agda/Main/Download
@@ -74,7 +74,9 @@ jobs:
           cabal-version: '3.8'
           force-build: true
           force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
-          ghc-version: '9.2.4'
+          # NOTE: We can't use GHC 9.2.4, because it ships with an
+          #       incompatible version of bytestring-0.11.2.0.
+          ghc-version: '9.0.2'
     strategy:
       matrix:
         os: [ubuntu-20.04] # [ubuntu-22.04, macos-11, macos-12, windows-2022]
