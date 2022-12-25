@@ -31,8 +31,7 @@ export default function resolveAgdaStdlibVersion(
     if (agdaVersion === 'HEAD' || agdaVersion === 'nightly') {
       return 'experimental'
     } else {
-      const compatibleVersions =
-        opts.agdaVersionToCompatibleAgdaStdlibVersions[agdaVersion]
+      const compatibleVersions = opts.agdaInfo[agdaVersion]['agda-stdlib']
       const recommended = simver.max(compatibleVersions)
       assert(
         recommended !== null,

@@ -125,49 +125,32 @@ export type Dist =
   | string
   | {url: string; dir?: string; tag?: string; distType?: DistType}
 
-// Agda binary distributions.
-//
-// NOTE: The type ensures that all binary distributions are indexed under valid
-//       platform, architecture, and Agda version keys.
-export const agdaBinaryIndex: Partial<
-  Record<
-    AgdaVersion | 'nightly',
-    {
-      binary: Partial<Record<Platform, Partial<Record<Arch, Dist[]>>>>
-    }
-  >
-> = bundledAgdaInfo
+type WeakAgdaInfo<T> = Record<
+  AgdaVersion | 'nightly',
+  {
+    binary: Partial<Record<Platform, Partial<Record<Arch, Dist[]>>>>
+    'agda-stdlib': T[]
+  }
+>
+export type AgdaInfo = WeakAgdaInfo<AgdaStdlibVersion>
+
+// For each Agda version:
+// - A list of all binary distributions
+// - A list of compatible agda-stdlib versions
+export const agdaInfo = bundledAgdaInfo as WeakAgdaInfo<string> as AgdaInfo
+
+// Validate the type cast from WeakAgdaInfo<string> to WeakAgdaInfo<AgdaStdlibVersion>
+for (const agdaVersion of agdaVersions)
+  for (const agdaStdlibVersionString of agdaInfo[agdaVersion]['agda-stdlib'])
+    assert(isAgdaStdlibVersion(agdaStdlibVersionString))
 
 // List of agda-stdlib source distributions on GitHub:
 //
 // NOTE: The type ensures that all source distributions are indexed under valid
 //       agda-stdlib version keys.
-export const agdaStdlibSourceIndex = bundledAgdaStdlibInfo as Partial<
+export const agdaStdlibInfo = bundledAgdaStdlibInfo as Partial<
   Record<AgdaStdlibVersion | 'experimental', {source: Dist}>
 >
-
-// The compatibility mapping between Agda versions and agda-stdlib versions:
-//
-// NOTE: The first type assignment ensures that every Agda version has a
-//       list of compatible agda-stdlib version strings, but does not check
-//       that those agda-stdlib version strings are valid agda-stdlib versions.
-//       The second assignment asserts that they are correct, but does not check it.
-const agdaVersionToCompatibleAgdaStdlibVersionStrings: Record<
-  AgdaVersion,
-  Record<'agda-stdlib', string[]>
-> = bundledAgdaInfo
-
-export const agdaVersionToCompatibleAgdaStdlibVersions =
-  agdaVersionToCompatibleAgdaStdlibVersionStrings as Record<
-    AgdaVersion,
-    AgdaStdlibVersion[]
-  >
-
-for (const agdaVersion of agdaVersions)
-  for (const agdaStdlibVersionString of agdaVersionToCompatibleAgdaStdlibVersionStrings[
-    agdaVersion
-  ])
-    assert(isAgdaStdlibVersion(agdaStdlibVersionString))
 
 // Inputs for haskell/actions/setup:
 
