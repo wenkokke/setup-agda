@@ -1,4 +1,4 @@
-name: build bdist
+name: build binary
 
 # Build Agda with Cabal using the recommended GHC versions,
 # from: https://wiki.portal.chalmers.se/agda/Main/Download
@@ -224,10 +224,12 @@ jobs:
                 -cabal{{{stack-version}}}
           bdist-license-report: true
           bdist-upload: true
-          cabal-version: '2.4'
+          cabal-version: '3.8'
           force-build: true
           force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
           ghc-version: '8.2.2'
+          pre-build-hook: |
+            cabal v2-configure $CABAL_CONFIG_ARGS --allow-newer=Cabal
     strategy:
       matrix:
         os: [ubuntu-20.04] # os: [ubuntu-22.04, macos-11, macos-12]
@@ -255,7 +257,7 @@ jobs:
                 -cabal{{{stack-version}}}
           bdist-license-report: true
           bdist-upload: true
-          cabal-version: '2.4'
+          cabal-version: '3.8'
           force-build: true
           force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
           ghc-version: '8.0.2'
@@ -286,7 +288,7 @@ jobs:
                 -cabal{{{stack-version}}}
           bdist-license-report: true
           bdist-upload: true
-          cabal-version: '2.4'
+          cabal-version: '3.8'
           force-build: true
           force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
           ghc-version: '7.10.3'
@@ -317,7 +319,7 @@ jobs:
                 -cabal{{{stack-version}}}
           bdist-license-report: true
           bdist-upload: true
-          cabal-version: '2.4'
+          cabal-version: '3.8'
           force-build: true
           force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
           ghc-version: '7.10.3'
@@ -348,7 +350,7 @@ jobs:
                 -cabal{{{stack-version}}}
           bdist-license-report: true
           bdist-upload: true
-          cabal-version: '2.4'
+          cabal-version: '3.8'
           force-build: true
           force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
           ghc-version: '7.10.3'
