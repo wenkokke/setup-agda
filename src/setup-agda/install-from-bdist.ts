@@ -11,11 +11,11 @@ export default async function installFromBdist(
 
   // Download & extract package:
   try {
-    const bdistIndexEntry =
-      opts.agdaBdistIndex?.[opts.platform]?.[opts.arch]?.[
-        options['agda-version']
+    const bdistIndexEntries =
+      opts.agdaInfo[options['agda-version']].binary?.[opts.platform]?.[
+        opts.arch
       ]
-    if (bdistIndexEntry === undefined) {
+    if (bdistIndexEntries === undefined || bdistIndexEntries.length === 0) {
       util.logging.info(
         [
           `Could not find binary distribution for`,
@@ -25,6 +25,7 @@ export default async function installFromBdist(
       return null
     }
     try {
+      const [bdistIndexEntry] = bdistIndexEntries
       const bdistDir = await opts.downloadDist(bdistIndexEntry)
       // If needed, repair file permissions:
       await repairPermissions(bdistDir)

@@ -132,7 +132,7 @@ export default async function getOptions(
   const agdaStdlibDefault = getFlag('agda-stdlib-default')
   if (agdaStdlibVersion !== 'none') {
     // Add standard-library to agda-libraries-dist:
-    let dist = opts.agdaStdlibSdistIndex[agdaStdlibVersion]
+    let dist = opts.agdaStdlibInfo[agdaStdlibVersion]?.source
     if (dist === undefined)
       throw Error(
         `Unsupported value for input \`agda-stdlib-version\`: '${agdaStdlibVersion}'`

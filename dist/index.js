@@ -1238,6 +1238,7 @@ const resolve_agda_stdlib_version_1 = __importDefault(__nccwpck_require__(3237))
 const resolve_agda_version_1 = __importDefault(__nccwpck_require__(2349));
 const opts = __importStar(__nccwpck_require__(9150));
 function getOptions(inputs, actionYml) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         function getOption(k) {
             var _a, _b;
@@ -1324,7 +1325,7 @@ function getOptions(inputs, actionYml) {
         const agdaStdlibDefault = getFlag('agda-stdlib-default');
         if (agdaStdlibVersion !== 'none') {
             // Add standard-library to agda-libraries-dist:
-            let dist = opts.agdaStdlibSdistIndex[agdaStdlibVersion];
+            let dist = (_a = opts.agdaStdlibInfo[agdaStdlibVersion]) === null || _a === void 0 ? void 0 : _a.source;
             if (dist === undefined)
                 throw Error(`Unsupported value for input \`agda-stdlib-version\`: '${agdaStdlibVersion}'`);
             if (typeof dist === 'string')
@@ -1535,7 +1536,7 @@ function resolveAgdaStdlibVersion(agdaVersion, agdaStdlibVersionSpec) {
             return 'experimental';
         }
         else {
-            const compatibleVersions = opts.agdaVersionToCompatibleAgdaStdlibVersions[agdaVersion];
+            const compatibleVersions = opts.agdaInfo[agdaVersion]['agda-stdlib'];
             const recommended = simver.max(compatibleVersions);
             (0, node_assert_1.default)(recommended !== null, [
                 `Could not resolve recommended agda-stdlib version`,
@@ -1800,13 +1801,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.agdaVersionToCompatibleAgdaStdlibVersions = exports.agdaStdlibSdistIndex = exports.agdaBdistIndex = exports.agdaPackageInfoCache = exports.isAgdaStdlibVersionSpec = exports.isAgdaStdlibVersion = exports.agdaStdlibVersions = exports.isAgdaVersionSpec = exports.isAgdaGitRef = exports.isDeprecatedAgdaVersion = exports.agdaDeprecatedVersions = exports.isAgdaVersion = exports.agdaVersions = exports.agdaComponents = void 0;
+exports.agdaStdlibInfo = exports.agdaInfo = exports.agdaPackageInfoCache = exports.isAgdaStdlibVersionSpec = exports.isAgdaStdlibVersion = exports.agdaStdlibVersions = exports.isAgdaVersionSpec = exports.isAgdaGitRef = exports.isDeprecatedAgdaVersion = exports.agdaDeprecatedVersions = exports.isAgdaVersion = exports.agdaVersions = exports.agdaComponents = void 0;
 const hackage = __importStar(__nccwpck_require__(3942));
-const Agda_bdist_json_1 = __importDefault(__nccwpck_require__(7951));
-const agda_stdlib_sdist_json_1 = __importDefault(__nccwpck_require__(5324));
+const Agda_json_1 = __importDefault(__nccwpck_require__(3778));
+const agda_stdlib_json_1 = __importDefault(__nccwpck_require__(882));
 const Agda_versions_deprecated_json_1 = __importDefault(__nccwpck_require__(1656));
 const Agda_versions_normal_json_1 = __importDefault(__nccwpck_require__(2115));
-const Agda_agda_stdlib_compat_json_1 = __importDefault(__nccwpck_require__(9442));
 const Agda_components_json_1 = __importDefault(__nccwpck_require__(3172));
 const platform_1 = __nccwpck_require__(542);
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
@@ -1841,7 +1841,7 @@ function isAgdaVersionSpec(versionSpec) {
         versionSpec === 'nightly');
 }
 exports.isAgdaVersionSpec = isAgdaVersionSpec;
-exports.agdaStdlibVersions = Object.keys(agda_stdlib_sdist_json_1.default);
+exports.agdaStdlibVersions = Object.keys(agda_stdlib_json_1.default);
 // Type guard for agda-stdlib versions:
 function isAgdaStdlibVersion(version) {
     return exports.agdaStdlibVersions.includes(version);
@@ -1858,27 +1858,19 @@ function isAgdaStdlibVersionSpec(versionSpec) {
 exports.isAgdaStdlibVersionSpec = isAgdaStdlibVersionSpec;
 // List of Agda source distributions on Hackage:
 exports.agdaPackageInfoCache = hackage.mergePackageInfoCache(Agda_versions_deprecated_json_1.default, Agda_versions_normal_json_1.default);
-// Agda binary distributions.
-//
-// NOTE: The type ensures that all binary distributions are indexed under valid
-//       platform, architecture, and Agda version keys.
-exports.agdaBdistIndex = Agda_bdist_json_1.default;
+// For each Agda version:
+// - A list of all binary distributions
+// - A list of compatible agda-stdlib versions
+exports.agdaInfo = Agda_json_1.default;
+// Validate the type cast from WeakAgdaInfo<string> to WeakAgdaInfo<AgdaStdlibVersion>
+for (const agdaVersion of exports.agdaVersions)
+    for (const agdaStdlibVersionString of exports.agdaInfo[agdaVersion]['agda-stdlib'])
+        (0, node_assert_1.default)(isAgdaStdlibVersion(agdaStdlibVersionString));
 // List of agda-stdlib source distributions on GitHub:
 //
 // NOTE: The type ensures that all source distributions are indexed under valid
 //       agda-stdlib version keys.
-exports.agdaStdlibSdistIndex = agda_stdlib_sdist_json_1.default;
-// The compatibility mapping between Agda versions and agda-stdlib versions:
-//
-// NOTE: The first type assignment ensures that every Agda version has a
-//       list of compatible agda-stdlib version strings, but does not check
-//       that those agda-stdlib version strings are valid agda-stdlib versions.
-//       The second assignment asserts that they are correct, but does not check it.
-const agdaVersionToCompatibleAgdaStdlibVersionStrings = Agda_agda_stdlib_compat_json_1.default;
-exports.agdaVersionToCompatibleAgdaStdlibVersions = agdaVersionToCompatibleAgdaStdlibVersionStrings;
-for (const agdaVersion of exports.agdaVersions)
-    for (const agdaStdlibVersionString of agdaVersionToCompatibleAgdaStdlibVersionStrings[agdaVersion])
-        (0, node_assert_1.default)(isAgdaStdlibVersion(agdaStdlibVersionString));
+exports.agdaStdlibInfo = agda_stdlib_json_1.default;
 
 
 /***/ }),
@@ -2670,15 +2662,15 @@ const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
 function installFromBdist(options) {
-    var _a, _b, _c;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         // If 'agda-version' is 'HEAD' we must build from source:
         if (options['agda-version'] === 'HEAD')
             return null;
         // Download & extract package:
         try {
-            const bdistIndexEntry = (_c = (_b = (_a = opts.agdaBdistIndex) === null || _a === void 0 ? void 0 : _a[opts.platform]) === null || _b === void 0 ? void 0 : _b[opts.arch]) === null || _c === void 0 ? void 0 : _c[options['agda-version']];
-            if (bdistIndexEntry === undefined) {
+            const bdistIndexEntries = (_b = (_a = opts.agdaInfo[options['agda-version']].binary) === null || _a === void 0 ? void 0 : _a[opts.platform]) === null || _b === void 0 ? void 0 : _b[opts.arch];
+            if (bdistIndexEntries === undefined || bdistIndexEntries.length === 0) {
                 util.logging.info([
                     `Could not find binary distribution for`,
                     `Agda ${options['agda-version']} on ${opts.arch}-${opts.platform}`
@@ -2686,6 +2678,7 @@ function installFromBdist(options) {
                 return null;
             }
             try {
+                const [bdistIndexEntry] = bdistIndexEntries;
                 const bdistDir = yield opts.downloadDist(bdistIndexEntry);
                 // If needed, repair file permissions:
                 yield repairPermissions(bdistDir);
@@ -33319,27 +33312,19 @@ function ensureError(input) {
 
 /***/ }),
 
-/***/ 9442:
-/***/ ((module) => {
-
-"use strict";
-module.exports = JSON.parse('{"2.6.2.2":["1.7.1"],"2.6.2.1":["1.7.1"],"2.6.2":["1.7","1.7.1"],"2.6.1.3":["1.5","1.6"],"2.6.1.2":["1.5"],"2.6.1.1":["1.4","1.5"],"2.6.1":["1.3","1.4","1.5","1.6"],"2.6.0.1":["1.0.1","1.1","1.2"],"2.6.0":["1.0","1.0.1"],"2.5.4.2":["0.17"],"2.5.4.1":["0.16","0.16.1","0.17"],"2.5.4":["0.16","0.16.1","0.17"],"2.5.3":["0.14","0.15"],"2.5.2":["0.13"],"2.5.1.2":["0.12"],"2.5.1.1":["0.12"],"2.5.1":["0.12"],"2.4.2.5":["0.11"],"2.4.2.4":["0.11"],"2.4.2.3":["0.10"],"2.4.2.2":["0.9"],"2.4.2.1":["0.9"],"2.4.2":["0.8.1"],"2.4.0.2":["0.8"],"2.4.0.1":["0.8"],"2.4.0":["0.8"],"2.3.2.2":["0.7"],"2.3.2.1":["0.7"],"2.3.2":["0.7"],"2.3.0.1":[],"2.3.0":["0.6"],"2.2.10":["0.5"],"2.2.8":["0.4"],"2.2.6":["0.3"],"2.2.4":["0.2"],"2.2.2":["0.1"],"2.2.0":[]}');
-
-/***/ }),
-
-/***/ 7951:
-/***/ ((module) => {
-
-"use strict";
-module.exports = JSON.parse('{"darwin":{"x64":{"nightly":{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz","dir":"Agda-nightly"},"2.6.2.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-macos-11-icu71.1-ghc9.2.2-cabal3.6.2.0.zip","2.6.2.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-macos-11-icu71.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip","2.6.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-macos-11-icu71.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip","2.6.1.3":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-macos-11-icu71.1-ghc8.10.3-cabal2.4.1.0-stack2.7.5.zip","2.6.0.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-macos-11-icu71.1-ghc8.6.5-cabal2.4.1.0-stack2.7.5.zip","2.5.4.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-macos-11-icu71.1-ghc8.4.4-cabal2.4.1.0-stack2.7.5.zip","2.5.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-macos-11-icu-ghc8.0.2-cabal2.4.1.0-stack2.7.5.zip"}},"linux":{"x64":{"nightly":{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz","dir":"Agda-nightly"},"2.6.2.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04-icu66.1-ghc9.2.2-cabal3.6.2.0.zip","2.6.2.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-ubuntu-20.04-icu66.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip","2.6.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-ubuntu-20.04-icu66.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip","2.6.1.3":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-20.04-icu66.1-ghc8.10.3-cabal2.4.1.0-stack2.7.5.zip","2.6.0.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-20.04-icu66.1-ghc8.6.5-cabal2.4.1.0-stack2.7.5.zip","2.5.4.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-ubuntu-20.04-icu66.1-ghc8.4.4-cabal2.4.1.0-stack2.7.5.zip","2.5.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-ubuntu-20.04-icu-ghc8.0.2-cabal2.4.1.0-stack2.7.5.zip"}},"win32":{"x64":{"nightly":{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip","dir":"Agda-nightly"},"2.6.2.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022-icu71.1-ghc9.2.2-cabal3.6.2.0.zip","2.6.2.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-windows-2022-icu72.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip","2.6.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-windows-2022-icu72.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip","2.6.1.3":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-windows-2022-icu72.1-ghc8.10.3-cabal2.4.1.0-stack2.7.5.zip"}}}');
-
-/***/ }),
-
 /***/ 3172:
 /***/ ((module) => {
 
 "use strict";
 module.exports = JSON.parse('{"Agda:exe:agda":{"exe":"agda"},"Agda:exe:agda-mode":{"exe":"agda-mode"}}');
+
+/***/ }),
+
+/***/ 3778:
+/***/ ((module) => {
+
+"use strict";
+module.exports = JSON.parse('{"nightly":{"binary":{"darwin":{"x64":[{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz","dir":"Agda-nightly"}]},"linux":{"x64":[{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz","dir":"Agda-nightly"}]},"win32":{"x64":[{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip","dir":"Agda-nightly"}]}},"agda-stdlib":["1.7.1"]},"2.6.2.2":{"binary":{"darwin":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-macos-11-icu71.1-ghc9.2.2-cabal3.6.2.0.zip"]},"linux":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04-icu66.1-ghc9.2.2-cabal3.6.2.0.zip"]},"win32":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022-icu71.1-ghc9.2.2-cabal3.6.2.0.zip"]}},"agda-stdlib":["1.7.1"]},"2.6.2.1":{"binary":{"darwin":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-macos-11-icu71.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip"]},"linux":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-ubuntu-20.04-icu66.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip"]},"win32":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-windows-2022-icu72.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip"]}},"agda-stdlib":["1.7.1"]},"2.6.2":{"binary":{"darwin":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-macos-11-icu71.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip"]},"linux":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-ubuntu-20.04-icu66.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip"]},"win32":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-windows-2022-icu72.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip"]}},"agda-stdlib":["1.7","1.7.1"]},"2.6.1.3":{"binary":{"darwin":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-macos-11-icu71.1-ghc8.10.3-cabal2.4.1.0-stack2.7.5.zip"]},"linux":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-20.04-icu66.1-ghc8.10.3-cabal2.4.1.0-stack2.7.5.zip"]},"win32":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-windows-2022-icu72.1-ghc8.10.3-cabal2.4.1.0-stack2.7.5.zip"]}},"agda-stdlib":["1.5","1.6"]},"2.6.1.2":{"binary":{},"agda-stdlib":["1.5"]},"2.6.1.1":{"binary":{},"agda-stdlib":["1.4","1.5"]},"2.6.1":{"binary":{},"agda-stdlib":["1.3","1.4","1.5","1.6"]},"2.6.0.1":{"binary":{"darwin":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-macos-11-icu71.1-ghc8.6.5-cabal2.4.1.0-stack2.7.5.zip"]},"linux":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-20.04-icu66.1-ghc8.6.5-cabal2.4.1.0-stack2.7.5.zip"]},"win32":{"x64":[]}},"agda-stdlib":["1.0.1","1.1","1.2"]},"2.6.0":{"binary":{},"agda-stdlib":["1.0","1.0.1"]},"2.5.4.2":{"binary":{"darwin":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-macos-11-icu71.1-ghc8.4.4-cabal2.4.1.0-stack2.7.5.zip"]},"linux":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-ubuntu-20.04-icu66.1-ghc8.4.4-cabal2.4.1.0-stack2.7.5.zip"]},"win32":{"x64":[]}},"agda-stdlib":["0.17"]},"2.5.4.1":{"binary":{},"agda-stdlib":["0.16","0.16.1","0.17"]},"2.5.4":{"binary":{},"agda-stdlib":["0.16","0.16.1","0.17"]},"2.5.3":{"binary":{},"agda-stdlib":["0.14","0.15"]},"2.5.2":{"binary":{"darwin":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-macos-11-icu-ghc8.0.2-cabal2.4.1.0-stack2.7.5.zip"]},"linux":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-ubuntu-20.04-icu-ghc8.0.2-cabal2.4.1.0-stack2.7.5.zip"]},"win32":{"x64":[]}},"agda-stdlib":["0.13"]},"2.5.1.2":{"binary":{},"agda-stdlib":["0.12"]},"2.5.1.1":{"binary":{},"agda-stdlib":["0.12"]},"2.5.1":{"binary":{},"agda-stdlib":["0.12"]},"2.4.2.5":{"binary":{},"agda-stdlib":["0.11"]},"2.4.2.4":{"binary":{},"agda-stdlib":["0.11"]},"2.4.2.3":{"binary":{},"agda-stdlib":["0.10"]},"2.4.2.2":{"binary":{},"agda-stdlib":["0.9"]},"2.4.2.1":{"binary":{},"agda-stdlib":["0.9"]},"2.4.2":{"binary":{},"agda-stdlib":["0.8.1"]},"2.4.0.2":{"binary":{},"agda-stdlib":["0.8"]},"2.4.0.1":{"binary":{},"agda-stdlib":["0.8"]},"2.4.0":{"binary":{},"agda-stdlib":["0.8"]},"2.3.2.2":{"binary":{},"agda-stdlib":["0.7"]},"2.3.2.1":{"binary":{},"agda-stdlib":["0.7"]},"2.3.2":{"binary":{},"agda-stdlib":["0.7"]},"2.3.0.1":{"binary":{},"agda-stdlib":[]},"2.3.0":{"binary":{},"agda-stdlib":["0.6"]},"2.2.10":{"binary":{},"agda-stdlib":["0.5"]},"2.2.8":{"binary":{},"agda-stdlib":["0.4"]},"2.2.6":{"binary":{},"agda-stdlib":["0.3"]},"2.2.4":{"binary":{},"agda-stdlib":["0.2"]},"2.2.2":{"binary":{},"agda-stdlib":["0.1"]},"2.2.0":{"binary":{},"agda-stdlib":[]}}');
 
 /***/ }),
 
@@ -33367,11 +33352,11 @@ module.exports = JSON.parse('{"ghc":["9.4.1","9.2.4","9.2.3","9.2.2","9.2.1","9.
 
 /***/ }),
 
-/***/ 5324:
+/***/ 882:
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"1.7.1":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.7.1.zip","dir":"agda-stdlib-1.7.1"},"1.7":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.7.zip","dir":"agda-stdlib-1.7"},"1.6":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.6.zip","dir":"agda-stdlib-1.6"},"1.5":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.5.zip","dir":"agda-stdlib-1.5"},"1.4":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.4.zip","dir":"agda-stdlib-1.4"},"1.3":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.3.zip","dir":"agda-stdlib-1.3"},"1.2":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.2.zip","dir":"agda-stdlib-1.2"},"1.1":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.1.zip","dir":"agda-stdlib-1.1"},"1.0.1":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.0.1.zip","dir":"agda-stdlib-1.0.1"},"1.0":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.0.zip","dir":"agda-stdlib-1.0"},"0.17":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.17.zip","dir":"agda-stdlib-0.17"},"0.16":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.16.zip","dir":"agda-stdlib-0.16"},"0.16.1":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.16.1.zip","dir":"agda-stdlib-0.16.1"},"0.15":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.15.zip","dir":"agda-stdlib-0.15"},"0.14":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.14.zip","dir":"agda-stdlib-0.14"},"0.13":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.13.zip","dir":"agda-stdlib-0.13"},"0.12":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.12.zip","dir":"agda-stdlib-0.12"},"0.11":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.11.zip","dir":"agda-stdlib-0.11"},"0.10":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.10.zip","dir":"agda-stdlib-0.10"},"0.9":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.9.zip","dir":"agda-stdlib-0.9"},"0.8.1":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.8.1.zip","dir":"agda-stdlib-0.8.1"},"0.8":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.8.zip","dir":"agda-stdlib-0.8"},"0.7":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_7.zip","dir":"agda-stdlib-0_7"},"0.6":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_6.zip","dir":"agda-stdlib-0_6"},"0.5":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_5.zip","dir":"agda-stdlib-0_5"},"0.4":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_4.zip","dir":"agda-stdlib-0_4"},"0.3":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_3.zip","dir":"agda-stdlib-0_3"},"0.2":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_2.zip","dir":"agda-stdlib-0_2"},"0.1":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_1.zip","dir":"agda-stdlib-0_1"}}');
+module.exports = JSON.parse('{"1.7.1":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.7.1.zip","dir":"agda-stdlib-1.7.1"}},"1.7":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.7.zip","dir":"agda-stdlib-1.7"}},"1.6":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.6.zip","dir":"agda-stdlib-1.6"}},"1.5":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.5.zip","dir":"agda-stdlib-1.5"}},"1.4":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.4.zip","dir":"agda-stdlib-1.4"}},"1.3":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.3.zip","dir":"agda-stdlib-1.3"}},"1.2":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.2.zip","dir":"agda-stdlib-1.2"}},"1.1":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.1.zip","dir":"agda-stdlib-1.1"}},"1.0.1":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.0.1.zip","dir":"agda-stdlib-1.0.1"}},"1.0":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v1.0.zip","dir":"agda-stdlib-1.0"}},"0.17":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.17.zip","dir":"agda-stdlib-0.17"}},"0.16":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.16.zip","dir":"agda-stdlib-0.16"}},"0.16.1":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.16.1.zip","dir":"agda-stdlib-0.16.1"}},"0.15":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.15.zip","dir":"agda-stdlib-0.15"}},"0.14":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.14.zip","dir":"agda-stdlib-0.14"}},"0.13":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.13.zip","dir":"agda-stdlib-0.13"}},"0.12":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.12.zip","dir":"agda-stdlib-0.12"}},"0.11":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.11.zip","dir":"agda-stdlib-0.11"}},"0.10":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.10.zip","dir":"agda-stdlib-0.10"}},"0.9":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.9.zip","dir":"agda-stdlib-0.9"}},"0.8.1":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.8.1.zip","dir":"agda-stdlib-0.8.1"}},"0.8":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/v0.8.zip","dir":"agda-stdlib-0.8"}},"0.7":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_7.zip","dir":"agda-stdlib-0_7"}},"0.6":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_6.zip","dir":"agda-stdlib-0_6"}},"0.5":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_5.zip","dir":"agda-stdlib-0_5"}},"0.4":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_4.zip","dir":"agda-stdlib-0_4"}},"0.3":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_3.zip","dir":"agda-stdlib-0_3"}},"0.2":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_2.zip","dir":"agda-stdlib-0_2"}},"0.1":{"source":{"url":"https://github.com/agda/agda-stdlib/archive/refs/tags/0_1.zip","dir":"agda-stdlib-0_1"}}}');
 
 /***/ }),
 
