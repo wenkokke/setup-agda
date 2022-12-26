@@ -126,9 +126,9 @@ jobs:
     <td>2.6.2.2</td>
     <td></td>
     <td>📦 & 🏗</td>
-    <td>📦</td>
     <td>📦 & 🏗</td>
-    <td>📦</td>
+    <td>📦 & 🏗</td>
+    <td>📦 & 🏗</td>
     <td>📦</td>
     <td>📦</td>
     <td>📦 & 🏗</td>
@@ -137,9 +137,9 @@ jobs:
     <td>2.6.2.1</td>
     <td></td>
     <td>📦 & 🏗</td>
-    <td>📦</td>
     <td>📦 & 🏗</td>
-    <td>📦</td>
+    <td>📦 & 🏗</td>
+    <td>📦 & 🏗</td>
     <td>📦</td>
     <td>📦</td>
     <td>📦 & 🏗</td>
@@ -148,9 +148,9 @@ jobs:
     <td>2.6.2</td>
     <td></td>
     <td>📦 & 🏗</td>
-    <td>📦</td>
     <td>📦 & 🏗</td>
-    <td>📦</td>
+    <td>📦 & 🏗</td>
+    <td>📦 & 🏗</td>
     <td>📦</td>
     <td>📦</td>
     <td>📦 & 🏗</td>
@@ -159,9 +159,9 @@ jobs:
     <td>2.6.1.3</td>
     <td></td>
     <td>📦 & 🏗</td>
-    <td>📦</td>
     <td>📦 & 🏗</td>
-    <td>📦</td>
+    <td>📦 & 🏗</td>
+    <td>📦 & 🏗</td>
     <td>📦</td>
     <td>📦</td>
     <td>📦 & 🏗</td>
@@ -170,9 +170,9 @@ jobs:
     <td>2.6.0.1</td>
     <td></td>
     <td>📦 & 🏗</td>
-    <td>📦</td>
     <td>📦 & 🏗</td>
-    <td>📦</td>
+    <td>📦 & 🏗</td>
+    <td>📦 & 🏗</td>
     <td>📦</td>
     <td></td>
     <td></td>
@@ -181,9 +181,9 @@ jobs:
     <td>2.5.4.2</td>
     <td></td>
     <td>📦 & 🏗</td>
-    <td>📦</td>
     <td>📦 & 🏗</td>
-    <td>📦</td>
+    <td>📦 & 🏗</td>
+    <td>📦 & 🏗</td>
     <td>📦</td>
     <td></td>
     <td></td>
@@ -192,9 +192,9 @@ jobs:
     <td>2.5.3</td>
     <td></td>
     <td>📦 & 🏗</td>
-    <td>📦</td>
     <td>📦 & 🏗</td>
-    <td>📦</td>
+    <td>📦 & 🏗</td>
+    <td>📦 & 🏗</td>
     <td>📦</td>
     <td></td>
     <td></td>
@@ -203,9 +203,9 @@ jobs:
     <td>2.5.2</td>
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
-    <td>📦</td>
     <td>📦 & 🏗</td>
-    <td>📦</td>
+    <td>📦 & 🏗</td>
+    <td>📦 & 🏗</td>
     <td>📦</td>
     <td></td>
     <td></td>
