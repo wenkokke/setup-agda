@@ -5,28 +5,20 @@ import * as opts from './opts'
 import setupAgdaLibrary from './setup-agda-library'
 import buildFromSdist from './setup-agda/build-from-sdist'
 import installFromBdist from './setup-agda/install-from-bdist'
-import installFromToolCache from './setup-agda/install-from-tool-cache'
 import * as util from './util'
 
 export default async function setup(options: opts.BuildOptions): Promise<void> {
   // 1. Find an existing Agda build or build from source:
   let agdaDir: string | null = null
 
-  // 1.1. Try the GitHub Tool Cache:
-  if (!options['force-build'] && agdaDir === null)
-    agdaDir = await util.logging.group(
-      `🔍 Searching for Agda ${options['agda-version']} in tool cache`,
-      async () => await installFromToolCache(options)
-    )
-
-  // 1.2. Try the custom package index:
+  // 1.1. Try the custom package index:
   if (!options['force-build'] && agdaDir === null)
     agdaDir = await util.logging.group(
       `🔍 Searching for Agda ${options['agda-version']} in package index`,
       async () => await installFromBdist(options)
     )
 
-  // 1.3. Build from source:
+  // 1.2. Build from source:
   if (!options['force-no-build'] && agdaDir === null)
     agdaDir = await buildFromSdist(options)
   else if (agdaDir === null)
