@@ -4,6 +4,90 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Build Agda 2.6.1.3 with Cabal:
+  build-2_6_1_3-cabal:
+    name: Build Agda (2.6.1.3) on ${{ matrix.os }} with Cabal
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Agda (2.6.1.3)
+        uses: ./
+        with:
+          agda-version: '2.6.1.3'
+          bdist-name: |
+            agda-{{{agda-version}}}
+                -{{{arch}}}
+                -${{ matrix.os }}
+                -icu{{{icu-version}}}
+                -ghc{{{ghc-version}}}
+                -cabal{{{cabal-version}}}
+          bdist-license-report: true
+          bdist-upload: true
+          cabal-version: '3.8'
+          force-build: true
+          force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
+          ghc-version: '8.10.3'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, windows-2022]
+
+  # Build Agda 2.6.0.1 with Cabal:
+  build-2_6_0_1-cabal:
+    name: Build Agda (2.6.0.1) on ${{ matrix.os }} with Cabal
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Agda (2.6.0.1)
+        uses: ./
+        with:
+          agda-version: '2.6.0.1'
+          bdist-name: |
+            agda-{{{agda-version}}}
+                -{{{arch}}}
+                -${{ matrix.os }}
+                -icu{{{icu-version}}}
+                -ghc{{{ghc-version}}}
+                -cabal{{{cabal-version}}}
+          bdist-license-report: true
+          bdist-upload: true
+          cabal-version: '3.8'
+          force-build: true
+          force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
+          ghc-version: '8.6.5'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022]
+
+  # Build Agda 2.5.4.2 with Cabal:
+  build-2_5_4_2-cabal:
+    name: Build Agda (2.5.4.2) on ${{ matrix.os }} with Cabal
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Agda (2.5.4.2)
+        uses: ./
+        with:
+          agda-version: '2.5.4.2'
+          bdist-name: |
+            agda-{{{agda-version}}}
+                -{{{arch}}}
+                -${{ matrix.os }}
+                -icu{{{icu-version}}}
+                -ghc{{{ghc-version}}}
+                -cabal{{{cabal-version}}}
+          bdist-license-report: true
+          bdist-upload: true
+          cabal-version: '3.8'
+          force-build: true
+          force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
+          ghc-version: '8.4.4'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022]
+
   # Build Agda 2.5.3 with Cabal:
   build-2_5_3-cabal:
     name: Build Agda (2.5.3) on ${{ matrix.os }} with Cabal
@@ -33,7 +117,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04]
+        os: [windows-2022]
 
   # Build Agda 2.5.2 with Cabal:
   build-2_5_2-cabal:
@@ -61,4 +145,4 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04]
+        os: [windows-2022]
