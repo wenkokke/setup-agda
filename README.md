@@ -159,8 +159,8 @@ jobs:
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
-    <td>📦 only</td>
-    <td>📦 & 🏗</td>
+    <td></td>
+    <td></td>
   </tr>
   <tr>
     <td>2.6.0.1</td>
