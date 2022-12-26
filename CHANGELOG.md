@@ -1,3 +1,19 @@
+# v1.2.0
+
+### Support for licenses
+
+Added support for automatically generating a `licenses.txt` file when building a binary distribution, which includes the licenses for all Cabal dependencies, as well as the licenses for gmp, icu, and zlib.
+
+### Breaking changes
+
+- The input `agda-stdlib-default` was removed in favour of `agda-defaults`.
+- The support for installing Agda from the GitHub tool cache was removed,
+  since Agda isn't in the tool cache, and dreaming proved too much work.
+
+### Bug fixes
+
+There have been numerous bug fixes to account for either changes in behaviour of the GitHub runners (e.g., trailing newlines in pkg-config output) or in corner cases (e.g., use-cases which use Agda's allowlist for executables).
+
 # v1.1.0
 
 ### Support for libraries, defaults, and executables
