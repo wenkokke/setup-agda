@@ -38,7 +38,6 @@ jobs:
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
-                -cabal{{{stack-version}}}
           bdist-license-report: true
           bdist-upload: true
           cabal-version: '3.8'
@@ -67,7 +66,6 @@ jobs:
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
-                -cabal{{{stack-version}}}
           bdist-license-report: true
           bdist-upload: true
           cabal-version: '3.8'
@@ -98,7 +96,6 @@ jobs:
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
-                -cabal{{{stack-version}}}
           bdist-license-report: true
           bdist-upload: true
           cabal-version: '3.8'
@@ -127,7 +124,6 @@ jobs:
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
-                -cabal{{{stack-version}}}
           bdist-license-report: true
           bdist-upload: true
           cabal-version: '3.8'
@@ -156,7 +152,6 @@ jobs:
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
-                -cabal{{{stack-version}}}
           bdist-license-report: true
           bdist-upload: true
           cabal-version: '3.8'
@@ -185,7 +180,6 @@ jobs:
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
-                -cabal{{{stack-version}}}
           bdist-license-report: true
           bdist-upload: true
           cabal-version: '3.8'
@@ -215,7 +209,6 @@ jobs:
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
-                -cabal{{{stack-version}}}
           bdist-license-report: true
           bdist-upload: true
           cabal-version: '3.8'
@@ -247,7 +240,6 @@ jobs:
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
-                -cabal{{{stack-version}}}
           bdist-license-report: true
           bdist-upload: true
           cabal-version: '3.8'
