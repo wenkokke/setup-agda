@@ -2,16 +2,16 @@ import * as nunjucks from 'nunjucks'
 import * as yaml from 'js-yaml'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
+import * as os from 'node:os'
 import * as simver from '../src/util/simver'
-import assert from 'node:assert'
 
 function main(): void {
   // Load action.yml:
   const actionYml = loadActionYml()
   // Preprocess Agda.json for supported versions table:
-  const supportedVersions = loadSupportedVersions()
+  const supported_versions = loadSupportedVersions()
   // Render README.md.njk
-  const context = {...actionYml, supported: supportedVersions}
+  const context = {...actionYml, known_platforms, supported_versions}
   nunjucks.configure({autoescape: false})
   const readmeMdNjkPath = path.join(__dirname, '..', 'README.md.njk')
   const readmeContents = nunjucks.render(readmeMdNjkPath, context)
@@ -30,8 +30,6 @@ function loadActionYml(): object {
 
 // Load supported versions:
 
-type AgdaVersion = string
-
 type Platform =
   | 'ubuntu-18.04'
   | 'ubuntu-20.04'
@@ -42,7 +40,8 @@ type Platform =
   | 'windows-2019'
   | 'windows-2022'
 
-const platforms: Platform[] = [
+// NOTE: This order must correspond to the order in README.md.njk!
+const known_platforms: Platform[] = [
   'ubuntu-18.04',
   'ubuntu-20.04',
   'ubuntu-22.04',
@@ -57,43 +56,46 @@ type PlatformSupport = Record<Platform, {build: boolean; setup: boolean}>
 
 function loadSupportedVersions(): {
   version: string
-  support: PlatformSupport
+  platforms: PlatformSupport
 }[] {
   // Load table of binary distribution URLs by Agda version:
   const agdaUrlsByVersion = loadAgdaUrlsByVersion()
   // Construct the supported versions table:
-  const rows: {version: string; support: PlatformSupport}[] = []
+  const rows: {version: string; platforms: PlatformSupport}[] = []
   // For each Agda version, and each platform, determine compatibility:
   for (const {version, urls} of agdaUrlsByVersion) {
-    const support = applyPlatformCompatibility(getPlatformSupport(urls))
-    rows.push({version, support})
+    const platforms = applyPlatformCompatibility(getPlatformSupport(urls))
+    rows.push({version, platforms})
   }
   return rows
 }
 
 function getPlatformSupport(urls: string[]): PlatformSupport {
-  const support: Partial<PlatformSupport> = {}
-  for (const platform of platforms) {
+  const supported: Partial<PlatformSupport> = {}
+  for (const platform of known_platforms) {
     const build = urls.some(
       (value: string): boolean =>
         value !== undefined && value.includes(platform)
     )
     const setup = build
-    support[platform] = {build, setup}
+    supported[platform] = {build, setup}
   }
-  return support as PlatformSupport
+  return supported as PlatformSupport
 }
 
-function applyPlatformCompatibility(support: PlatformSupport): PlatformSupport {
-  if (support['ubuntu-20.04'].setup) support['ubuntu-22.04'].setup = true
+function applyPlatformCompatibility(
+  supported: PlatformSupport
+): PlatformSupport {
+  if (supported['ubuntu-20.04'].setup) supported['ubuntu-22.04'].setup = true
   // macos-11 -> macos-12
-  if (support['macos-11'].setup) support['macos-12'].setup = true
+  if (supported['macos-11'].setup) supported['macos-12'].setup = true
   // macos-12 -> macos-13
-  if (support['macos-12'].setup) support['macos-13'].setup = true
+  if (supported['macos-12'].setup) supported['macos-13'].setup = true
   // windows-2019 <-> windows-2022
-  if (support['windows-2019'].setup) support['windows-2022'].setup = true
-  else if (support['windows-2022'].setup) support['windows-2019'].setup = true
-  return support
+  if (supported['windows-2019'].setup) supported['windows-2022'].setup = true
+  else if (supported['windows-2022'].setup)
+    supported['windows-2019'].setup = true
+  return supported
 }
 
 function loadAgdaUrlsByVersion(): {version: string; urls: string[]}[] {
@@ -103,23 +105,26 @@ function loadAgdaUrlsByVersion(): {version: string; urls: string[]}[] {
   const agdaJson = JSON.parse(agdaJsonContents) as Record<string, object>
 
   // Get the Agda versions, and sort them in descending order:
-  const agdaVersions = Object.keys(agdaJson).sort(simver.compare)
+  const agdaVersions = Object.keys(agdaJson).sort(simver.compare).reverse()
 
   // Get the urls for each Agda version:
   const agdaUrlsByVersion: {version: string; urls: string[]}[] = []
   for (const agdaVersion of agdaVersions) {
     const urlsForThisVersion: string[] = []
-    const byPlatformTy = agdaJson[agdaVersion] as Record<string, object>
-    for (const [_platform, byArch] of Object.entries(byPlatformTy)) {
-      const byArchTy = byArch as Record<string, object>
-      for (const [_arch, dist] of Object.entries(byArchTy)) {
-        const distTy = dist as string | {url: string}
-        urlsForThisVersion.push(
-          typeof distTy === 'string' ? distTy : distTy.url
-        )
+    const versionInfo = agdaJson[agdaVersion] as {
+      binary: Record<string, object>
+    }
+    for (const [_platform, byArch] of Object.entries(versionInfo.binary)) {
+      for (const [_arch, dists] of Object.entries(byArch)) {
+        for (const dist of dists as (string | {url: string})[]) {
+          urlsForThisVersion.push(typeof dist === 'string' ? dist : dist.url)
+        }
       }
     }
-    agdaUrlsByVersion.push({version: agdaVersion, urls: urlsForThisVersion})
+    // Only push if there are known URLs for this version, and the version isn't nightly:
+    if (agdaVersion !== 'nightly' && urlsForThisVersion.length !== 0) {
+      agdaUrlsByVersion.push({version: agdaVersion, urls: urlsForThisVersion})
+    }
   }
   return agdaUrlsByVersion
 }

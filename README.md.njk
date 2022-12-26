@@ -109,16 +109,34 @@ jobs:
 
 ## Supported versions
 
-| Agda    | Ubuntu 20.04 | Ubuntu 22.04 | macOS 11   | macOS 12   | Windows 2019 | Windows 2022 |
-| ------- | ------------ | ------------ | ---------- | ---------- | ------------ | ------------ |
-| 2.6.2.2 | 📦 & 🏗       | 📦 & 🏗       | 📦 & 🏗     | 📦 & 🏗     | 📦 only      | 📦 & 🏗       |
-| 2.6.2.1 | 📦 & 🏗       | 📦 & 🏗       | 📦 & 🏗     | 📦 & 🏗     | 📦 only      | 📦 & 🏗       |
-| 2.6.2   | 📦 & 🏗       | 📦 & 🏗       | 📦 & 🏗     | 📦 & 🏗     | 📦 only      | 📦 & 🏗       |
-| 2.6.1.3 | 📦 & 🏗       | 📦 & 🏗       | 📦 & 🏗     | 📦 & 🏗     | 📦 only      | 📦 & 🏗       |
-| 2.6.0.1 | 📦 & 🏗       | 📦 & 🏗       | 📦 & 🏗     | 📦 & 🏗     |              |              |
-| 2.5.4.2 | 📦 & 🏗       | 📦 & 🏗       | 📦 & 🏗     | 📦 & 🏗     |              |              |
-| 2.5.3   | 📦 & 🏗       | 📦 & 🏗       | 📦 & 🏗     | 📦 & 🏗     |              |              |
-| 2.5.2   | 📦 & 🏗       | 📦 only       | 📦 & 🏗     | 📦 & 🏗     |              |              |
+<table>
+  <tr>
+    <th>Agda</th>
+    <th colspan="3">Ubuntu</th>
+    <th colspan="3">macOs</th>
+    <th colspan="2">Windows</th>
+  </tr>
+  <tr>
+    <th>Agda</th>
+    <th>18.04</th><th>20.04</th><th>22.04</th>
+    <th>11</th><th>12</th><th>13</th>
+    <th>2019</th><th>2022</th>
+  </tr>
+{%- for supported in supported_versions %}
+  <tr>
+    <td>{{ supported.version | trim }}</td>
+    {%- for platform in known_platforms %}
+    <td>
+    {%- if supported.platforms[platform].build -%}
+    📦 & 🏗
+    {%- elif supported.platforms[platform].setup -%}
+    📦
+    {%- endif -%}
+    </td>
+    {%- endfor %}
+  </tr>
+{%- endfor %}
+</table>
 
 If 📦 is specified, the platform supports setting up the Agda version from a binary distribution.
 
