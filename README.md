@@ -111,7 +111,7 @@ jobs:
 
 <table>
   <tr>
-    <th>Agda</th>
+    <th></th>
     <th colspan="3">Ubuntu</th>
     <th colspan="3">macOs</th>
     <th colspan="2">Windows</th>
