@@ -2653,6 +2653,7 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const glob = __importStar(__nccwpck_require__(8090));
+const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
 const opts = __importStar(__nccwpck_require__(1352));
 const util = __importStar(__nccwpck_require__(4024));
@@ -2681,7 +2682,10 @@ function installFromBdist(options) {
                     break;
                 }
                 catch (error) {
-                    logging.debug(util.ensureError(error).message);
+                    const bdistUrl = typeof bdistIndexEntry === 'string'
+                        ? bdistIndexEntry
+                        : bdistIndexEntry.url;
+                    logging.warning(`Skipped ${bdistUrl}${os.EOL}${util.ensureError(error).message}`);
                     bdistDir = undefined; // Reset to undefined
                     continue;
                 }

@@ -1,4 +1,5 @@
 import * as glob from '@actions/glob'
+import * as os from 'node:os'
 import * as path from 'node:path'
 import * as opts from '../opts'
 import * as util from '../util'
@@ -32,7 +33,13 @@ export default async function installFromBdist(
         bdistDir = await opts.downloadDist(bdistIndexEntry)
         break
       } catch (error) {
-        logging.debug(util.ensureError(error).message)
+        const bdistUrl =
+          typeof bdistIndexEntry === 'string'
+            ? bdistIndexEntry
+            : bdistIndexEntry.url
+        logging.warning(
+          `Skipped ${bdistUrl}${os.EOL}${util.ensureError(error).message}`
+        )
         bdistDir = undefined // Reset to undefined
         continue
       }
