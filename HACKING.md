@@ -113,7 +113,7 @@ When run the action proceeds as follows:
 
     - Download the source from Hackage or GitHub.
 
-      See `getAgdaSdist` in `./src/util/agda.ts`.
+      See `getAgdaSdist` in `./src/util/app/agda.ts`.
 
     - Setup GHC with `haskell/actions/setup`.
 
@@ -141,7 +141,7 @@ When run the action proceeds as follows:
 
       By default, we build with `--enable-cluster-counting` for any version which supports it and for which we know how to install ICU.
 
-      See `setup` in `./src/setup-icu.ts` and both `supportsClusterCounting` and `needsIcu` in `./opts/compat.ts`.
+      See `setup` in `./src/util/lib/icu.ts` and both `supportsClusterCounting` and `needsIcu` in `./opts/compat.ts`.
 
     - Build Agda.
 
@@ -151,13 +151,13 @@ When run the action proceeds as follows:
 
       We test Agda by compiling its builtin modules.
 
-      See `agdaTest` in `./src/util/agda.ts`.
+      See `agdaTest` in `./src/util/app/agda.ts`.
 
     - Install Agda.
 
       We copy the Agda binaries and data files to `AGDA_DIR/agda/{agda-version}/` and configure the environment so `agda` and `agda-mode` are on the PATH and `Agda_datadir` points to the data files.
 
-      See `configureEnvFor` in `./src/util/agda.ts`.
+      See `configureEnvFor` in `./src/util/app/agda.ts`.
 
 4.  **setup libraries**
 
@@ -173,11 +173,11 @@ When run the action proceeds as follows:
 
     If the Agda library was compiled with `--enable-cluster-counting`, we bundle ICU.
 
-    See `bundle` in `./src/setup-icu.ts`.
+    See `bundle` in `./src/util/lib/icu.ts`.
 
     If the user passed `bdist-compress-exe`, we compress the binaries with UPX.
 
-    See `./src/setup-upx.ts` and `compressBin` in `./src/setup-agda/upload-bdist.ts`.
+    See `./src/util/app/upx.ts` and `compressBin` in `./src/setup-agda/upload-bdist.ts`.
 
     This is the method by which the custom binary distributions are produced.
 
