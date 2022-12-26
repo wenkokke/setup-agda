@@ -2,7 +2,6 @@ import * as nunjucks from 'nunjucks'
 import * as yaml from 'js-yaml'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
-import * as os from 'node:os'
 import * as simver from '../src/util/simver'
 
 function main(): void {
