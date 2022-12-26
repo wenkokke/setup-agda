@@ -27,55 +27,36 @@ export default async function installFromBdist(
       return null
     }
     // Try and download each binary distribution in order:
-    let bdistDir: string | undefined
     for (const bdistIndexEntry of bdistIndexEntries) {
       try {
-        bdistDir = await opts.downloadDist(bdistIndexEntry)
-        break
+        const bdistDir = await opts.downloadDist(bdistIndexEntry)
+        // If needed, repair file permissions:
+        await repairPermissions(bdistDir)
+        // Test package:
+        logging.info(`Testing Agda ${options['agda-version']} package`)
+        await util.agdaTest({
+          agdaExePath: path.join(
+            bdistDir,
+            'bin',
+            opts.agdaComponents['Agda:exe:agda'].exe
+          ),
+          agdaDataDir: path.join(bdistDir, 'data')
+        })
+        return bdistDir
       } catch (error) {
         const bdistUrl =
           typeof bdistIndexEntry === 'string'
             ? bdistIndexEntry
             : bdistIndexEntry.url
         logging.warning(
-          `Skipped ${bdistUrl}${os.EOL}${util.ensureError(error).message}`
+          `Reject ${bdistUrl}${os.EOL}${util.ensureError(error).message}`
         )
-        bdistDir = undefined // Reset to undefined
         continue
       }
     }
-    // If we failed to download any distribution, fail:
-    if (bdistDir === undefined) {
-      logging.error(`Failed to download all binary distributions`)
-      return null
-    } else {
-      try {
-        // If needed, repair file permissions:
-        await repairPermissions(bdistDir)
-        // Test package:
-        logging.info(`Testing Agda ${options['agda-version']} package`)
-        try {
-          await util.agdaTest({
-            agdaExePath: path.join(
-              bdistDir,
-              'bin',
-              opts.agdaComponents['Agda:exe:agda'].exe
-            ),
-            agdaDataDir: path.join(bdistDir, 'data')
-          })
-          return bdistDir
-        } catch (error) {
-          const warning = util.ensureError(error)
-          warning.message = `Rejecting Agda ${options['agda-version']} package: ${warning.message}`
-          logging.warning(warning)
-          return null
-        }
-      } catch (error) {
-        const errorMessage = util.ensureError(error).message
-        logging.error(`Failed to setup binary distribution: ${errorMessage}`)
-        return null
-      }
-    }
+    // If we failed to setup any distribution, fail:
+    logging.error(`Failed to setup any binary distributions`)
+    return null
   } catch (error) {
     logging.warning(util.ensureError(error))
     return null
