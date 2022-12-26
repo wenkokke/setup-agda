@@ -2,27 +2,17 @@ name: setup
 
 on:
   push:
-    branches: ['main']
+    branches: ['v1.0.0']
     paths: ['**.ts', '**.js', '**.json', '**.yml']
 
   pull_request:
-    branches: ['main']
+    branches: ['v1.0.0']
     paths: ['**.ts', '**.js', '**.json', '**.yml']
     types: [opened, synchronize, reopened]
 
 jobs:
-  check-dist:
-    uses: ./.github/workflows/check-dist.yml
-
   setup-latest:
-    needs: [check-dist]
     uses: ./.github/workflows/setup-latest.yml
 
   setup-legacy:
-    needs: [check-dist]
     uses: ./.github/workflows/setup-legacy.yml
-
-  release:
-    if: ${{ github.event_name == 'push' }}
-    needs: [check-dist, setup-latest, setup-legacy]
-    uses: ./.github/workflows/release.yml

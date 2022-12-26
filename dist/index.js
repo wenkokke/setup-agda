@@ -1725,7 +1725,7 @@ function installFromBdist(options) {
 }
 exports["default"] = installFromBdist;
 function repairPermissions(bdistDir) {
-    var e_1, _a;
+    var _a, e_1, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
         switch (opts.platform) {
             case 'linux': {
@@ -1747,17 +1747,24 @@ function repairPermissions(bdistDir) {
                 // Repair file permissions on libraries
                 const libGlobber = yield glob.create(path.join(bdistDir, 'lib', '*'));
                 try {
-                    for (var _b = __asyncValues(libGlobber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
-                        const libPath = _c.value;
-                        yield util.chmod('+w', libPath);
-                        yield util.xattr('-c', libPath);
-                        yield util.chmod('-w', libPath);
+                    for (var _d = true, _e = __asyncValues(libGlobber.globGenerator()), _f; _f = yield _e.next(), _a = _f.done, !_a;) {
+                        _c = _f.value;
+                        _d = false;
+                        try {
+                            const libPath = _c;
+                            yield util.chmod('+w', libPath);
+                            yield util.xattr('-c', libPath);
+                            yield util.chmod('-w', libPath);
+                        }
+                        finally {
+                            _d = true;
+                        }
                     }
                 }
                 catch (e_1_1) { e_1 = { error: e_1_1 }; }
                 finally {
                     try {
-                        if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
+                        if (!_d && !_a && (_b = _e.return)) yield _b.call(_e);
                     }
                     finally { if (e_1) throw e_1.error; }
                 }
@@ -2882,7 +2889,7 @@ function agda(args, agdaOptions, options) {
 }
 exports.agda = agda;
 function agdaTest(agdaOptions, options) {
-    var e_1, _a;
+    var _a, e_1, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
         const versionString = yield agdaGetVersion(agdaOptions);
         core.info(`Found Agda version ${versionString} on PATH`);
@@ -2894,16 +2901,23 @@ function agdaTest(agdaOptions, options) {
             matchDirectories: false
         });
         try {
-            for (var _b = __asyncValues(globber.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
-                const agdaFile = _c.value;
-                core.info(`Compiling ${agdaFile}`);
-                yield agda(['-v0', agdaFile], agdaOptions, Object.assign(Object.assign({}, options), { cwd: path.join(dataDir, 'lib', 'prim') }));
+            for (var _d = true, _e = __asyncValues(globber.globGenerator()), _f; _f = yield _e.next(), _a = _f.done, !_a;) {
+                _c = _f.value;
+                _d = false;
+                try {
+                    const agdaFile = _c;
+                    core.info(`Compiling ${agdaFile}`);
+                    yield agda(['-v0', agdaFile], agdaOptions, Object.assign(Object.assign({}, options), { cwd: path.join(dataDir, 'lib', 'prim') }));
+                }
+                finally {
+                    _d = true;
+                }
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
         finally {
             try {
-                if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
+                if (!_d && !_a && (_b = _e.return)) yield _b.call(_e);
             }
             finally { if (e_1) throw e_1.error; }
         }
@@ -31766,7 +31780,7 @@ module.exports = JSON.parse('{"2.6.2.2":["1.7.1"],"2.6.2.1":["1.7.1"],"2.6.2":["
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"darwin":{"x64":{"nightly":{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz","dir":"Agda-nightly"},"2.6.2.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-macos-11-icu71.1-ghc9.2.2-cabal3.6.2.0.zip","2.6.2.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-macos-11-icu71.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip","2.6.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-macos-11-icu71.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip","2.6.1.3":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-macos-11-icu71.1-ghc8.10.3-cabal2.4.1.0-stack2.7.5.zip","2.6.0.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-macos-11-icu71.1-ghc8.6.5-cabal2.4.1.0-stack2.7.5.zip","2.5.4.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-macos-11-icu71.1-ghc8.4.4-cabal2.4.1.0-stack2.7.5.zip"}},"linux":{"x64":{"nightly":{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz","dir":"Agda-nightly"},"2.6.2.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04-icu66.1-ghc9.2.2-cabal3.6.2.0.zip","2.6.2.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-ubuntu-20.04-icu66.1-ghc9.2.1-cabal2.4.1.0-stack2.7.5.zip","2.6.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-ubuntu-20.04-icu66.1-ghc9.0.1-cabal2.4.1.0-stack2.7.5.zip","2.6.1.3":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-20.04-icu66.1-ghc8.10.3-cabal2.4.1.0-stack2.7.5.zip","2.6.0.1":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-20.04-icu66.1-ghc8.6.5-cabal2.4.1.0-stack2.7.5.zip","2.5.4.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-ubuntu-20.04-icu66.1-ghc8.4.4-cabal2.4.1.0-stack2.7.5.zip"}},"win32":{"x64":{"nightly":{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip","dir":"Agda-nightly"},"2.6.2.2":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022-icu71.1-ghc9.2.2-cabal3.6.2.0.zip"}}}');
+module.exports = JSON.parse('{"darwin":{"x64":{"nightly":{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz","dir":"Agda-nightly"},"2.6.2.2":"https://github.com/wenkokke/setup-agda/releases/download/v1.0.0/agda-2.6.2.2-x64-macos-11-icu71.1-ghc9.2.2-no-license.zip","2.6.2.1":"https://github.com/wenkokke/setup-agda/releases/download/v1.0.0/agda-2.6.2.1-x64-macos-11-icu71.1-ghc9.2.1-no-license.zip","2.6.2":"https://github.com/wenkokke/setup-agda/releases/download/v1.0.0/agda-2.6.2-x64-macos-11-icu71.1-ghc9.0.1-no-license.zip","2.6.1.3":"https://github.com/wenkokke/setup-agda/releases/download/v1.0.0/agda-2.6.1.3-x64-macos-11-icu71.1-ghc8.10.3-no-license.zip","2.6.0.1":"https://github.com/wenkokke/setup-agda/releases/download/v1.0.0/agda-2.6.0.1-x64-macos-11-icu71.1-ghc8.6.5-no-license.zip","2.5.4.2":"https://github.com/wenkokke/setup-agda/releases/download/v1.0.0/agda-2.5.4.2-x64-macos-11-icu71.1-ghc8.4.4-no-license.zip"}},"linux":{"x64":{"nightly":{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz","dir":"Agda-nightly"},"2.6.2.2":"https://github.com/wenkokke/setup-agda/releases/download/v1.0.0/agda-2.6.2.2-x64-ubuntu-20.04-icu66.1-ghc9.2.2-no-license.zip","2.6.2.1":"https://github.com/wenkokke/setup-agda/releases/download/v1.0.0/agda-2.6.2.1-x64-ubuntu-20.04-icu66.1-ghc9.2.1-no-license.zip","2.6.2":"https://github.com/wenkokke/setup-agda/releases/download/v1.0.0/agda-2.6.2-x64-ubuntu-20.04-icu66.1-ghc9.0.1-no-license.zip","2.6.1.3":"https://github.com/wenkokke/setup-agda/releases/download/v1.0.0/agda-2.6.1.3-x64-ubuntu-20.04-icu66.1-ghc8.10.3-no-license.zip","2.6.0.1":"https://github.com/wenkokke/setup-agda/releases/download/v1.0.0/agda-2.6.0.1-x64-ubuntu-20.04-icu66.1-ghc8.6.5-no-license.zip","2.5.4.2":"https://github.com/wenkokke/setup-agda/releases/download/v1.0.0/agda-2.5.4.2-x64-ubuntu-20.04-icu66.1-ghc8.4.4-no-license.zip"}},"win32":{"x64":{"nightly":{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip","dir":"Agda-nightly"},"2.6.2.2":"https://github.com/wenkokke/setup-agda/releases/download/v1.0.0/agda-2.6.2.2-x64-windows-2022-icu71.1-ghc9.2.2-no-license.zip"}}}');
 
 /***/ }),
 
