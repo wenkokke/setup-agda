@@ -2,6 +2,7 @@ import * as glob from '@actions/glob'
 import * as path from 'node:path'
 import * as opts from '../opts'
 import * as util from '../util'
+import * as logging from '../util/logging'
 
 export default async function installFromBdist(
   options: opts.BuildOptions
@@ -16,7 +17,7 @@ export default async function installFromBdist(
         opts.arch
       ]
     if (bdistIndexEntries === undefined || bdistIndexEntries.length === 0) {
-      util.logging.info(
+      logging.info(
         [
           `Could not find binary distribution for`,
           `Agda ${options['agda-version']} on ${opts.arch}-${opts.platform}`
@@ -24,37 +25,52 @@ export default async function installFromBdist(
       )
       return null
     }
-    try {
-      const [bdistIndexEntry] = bdistIndexEntries
-      const bdistDir = await opts.downloadDist(bdistIndexEntry)
-      // If needed, repair file permissions:
-      await repairPermissions(bdistDir)
-      // Test package:
-      util.logging.info(`Testing Agda ${options['agda-version']} package`)
+    // Try and download each binary distribution in order:
+    let bdistDir: string | undefined
+    for (const bdistIndexEntry of bdistIndexEntries) {
       try {
-        await util.agdaTest({
-          agdaExePath: path.join(
-            bdistDir,
-            'bin',
-            opts.agdaComponents['Agda:exe:agda'].exe
-          ),
-          agdaDataDir: path.join(bdistDir, 'data')
-        })
-        return bdistDir
+        bdistDir = await opts.downloadDist(bdistIndexEntry)
+        break
       } catch (error) {
-        const warning = util.ensureError(error)
-        warning.message = `Rejecting Agda ${options['agda-version']} package: ${warning.message}`
-        util.logging.warning(warning)
+        logging.debug(util.ensureError(error).message)
+        bdistDir = undefined // Reset to undefined
+        continue
+      }
+    }
+    // If we failed to download any distribution, fail:
+    if (bdistDir === undefined) {
+      logging.error(`Failed to download all binary distributions`)
+      return null
+    } else {
+      try {
+        // If needed, repair file permissions:
+        await repairPermissions(bdistDir)
+        // Test package:
+        logging.info(`Testing Agda ${options['agda-version']} package`)
+        try {
+          await util.agdaTest({
+            agdaExePath: path.join(
+              bdistDir,
+              'bin',
+              opts.agdaComponents['Agda:exe:agda'].exe
+            ),
+            agdaDataDir: path.join(bdistDir, 'data')
+          })
+          return bdistDir
+        } catch (error) {
+          const warning = util.ensureError(error)
+          warning.message = `Rejecting Agda ${options['agda-version']} package: ${warning.message}`
+          logging.warning(warning)
+          return null
+        }
+      } catch (error) {
+        const errorMessage = util.ensureError(error).message
+        logging.error(`Failed to setup binary distribution: ${errorMessage}`)
         return null
       }
-    } catch (error) {
-      util.logging.warning(
-        `Failed to download package: ${util.ensureError(error).message}`
-      )
-      return null
     }
   } catch (error) {
-    util.logging.warning(util.ensureError(error))
+    logging.warning(util.ensureError(error))
     return null
   }
 }
@@ -63,7 +79,7 @@ async function repairPermissions(bdistDir: string): Promise<void> {
   switch (opts.platform) {
     case 'linux': {
       // Repair file permissions
-      util.logging.info('Repairing file permissions')
+      logging.info('Repairing file permissions')
       for (const component of Object.values(opts.agdaComponents)) {
         await util.chmod('+x', path.join(bdistDir, 'bin', component.exe))
       }
@@ -71,7 +87,7 @@ async function repairPermissions(bdistDir: string): Promise<void> {
     }
     case 'darwin': {
       // Repair file permissions
-      util.logging.info('Repairing file permissions')
+      logging.info('Repairing file permissions')
       // Repair file permissions on executables
       for (const component of Object.values(opts.agdaComponents)) {
         await util.chmod('+x', path.join(bdistDir, 'bin', component.exe))
