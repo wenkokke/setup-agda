@@ -237,7 +237,6 @@ jobs:
             agda-{{{agda-version}}}
                 -{{{arch}}}
                 -${{ matrix.os }}
-                -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
           bdist-license-report: true
