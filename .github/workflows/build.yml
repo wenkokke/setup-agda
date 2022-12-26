@@ -3,8 +3,6 @@ name: build
 # Build Agda with Cabal using the recommended GHC versions,
 # from: https://wiki.portal.chalmers.se/agda/Main/Download
 
-# --ghc-options="+RTS -A128M -M6G -RTS"
-
 on:
   schedule:
     #        ┌───────────── minute (0 - 59)
