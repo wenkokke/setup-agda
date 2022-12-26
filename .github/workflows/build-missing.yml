@@ -1,21 +1,6 @@
-name: build
-
-# Build Agda with Cabal using the recommended GHC versions,
-# from: https://wiki.portal.chalmers.se/agda/Main/Download
+name: build missing
 
 on:
-  schedule:
-    #        ┌───────────── minute (0 - 59)
-    #        │  ┌───────────── hour (0 - 23)
-    #        │  │ ┌───────────── day of the month (1 - 31)
-    #        │  │ │ ┌───────────── month (1 - 12 or JAN-DEC)
-    #        │  │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
-    #        │  │ │ │ │
-    #        │  │ │ │ │
-    #        │  │ │ │ │
-    #        *  * * * *
-    - cron: '30 1 1 1 *'
-  workflow_call:
   workflow_dispatch:
 
 jobs:
@@ -45,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12, windows-2022]
+        os: [ubuntu-18.04, macos-13]
 
   # Build Agda 2.6.2.1 with Cabal:
   build-2_6_2_1-cabal:
@@ -75,7 +60,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12, windows-2022]
+        os: [ubuntu-18.04, macos-13]
 
   # Build Agda 2.6.2 with Cabal:
   build-2_6_2-cabal:
@@ -103,7 +88,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12, windows-2022]
+        os: [ubuntu-18.04, macos-13]
 
   # Build Agda 2.6.1.3 with Cabal:
   build-2_6_1_3-cabal:
@@ -131,7 +116,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12, windows-2022]
+        os: [ubuntu-18.04, macos-13]
 
   # Build Agda 2.6.0.1 with Cabal:
   build-2_6_0_1-cabal:
@@ -159,7 +144,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-18.04, macos-13]
 
   # Build Agda 2.5.4.2 with Cabal:
   build-2_5_4_2-cabal:
@@ -187,7 +172,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-18.04, macos-13]
 
   # Build Agda 2.5.3 with Cabal:
   build-2_5_3-cabal:
@@ -218,7 +203,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-18.04, macos-13, window-2022]
 
   # Build Agda 2.5.2 with Cabal:
   build-2_5_2-cabal:
@@ -246,4 +231,4 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-18.04, macos-13, window-2022]
