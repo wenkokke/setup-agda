@@ -95,12 +95,13 @@ function getPlatformSupport(urls: string[]): PlatformSupport {
 function applyPlatformCompatibility(
   supported: PlatformSupport
 ): PlatformSupport {
+  // ubuntu-20.04 -> ubuntu-22.04
   if (supported['ubuntu-20.04'].setup) supported['ubuntu-22.04'].setup = true
   // macos-11 -> macos-12
   if (supported['macos-11'].setup) supported['macos-12'].setup = true
   // windows-2019 -> windows-2022
   if (supported['windows-2019'].setup) supported['windows-2022'].setup = true
-  // windows-2019 <- windows-2022
+  // windows-2022 -> windows-2019
   if (supported['windows-2022'].setup) supported['windows-2019'].setup = true
   return supported
 }
