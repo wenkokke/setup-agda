@@ -119,7 +119,7 @@ jobs:
   <tr>
     <th>Agda</th>
     <th>18.04</th><th>20.04</th><th>22.04</th>
-    <th>11</th><th>12</th><th>13</th>
+    <th>11</th><th>12</th>
     <th>2019</th><th>2022</th>
   </tr>
   <tr>
@@ -129,7 +129,6 @@ jobs:
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
-    <td>📦 only</td>
     <td>📦 only</td>
     <td>📦 & 🏗</td>
   </tr>
@@ -141,7 +140,6 @@ jobs:
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
     <td>📦 only</td>
-    <td>📦 only</td>
     <td>📦 & 🏗</td>
   </tr>
   <tr>
@@ -151,7 +149,6 @@ jobs:
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
-    <td>📦 only</td>
     <td>📦 only</td>
     <td>📦 & 🏗</td>
   </tr>
@@ -163,7 +160,6 @@ jobs:
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
     <td>📦 only</td>
-    <td>📦 only</td>
     <td>📦 & 🏗</td>
   </tr>
   <tr>
@@ -173,7 +169,6 @@ jobs:
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
-    <td>📦 only</td>
     <td></td>
     <td></td>
   </tr>
@@ -184,7 +179,6 @@ jobs:
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
-    <td>📦 only</td>
     <td></td>
     <td></td>
   </tr>
@@ -195,7 +189,6 @@ jobs:
     <td>📦 only</td>
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
-    <td>📦 only</td>
     <td></td>
     <td></td>
   </tr>
@@ -206,7 +199,6 @@ jobs:
     <td>📦 only</td>
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
-    <td>📦 only</td>
     <td></td>
     <td></td>
   </tr>
