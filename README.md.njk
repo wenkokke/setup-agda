@@ -112,12 +112,13 @@ jobs:
 | Agda    | Ubuntu 20.04 | Ubuntu 22.04 | macOS 11   | macOS 12   | Windows 2019 | Windows 2022 |
 | ------- | ------------ | ------------ | ---------- | ---------- | ------------ | ------------ |
 | 2.6.2.2 | 📦 & 🏗       | 📦 & 🏗       | 📦 & 🏗     | 📦 & 🏗     | 📦 only      | 📦 & 🏗       |
-| 2.6.2.1 | 📦 & 🏗[^1]   | 📦 & 🏗[^1]   | 📦 & 🏗[^1] | 📦 & 🏗[^1] | 📦 only      | 📦 & 🏗[^1]   |
+| 2.6.2.1 | 📦 & 🏗       | 📦 & 🏗       | 📦 & 🏗     | 📦 & 🏗     | 📦 only      | 📦 & 🏗       |
 | 2.6.2   | 📦 & 🏗       | 📦 & 🏗       | 📦 & 🏗     | 📦 & 🏗     | 📦 only      | 📦 & 🏗       |
-| 2.6.1.3 | 📦 & 🏗[^1]   | 📦 & 🏗[^1]   | 📦 & 🏗[^1] | 📦 & 🏗[^1] | 📦 only      | 📦 & 🏗[^1]   |
-| 2.6.0.1 | 📦 & 🏗[^1]   | 📦 & 🏗[^1]   | 📦 & 🏗[^1] | 📦 & 🏗[^1] |              |              |
-| 2.5.4.2 | 📦 & 🏗[^1]   | 📦 & 🏗[^1]   | 📦 & 🏗[^1] | 📦 & 🏗[^1] |              |              |
-| 2.5.2   | 📦 & 🏗[^1]   | 📦 & 🏗[^1]   | 📦 & 🏗[^1] | 📦 & 🏗[^1] |              |              |
+| 2.6.1.3 | 📦 & 🏗       | 📦 & 🏗       | 📦 & 🏗     | 📦 & 🏗     | 📦 only      | 📦 & 🏗       |
+| 2.6.0.1 | 📦 & 🏗       | 📦 & 🏗       | 📦 & 🏗     | 📦 & 🏗     |              |              |
+| 2.5.4.2 | 📦 & 🏗       | 📦 & 🏗       | 📦 & 🏗     | 📦 & 🏗     |              |              |
+| 2.5.3   | 📦 & 🏗       | 📦 & 🏗       | 📦 & 🏗     | 📦 & 🏗     |              |              |
+| 2.5.2   | 📦 & 🏗       | 📦 only       | 📦 & 🏗     | 📦 & 🏗     |              |              |
 
 If 📦 is specified, the platform supports setting up the Agda version from a binary distribution.
 
@@ -126,8 +127,6 @@ If 🏗 is specified, the platform supports building the Agda version from sourc
 We encourage using the binary distributions. The binary distributions are tested on every commit. Building the latest Agda version is tested weekly on all platforms except Windows 2019. Please do not rely on the legacy builds, as these are not regularly tested. Please report any failing build _that is listed as working_, and we will update the table.
 
 If you find a configuration for this action which builds a legacy version not listed here, please open an issue and include the GitHub workflow. You can find the configuration for the current legacy builds in the [build-legacy] workflow.
-
-[^1]: This version can only be built with Stack. Set the input `enable-stack` to build with Stack. See [build.yml] for details.
 
 ## Usage
 
