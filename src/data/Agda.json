@@ -40,8 +40,8 @@
       },
       "linux": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-manylinux-2.31-icu66.1-ghc9.2.4.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-manylinux-2.31-icu66.1-ghc9.2.2-no-license.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04-icu66.1-ghc9.2.4.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04-icu66.1-ghc9.2.2-no-license.zip"
         ]
       },
       "win32": {
@@ -66,8 +66,8 @@
       },
       "linux": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-manylinux-2.31-icu66.1-ghc9.0.2.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-manylinux-2.31-icu66.1-ghc9.2.1-no-license.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-ubuntu-20.04-icu66.1-ghc9.0.2.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-ubuntu-20.04-icu66.1-ghc9.2.1-no-license.zip"
         ]
       },
       "win32": {
@@ -92,8 +92,8 @@
       },
       "linux": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-manylinux-2.31-icu66.1-ghc9.0.2.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-manylinux-2.31-icu66.1-ghc9.0.1-no-license.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-ubuntu-20.04-icu66.1-ghc9.0.2.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-ubuntu-20.04-icu66.1-ghc9.0.1-no-license.zip"
         ]
       },
       "win32": {
@@ -118,8 +118,8 @@
       },
       "linux": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-manylinux-2.31-icu66.1-ghc8.10.7.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-manylinux-2.31-icu66.1-ghc8.10.3-no-license.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-20.04-icu66.1-ghc8.10.7.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-20.04-icu66.1-ghc8.10.3-no-license.zip"
         ]
       },
       "win32": {
@@ -165,8 +165,8 @@
       },
       "linux": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-manylinux-2.31-icu66.1-ghc8.6.5.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-manylinux-2.31-icu66.1-ghc8.6.5-no-license.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-20.04-icu66.1-ghc8.6.5.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-20.04-icu66.1-ghc8.6.5-no-license.zip"
         ]
       },
       "win32": {
@@ -195,8 +195,8 @@
       },
       "linux": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-manylinux-2.31-icu66.1-ghc8.4.4.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-manylinux-2.31-icu66.1-ghc8.4.4-no-license.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-ubuntu-20.04-icu66.1-ghc8.4.4.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-ubuntu-20.04-icu66.1-ghc8.4.4-no-license.zip"
         ]
       },
       "win32": {
@@ -231,7 +231,7 @@
       },
       "linux": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-manylinux-2.31-icu66.1-ghc8.2.2.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-ubuntu-20.04-icu66.1-ghc8.2.2.zip"
         ]
       },
       "win32": {
@@ -253,8 +253,8 @@
       },
       "linux": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-manylinux-2.27-ghc8.0.2.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-manylinux-2.31-ghc8.0.2-no-license.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-ubuntu-18.04-ghc8.0.2.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-ubuntu-20.04-ghc8.0.2-no-license.zip"
         ]
       },
       "win32": {
