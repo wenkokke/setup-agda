@@ -3570,11 +3570,13 @@ function cabalPlanGetLicenses(cabalPlan, sourceDir, components, licenseDir) {
                 licenses[depName] = depLicensePath;
             }
             // Process the warnings and download the missing licenses:
-            for (const error of errors.split(os.EOL)) {
-                const warningMatch = error.match(cabalPlanWarningPattern);
+            const errorMessages = errors
+                .split(os.EOL)
+                .map(errorMessage => errorMessage.trim());
+            for (const errorMessage of errorMessages) {
+                const warningMatch = errorMessage.match(cabalPlanWarningPattern);
                 const depName = (_a = warningMatch === null || warningMatch === void 0 ? void 0 : warningMatch.groups) === null || _a === void 0 ? void 0 : _a.depName;
                 if (depName !== undefined) {
-                    logging.warning(`cabal-plan did not get license for ${depName}`);
                     const depLicenseUrl = hackageLicenseUrl(depName);
                     yield new Promise((resolve, reject) => {
                         http.get(depLicenseUrl, (res) => __awaiter(this, void 0, void 0, function* () {
@@ -3591,6 +3593,11 @@ function cabalPlanGetLicenses(cabalPlan, sourceDir, components, licenseDir) {
                             }
                         }));
                     });
+                }
+                else {
+                    // If we cannot match the cabal-plan error, we print it:
+                    if (errorMessage)
+                        logging.warning(`cabal-plan: ${errorMessage}`);
                 }
             }
         }

@@ -66,11 +66,13 @@ export async function cabalPlanGetLicenses(
       licenses[depName] = depLicensePath
     }
     // Process the warnings and download the missing licenses:
-    for (const error of errors.split(os.EOL)) {
-      const warningMatch = error.match(cabalPlanWarningPattern)
+    const errorMessages = errors
+      .split(os.EOL)
+      .map(errorMessage => errorMessage.trim())
+    for (const errorMessage of errorMessages) {
+      const warningMatch = errorMessage.match(cabalPlanWarningPattern)
       const depName = warningMatch?.groups?.depName
       if (depName !== undefined) {
-        logging.warning(`cabal-plan did not get license for ${depName}`)
         const depLicenseUrl = hackageLicenseUrl(depName)
         await new Promise<void>((resolve, reject) => {
           http.get(
@@ -89,6 +91,9 @@ export async function cabalPlanGetLicenses(
             }
           )
         })
+      } else {
+        // If we cannot match the cabal-plan error, we print it:
+        if (errorMessage) logging.warning(`cabal-plan: ${errorMessage}`)
       }
     }
   }
