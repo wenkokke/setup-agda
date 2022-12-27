@@ -1,8 +1,8 @@
 # How to maintain `setup-agda`?
 
-- Update `actions/haskell` submodule.
 - Add new Agda versions.
 - Add new standard library versions.
+- Update `actions/haskell` submodule. 
 
 # How to add an input?
 
