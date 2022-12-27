@@ -1,8 +1,34 @@
 # How to maintain `setup-agda`?
 
-- Add new Agda versions.
-- Add new standard library versions.
-- Update `actions/haskell` submodule. 
+## Add new Agda versions
+
+When a new Agda version is released:
+
+1. Run `npm run update-agda-info` to update the Agda versions from Hackage.
+2. Add a new entry to `src/data/Agda.json`.
+   You can use the template below, replacing `$AGDA_VERSION` with the new version, and replacing `$AGDA_STDLIB_VERSION_RANGE` and `$GHC_VERSION_RANGE` with the appropriate version ranges.
+   ```
+   "$AGDA_VERSION": {
+     "binary": {
+       "darwin": {"x64": []},
+       "linux": {"x64": []},
+       "win32": {"x64": []}
+     },
+     "compatibility": {
+       "agda-stdlib": "$AGDA_STDLIB_VERSION_RANGE",
+       "ghc": "$GHC_VERSION_RANGE"
+     }
+   },
+   ```
+3. Push your changes.
+   The CI will build binary distributions for the latest release, which is likely the release you're trying to add.
+4. Attach the binary distributions to the latest release, and add the URLs to the entry you added in the previous step.
+5. Add a test for the newly added version to `.github/workflows/setup-legacy.yml`.
+6. Push your changes.
+
+## Add new standard library versions.
+
+## Update `actions/haskell` submodule
 
 # How to add an input?
 
