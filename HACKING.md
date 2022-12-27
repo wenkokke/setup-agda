@@ -10,9 +10,18 @@ When a new Agda version is released:
    ```
    "$AGDA_VERSION": {
      "binary": {
-       "darwin": {"x64": []},
-       "linux": {"x64": []},
-       "win32": {"x64": []}
+       "darwin": {
+         "x64": [
+         ]
+       },
+       "linux": {
+         "x64": [
+         ]
+       },
+       "win32": {
+         "x64": [
+         ]
+       }
      },
      "compatibility": {
        "agda-stdlib": "$AGDA_STDLIB_VERSION_RANGE",
@@ -23,7 +32,7 @@ When a new Agda version is released:
 3. Push your changes.
    The CI will build binary distributions for the latest release, which is likely the release you're trying to add.
 4. Attach the binary distributions to the latest release, and add the URLs to the entry you added in the previous step.
-5. Add a test for the newly added version to `.github/workflows/setup-legacy.yml`.
+5. Add the newly added version to `.github/workflows/setup-legacy.yml`.
 6. Push your changes.
 
 ## Add new standard library versions.
