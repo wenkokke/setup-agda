@@ -29,15 +29,36 @@ When a new Agda version is released:
      }
    },
    ```
-3. Push your changes.
+3. Commit and push your changes.
    The CI will build binary distributions for the latest release, which is likely the release you're trying to add.
 4. Attach the binary distributions to the latest release, and add the URLs to the entry you added in the previous step.
 5. Add the newly added version to `.github/workflows/setup-legacy.yml`.
-6. Push your changes.
+6. Commit and push your changes.
 
 ## Add new standard library version
 
-## Update `actions/haskell` submodule
+1. Add a new entry to `src/data/agda-stdlib.json`.
+   You can use the template below, replacing `$AGDA_STDLIB_VERSION` with the new version.
+   ```json
+   "$AGDA_STDLIB_VERSION": {
+     "source": {
+       "url": "https://github.com/agda/agda-stdlib/archive/refs/tags/v$AGDA_STDLIB_VERSION.zip",
+       "dir": "agda-stdlib-$AGDA_STDLIB_VERSION"
+     }
+   },
+   ```
+2. Bump the `compatibility.agda-stdlib` range for each compatible Agda version in `src/data/Agda.json`.
+3. Commit and push your changes.
+
+## Update `haskell/actions` submodule
+
+1. Run the following commands, replacing `$HASKELL_ACTIONS_VERSION` with the new version:
+   ```sh
+   cd vendor/haskell/actions
+   git pull
+   git checkout $HASKELL_ACTIONS_VERSION
+   ```
+2. Commit and push your changes.
 
 # How to add an input?
 
