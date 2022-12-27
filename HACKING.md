@@ -7,7 +7,7 @@ When a new Agda version is released:
 1. Run `npm run update-agda-info` to update the Agda versions from Hackage.
 2. Add a new entry to `src/data/Agda.json`.
    You can use the template below, replacing `$AGDA_VERSION` with the new version, and replacing `$AGDA_STDLIB_VERSION_RANGE` and `$GHC_VERSION_RANGE` with the appropriate version ranges.
-   ```
+   ```yaml
    "$AGDA_VERSION": {
      "binary": {
        "darwin": {
