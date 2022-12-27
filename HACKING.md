@@ -1,6 +1,6 @@
 # How to maintain `setup-agda`?
 
-## Add new Agda versions
+## Add a new Agda version
 
 When a new Agda version is released:
 
@@ -35,7 +35,7 @@ When a new Agda version is released:
 5. Add the newly added version to `.github/workflows/setup-legacy.yml`.
 6. Push your changes.
 
-## Add new standard library versions.
+## Add new standard library version
 
 ## Update `actions/haskell` submodule
 
