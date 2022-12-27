@@ -1,3 +1,9 @@
+# How to maintain `setup-agda`?
+
+- Update `actions/haskell` submodule.
+- Add new Agda versions.
+- Add new standard library versions.
+
 # How to add an input?
 
 There are two types of inputs: boolean flags and string options. Some of the steps below are conditional on which type of input you're specifying. These will be prefixed by (Flag) or (Option).
