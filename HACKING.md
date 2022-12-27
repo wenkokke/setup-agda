@@ -52,7 +52,7 @@ When a new Agda version is released:
 
 ## Update `haskell/actions` submodule
 
-1. Run the following commands, replacing `$HASKELL_ACTIONS_VERSION` with the new version:
+1. Run the following commands, replacing `$HASKELL_ACTIONS_VERSION` with the tag for the new version:
    ```sh
    cd vendor/haskell/actions
    git pull
