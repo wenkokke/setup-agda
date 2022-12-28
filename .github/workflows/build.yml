@@ -29,14 +29,14 @@ jobs:
         uses: ./
         with:
           agda-version: '2.6.2.2'
+          bdist-compress-exe: ${{ runner.os == 'Linux' }}
+          bdist-license-report: true
           bdist-name: |
             agda-{{{agda-version}}}
                 -{{{arch}}}
                 -${{ matrix.os }}
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
-                -cabal{{{cabal-version}}}
-          bdist-license-report: true
           bdist-upload: true
           cabal-version: '3.8'
           force-build: true
@@ -57,13 +57,13 @@ jobs:
         uses: ./
         with:
           agda-version: '2.6.2.1'
+          bdist-compress-exe: ${{ runner.os == 'Linux' }}
           bdist-name: |
             agda-{{{agda-version}}}
                 -{{{arch}}}
                 -${{ matrix.os }}
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
-                -cabal{{{cabal-version}}}
           bdist-license-report: true
           bdist-upload: true
           cabal-version: '3.8'
@@ -87,13 +87,13 @@ jobs:
         uses: ./
         with:
           agda-version: '2.6.2'
+          bdist-compress-exe: ${{ runner.os == 'Linux' }}
           bdist-name: |
             agda-{{{agda-version}}}
                 -{{{arch}}}
                 -${{ matrix.os }}
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
-                -cabal{{{cabal-version}}}
           bdist-license-report: true
           bdist-upload: true
           cabal-version: '3.8'
@@ -115,13 +115,13 @@ jobs:
         uses: ./
         with:
           agda-version: '2.6.1.3'
+          bdist-compress-exe: ${{ runner.os == 'Linux' }}
           bdist-name: |
             agda-{{{agda-version}}}
                 -{{{arch}}}
                 -${{ matrix.os }}
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
-                -cabal{{{cabal-version}}}
           bdist-license-report: true
           bdist-upload: true
           cabal-version: '3.8'
@@ -143,13 +143,13 @@ jobs:
         uses: ./
         with:
           agda-version: '2.6.0.1'
+          bdist-compress-exe: ${{ runner.os == 'Linux' }}
           bdist-name: |
             agda-{{{agda-version}}}
                 -{{{arch}}}
                 -${{ matrix.os }}
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
-                -cabal{{{cabal-version}}}
           bdist-license-report: true
           bdist-upload: true
           cabal-version: '3.8'
@@ -171,13 +171,13 @@ jobs:
         uses: ./
         with:
           agda-version: '2.5.4.2'
+          bdist-compress-exe: ${{ runner.os == 'Linux' }}
           bdist-name: |
             agda-{{{agda-version}}}
                 -{{{arch}}}
                 -${{ matrix.os }}
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
-                -cabal{{{cabal-version}}}
           bdist-license-report: true
           bdist-upload: true
           cabal-version: '3.8'
@@ -200,13 +200,13 @@ jobs:
         uses: ./
         with:
           agda-version: '2.5.3'
+          bdist-compress-exe: ${{ runner.os == 'Linux' }}
           bdist-name: |
             agda-{{{agda-version}}}
                 -{{{arch}}}
                 -${{ matrix.os }}
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
-                -cabal{{{cabal-version}}}
           bdist-license-report: true
           bdist-upload: true
           cabal-version: '3.8'
@@ -231,12 +231,12 @@ jobs:
         uses: ./
         with:
           agda-version: '2.5.2'
+          bdist-compress-exe: ${{ runner.os == 'Linux' }}
           bdist-name: |
             agda-{{{agda-version}}}
                 -{{{arch}}}
                 -${{ matrix.os }}
                 -ghc{{{ghc-version}}}
-                -cabal{{{cabal-version}}}
           bdist-license-report: true
           bdist-upload: true
           cabal-version: '3.8'
