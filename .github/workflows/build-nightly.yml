@@ -40,7 +40,6 @@ jobs:
                 -${{ matrix.os }}
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
-                -cabal{{{cabal-version}}}
           force-build: true
           force-no-optimise-heavily: true
     strategy:
@@ -63,8 +62,6 @@ jobs:
                 -${{ matrix.os }}
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
-                -cabal{{{cabal-version}}}
-                -stack{{{stack-version}}}
           enable-stack: true
           force-build: true
           force-no-optimise-heavily: true
