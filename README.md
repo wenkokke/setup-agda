@@ -1,6 +1,7 @@
 # setup-agda
 
 [![ci](https://github.com/wenkokke/setup-agda/actions/workflows/ci.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/ci.yml)
+[![build](https://github.com/wenkokke/setup-agda/actions/workflows/build.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/build.yml)
 [![setup nightly](https://github.com/wenkokke/setup-agda/actions/workflows/setup-nightly.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/setup-nightly.yml)
 [![build nightly](https://github.com/wenkokke/setup-agda/actions/workflows/build-nightly.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/build-nightly.yml)
 [![pre-commit.ci](https://results.pre-commit.ci/badge/github/wenkokke/setup-agda/main.svg)](https://results.pre-commit.ci/latest/github/wenkokke/setup-agda/main)
