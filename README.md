@@ -175,7 +175,7 @@ jobs:
   </tr>
   <tr>
     <td>2.5.4.2</td>
-    <td></td>
+    <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
