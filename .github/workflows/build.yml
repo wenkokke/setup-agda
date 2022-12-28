@@ -131,7 +131,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12, windows-2022]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
 
   # Build Agda 2.6.0.1 with Cabal:
   build-2_6_0_1-cabal:
