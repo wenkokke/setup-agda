@@ -90,7 +90,7 @@ jobs:
           agda-version: ${{ matrix.agda-version }}
           agda-stdlib-version: 'recommended'
       - run: agda hello-world-proof.agda
-        working-directory: tests/agda
+        working-directory: tests/agda-stdlib
 ```
 
 ### Minimal
