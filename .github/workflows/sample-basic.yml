@@ -1,0 +1,14 @@
+name: basic
+on: [push]
+jobs:
+  check:
+    name: Check hello-world-dep.agda
+    runs-on: ubuntu-latest # or macOS-latest, or windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: wenkokke/setup-agda@latest
+        with:
+          agda-version: '2.6.2.2'
+          agda-stdlib-version: 'recommended'
+      - run: agda hello-world-dep.agda
+        working-directory: tests/agda
