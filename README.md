@@ -187,7 +187,7 @@ jobs:
     <td>2.5.3</td>
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
+    <td>📦 only</td>
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
     <td></td>
@@ -197,7 +197,7 @@ jobs:
     <td>2.5.2</td>
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
+    <td>📦 only</td>
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
     <td></td>
