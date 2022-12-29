@@ -16,26 +16,8 @@ For all other versions, this action attempts to build Agda from source. If an ol
 
 ## Samples
 
-#### Minimal
 
-Setup the latest Agda version.
-
-```yaml
-name: minimal
-on: [push]
-jobs:
-  check:
-    name: Check greet.agda
-    runs-on: ubuntu-latest # or macOS-latest, or windows-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: wenkokke/setup-agda@latest
-      - run: agda greet.agda
-```
-
-#### Basic
-
-Setup a specific Agda version and its recommended standard library version.
+### Basic
 
 ```yaml
 name: basic
@@ -51,11 +33,44 @@ jobs:
           agda-version: '2.6.2.2'
           agda-stdlib-version: 'recommended'
       - run: agda hello-world-dep.agda
+        working-directory: tests/agda-stdlib
 ```
 
-#### Matrix
+### Complex
 
-Matrix test with multiple Agda versions.
+```yaml
+name: complex
+on: [push]
+jobs:
+  check:
+    name: Check wenkokke/schmitty
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: wenkokke/schmitty
+      - uses: cda-tum/setup-z3@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: wenkokke/setup-agda@latest
+        with:
+          agda-version: '2.6.2.2'
+          agda-stdlib-version: '1.7.1'
+          agda-libraries: |
+            https://github.com/gallais/agdarsec.git#v0.5.0
+            https://github.com/wenkokke/schmitty.git#v1.0.1
+          agda-executables: |
+            z3
+      - name: Test Schmitty
+        run: |
+          ./scripts/test-succeed.sh
+          ./scripts/test-fail.sh
+```
+
+### Matrix
 
 ```yaml
 name: matrix
@@ -75,38 +90,25 @@ jobs:
           agda-version: ${{ matrix.agda-version }}
           agda-stdlib-version: 'recommended'
       - run: agda hello-world-proof.agda
+        working-directory: tests/agda
 ```
 
-#### Complex
-
-Setup a specific Agda version, a specific standard library version, various other libraries, and an executable.
+### Minimal
 
 ```yaml
-name: complex
+name: minimal
 on: [push]
 jobs:
   check:
-    name: Check hello-schmitty.agda
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+    name: Check greet.agda
+    runs-on: ubuntu-latest # or macOS-latest, or windows-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: cda-tum/setup-z3@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: wenkokke/setup-agda@latest
-        with:
-          agda-version: '2.6.2.2'
-          agda-stdlib-version: '1.7.1'
-          agda-libraries: |
-            https://github.com/gallais/agdarsec.git#v0.5.0
-            https://github.com/wenkokke/schmitty.git#v1.0.1
-          agda-executables: |
-            z3
-      - run: agda hello-schmitty.agda
+      - run: agda greet.agda
+        working-directory: tests/agda
 ```
+
 
 ## Supported versions
 

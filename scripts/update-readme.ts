@@ -3,14 +3,17 @@ import * as yaml from 'js-yaml'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
 import * as simver from '../src/util/simver'
+import * as glob from 'glob'
 
 function main(): void {
   // Load action.yml:
   const actionYml = loadActionYml()
+  // Load sample workflows:
+  const samples = loadSampleWorkflows()
   // Preprocess Agda.json for supported versions table:
   const supported_versions = loadSupportedVersions()
   // Render README.md.njk
-  const context = {...actionYml, known_platforms, supported_versions}
+  const context = {...actionYml, known_platforms, supported_versions, samples}
   nunjucks.configure({autoescape: false})
   const readmeMdNjkPath = path.join(__dirname, '..', 'README.md.njk')
   const readmeContents = nunjucks.render(readmeMdNjkPath, context)
@@ -25,6 +28,21 @@ function loadActionYml(): object {
   const actionYmlPath = path.join(__dirname, '..', 'action.yml')
   const actionYmlContents = fs.readFileSync(actionYmlPath).toString('utf-8')
   return yaml.load(actionYmlContents) as object
+}
+
+// Load sample workflows:
+
+function loadSampleWorkflows(): Partial<Record<string, string>> {
+  const sampleWorkflows = glob.sync(
+    path.join(__dirname, '..', '.github', 'workflows', 'sample-*.yml')
+  )
+  const samples: Partial<Record<string, string>> = {}
+  for (const sampleWorkflow of sampleWorkflows) {
+    const [_sample, name] = path.basename(sampleWorkflow, '.yml').split('-', 2)
+    const contents = fs.readFileSync(sampleWorkflow).toString()
+    samples[name] = contents
+  }
+  return samples
 }
 
 // Load supported versions:
