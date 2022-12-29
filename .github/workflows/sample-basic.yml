@@ -11,4 +11,4 @@ jobs:
           agda-version: '2.6.2.2'
           agda-stdlib-version: 'recommended'
       - run: agda hello-world-dep.agda
-        working-directory: tests/agda
+        working-directory: tests/agda-stdlib
