@@ -17,7 +17,7 @@ For all other versions, this action attempts to build Agda from source. If an ol
 ## Samples
 
 
-### Minimal
+### Minimal [![minimal](https://github.com/wenkokke/setup-agda/actions/workflows/sample-minimal.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/sample-minimal.yml)
 
 ```yaml
 name: minimal
@@ -33,7 +33,7 @@ jobs:
         working-directory: tests/agda
 ```
 
-### Basic
+### Basic [![basic](https://github.com/wenkokke/setup-agda/actions/workflows/sample-basic.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/sample-basic.yml)
 
 ```yaml
 name: basic
@@ -52,7 +52,7 @@ jobs:
         working-directory: tests/agda-stdlib
 ```
 
-### Matrix
+### Matrix [![matrix](https://github.com/wenkokke/setup-agda/actions/workflows/sample-matrix.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/sample-matrix.yml)
 
 ```yaml
 name: matrix
@@ -75,7 +75,7 @@ jobs:
         working-directory: tests/agda-stdlib
 ```
 
-### Complex
+### Complex [![complex](https://github.com/wenkokke/setup-agda/actions/workflows/sample-complex.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/sample-complex.yml)
 
 ```yaml
 name: complex

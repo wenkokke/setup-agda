@@ -17,7 +17,7 @@ For all other versions, this action attempts to build Agda from source. If an ol
 ## Samples
 
 {% for name, contents in samples %}
-### {{ name | capitalize }}
+### {{ name | capitalize }} [![{{ name }}](https://github.com/wenkokke/setup-agda/actions/workflows/sample-{{ name }}.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/sample-{{ name }}.yml)
 
 ```yaml
 {{ contents | trim }}
