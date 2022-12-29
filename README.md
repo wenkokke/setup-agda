@@ -1,20 +1,18 @@
 # setup-agda
 
 [![ci](https://github.com/wenkokke/setup-agda/actions/workflows/ci.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/ci.yml)
+[![ci nightly](https://github.com/wenkokke/setup-agda/actions/workflows/ci-nightly.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/ci-nightly.yml)
 [![build](https://github.com/wenkokke/setup-agda/actions/workflows/build.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/build.yml)
-[![setup nightly](https://github.com/wenkokke/setup-agda/actions/workflows/setup-nightly.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/setup-nightly.yml)
-[![build nightly](https://github.com/wenkokke/setup-agda/actions/workflows/build-nightly.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/build-nightly.yml)
 [![pre-commit.ci](https://results.pre-commit.ci/badge/github/wenkokke/setup-agda/main.svg)](https://results.pre-commit.ci/latest/github/wenkokke/setup-agda/main)
 
 This action sets up an Agda environment for use in actions by installing or building a version of Agda and adding it to PATH.
 
-For [supported versions](#supported-versions), this action uses [custom binary distributions][custom binary distributions][^0].
-
-For all other versions, this action attempts to build Agda from source. If an older version of GHC is needed to build the specified version, this action will set it up using [`haskell/actions/setup`].
+For [supported versions](#supported-versions), this action uses [custom binary distributions][custom binary distributions][^0]. For all other versions, this action attempts to build Agda from source. If an older version of GHC is needed to build the specified version, this action will set it up using [`haskell/actions/setup`].
 
 [^0]: All binary distributions support [cluster counting].
 
 ## Samples
+
 
 
 ### Minimal
@@ -38,6 +36,8 @@ jobs:
       - run: agda greet.agda
         working-directory: tests/agda
 ```
+
+
 
 ### Basic
 
@@ -63,6 +63,8 @@ jobs:
       - run: agda hello-world-dep.agda
         working-directory: tests/agda-stdlib
 ```
+
+
 
 ### Matrix
 
@@ -103,6 +105,8 @@ jobs:
       - run: agda hello-world-proof.agda
         working-directory: tests/agda-stdlib
 ```
+
+
 
 ### Complex
 
@@ -147,6 +151,7 @@ jobs:
           ./scripts/test-succeed.sh
           ./scripts/test-fail.sh
 ```
+
 
 
 ## Supported versions
