@@ -6,6 +6,10 @@ jobs:
     runs-on: ubuntu-latest # or macOS-latest, or windows-latest
     steps:
       - uses: actions/checkout@v3
+
+      # Setup the latest version of Agda:
       - uses: wenkokke/setup-agda@latest
+
+      # Check greet.agda, which you can find in tests/agda:
       - run: agda greet.agda
         working-directory: tests/agda

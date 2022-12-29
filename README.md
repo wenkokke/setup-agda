@@ -30,7 +30,11 @@ jobs:
     runs-on: ubuntu-latest # or macOS-latest, or windows-latest
     steps:
       - uses: actions/checkout@v3
+
+      # Setup the latest version of Agda:
       - uses: wenkokke/setup-agda@latest
+
+      # Check greet.agda, which you can find in tests/agda:
       - run: agda greet.agda
         working-directory: tests/agda
 ```
@@ -48,10 +52,14 @@ jobs:
     runs-on: ubuntu-latest # or macOS-latest, or windows-latest
     steps:
       - uses: actions/checkout@v3
+
+      # Setup Agda 2.6.2.2 with its recommended version of agda-stdlib:
       - uses: wenkokke/setup-agda@latest
         with:
           agda-version: '2.6.2.2'
           agda-stdlib-version: 'recommended'
+
+      # Check hello-world-dep.agda, which you can find in tests/agda-stdlib:
       - run: agda hello-world-dep.agda
         working-directory: tests/agda-stdlib
 ```
@@ -70,13 +78,28 @@ jobs:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
         agda-version: ['2.6.2.2', '2.6.1.3', '2.6.0.1', '2.5.4.2']
+        exclude:
+          # Exclude older Agda versions on Windows,
+          # as they are unsupported by setup-agda:
+          - os: windows-latest
+            agda-version: '2.6.1.3'
+          - os: windows-latest
+            agda-version: '2.6.0.1'
+          - os: windows-latest
+            agda-version: '2.5.4.2'
+
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
+
+      # Setup the versions of Agda specified in the matrix,
+      # together with their recommended versions of agda-stdlib:
       - uses: wenkokke/setup-agda@latest
         with:
           agda-version: ${{ matrix.agda-version }}
           agda-stdlib-version: 'recommended'
+
+      # Check hello-world-proof.agda, which you can find in tests/agda-stdlib:
       - run: agda hello-world-proof.agda
         working-directory: tests/agda-stdlib
 ```
@@ -96,12 +119,18 @@ jobs:
         os: [ubuntu-latest, macOS-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
+      # Check out wenkokke/schmitty
       - uses: actions/checkout@v3
         with:
           repository: wenkokke/schmitty
+
+      # Setup Z3 using cda-tum/setup-z3
       - uses: cda-tum/setup-z3@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Setup Agda 2.6.2.2 together with agda-stdlib 1.7.1, agdarsec 0.5.0,
+      # and schmitty 1.0.1, and register Z3 as a safe executable with Agda:
       - uses: wenkokke/setup-agda@latest
         with:
           agda-version: '2.6.2.2'
@@ -111,6 +140,8 @@ jobs:
             https://github.com/wenkokke/schmitty.git#v1.0.1
           agda-executables: |
             z3
+
+      # Run the test suite for wenkokke/schmitty:
       - name: Test Schmitty
         run: |
           ./scripts/test-succeed.sh
