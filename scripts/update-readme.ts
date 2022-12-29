@@ -3,7 +3,6 @@ import * as yaml from 'js-yaml'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
 import * as simver from '../src/util/simver'
-import * as glob from 'glob'
 
 function main(): void {
   // Load action.yml:
@@ -32,15 +31,20 @@ function loadActionYml(): object {
 
 // Load sample workflows:
 
+const SAMPLE_WORKFLOWS = ['minimal', 'basic', 'matrix', 'complex']
+
 function loadSampleWorkflows(): Partial<Record<string, string>> {
-  const sampleWorkflows = glob.sync(
-    path.join(__dirname, '..', '.github', 'workflows', 'sample-*.yml')
-  )
   const samples: Partial<Record<string, string>> = {}
-  for (const sampleWorkflow of sampleWorkflows) {
-    const [_sample, name] = path.basename(sampleWorkflow, '.yml').split('-', 2)
-    const contents = fs.readFileSync(sampleWorkflow).toString()
-    samples[name] = contents
+  for (const sampleWorkflowName of SAMPLE_WORKFLOWS) {
+    const sampleWorkflowPath = path.join(
+      __dirname,
+      '..',
+      '.github',
+      'workflows',
+      `sample-${sampleWorkflowName}.yml`
+    )
+    const contents = fs.readFileSync(sampleWorkflowPath).toString()
+    samples[sampleWorkflowName] = contents
   }
   return samples
 }

@@ -17,6 +17,22 @@ For all other versions, this action attempts to build Agda from source. If an ol
 ## Samples
 
 
+### Minimal
+
+```yaml
+name: minimal
+on: [push]
+jobs:
+  check:
+    name: Check greet.agda
+    runs-on: ubuntu-latest # or macOS-latest, or windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: wenkokke/setup-agda@latest
+      - run: agda greet.agda
+        working-directory: tests/agda
+```
+
 ### Basic
 
 ```yaml
@@ -33,6 +49,29 @@ jobs:
           agda-version: '2.6.2.2'
           agda-stdlib-version: 'recommended'
       - run: agda hello-world-dep.agda
+        working-directory: tests/agda-stdlib
+```
+
+### Matrix
+
+```yaml
+name: matrix
+on: [push]
+jobs:
+  check:
+    name: Check hello-world-proof.agda
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+        agda-version: ['2.6.2.2', '2.6.1.3', '2.6.0.1', '2.5.4.2']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: wenkokke/setup-agda@latest
+        with:
+          agda-version: ${{ matrix.agda-version }}
+          agda-stdlib-version: 'recommended'
+      - run: agda hello-world-proof.agda
         working-directory: tests/agda-stdlib
 ```
 
@@ -68,45 +107,6 @@ jobs:
         run: |
           ./scripts/test-succeed.sh
           ./scripts/test-fail.sh
-```
-
-### Matrix
-
-```yaml
-name: matrix
-on: [push]
-jobs:
-  check:
-    name: Check hello-world-proof.agda
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
-        agda-version: ['2.6.2.2', '2.6.1.3', '2.6.0.1', '2.5.4.2']
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: wenkokke/setup-agda@latest
-        with:
-          agda-version: ${{ matrix.agda-version }}
-          agda-stdlib-version: 'recommended'
-      - run: agda hello-world-proof.agda
-        working-directory: tests/agda-stdlib
-```
-
-### Minimal
-
-```yaml
-name: minimal
-on: [push]
-jobs:
-  check:
-    name: Check greet.agda
-    runs-on: ubuntu-latest # or macOS-latest, or windows-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: wenkokke/setup-agda@latest
-      - run: agda greet.agda
-        working-directory: tests/agda
 ```
 
 
