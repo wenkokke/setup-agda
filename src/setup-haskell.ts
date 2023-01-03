@@ -20,19 +20,10 @@ export default async function setup(options: opts.BuildOptions): Promise<void> {
   util.logging.setOutput('haskell-setup', 'true')
 
   // Update the GHC version:
-  options['ghc-version'] = await util.ghcGetVersion(
-    pick(options, ['enable-stack', 'stack-no-global'])
-  )
+  options['ghc-version'] = await util.ghcGetVersion()
 
   // Update the Cabal version:
-  options['cabal-version'] = await util.cabalGetVersion(
-    pick(options, ['enable-stack', 'stack-no-global'])
-  )
-
-  // Update the Stack version:
-  if (options['enable-stack']) {
-    options['stack-version'] = await util.stackGetVersion()
-  }
+  options['cabal-version'] = await util.cabalGetVersion()
 }
 
 function pickSetupHaskellInputs(

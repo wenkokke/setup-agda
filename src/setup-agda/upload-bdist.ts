@@ -92,7 +92,6 @@ export function renderName(
       'agda-version',
       'ghc-version',
       'cabal-version',
-      'stack-version',
       'icu-version',
       'upx-version'
     ]),

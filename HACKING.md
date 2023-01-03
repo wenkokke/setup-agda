@@ -171,8 +171,6 @@ When run the action proceeds as follows:
 
     If there are no binary distributions, the action tries to build Agda from source.
 
-    If `enable-stack` was passed it tries to build Agda with Stack, otherwise it tries to build Agda with Cabal.
-
     - Download the source from Hackage or GitHub.
 
       See `getAgdaSdist` in `./src/util/app/agda.ts`.
@@ -181,15 +179,7 @@ When run the action proceeds as follows:
 
       See `./src/setup-haskell.ts`.
 
-      We determine the compatible GHC versions:
-
-      - When building with Cabal, we inspect the `tested-with` field in `Agda.cabal`.
-
-        See `supportedGhcVersions` in `./src/setup-agda/build-from-sdist/cabal.ts`.
-
-      - When building with Stack, we look for `stack-X.Y.Z.yaml` files.
-
-        See `supportedGhcVersions` in `./src/setup-agda/build-from-sdist/stack.ts`.
+      We determine the compatible GHC versions by inspecting we inspect the `tested-with` field in `Agda.cabal`. See `supportedGhcVersions` in `./src/setup-agda/build-from-sdist.ts`.
 
       We pick the latest compatible GHC version.
 
@@ -207,7 +197,7 @@ When run the action proceeds as follows:
 
     - Build Agda.
 
-      See `build` in `./src/setup-agda/build-from-sdist/cabal.ts` and `./src/setup-agda/build-from-sdist/stack.ts`.
+      See `build` in `./src/setup-agda/build-from-sdist.ts`.
 
     - Test Agda.
 

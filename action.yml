@@ -112,8 +112,6 @@ inputs:
 
       If set "latest" or to a specific GHC version, this version will be used
       even if it is incompatible with the Agda version.
-      If `enable-stack` is specified, this may result in errors, as there may
-      not be a `stack-XYZ.yaml` file for the specified GHC version.
     required: false
   ghc-version-match-exact:
     description: |
@@ -129,9 +127,8 @@ inputs:
       If specified, restricts the range of allowed GHC versions.
 
       By default, this action infers the set of compatible GHC versions from
-      the `tested-with` field in Agda.cabal (if building with Cabal) or from the
-      set of `stack-*.yaml` files (if building with Stack). If specified, this
-      inferred set of is then filtered by `ghc-version-range`.
+      the `tested-with` field in Agda.cabalIf specified, this set of is then
+      filtered by `ghc-version-range`.
     required: false
 
   pre-build-hook:
@@ -150,21 +147,19 @@ inputs:
       If specified, will be used as a name for the binary distribution package.
 
       The value is interpreted as a [mustache template](https://mustache.github.io/).
-      The template may use `{{{agda-version}}}`, `{{{cabal-version}}}`, `{{{ghc-version}}}`,
-      `{{{icu-version}}}`, `{{{stack-version}}}`, and `{{{upx-version}}}`, which will be
-      replaced by the concrete versions, if installed, and to `{{{arch}}}`,
-      `{{{platform}}}`, and `{{{release}}}`, which will be replaced by the system
-      architecture, operating system, and operating system release, as returned
-      by [the corresponding NodeJS functions](https://nodejs.org/api/os.html).
+      The template may use `{{{agda-version}}}`, `{{{cabal-version}}}`,
+      `{{{ghc-version}}}`, `{{{icu-version}}}`, and `{{{upx-version}}}`,
+      which will be replaced by the concrete versions, if installed, and
+      to `{{{arch}}}`, `{{{platform}}}`, and `{{{release}}}`, which will be
+      replaced by the system architecture, operating system, and operating
+      system release, as returned by
+      [the corresponding NodeJS functions](https://nodejs.org/api/os.html).
 
       Only used when `bdist-upload` is specified.
     required: false
   bdist-license-report:
     description: |
       If specified, include a license report in the binary distribution.
-
-      The `bdist-license-report` option is incompatible with `enable-stack`, since
-      it relies on [`cabal-plan`](https://hackage.haskell.org/package/cabal-plan).
 
       Only used when `bdist-upload` is specified.
     required: false

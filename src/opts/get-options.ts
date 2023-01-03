@@ -65,6 +65,11 @@ export default async function getOptions(
   const agdaStdlibVersion: opts.AgdaStdlibVersion | 'experimental' | 'none' =
     resolveAgdaStdlibVersion(agdaVersion, agdaStdlibVersionSpec)
 
+  // Check `stack-no-global`:
+  const stackNoGlobal = getFlag('stack-no-global')
+  if (stackNoGlobal)
+    throw Error('Value `true` for input `stack-no-global` is unsupported.')
+
   // Check `ghc-version-range`:
   const ghcVersionRange = getOption('ghc-version-range')
   if (!semver.validRange(ghcVersionRange))
@@ -83,18 +88,6 @@ export default async function getOptions(
     'force-optimise-heavily',
     'force-no-optimise-heavily'
   )
-
-  // Check compatibility for `bdist-license-report`:
-  const bdistLicenseReport = getFlag('bdist-license-report')
-  const enableStack = getFlag('enable-stack')
-  if (bdistLicenseReport && enableStack)
-    throw Error(
-      'Input `bdist-license-report` is incompatible with `enable-stack`'
-    )
-  if (bdistLicenseReport && forceNoBuild)
-    throw Error(
-      'Input `bdist-license-report` is incompatible with `force-no-build`'
-    )
 
   // Parse the bdist name:
   const bdistName = parseBdistName(getOption('bdist-name'))
@@ -181,9 +174,9 @@ export default async function getOptions(
     // Specified in opts.SetupHaskellInputs:
     'cabal-version': getOption('cabal-version'),
     'disable-matcher': getFlag('disable-matcher'),
-    'enable-stack': enableStack,
+    'enable-stack': getFlag('enable-stack'),
     'ghc-version': getOption('ghc-version'),
-    'stack-no-global': getFlag('stack-no-global'),
+    'stack-no-global': stackNoGlobal,
     'stack-setup-ghc': getFlag('stack-setup-ghc'),
     'stack-version': getOption('stack-version'),
 
