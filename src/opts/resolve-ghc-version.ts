@@ -96,40 +96,19 @@ export default function resolveGhcVersion(
     version: string
     matchingVersionsThatCanBuildAgda: string[]
   }[] = []
-  if (
-    options['enable-stack'] &&
-    options['stack-setup-ghc'] &&
-    options['stack-no-global']
-  ) {
-    // NOTE: We ASSUME stack can setup ANY version of GHC, as I could not find
-    //       a published list of supported versions. Therefore, we start from
-    //       the list of versions that can build Agda.
-    for (const version of versionsThatCanBuildAgda)
-      if (!semver.satisfies(version, options['ghc-version-range']))
-        logging.info(`Reject GHC ${version}: excluded by user-provided range`)
-      else
-        candidates.push({
-          version,
-          matchingVersionsThatCanBuildAgda: [version]
-        })
-  } else {
-    // NOTE: We start from the list of versions that can be set up, and allow
-    //       any version that matches a version that can build Agda.
-    // NOTE: This potentially returns a version that does not have a matching
-    //       stack-<version>.yaml file, which the stack build code has to
-    //       account for.
-    for (const version of versionsThatCanBeSetUp) {
-      const matchingVersionsThatCanBuildAgda = canBuildAgda(version)
-      if (matchingVersionsThatCanBuildAgda.length === 0)
-        logging.info(`Reject GHC ${version}: unsupported by Agda`)
-      else if (!semver.satisfies(version, options['ghc-version-range']))
-        logging.info(`Reject GHC ${version}: excluded by user-provided range`)
-      else
-        candidates.push({
-          version,
-          matchingVersionsThatCanBuildAgda
-        })
-    }
+  // NOTE: We start from the list of versions that can be set up, and allow
+  //       any version that matches a version that can build Agda.
+  for (const version of versionsThatCanBeSetUp) {
+    const matchingVersionsThatCanBuildAgda = canBuildAgda(version)
+    if (matchingVersionsThatCanBuildAgda.length === 0)
+      logging.info(`Reject GHC ${version}: unsupported by Agda`)
+    else if (!semver.satisfies(version, options['ghc-version-range']))
+      logging.info(`Reject GHC ${version}: excluded by user-provided range`)
+    else
+      candidates.push({
+        version,
+        matchingVersionsThatCanBuildAgda
+      })
   }
   if (candidates.length === 0) {
     throw Error('No GHC version candidates')
