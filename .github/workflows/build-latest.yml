@@ -1,11 +1,24 @@
 name: build latest
 
 on:
+  push:
+    branches: ['main']
+    paths: ['**.ts', '**.js', '**.json', '**.yml']
+
+  pull_request:
+    branches: ['main']
+    paths: ['**.ts', '**.js', '**.json', '**.yml']
+    types: [opened, synchronize, reopened]
+
   workflow_call:
   workflow_dispatch:
 
 jobs:
-  build:
+  ################################################################################
+  # Build Agda (latest) on the latest versions of each platform
+  ################################################################################
+
+  build-latest:
     name: Build Agda (latest) on ${{ matrix.os }} with Cabal
     runs-on: ${{ matrix.os }}
     steps:

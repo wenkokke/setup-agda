@@ -1,12 +1,8 @@
-name: ci nightly
+name: setup nightly
 
-# Building and setting up nightly versions is tested separately from the rest
-# of the tests, as it is reliant on the current HEAD of agda/agda:
-#
-# - Building HEAD can fail if the HEAD of agda/agda doesn't build.
-#
-# - Setting up nightly version can fail if the deploy.yml workflow
-#   on agda/agda does not succeed in publishing a nightly version.
+# The `setup-nightly` workflow is separate from the `setup` workflow, as it is
+# somewhat volatile, since it depends on whether the deploy.yml workflow on the
+# agda/agda repository is passing and publishing compatible nightly builds.
 
 on:
   schedule:
@@ -24,28 +20,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-nightly-cabal:
-    name: Build Agda (nightly) on ${{ matrix.os }} with Cabal
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Build Agda (nightly)
-        uses: ./
-        with:
-          agda-version: 'HEAD'
-          bdist-upload: true
-          bdist-name: |
-            agda-{{{agda-version}}}
-                -{{{arch}}}
-                -${{ matrix.os }}
-                -icu{{{icu-version}}}
-                -ghc{{{ghc-version}}}
-          force-build: true
-          force-no-optimise-heavily: true
-    strategy:
-      matrix:
-        os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12, windows-2022]
-
   setup-nightly:
     name: Setup Agda (nightly) on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}

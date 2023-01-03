@@ -1,0 +1,43 @@
+name: build nightly
+
+# The `build-nightly` workflow is separate from the `build` and `build-latest`
+# workflows, as it is somewhat volatile, since it depends on the current state
+# of the HEAD of agda/agda.
+
+on:
+  schedule:
+    #        ┌───────────── minute (0 - 59)
+    #        │  ┌───────────── hour (0 - 23)
+    #        │  │ ┌───────────── day of the month (1 - 31)
+    #        │  │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+    #        │  │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+    #        │  │ │ │ │
+    #        │  │ │ │ │
+    #        │  │ │ │ │
+    #        *  * * * *
+    - cron: '30 1 * * *'
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  build-nightly:
+    name: Build Agda (nightly) on ${{ matrix.os }} with Cabal
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Agda (nightly)
+        uses: ./
+        with:
+          agda-version: 'HEAD'
+          bdist-upload: true
+          bdist-name: |
+            agda-{{{agda-version}}}
+                -{{{arch}}}
+                -${{ matrix.os }}
+                -icu{{{icu-version}}}
+                -ghc{{{ghc-version}}}
+          force-build: true
+          force-no-optimise-heavily: true
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12, windows-2022]

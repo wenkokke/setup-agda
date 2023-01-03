@@ -1,4 +1,4 @@
-name: ci
+name: setup
 
 on:
   push:
@@ -11,35 +11,6 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  ################################################################################
-  # Build Agda (latest) on the latest versions of each platform
-  ################################################################################
-
-  build-latest:
-    name: Build Agda (latest) on ${{ matrix.os }} with Cabal
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Build Agda (latest)
-        uses: ./
-        with:
-          agda-version: 'latest'
-          bdist-name: |
-            agda-{{{agda-version}}}
-                -{{{arch}}}
-                -${{ matrix.os }}
-                -icu{{{icu-version}}}
-                -ghc{{{ghc-version}}}
-                -cabal{{{cabal-version}}}
-          bdist-license-report: true
-          bdist-upload: true
-          force-build: true
-          force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-
   ################################################################################
   # Setup Agda (latest) on every supported platform
   ################################################################################
