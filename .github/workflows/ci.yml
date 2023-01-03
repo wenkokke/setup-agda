@@ -11,19 +11,27 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
+  check-dist:
+    uses: ./.github/workflows/check-dist.yml
+
   build-latest:
+    needs: [check-dist]
     uses: ./.github/workflows/setup-latest.yml
 
   setup-latest:
+    needs: [check-dist]
     uses: ./.github/workflows/setup-latest.yml
 
   setup-legacy:
+    needs: [check-dist]
     uses: ./.github/workflows/setup-legacy.yml
 
   setup-libraries:
+    needs: [check-dist]
     uses: ./.github/workflows/setup-libraries.yml
 
   release:
     if: ${{ github.event_name == 'push' }}
-    needs: [build-latest, setup-latest, setup-legacy, setup-libraries]
+    needs:
+      [check-dist, build-latest, setup-latest, setup-legacy, setup-libraries]
     uses: ./.github/workflows/release.yml

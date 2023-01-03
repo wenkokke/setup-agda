@@ -29,21 +29,3 @@ jobs:
             git diff
             exit 1
           fi
-
-      - if: ${{ failure() && steps.diff.conclusion == 'failure' && github.event_name == 'push' }}
-        run: echo "UPDATE_DIST_BASE=${{ github.ref }}" >> $GITHUB_ENV
-
-      - if: ${{ failure() && steps.diff.conclusion == 'failure' && github.event_name == 'pull_request' }}
-        run: echo "UPDATE_DIST_BASE=${{ github.head_ref }}" >> $GITHUB_ENV
-
-      # If index.js was different than expected, open a pull request:
-      - uses: peter-evans/create-pull-request@v4
-        if: ${{ failure() && steps.diff.conclusion == 'failure' }}
-        with:
-          base: ${{ env.UPDATE_DIST_BASE }}
-          title: Update `setup/dist/`
-          body: Automatic pull request to update `setup/dist/`
-          add-paths: setup/dist/*
-          branch: update-setup-dist
-          branch-suffix: timestamp
-          delete-branch: true
