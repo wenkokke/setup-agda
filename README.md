@@ -8,15 +8,20 @@
 [![build-nightly](https://github.com/wenkokke/setup-agda/actions/workflows/build-nightly.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/build-nightly.yml)
 [![pre-commit.ci](https://results.pre-commit.ci/badge/github/wenkokke/setup-agda/main.svg)](https://results.pre-commit.ci/latest/github/wenkokke/setup-agda/main)
 
-This action sets up an Agda environment for use in actions by installing or building a version of Agda and adding it to PATH.
-
-For [supported versions](#supported-versions), this action uses [custom binary distributions][custom binary distributions][^0]. For all other versions, this action attempts to build Agda from source. If an older version of GHC is needed to build the specified version, this action will set it up using [`haskell/actions/setup`].
-
-For examples using this action, see [Samples](#samples).
-
-For the details on how to configure this action, see [Usage](#usage).
+Set up Agda, the standard library, or any Git-hosted library, for use in GitHub Actions.
+This action can install Agda from [binary distributions][^0] or build Agda from source.
+If an older version of GHC is needed to build the specified version, `setup-agda` action will call [`haskell/actions/setup`].
 
 [^0]: All binary distributions support [cluster counting].
+
+## Table of Contents
+
+- [Supported Versions](#supported-versions):
+  The versions of Agda that are supported by `setup-agda`.
+- [Samples](#samples):
+  Sample GitHub Workflows that use `setup-agda`.
+- [Usage](#usage):
+  Detailed list of inputs used to configure this action.
 
 ## Samples
 
@@ -534,7 +539,7 @@ This action is subject to [its license] as well as [the licenses of its dependen
 
 The binary distributions bundle binaries for [icu4c], and as such are subject to the [icu4c license] in addition to the [Agda license] and the licenses of its depencencies.
 
-[custom binary distributions]: https://github.com/wenkokke/setup-agda/releases/tag/latest
+[binary distributions]: https://github.com/wenkokke/setup-agda/releases/tag/latest
 [cluster counting]: https://agda.readthedocs.io/en/latest/tools/generating-latex.html#counting-extended-grapheme-clusters
 [`haskell/actions/setup`]: https://github.com/haskell/actions/tree/main/setup#readme
 [build-legacy]: .github/workflows/build-legacy.yml
