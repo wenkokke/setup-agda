@@ -4,12 +4,12 @@ import * as os from 'node:os'
 import * as path from 'node:path'
 import * as opts from '../../../opts'
 import * as logging from '../../logging'
-import {patchelf} from '../../app/patchelf'
+import {patchelf} from '../patchelf'
 import {
   pkgConfigGetInfo,
   pkgConfigGetVariable,
   pkgConfigGetVersion
-} from '../../app/pkg-config'
+} from '../pkg-config'
 import ensureError from '../../ensure-error'
 import {cp, mkdirP} from '../../exec'
 import * as simver from '../../simver'
