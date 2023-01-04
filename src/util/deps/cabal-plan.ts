@@ -7,7 +7,7 @@ import {pipeline} from 'node:stream/promises'
 import * as opts from '../../opts'
 import {ExecOptions, getOutputAndErrors, mkdirP} from '../exec'
 import * as logging from '../logging'
-import {cabal} from './haskell'
+import {cabal} from './cabal'
 
 export async function cabalPlanSetup(
   options: opts.BuildOptions

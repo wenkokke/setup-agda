@@ -2,18 +2,17 @@ import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as logging from '../../logging'
 import * as path from 'node:path'
-import * as fs from 'node:fs'
 import * as opts from '../../../opts'
 import assert from 'node:assert'
-import {installNameTool} from '../../app/install-name-tool'
+import {installNameTool} from '../install-name-tool'
 import {cp, mkdirP} from '../../exec'
-import {brew, brewGetPrefixFor, brewGetVersion} from '../../app/homebrew'
+import {brew, brewGetPrefixFor, brewGetVersion} from '../homebrew'
 import {
   addPkgConfigPath,
   pkgConfigGetInfo,
   pkgConfigGetVariable,
   pkgConfigGetVersion
-} from '../../app/pkg-config'
+} from '../pkg-config'
 import ensureError from '../../ensure-error'
 import * as simver from '../../simver'
 
