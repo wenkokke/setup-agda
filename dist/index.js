@@ -1224,7 +1224,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const logging = __importStar(__nccwpck_require__(1942));
-const yaml = __importStar(__nccwpck_require__(1917));
 const mustache_1 = __importDefault(__nccwpck_require__(8272));
 const fs = __importStar(__nccwpck_require__(7561));
 const os = __importStar(__nccwpck_require__(612));
@@ -1237,13 +1236,14 @@ const platform_1 = __nccwpck_require__(542);
 const resolve_agda_stdlib_version_1 = __importDefault(__nccwpck_require__(3237));
 const resolve_agda_version_1 = __importDefault(__nccwpck_require__(2349));
 const opts = __importStar(__nccwpck_require__(9150));
-function getOptions(inputs, actionYml) {
+const action_json_1 = __importDefault(__nccwpck_require__(4587));
+function getOptions(inputs) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         function getOption(k) {
             var _a, _b;
             const rawInputValue = typeof inputs === 'function' ? inputs(k) : inputs === null || inputs === void 0 ? void 0 : inputs[k];
-            const inputValue = (_b = (_a = rawInputValue === null || rawInputValue === void 0 ? void 0 : rawInputValue.trim()) !== null && _a !== void 0 ? _a : getDefault(k, actionYml)) !== null && _b !== void 0 ? _b : '';
+            const inputValue = (_b = (_a = rawInputValue === null || rawInputValue === void 0 ? void 0 : rawInputValue.trim()) !== null && _a !== void 0 ? _a : getDefault(k)) !== null && _b !== void 0 ? _b : '';
             logging.debug(`Input ${k}: ${rawInputValue} => ${inputValue}`);
             return inputValue;
         }
@@ -1396,12 +1396,8 @@ function getOptions(inputs, actionYml) {
     });
 }
 exports["default"] = getOptions;
-let inputSpec = undefined;
-function getDefault(k, actionYml) {
-    if (inputSpec === undefined) {
-        actionYml = actionYml !== null && actionYml !== void 0 ? actionYml : path.join(__dirname, '..', 'action.yml');
-        inputSpec = yaml.load(fs.readFileSync(actionYml, 'utf8')).inputs;
-    }
+const inputSpec = action_json_1.default.inputs;
+function getDefault(k) {
     return inputSpec[k].default;
 }
 function parseBdistName(bdistName) {
@@ -28801,7 +28797,7 @@ module.exports = JSON.parse('{"nightly":{"binary":{"darwin":{"x64":[{"url":"http
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"packageInfo":{"2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.4":"deprecated","2.5.4.1":"deprecated","2.6.0":"deprecated","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated"},"lastModified":"Thu, 05 Jan 2023 14:27:26 GMT"}');
+module.exports = JSON.parse('{"packageInfo":{"2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.4":"deprecated","2.5.4.1":"deprecated","2.6.0":"deprecated","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated"},"lastModified":"Thu, 05 Jan 2023 14:37:31 GMT"}');
 
 /***/ }),
 
@@ -28809,7 +28805,7 @@ module.exports = JSON.parse('{"packageInfo":{"2.5.1":"deprecated","2.5.1.1":"dep
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4.2":"normal","2.6.0.1":"normal","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Thu, 05 Jan 2023 14:27:26 GMT"}');
+module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4.2":"normal","2.6.0.1":"normal","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Thu, 05 Jan 2023 14:37:31 GMT"}');
 
 /***/ }),
 
@@ -28818,6 +28814,14 @@ module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal",
 
 "use strict";
 module.exports = JSON.parse('{"ghc":["9.4.2","9.4.1","9.2.4","9.2.3","9.2.2","9.2.1","9.0.2","9.0.1","8.10.7","8.10.6","8.10.5","8.10.4","8.10.3","8.10.2","8.10.1","8.8.4","8.8.3","8.8.2","8.8.1","8.6.5","8.6.4","8.6.3","8.6.2","8.6.1","8.4.4","8.4.3","8.4.2","8.4.1","8.2.2","8.0.2","7.10.3"],"cabal":["3.8.1.0","3.6.2.0","3.6.0.0","3.4.1.0","3.4.0.0","3.2.0.0","3.0.0.0","2.4.1.0"],"stack":["2.9.3","2.9.1","2.7.5","2.7.3","2.7.1","2.5.1","2.3.3","2.3.1","2.1.3","2.1.1","1.9.3","1.9.1","1.7.1","1.6.5","1.6.3","1.6.1","1.5.1","1.5.0","1.4.0","1.3.2","1.3.0","1.2.0"],"ghcup":["0.1.18.0"]}');
+
+/***/ }),
+
+/***/ 4587:
+/***/ ((module) => {
+
+"use strict";
+module.exports = JSON.parse('{"name":"Setup Agda","author":"Wen Kokke","description":"Set up a specific version of Agda.","inputs":{"agda-version":{"default":"latest","description":"The Agda version.\\n\\nCan be \\"latest\\" or a specific version number (e.g., 2.6.2.2).\\n","required":false},"agda-stdlib-version":{"default":"none","description":"The Agda standard library version.\\n\\nCan be \\"none\\", \\"recommended\\", \\"latest\\", or a specific version number (e.g., 1.7.1).\\n\\nIf set to \\"recommended\\", it will install the latest version of the Agda\\nstandard library compatible with the specified Agda version, as specified\\non [the Agda Wiki](https://wiki.portal.chalmers.se/agda/Libraries/StandardLibrary).\\n\\nIf set to \\"latest\\" or a specific version number, it will install the\\nlatest or that specific version, regardless of compatibility with the\\nspecified Agda version.\\n","required":false},"agda-libraries":{"default":"","description":"A list of Agda libraries to install.\\n\\nLibraries must be specified by their Git URL and end in a version anchor,\\ne.g.,\\n\\n```yaml\\nagda-libraries: |\\n  https://github.com/agda/agda-categories.git#v0.1.7.1\\n  https://github.com/agda/cubical.git#v0.3\\n```\\n\\nTo setup the Agda standard library, use \\"agda-stdlib-version\\" instead, as\\nthat ensures that the standard library and Agda versions are compatible.\\n\\nThis input requires that the library has a tagged release and that the\\nrepository contains a .agda-lib file.\\n\\nThis input relies on the convention that the filename of the .agda-lib\\nfile is the name of the library, and will refuse to install any library\\nwhose .agda-lib file is simple named \\".agda-lib\\".\\n","required":false},"agda-defaults":{"default":"","description":"A list of installed Agda libraries to add to defaults.\\n\\nLibraries must be specified by the name of their .agda-lib file, e.g.,\\n\\n```yaml\\nagda-defaults: |\\n  standard-library\\n  agda-categories\\n  cubical\\n```\\n","required":false},"agda-executables":{"default":"","description":"A list of executables to register with Agda.\\n\\nExecutables must be specified by their name or path, e.g.,\\n\\n```yaml\\nagda-executables: |\\n  z3\\n  /bin/echo\\n```\\n","required":false},"force-build":{"description":"If specified, always build from source.\\n","required":false},"force-no-build":{"description":"If specified, never build from source.\\n","required":false},"force-cluster-counting":{"description":"If specified, build with cluster counting.\\n","required":false},"force-no-cluster-counting":{"description":"If specified, build without cluster counting.\\n","required":false},"force-optimise-heavily":{"description":"If specified, build with optimise heavily.\\n","required":false},"force-no-optimise-heavily":{"description":"If specified, build without optimise heavily.\\n","required":false},"ghc-version":{"default":"recommended","description":"Version of GHC to use.\\n\\nCan be \\"recommended\\", \\"latest\\", or a specific version number (e.g., 9.4.2).\\n\\nIf set to \\"recommended\\", it will get the latest version supported by\\n`haskell/actions/setup` which the Agda version is tested-with.\\nIf `ghc-version-match-exact` is set to false, it will favour versions\\nwhich are supported by `haskell/actions/setup`.\\n\\nIf set \\"latest\\" or to a specific GHC version, this version will be used\\neven if it is incompatible with the Agda version.\\n","required":false},"ghc-version-match-exact":{"description":"If specified, requires an exact match for the GHC version.\\n\\nBy default, this action uses the pre-installed version of GHC if it is\\ncompatible with the requested Agda version (see `ghc-version-range`) in\\nthe major and minor version numbers, ignoring the patch version.\\n","required":false},"ghc-version-range":{"default":"*","description":"If specified, restricts the range of allowed GHC versions.\\n\\nBy default, this action infers the set of compatible GHC versions from\\nthe `tested-with` field in Agda.cabalIf specified, this set of is then\\nfiltered by `ghc-version-range`.\\n","required":false},"pre-build-hook":{"default":"","description":"A shell script to be run before starting the build.\\n","required":false},"bdist-upload":{"description":"If specified, will upload a binary distribution for the specified Agda version.\\n","required":false},"bdist-name":{"default":"agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}","description":"If specified, will be used as a name for the binary distribution package.\\n\\nThe value is interpreted as a [mustache template](https://mustache.github.io/).\\nThe template may use `{{{agda-version}}}`, `{{{cabal-version}}}`,\\n`{{{ghc-version}}}`, `{{{icu-version}}}`, and `{{{upx-version}}}`,\\nwhich will be replaced by the concrete versions, if installed, and\\nto `{{{arch}}}`, `{{{platform}}}`, and `{{{release}}}`, which will be\\nreplaced by the system architecture, operating system, and operating\\nsystem release, as returned by\\n[the corresponding NodeJS functions](https://nodejs.org/api/os.html).\\n\\nOnly used when `bdist-upload` is specified.\\n","required":false},"bdist-license-report":{"description":"If specified, include a license report in the binary distribution.\\n\\nOnly used when `bdist-upload` is specified.\\n","required":false},"bdist-compress-exe":{"description":"If specified, the executables are compressed with [UPX](https://upx.github.io).\\n\\nBeware that on MacOS and Windows the resulting executables are unsigned,\\nand therefore will cause problems with security.\\nThere is a workaround for this on MacOS:\\n\\n```sh\\n# for each executable file in <package>/bin:\\nchmod +x <bin>\\nxattr -c <bin>\\n\\n# for each library file in <package>/lib:\\nchmod +w <lib>\\nxattr -c <lib>\\nchmod -w <lib>\\n```\\n\\nOnly used when `bdist-upload` is specified.\\n","required":false},"bdist-retention-days":{"default":"0","description":"Duration after which bdist will expire in days.\\n0 means using default retention.\\n\\nMinimum 1 day.\\nMaximum 90 days unless changed from the repository settings page.\\n","required":false},"cabal-version":{"default":"latest","description":"Version of Cabal to use. If set to \\"latest\\", it will always get the latest stable version.\\n","required":false},"stack-version":{"default":"latest","description":"Version of Stack to use. If set to \\"latest\\", it will always get the latest stable version.\\n","required":false},"enable-stack":{"description":"If specified, will setup Stack.\\n","required":false},"stack-no-global":{"description":"If specified, enable-stack must be set. Prevents installing GHC and Cabal globally.\\n","required":false},"stack-setup-ghc":{"description":"If specified, enable-stack must be set. Will run stack setup to install the specified GHC.\\n","required":false},"disable-matcher":{"description":"If specified, disables match messages from GHC as GitHub CI annotations.\\n","required":false}},"outputs":{"agda-version":{"description":"The resolved Agda version."},"agda-path":{"description":"The path of the agda executable _directory_."},"agda-data-path":{"description":"The path of the agda data _directory_."},"agda-exe":{"description":"The path of the agda _executable_."},"agda-mode-exe":{"description":"The path of the agda-mode _executable_."},"haskell-setup":{"description":"Whether or not actions/haskell/setup was called."},"ghc-path":{"description":"The path of the ghc executable _directory_."},"cabal-path":{"description":"The path of the cabal executable _directory_."},"stack-path":{"description":"The path of the stack executable _directory_."},"cabal-store":{"description":"The path to the cabal store."},"stack-root":{"description":"The path to the stack root (equal to the STACK_ROOT environment variable if it is set; otherwise an OS-specific default)."},"ghc-exe":{"description":"The path of the ghc _executable_."},"cabal-exe":{"description":"The path of the cabal _executable_."},"stack-exe":{"description":"The path of the stack _executable_."}},"runs":{"using":"node16","main":"dist/index.js"},"branding":{"icon":"feather","color":"purple"}}');
 
 /***/ }),
 

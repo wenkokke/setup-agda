@@ -25,6 +25,7 @@ inputs:
       specified Agda version.
     required: false
   agda-libraries:
+    default: ''
     description: |
       A list of Agda libraries to install.
 
@@ -48,6 +49,7 @@ inputs:
       whose .agda-lib file is simple named ".agda-lib".
     required: false
   agda-defaults:
+    default: ''
     description: |
       A list of installed Agda libraries to add to defaults.
 
@@ -61,6 +63,7 @@ inputs:
       ```
     required: false
   agda-executables:
+    default: ''
     description: |
       A list of executables to register with Agda.
 

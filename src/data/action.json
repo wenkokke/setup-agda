@@ -14,14 +14,17 @@
       "required": false
     },
     "agda-libraries": {
+      "default": "",
       "description": "A list of Agda libraries to install.\n\nLibraries must be specified by their Git URL and end in a version anchor,\ne.g.,\n\n```yaml\nagda-libraries: |\n  https://github.com/agda/agda-categories.git#v0.1.7.1\n  https://github.com/agda/cubical.git#v0.3\n```\n\nTo setup the Agda standard library, use \"agda-stdlib-version\" instead, as\nthat ensures that the standard library and Agda versions are compatible.\n\nThis input requires that the library has a tagged release and that the\nrepository contains a .agda-lib file.\n\nThis input relies on the convention that the filename of the .agda-lib\nfile is the name of the library, and will refuse to install any library\nwhose .agda-lib file is simple named \".agda-lib\".\n",
       "required": false
     },
     "agda-defaults": {
+      "default": "",
       "description": "A list of installed Agda libraries to add to defaults.\n\nLibraries must be specified by the name of their .agda-lib file, e.g.,\n\n```yaml\nagda-defaults: |\n  standard-library\n  agda-categories\n  cubical\n```\n",
       "required": false
     },
     "agda-executables": {
+      "default": "",
       "description": "A list of executables to register with Agda.\n\nExecutables must be specified by their name or path, e.g.,\n\n```yaml\nagda-executables: |\n  z3\n  /bin/echo\n```\n",
       "required": false
     },

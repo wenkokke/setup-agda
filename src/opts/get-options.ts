@@ -1,5 +1,4 @@
 import * as logging from '../util/logging'
-import * as yaml from 'js-yaml'
 import Mustache from 'mustache'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
@@ -12,17 +11,17 @@ import {platform} from './platform'
 import resolveAgdaStdlibVersion from './resolve-agda-stdlib-version'
 import resolveAgdaVersion from './resolve-agda-version'
 import * as opts from './types'
+import action from '../data/action.json'
 
 export default async function getOptions(
   inputs?:
     | Partial<opts.SetupAgdaInputs>
     | Partial<Record<string, string>>
-    | ((name: string) => string | undefined),
-  actionYml?: string
+    | ((name: string) => string | undefined)
 ): Promise<opts.BuildOptions> {
   function getOption(k: opts.SetupAgdaOption): string {
     const rawInputValue = typeof inputs === 'function' ? inputs(k) : inputs?.[k]
-    const inputValue = rawInputValue?.trim() ?? getDefault(k, actionYml) ?? ''
+    const inputValue = rawInputValue?.trim() ?? getDefault(k) ?? ''
     logging.debug(`Input ${k}: ${rawInputValue} => ${inputValue}`)
     return inputValue
   }
@@ -201,22 +200,10 @@ export default async function getOptions(
   return options
 }
 
-let inputSpec:
-  | Record<opts.SetupAgdaOption, {default?: string | undefined}>
-  | undefined = undefined
+const inputSpec: Record<opts.SetupAgdaOption, {default?: string}> =
+  action.inputs
 
-function getDefault(
-  k: opts.SetupAgdaOption,
-  actionYml?: string
-): string | undefined {
-  if (inputSpec === undefined) {
-    actionYml = actionYml ?? path.join(__dirname, '..', 'action.yml')
-    inputSpec = (
-      yaml.load(fs.readFileSync(actionYml, 'utf8')) as {
-        inputs: Record<opts.SetupAgdaOption, {default?: string}>
-      }
-    ).inputs
-  }
+function getDefault(k: opts.SetupAgdaOption): string | undefined {
   return inputSpec[k].default
 }
 
