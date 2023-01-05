@@ -64,12 +64,6 @@ export default async function getOptions(
   const agdaStdlibVersion: opts.AgdaStdlibVersion | 'experimental' | 'none' =
     resolveAgdaStdlibVersion(agdaVersion, agdaStdlibVersionSpec)
 
-  // Resolve build configuration:
-  let configuration = getOption('configuration')
-  if (configuration === 'recommended' && opts.isAgdaVersion(agdaVersion))
-    configuration = opts.resolveRecommendedConfiguration(agdaVersion)
-  else configuration = 'none'
-
   // Check `stack-no-global`:
   const stackNoGlobal = getFlag('stack-no-global')
   if (stackNoGlobal)
@@ -175,7 +169,10 @@ export default async function getOptions(
     'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
     'ghc-version-range': ghcVersionRange,
     'pre-build-hook': getOption('pre-build-hook'),
-    configuration,
+    configuration: resolveConfiguration(
+      agdaVersion,
+      getOption('configuration')
+    ),
 
     // Specified in opts.SetupHaskellInputs:
     'cabal-version': getOption('cabal-version'),
@@ -228,5 +225,31 @@ function parseBdistName(bdistName: string): string {
         ensureError(error).message
       ].join(os.EOL)
     )
+  }
+}
+
+function resolveConfiguration(
+  agdaVersion: opts.AgdaVersion | 'HEAD' | 'nightly',
+  configuration: string
+): string {
+  switch (agdaVersion) {
+    case 'HEAD':
+      return ''
+    case 'nightly':
+      return ''
+    default: {
+      switch (configuration) {
+        case 'none':
+          return ''
+        case 'recommended': {
+          const {configuration} = opts.agdaInfo[agdaVersion]
+          if (configuration === undefined) return ''
+          else if (typeof configuration === 'string') return configuration
+          else return configuration[platform]
+        }
+        default:
+          return configuration
+      }
+    }
   }
 }

@@ -73,7 +73,7 @@
     },
     "configuration": {
       "default": "recommended",
-      "description": "Can be \"none\", \"recommended\", or text.\n\nIf set to \"none\", no configuration will be written to `cabal.project`.\nIf set to \"recommended\", the recommended configuration will be written to `cabal.project`.\nOtherwise, the value will be written to `cabal.project` before building Agda.\n\nOnly used when building Agda from source.\n"
+      "description": "Can be \"none\", \"recommended\", or text.\n\nIf set to \"none\", no configuration flags will be passed to `cabal configure`.\nIf set to \"recommended\", the recommended configuration flags will be passed to `cabal configure`.\nOtherwise, the value will be passed to `cabal configure` verbatim.\n\nOnly used when building Agda from source.\n"
     },
     "bdist-upload": {
       "description": "If specified, will upload a binary distribution for the specified Agda version.\n",

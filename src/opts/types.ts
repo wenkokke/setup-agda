@@ -136,7 +136,7 @@ export type AgdaInfo = Record<
   AgdaVersion | 'nightly',
   {
     binary?: Partial<Record<Platform, Partial<Record<Arch, Dist[]>>>>
-    configuration?: string | Partial<Record<Platform, string>>
+    configuration?: string | Record<Platform, string>
     compatibility?: {
       'agda-stdlib'?: string
       ghc?: string
@@ -148,14 +148,6 @@ export type AgdaInfo = Record<
 // - A list of all binary distributions
 // - A list of compatible agda-stdlib versions
 export const agdaInfo: AgdaInfo = bundledAgdaInfo
-
-export function resolveRecommendedConfiguration(
-  agdaVersion: AgdaVersion
-): string {
-  const bundledConfiguration = agdaInfo[agdaVersion].configuration
-  if (typeof bundledConfiguration === 'string') return bundledConfiguration
-  else return bundledConfiguration?.[platform] ?? 'ignore-project: False'
-}
 
 // List of agda-stdlib source distributions on GitHub:
 //

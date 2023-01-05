@@ -8,6 +8,7 @@ import * as opts from '../opts'
 import setupHaskell from '../setup-haskell'
 import * as util from '../util'
 import {ExecOptions} from '../util'
+import {splitLines} from '../util/lines'
 import licenseReport from './license-report'
 import uploadBdist from './upload-bdist'
 
@@ -143,8 +144,6 @@ export default async function buildFromSource(
   return installDir
 }
 
-export const name = 'cabal'
-
 export async function build(
   sourceDir: string,
   installDir: string,
@@ -161,26 +160,19 @@ export async function build(
   // We pass the configuration flags to the pre-build hook, so
   // the pre-build hook can call `cabal configure` if desired:
   util.logging.info(`Run pre-build hook`)
-  const extraConfigFlags = extraDirs(options)
+  const configFlags = resolveConfigFlags(options)
   const preBuildEnv = {
     ...process.env,
-    CABAL_CONFIG_FLAGS: extraConfigFlags.join(' ')
+    CABAL_CONFIG_FLAGS: configFlags.join(' ')
   }
   await runPreBuildHook(options, {...execOptions, env: preBuildEnv})
 
   // Configure Agda:
-  util.logging.info(`Configure Agda-${options['agda-version']}`)
-  const cabalProjectPath = path.join(sourceDir, 'cabal.project')
-  if (options['configuration'] !== 'none') {
-    if (fs.existsSync(cabalProjectPath))
-      util.logging.warning(`cabal.project already exists`)
-    util.logging.info('Write cabal.project')
-    fs.writeFileSync(cabalProjectPath, options['configuration'])
-  }
   const cabalProjectLocalPath = path.join(sourceDir, 'cabal.project.local')
-  if (!fs.existsSync(cabalProjectLocalPath)) {
-    await util.cabal(['v2-configure', ...extraConfigFlags], execOptions)
-  }
+  if (fs.existsSync(cabalProjectLocalPath))
+    util.logging.warning(`cabal.project already exists`)
+  util.logging.info(`Configure Agda-${options['agda-version']}`)
+  await util.cabal(['v2-configure', ...configFlags], execOptions)
 
   // Build Agda:
   util.logging.info(`Build Agda-${options['agda-version']}`)
@@ -202,8 +194,10 @@ export async function build(
   )
 }
 
-function extraDirs(options: opts.BuildOptions): string[] {
-  const flags: string[] = []
+function resolveConfigFlags(options: opts.BuildOptions): string[] {
+  const flags: string[] = splitLines(options.configuration).map(line =>
+    line.trim()
+  )
   // Add extra-{include,lib}-dirs:
   for (const includeDir of options['extra-include-dirs'])
     flags.push(`--extra-include-dirs=${includeDir}`)

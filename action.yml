@@ -144,9 +144,9 @@ inputs:
     description: |
       Can be "none", "recommended", or text.
 
-      If set to "none", no configuration will be written to `cabal.project`.
-      If set to "recommended", the recommended configuration will be written to `cabal.project`.
-      Otherwise, the value will be written to `cabal.project` before building Agda.
+      If set to "none", no configuration flags will be passed to `cabal configure`.
+      If set to "recommended", the recommended configuration flags will be passed to `cabal configure`.
+      Otherwise, the value will be passed to `cabal configure` verbatim.
 
       Only used when building Agda from source.
 
