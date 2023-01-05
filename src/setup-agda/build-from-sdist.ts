@@ -8,7 +8,6 @@ import * as opts from '../opts'
 import setupHaskell from '../setup-haskell'
 import * as util from '../util'
 import {ExecOptions} from '../util'
-import {splitLines} from '../util/lines'
 import licenseReport from './license-report'
 import uploadBdist from './upload-bdist'
 
@@ -195,9 +194,10 @@ export async function build(
 }
 
 function resolveConfigFlags(options: opts.BuildOptions): string[] {
-  const flags: string[] = splitLines(options.configuration).map(line =>
-    line.trim()
-  )
+  // TODO: this fails for options which contain spaces
+  const flags: string[] = options.configuration
+    .split(/\s+/)
+    .map(line => line.trim())
   // Add extra-{include,lib}-dirs:
   for (const includeDir of options['extra-include-dirs'])
     flags.push(`--extra-include-dirs=${includeDir}`)
