@@ -38,8 +38,10 @@
     "lint": "eslint src/**/*.ts scripts/**/*.ts",
     "package": "ncc build --source-map --license licenses.txt",
     "update-readme": "ts-node ./scripts/update-readme.ts",
-    "update-agda-info": "ts-node ./scripts/update-agda-info.ts",
-    "update-haskell-info": "cp ./vendor/haskell/actions/setup/src/versions.json ./src/data/Haskell.versions.json",
+    "update-data": "npm run update-data-action && npm run update-data-agda-versions && npm run update-data-haskell-versions",
+    "update-data-action": "ts-node ./scripts/update-data-action.ts && prettier --write './src/data/action.json'",
+    "update-data-agda-versions": "ts-node ./scripts/update-data-agda-versions.ts && prettier --write './src/data/Agda.versions.*.json'",
+    "update-data-haskell-versions": "cp ./vendor/haskell/actions/setup/src/versions.json ./src/data/Haskell.versions.json && prettier --write './src/data/Agda.versions.*.json'",
     "all": "npm run build && npm run format && npm run lint && npm run package"
   },
   "devDependencies": {

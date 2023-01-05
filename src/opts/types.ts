@@ -147,7 +147,7 @@ export const agdaStdlibInfo = bundledAgdaStdlibInfo as Partial<
   Record<AgdaStdlibVersion | 'experimental', {source: Dist}>
 >
 
-// Inputs for haskell/actions/setup:
+// Inputs for `haskell/actions/setup`
 
 export type SetupHaskellOption =
   | 'cabal-version'

@@ -2,22 +2,24 @@
 
 fail="$(mktemp)"
 
-# Check files with pre-commit
-echo "Running pre-commit..."
-{ pre-commit run --all-files || echo > "$fail"; }
+# Update data files
+echo "Update data files"
+{ npm run update-data || echo > "$fail"; }
+git add src/data/*.json
 
-# Build README.md and add to commit:
+# Update README.md:
+echo "Update README.md"
 { npm run update-readme || echo > "$fail"; }
 git add README.md
 
-# Build dist and add to commit:
-echo "Building dist..."
+# Package action to dist:
+echo "Package action to dist"
 { npm run all || echo > "$fail"; }
 git add dist/*
-git add src/data/*.json
 
-# Delete 'latest' tag locally:
-git tag --delete latest || true
+# Check files with pre-commit
+echo "Run pre-commit"
+{ pre-commit run --all-files || echo > "$fail"; }
 
 # Check if any of the previous commands failed:
 if [ ! -s "$fail" ]

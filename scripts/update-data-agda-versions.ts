@@ -3,7 +3,7 @@ import * as os from 'node:os'
 import * as path from 'node:path'
 import pick from 'object.pick'
 import {agdaPackageInfoCache as oldCache} from '../src/opts/types'
-import * as hackage from '../src/util/app/hackage'
+import * as hackage from '../src/util/deps/hackage'
 import * as util from '../src/util'
 
 async function run(): Promise<void> {
@@ -42,13 +42,17 @@ async function run(): Promise<void> {
             'data',
             'Agda.versions.deprecated.json'
           ),
-          JSON.stringify({
-            packageInfo: pick(
-              newCache.packageInfo,
-              versions.filter(v => newCache.packageInfo[v] === 'deprecated')
-            ),
-            lastModified: newCache.lastModified
-          })
+          JSON.stringify(
+            {
+              packageInfo: pick(
+                newCache.packageInfo,
+                versions.filter(v => newCache.packageInfo[v] === 'deprecated')
+              ),
+              lastModified: newCache.lastModified
+            },
+            undefined,
+            2
+          )
         )
         fs.writeFileSync(
           path.join(
