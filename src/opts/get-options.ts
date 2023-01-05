@@ -3,7 +3,6 @@ import Mustache from 'mustache'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
-import * as semver from 'semver'
 import ensureError from '../util/ensure-error'
 import * as exec from '../util/exec'
 import {splitLines} from '../util/lines'
@@ -12,6 +11,7 @@ import resolveAgdaStdlibVersion from './resolve-agda-stdlib-version'
 import resolveAgdaVersion from './resolve-agda-version'
 import * as opts from './types'
 import action from '../data/action.json'
+import resolveGhcVersion from './resolve-ghc-version'
 
 export default async function getOptions(
   inputs?:
@@ -64,15 +64,14 @@ export default async function getOptions(
   const agdaStdlibVersion: opts.AgdaStdlibVersion | 'experimental' | 'none' =
     resolveAgdaStdlibVersion(agdaVersion, agdaStdlibVersionSpec)
 
+  // Resolve GHC version:
+  const ghcVersionSpec = getOption('ghc-version')
+  const ghcVersion = resolveGhcVersion(agdaVersion, ghcVersionSpec)
+
   // Check `stack-no-global`:
   const stackNoGlobal = getFlag('stack-no-global')
   if (stackNoGlobal)
     throw Error('Value `true` for input `stack-no-global` is unsupported.')
-
-  // Check `ghc-version-range`:
-  const ghcVersionRange = getOption('ghc-version-range')
-  if (!semver.validRange(ghcVersionRange))
-    throw Error('Input `ghc-version-range` is not a valid version range')
 
   // Check for contradictory options:
   const [forceBuild, forceNoBuild] = getFlagPair(
@@ -154,8 +153,6 @@ export default async function getOptions(
     'bdist-upload': getFlag('bdist-upload'),
     'force-build': forceBuild,
     'force-no-build': forceNoBuild,
-    'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
-    'ghc-version-range': ghcVersionRange,
     'pre-build-hook': getOption('pre-build-hook'),
     configuration: resolveConfiguration(
       agdaVersion,
@@ -166,7 +163,7 @@ export default async function getOptions(
     'cabal-version': getOption('cabal-version'),
     'disable-matcher': getFlag('disable-matcher'),
     'enable-stack': getFlag('enable-stack'),
-    'ghc-version': getOption('ghc-version'),
+    'ghc-version': ghcVersion,
     'stack-no-global': stackNoGlobal,
     'stack-setup-ghc': getFlag('stack-setup-ghc'),
     'stack-version': getOption('stack-version'),

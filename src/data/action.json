@@ -41,15 +41,6 @@
       "description": "Version of GHC to use.\n\nCan be \"recommended\", \"latest\", or a specific version number (e.g., 9.4.2).\n\nIf set to \"recommended\", it will get the latest version supported by\n`haskell/actions/setup` which the Agda version is tested-with.\nIf `ghc-version-match-exact` is set to false, it will favour versions\nwhich are supported by `haskell/actions/setup`.\n\nIf set \"latest\" or to a specific GHC version, this version will be used\neven if it is incompatible with the Agda version.\n",
       "required": false
     },
-    "ghc-version-match-exact": {
-      "description": "If specified, requires an exact match for the GHC version.\n\nBy default, this action uses the pre-installed version of GHC if it is\ncompatible with the requested Agda version (see `ghc-version-range`) in\nthe major and minor version numbers, ignoring the patch version.\n",
-      "required": false
-    },
-    "ghc-version-range": {
-      "default": "*",
-      "description": "If specified, restricts the range of allowed GHC versions.\n\nBy default, this action infers the set of compatible GHC versions from\nthe `tested-with` field in Agda.cabalIf specified, this set of is then\nfiltered by `ghc-version-range`.\n",
-      "required": false
-    },
     "pre-build-hook": {
       "default": "",
       "description": "A shell script to be run before starting the build.\n",
