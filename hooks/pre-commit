@@ -2,12 +2,13 @@
 
 fail="$(mktemp)"
 
-# Update data files
-echo "Update data files"
-{ npm run update-data || echo > "$fail"; }
-git add src/data/*.json
-
-# Update README.md:
+# Update data files & README
+echo "Update Agda.json from Agda.yml"
+{ npm run update-data-agda || echo > "$fail"; }
+git add src/data/Agda.json
+echo "Update action.json from action.yml"
+{ npm run update-data-action || echo > "$fail"; }
+git add src/data/action.json
 echo "Update README.md"
 { npm run update-readme || echo > "$fail"; }
 git add README.md

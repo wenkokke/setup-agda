@@ -38,7 +38,6 @@
     "lint": "eslint src/**/*.ts scripts/**/*.ts",
     "package": "ncc build --source-map --license licenses.txt",
     "update-readme": "ts-node ./scripts/update-readme.ts",
-    "update-data": "npm run update-data-action && npm run update-data-agda && npm run update-data-agda-versions && npm run update-data-haskell-versions",
     "update-data-action": "js-yaml ./action.yml | prettier --parser=json > './src/data/action.json'",
     "update-data-agda": "js-yaml ./Agda.yml | prettier --parser=json > './src/data/Agda.json'",
     "update-data-agda-versions": "ts-node ./scripts/update-data-agda-versions.ts && prettier --write './src/data/Agda.versions.*.json'",

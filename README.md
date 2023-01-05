@@ -16,11 +16,11 @@ If an older version of GHC is needed to build the specified version, `setup-agda
 
 ## Table of Contents
 
-- [Supported Versions](#supported-versions):
-  The versions of Agda that are supported by `setup-agda`.
-- [Samples](#samples):
+- [Samples](README.md#samples):
   Sample GitHub Workflows that use `setup-agda`.
-- [Usage](#usage):
+- [Supported Versions](README.md#supported-versions):
+  The versions of Agda that are supported by `setup-agda`.
+- [Usage](README.md#usage):
   Detailed list of inputs used to configure this action.
 
 ## Samples
@@ -166,7 +166,7 @@ jobs:
 
 
 
-## Supported versions
+## Supported Versions
 
 <table>
   <tr>
