@@ -226,17 +226,22 @@ function resolveConfiguration(
     case 'nightly':
       return ''
     default: {
+      const clean = (str: string): string =>
+        splitLines(str)
+          .map(ln => ln.trim())
+          .join(' ')
       switch (configuration) {
         case 'none':
           return ''
         case 'recommended': {
           const {configuration} = opts.agdaInfo[agdaVersion]
           if (configuration === undefined) return ''
-          else if (typeof configuration === 'string') return configuration
-          else return configuration[platform]
+          else if (typeof configuration === 'string')
+            return clean(configuration)
+          else return clean(configuration[platform])
         }
         default:
-          return configuration
+          return clean(configuration)
       }
     }
   }

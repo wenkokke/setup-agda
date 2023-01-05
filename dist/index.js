@@ -1340,6 +1340,9 @@ function resolveConfiguration(agdaVersion, configuration) {
         case 'nightly':
             return '';
         default: {
+            const clean = (str) => (0, lines_1.splitLines)(str)
+                .map(ln => ln.trim())
+                .join(' ');
             switch (configuration) {
                 case 'none':
                     return '';
@@ -1348,12 +1351,12 @@ function resolveConfiguration(agdaVersion, configuration) {
                     if (configuration === undefined)
                         return '';
                     else if (typeof configuration === 'string')
-                        return configuration;
+                        return clean(configuration);
                     else
-                        return configuration[platform_1.platform];
+                        return clean(configuration[platform_1.platform]);
                 }
                 default:
-                    return configuration;
+                    return clean(configuration);
             }
         }
     }
@@ -28730,7 +28733,7 @@ module.exports = JSON.parse('{"nightly":{"binary":{"darwin":{"x64":[{"url":"http
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"packageInfo":{"2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.4":"deprecated","2.5.4.1":"deprecated","2.6.0":"deprecated","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated"},"lastModified":"Thu, 05 Jan 2023 17:31:43 GMT"}');
+module.exports = JSON.parse('{"packageInfo":{"2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.4":"deprecated","2.5.4.1":"deprecated","2.6.0":"deprecated","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated"},"lastModified":"Thu, 05 Jan 2023 17:41:02 GMT"}');
 
 /***/ }),
 
@@ -28738,7 +28741,7 @@ module.exports = JSON.parse('{"packageInfo":{"2.5.1":"deprecated","2.5.1.1":"dep
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4.2":"normal","2.6.0.1":"normal","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Thu, 05 Jan 2023 17:31:43 GMT"}');
+module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4.2":"normal","2.6.0.1":"normal","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Thu, 05 Jan 2023 17:41:02 GMT"}');
 
 /***/ }),
 
