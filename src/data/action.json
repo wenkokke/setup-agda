@@ -71,6 +71,10 @@
       "description": "A shell script to be run before starting the build.\n",
       "required": false
     },
+    "configuration": {
+      "default": "recommended",
+      "description": "Can be \"none\", \"recommended\", or text.\n\nIf set to \"none\", no configuration will be written to `cabal.project`.\nIf set to \"recommended\", the recommended configuration will be written to `cabal.project`.\nOtherwise, the value will be written to `cabal.project` before building Agda.\n\nOnly used when building Agda from source.\n"
+    },
     "bdist-upload": {
       "description": "If specified, will upload a binary distribution for the specified Agda version.\n",
       "required": false

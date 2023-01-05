@@ -64,6 +64,12 @@ export default async function getOptions(
   const agdaStdlibVersion: opts.AgdaStdlibVersion | 'experimental' | 'none' =
     resolveAgdaStdlibVersion(agdaVersion, agdaStdlibVersionSpec)
 
+  // Resolve build configuration:
+  let configuration = getOption('configuration')
+  if (configuration === 'recommended' && opts.isAgdaVersion(agdaVersion))
+    configuration = opts.resolveRecommendedConfiguration(agdaVersion)
+  else configuration = 'none'
+
   // Check `stack-no-global`:
   const stackNoGlobal = getFlag('stack-no-global')
   if (stackNoGlobal)
@@ -169,6 +175,7 @@ export default async function getOptions(
     'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
     'ghc-version-range': ghcVersionRange,
     'pre-build-hook': getOption('pre-build-hook'),
+    configuration,
 
     // Specified in opts.SetupHaskellInputs:
     'cabal-version': getOption('cabal-version'),

@@ -433,6 +433,18 @@ This section describes all inputs:
 
   Default: `false`
 
+- `configuration`
+
+  Can be "none", "recommended", or text.
+  
+  If set to "none", no configuration will be written to `cabal.project`.
+  If set to "recommended", the recommended configuration will be written to `cabal.project`.
+  Otherwise, the value will be written to `cabal.project` before building Agda.
+  
+  Only used when building Agda from source.
+
+  Default: `recommended`
+
 - `bdist-upload`
 
   If specified, will upload a binary distribution for the specified Agda version.

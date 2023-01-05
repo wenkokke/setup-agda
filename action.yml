@@ -139,6 +139,16 @@ inputs:
     description: |
       A shell script to be run before starting the build.
     required: false
+  configuration:
+    default: 'recommended'
+    description: |
+      Can be "none", "recommended", or text.
+
+      If set to "none", no configuration will be written to `cabal.project`.
+      If set to "recommended", the recommended configuration will be written to `cabal.project`.
+      Otherwise, the value will be written to `cabal.project` before building Agda.
+
+      Only used when building Agda from source.
 
   bdist-upload:
     description: |

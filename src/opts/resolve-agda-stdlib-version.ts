@@ -31,23 +31,28 @@ export default function resolveAgdaStdlibVersion(
     if (agdaVersion === 'HEAD' || agdaVersion === 'nightly') {
       return 'experimental'
     } else {
-      const {compatibility} = opts.agdaInfo[agdaVersion]
+      const agdaStdlibVersionRange =
+        opts.agdaInfo[agdaVersion].compatibility?.['agda-stdlib']
+      if (agdaStdlibVersionRange === undefined)
+        throw Error(
+          `No known compatible agda-stdlib versions for ${agdaVersion}; check Agda.yml?`
+        )
       const recommended = simver.maxSatisfying(
         opts.agdaStdlibVersions,
-        compatibility['agda-stdlib']
+        agdaStdlibVersionRange
       )
       assert(
         recommended !== null,
         [
           `Could not resolve recommended agda-stdlib version`,
-          `from compatible versions ${compatibility['agda-stdlib']}`
+          `from compatible versions ${agdaStdlibVersionRange}`
         ].join(' ')
       )
       assert(
         opts.isAgdaStdlibVersion(recommended),
         [
           `Resolved recommended agda-stdlib version to version '${recommended}'`,
-          `not in list of compatible versions ${compatibility['agda-stdlib']}`
+          `not in list of compatible versions ${agdaStdlibVersionRange}`
         ].join(' ')
       )
       return recommended
