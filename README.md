@@ -367,30 +367,6 @@ This section describes all inputs:
 
   Default: `false`
 
-- `force-cluster-counting`
-
-  If specified, build with cluster counting.
-
-  Default: `false`
-
-- `force-no-cluster-counting`
-
-  If specified, build without cluster counting.
-
-  Default: `false`
-
-- `force-optimise-heavily`
-
-  If specified, build with optimise heavily.
-
-  Default: `false`
-
-- `force-no-optimise-heavily`
-
-  If specified, build without optimise heavily.
-
-  Default: `false`
-
 - `ghc-version`
 
   Version of GHC to use.
@@ -432,6 +408,18 @@ This section describes all inputs:
   A shell script to be run before starting the build.
 
   Default: `false`
+
+- `configuration`
+
+  Can be "none", "recommended", or text.
+  
+  If set to "none", no configuration flags will be passed to `cabal configure`.
+  If set to "recommended", the recommended configuration flags will be passed to `cabal configure`.
+  Otherwise, the value will be passed to `cabal configure` verbatim.
+  
+  Only used when building Agda from source.
+
+  Default: `recommended`
 
 - `bdist-upload`
 

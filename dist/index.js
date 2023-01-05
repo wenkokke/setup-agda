@@ -817,6 +817,18 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
 }));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
@@ -824,8 +836,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.downloadDist = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.getOptions = void 0;
-__exportStar(__nccwpck_require__(4021), exports);
+exports.needsIcu = exports.downloadDist = exports.resolveAgdaStdlibVersion = exports.resolveGhcVersion = exports.getOptions = void 0;
+const simver = __importStar(__nccwpck_require__(7609));
 var get_options_1 = __nccwpck_require__(1665);
 Object.defineProperty(exports, "getOptions", ({ enumerable: true, get: function () { return __importDefault(get_options_1).default; } }));
 __exportStar(__nccwpck_require__(542), exports);
@@ -837,6 +849,14 @@ Object.defineProperty(exports, "resolveAgdaStdlibVersion", ({ enumerable: true, 
 var download_dist_1 = __nccwpck_require__(6338);
 Object.defineProperty(exports, "downloadDist", ({ enumerable: true, get: function () { return __importDefault(download_dist_1).default; } }));
 __exportStar(__nccwpck_require__(9150), exports);
+function needsIcu(options) {
+    // NOTE:
+    //   Agda only supports --cluster-counting on versions after 2.5.3:
+    //   https://github.com/agda/agda/blob/f50c14d3a4e92ed695783e26dbe11ad1ad7b73f7/doc/release-notes/2.5.3.md
+    return (options['agda-version'] === 'HEAD' ||
+        simver.gte(options['agda-version'], '2.5.3'));
+}
+exports.needsIcu = needsIcu;
 
 
 /***/ }),
@@ -977,103 +997,6 @@ function yyyymmdd() {
         nowDate.getDate().toString().padStart(2, '0')
     ].join('');
 }
-
-
-/***/ }),
-
-/***/ 4021:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.needsIcu = exports.supportsClusterCounting = exports.supportsOptimiseHeavily = exports.supportsSplitSections = exports.runPreBuildHook = void 0;
-const exec = __importStar(__nccwpck_require__(1514));
-const os = __importStar(__nccwpck_require__(612));
-const simver = __importStar(__nccwpck_require__(7609));
-const logging = __importStar(__nccwpck_require__(1942));
-const platform_1 = __nccwpck_require__(542);
-function runPreBuildHook(options, execOptions) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (options['pre-build-hook'] !== '') {
-            logging.info(`Running pre-build hook:${os.EOL}${options['pre-build-hook']}`);
-            execOptions = execOptions !== null && execOptions !== void 0 ? execOptions : {};
-            execOptions.input = Buffer.from(options['pre-build-hook'], 'utf-8');
-            yield exec.exec('bash', [], execOptions);
-        }
-    });
-}
-exports.runPreBuildHook = runPreBuildHook;
-function supportsSplitSections(options) {
-    // NOTE:
-    //   We only set --split-sections on Linux and Windows, as it does nothing on MacOS:
-    //   https://github.com/agda/agda/issues/5940
-    const platformOK = platform_1.platform === 'linux' || platform_1.platform === 'win32';
-    // NOTE:
-    //   We only set --split-sections if Ghc >=8.0 and Cabal >=2.2, when the flag was added:
-    //   https://cabal.readthedocs.io/en/latest/cabal-project.html#cfg-field-split-sections
-    const ghcVersionOK = simver.gte(options['ghc-version'], '8.0');
-    const cabalVersionOK = simver.gte(options['cabal-version'], '2.2');
-    return platformOK && ghcVersionOK && cabalVersionOK;
-}
-exports.supportsSplitSections = supportsSplitSections;
-function supportsOptimiseHeavily(options) {
-    // NOTE:
-    //   We only enable --optimise-heavily on versions which support it,
-    //   i.e., versions after 2.6.2:
-    //   https://github.com/agda/agda/blob/1175c41210716074340da4bd4caa09f4dfe2cc1d/doc/release-notes/2.6.2.md
-    return (options['agda-version'] === 'HEAD' ||
-        simver.gte(options['agda-version'], '2.6.2'));
-}
-exports.supportsOptimiseHeavily = supportsOptimiseHeavily;
-function supportsClusterCounting(options) {
-    // NOTE:
-    //   Agda only supports --cluster-counting on versions after 2.5.3:
-    //   https://github.com/agda/agda/blob/f50c14d3a4e92ed695783e26dbe11ad1ad7b73f7/doc/release-notes/2.5.3.md
-    // NOTE:
-    //   Agda versions 2.5.3 - 2.6.2 depend on text-icu ^0.7, but versions
-    //   0.7.0.0 - 0.7.1.0 do not compile with icu68+, which can be solved
-    //   by passing '--constraint="text-icu >= 0.7.1.0"'
-    return (options['agda-version'] === 'HEAD' ||
-        simver.gte(options['agda-version'], '2.5.3'));
-}
-exports.supportsClusterCounting = supportsClusterCounting;
-function needsIcu(options) {
-    return (supportsClusterCounting(options) && !options['force-no-cluster-counting']);
-}
-exports.needsIcu = needsIcu;
 
 
 /***/ }),
@@ -1286,8 +1209,6 @@ function getOptions(inputs) {
             throw Error('Input `ghc-version-range` is not a valid version range');
         // Check for contradictory options:
         const [forceBuild, forceNoBuild] = getFlagPair('force-build', 'force-no-build');
-        const [forceClusterCounting, forceNoClusterCounting] = getFlagPair('force-cluster-counting', 'force-no-cluster-counting');
-        const [forceOptimiseHeavily, forceNoOptimiseHeavily] = getFlagPair('force-optimise-heavily', 'force-no-optimise-heavily');
         // Parse the bdist name:
         const bdistName = parseBdistName(getOption('bdist-name'));
         const bdistRetentionDays = getOption('bdist-retention-days');
@@ -1361,13 +1282,10 @@ function getOptions(inputs) {
             'bdist-upload': getFlag('bdist-upload'),
             'force-build': forceBuild,
             'force-no-build': forceNoBuild,
-            'force-cluster-counting': forceClusterCounting,
-            'force-no-cluster-counting': forceNoClusterCounting,
-            'force-optimise-heavily': forceOptimiseHeavily,
-            'force-no-optimise-heavily': forceNoOptimiseHeavily,
             'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
             'ghc-version-range': ghcVersionRange,
             'pre-build-hook': getOption('pre-build-hook'),
+            configuration: resolveConfiguration(agdaVersion, getOption('configuration')),
             // Specified in opts.SetupHaskellInputs:
             'cabal-version': getOption('cabal-version'),
             'disable-matcher': getFlag('disable-matcher'),
@@ -1413,6 +1331,34 @@ function parseBdistName(bdistName) {
             `Could not parse input 'bdist-name': '${bdistName}':`,
             (0, ensure_error_1.default)(error).message
         ].join(os.EOL));
+    }
+}
+function resolveConfiguration(agdaVersion, configuration) {
+    switch (agdaVersion) {
+        case 'HEAD':
+            return '';
+        case 'nightly':
+            return '';
+        default: {
+            const clean = (str) => (0, lines_1.splitLines)(str)
+                .map(ln => ln.trim())
+                .join(' ');
+            switch (configuration) {
+                case 'none':
+                    return '';
+                case 'recommended': {
+                    const { configuration } = opts.agdaInfo[agdaVersion];
+                    if (configuration === undefined)
+                        return '';
+                    else if (typeof configuration === 'string')
+                        return clean(configuration);
+                    else
+                        return clean(configuration[platform_1.platform]);
+                }
+                default:
+                    return clean(configuration);
+            }
+        }
     }
 }
 
@@ -1508,6 +1454,7 @@ const logging = __importStar(__nccwpck_require__(1942));
 const simver = __importStar(__nccwpck_require__(7609));
 const opts = __importStar(__nccwpck_require__(9150));
 function resolveAgdaStdlibVersion(agdaVersion, agdaStdlibVersionSpec) {
+    var _a;
     if (agdaStdlibVersionSpec === 'none') {
         return agdaStdlibVersionSpec;
     }
@@ -1529,15 +1476,17 @@ function resolveAgdaStdlibVersion(agdaVersion, agdaStdlibVersionSpec) {
             return 'experimental';
         }
         else {
-            const { compatibility } = opts.agdaInfo[agdaVersion];
-            const recommended = simver.maxSatisfying(opts.agdaStdlibVersions, compatibility['agda-stdlib']);
+            const agdaStdlibVersionRange = (_a = opts.agdaInfo[agdaVersion].compatibility) === null || _a === void 0 ? void 0 : _a['agda-stdlib'];
+            if (agdaStdlibVersionRange === undefined)
+                throw Error(`No known compatible agda-stdlib versions for ${agdaVersion}; check Agda.yml?`);
+            const recommended = simver.maxSatisfying(opts.agdaStdlibVersions, agdaStdlibVersionRange);
             (0, node_assert_1.default)(recommended !== null, [
                 `Could not resolve recommended agda-stdlib version`,
-                `from compatible versions ${compatibility['agda-stdlib']}`
+                `from compatible versions ${agdaStdlibVersionRange}`
             ].join(' '));
             (0, node_assert_1.default)(opts.isAgdaStdlibVersion(recommended), [
                 `Resolved recommended agda-stdlib version to version '${recommended}'`,
-                `not in list of compatible versions ${compatibility['agda-stdlib']}`
+                `not in list of compatible versions ${agdaStdlibVersionRange}`
             ].join(' '));
             return recommended;
         }
@@ -2080,7 +2029,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.supportedGhcVersions = exports.build = exports.name = void 0;
+exports.supportedGhcVersions = exports.build = void 0;
 const glob = __importStar(__nccwpck_require__(8090));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const fs = __importStar(__nccwpck_require__(7561));
@@ -2183,7 +2132,6 @@ function buildFromSource(options) {
     });
 }
 exports["default"] = buildFromSource;
-exports.name = 'cabal';
 function build(sourceDir, installDir, options, 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 matchingGhcVersionsThatCanBuildAgda) {
@@ -2195,15 +2143,16 @@ matchingGhcVersionsThatCanBuildAgda) {
         // We pass the configuration flags to the pre-build hook, so
         // the pre-build hook can call `cabal configure` if desired:
         util.logging.info(`Run pre-build hook`);
-        const configFlags = cabalGetConfigFlagsFor(options);
+        const configFlags = resolveConfigFlags(options);
         const preBuildEnv = Object.assign(Object.assign({}, process.env), { CABAL_CONFIG_FLAGS: configFlags.join(' ') });
-        yield opts.runPreBuildHook(options, Object.assign(Object.assign({}, execOptions), { env: preBuildEnv }));
-        // If no configuration exists, run `cabal configure` with $configFlags:
-        if (!fs.existsSync(path.join(sourceDir, 'cabal.project.local'))) {
-            util.logging.info(`Configure Agda-${options['agda-version']}`);
-            yield util.cabal(['v2-configure', ...configFlags], execOptions);
-        }
-        // Run `cabal build`:
+        yield runPreBuildHook(options, Object.assign(Object.assign({}, execOptions), { env: preBuildEnv }));
+        // Configure Agda:
+        const cabalProjectLocalPath = path.join(sourceDir, 'cabal.project.local');
+        if (fs.existsSync(cabalProjectLocalPath))
+            util.logging.warning(`cabal.project already exists`);
+        util.logging.info(`Configure Agda-${options['agda-version']}`);
+        yield util.cabal(['v2-configure', ...configFlags], execOptions);
+        // Build Agda:
         util.logging.info(`Build Agda-${options['agda-version']}`);
         yield util.cabal(['v2-build', 'exe:agda', 'exe:agda-mode'], execOptions);
         // Run `cabal install`:
@@ -2220,37 +2169,16 @@ matchingGhcVersionsThatCanBuildAgda) {
     });
 }
 exports.build = build;
-function cabalGetConfigFlagsFor(options) {
-    // NOTE:
-    //   We set the build flags following Agda's deploy workflow, which builds
-    //   the nightly distributions, except that we disable --cluster-counting
-    //   for all builds. See:
-    //   https://github.com/agda/agda/blob/d5b5d90a3e34cf8cbae838bc20e94b74a20fea9c/src/github/workflows/deploy.yml#L37-L47
-    const flags = [];
-    // Disable profiling:
-    flags.push('--disable-executable-profiling');
-    flags.push('--disable-library-profiling');
-    // If supported, pass Agda flag --cluster-counting
-    if (!options['force-no-cluster-counting'] &&
-        opts.supportsClusterCounting(options)) {
-        flags.push('--flags=+enable-cluster-counting');
-    }
-    // If supported, pass Agda flag --optimise-heavily
-    if (!options['force-no-optimise-heavily'] &&
-        opts.supportsOptimiseHeavily(options)) {
-        flags.push('--flags=+optimise-heavily');
-    }
-    // If supported, set --split-sections.
-    if (opts.supportsSplitSections(options)) {
-        flags.push('--enable-split-sections');
-    }
+function resolveConfigFlags(options) {
+    // TODO: this fails for options which contain spaces
+    const flags = options.configuration
+        .split(/\s+/)
+        .map(line => line.trim());
     // Add extra-{include,lib}-dirs:
-    for (const includeDir of options['extra-include-dirs']) {
+    for (const includeDir of options['extra-include-dirs'])
         flags.push(`--extra-include-dirs=${includeDir}`);
-    }
-    for (const libDir of options['extra-lib-dirs']) {
+    for (const libDir of options['extra-lib-dirs'])
         flags.push(`--extra-lib-dirs=${libDir}`);
-    }
     return flags;
 }
 function supportedGhcVersions(sourceDir) {
@@ -2280,6 +2208,16 @@ function supportedGhcVersions(sourceDir) {
     });
 }
 exports.supportedGhcVersions = supportedGhcVersions;
+function runPreBuildHook(options, execOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (options['pre-build-hook'] !== '') {
+            util.logging.info(`Running pre-build hook:${os.EOL}${options['pre-build-hook']}`);
+            execOptions = execOptions !== null && execOptions !== void 0 ? execOptions : {};
+            execOptions.input = Buffer.from(options['pre-build-hook'], 'utf-8');
+            yield util.getOutput('sh', [], execOptions);
+        }
+    });
+}
 function findCabalFile(sourceDir) {
     return __awaiter(this, void 0, void 0, function* () {
         const cabalFileGlobber = yield glob.create(path.join(sourceDir, '*.cabal'), {
@@ -28789,7 +28727,7 @@ module.exports = JSON.parse('{"Agda:exe:agda":{"exe":"agda"},"Agda:exe:agda-mode
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"nightly":{"binary":{"darwin":{"x64":[{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz","dir":"Agda-nightly"}]},"linux":{"x64":[{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz","dir":"Agda-nightly"}]},"win32":{"x64":[{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip","dir":"Agda-nightly"}]}},"compatibility":{"agda-stdlib":"1.7.1"}},"2.6.2.2":{"binary":{"darwin":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-macos-11-icu71.1-ghc9.2.4.zip","https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-macos-12-icu71.1-ghc9.2.4.zip"]},"linux":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04-icu66.1-ghc9.2.4.zip","https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-22.04-icu70.1-ghc9.2.4.zip"]},"win32":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022-icu72.1-ghc9.2.4.zip"]}},"compatibility":{"agda-stdlib":"1.7.1","ghc":"8.0 - 9.2"}},"2.6.2.1":{"binary":{"darwin":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-macos-11-icu71.1-ghc9.0.2.zip","https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-macos-12-icu71.1-ghc9.0.2.zip"]},"linux":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-ubuntu-20.04-icu66.1-ghc9.0.2.zip","https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-ubuntu-22.04-icu70.1-ghc9.0.2.zip"]},"win32":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-windows-2022-icu72.1-ghc9.0.2.zip"]}},"compatibility":{"agda-stdlib":"1.7.1","ghc":"8.0 - 9.2"}},"2.6.2":{"binary":{"darwin":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-macos-11-icu71.1-ghc9.0.2.zip","https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-macos-12-icu71.1-ghc9.0.2.zip"]},"linux":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-ubuntu-20.04-icu66.1-ghc9.0.2.zip","https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-ubuntu-22.04-icu70.1-ghc9.0.2.zip"]},"win32":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-windows-2022-icu72.1-ghc9.0.2.zip"]}},"compatibility":{"agda-stdlib":"1.7 - 1.7.1","ghc":"8.0 - 9.0"}},"2.6.1.3":{"binary":{"darwin":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-macos-11-icu71.1-ghc8.10.7.zip","https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-macos-12-icu71.1-ghc8.10.7.zip"]},"linux":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-18.04-icu60.2-ghc8.10.7.zip","https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-20.04-icu66.1-ghc8.10.7.zip","https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-22.04-icu70.1-ghc8.10.7.zip"]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"1.5 - 1.6","ghc":"8.0 - 8.10"}},"2.6.1.2":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"1.5","ghc":"8.0 - 8.10"}},"2.6.1.1":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"1.4 - 1.5","ghc":"8.0 - 8.10"}},"2.6.1":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"1.3 - 1.6","ghc":"8.0 - 8.8"}},"2.6.0.1":{"binary":{"darwin":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-macos-11-icu71.1-ghc8.6.5.zip","https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-macos-12-icu71.1-ghc8.6.5.zip"]},"linux":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-18.04-icu60.2-ghc8.6.5.zip","https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-20.04-icu66.1-ghc8.6.5.zip","https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-22.04-icu70.1-ghc8.6.5.zip"]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"1.0.1 - 1.2","ghc":"7.10 - 8.6"}},"2.6.0":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"1.0 - 1.0.1","ghc":"7.10 - 8.6"}},"2.5.4.2":{"binary":{"darwin":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-macos-11-icu71.1-ghc8.4.4.zip","https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-macos-12-icu71.1-ghc8.4.4.zip"]},"linux":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-ubuntu-18.04-icu60.2-ghc8.4.4.zip","https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-ubuntu-20.04-icu66.1-ghc8.4.4.zip","https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-ubuntu-22.04-icu70.1-ghc8.4.4.zip"]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.17","ghc":"7.10 - 8.4"}},"2.5.4.1":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.16 - 0.17","ghc":"7.10 - 8.4"}},"2.5.4":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.16 - 0.17","ghc":"7.10 - 8.4"}},"2.5.3":{"binary":{"darwin":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-macos-11-icu71.1-ghc8.2.2.zip","https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-macos-12-icu71.1-ghc8.2.2.zip"]},"linux":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-ubuntu-18.04-icu60.2-ghc8.2.2.zip","https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-ubuntu-20.04-icu66.1-ghc8.2.2.zip"]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.14 - 0.15","ghc":"7.8 - 8.2"}},"2.5.2":{"binary":{"darwin":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-macos-11-ghc8.0.2.zip","https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-macos-12-ghc8.0.2.zip"]},"linux":{"x64":["https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-ubuntu-18.04-ghc8.0.2.zip","https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-ubuntu-20.04-ghc8.0.2.zip"]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.13","ghc":"7.6 - 8.0"}},"2.5.1.2":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.12","ghc":"7.6 - 8.0"}},"2.5.1.1":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.12","ghc":"7.6 - 7.10"}},"2.5.1":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.12","ghc":"7.6 - 7.10"}},"2.4.2.5":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.11","ghc":"7.6 - 7.10"}},"2.4.2.4":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.11","ghc":"7.6 - 7.10"}},"2.4.2.3":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.10","ghc":"7.4 - 7.10"}},"2.4.2.2":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.9","ghc":"7.0 - 7.8"}},"2.4.2.1":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.9","ghc":"7.0 - 7.8"}},"2.4.2":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.8.1","ghc":"7.0 - 7.8"}},"2.4.0.2":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.8","ghc":"7.0 - 7.8"}},"2.4.0.1":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.8","ghc":"7.0 - 7.8"}},"2.4.0":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.8","ghc":"7.0 - 7.8"}},"2.3.2.2":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.7"}},"2.3.2.1":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.7"}},"2.3.2":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.7"}},"2.3.0.1":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.6"}},"2.3.0":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.6"}},"2.2.10":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.5"}},"2.2.8":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.4"}},"2.2.6":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.3"}},"2.2.4":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.2"}},"2.2.2":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.1"}},"2.2.0":{"binary":{"darwin":{"x64":[]},"linux":{"x64":[]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.1"}}}');
+module.exports = JSON.parse('{"nightly":{"binary":{"darwin":{"x64":[{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-macOS.tar.xz","dir":"Agda-nightly"}]},"linux":{"x64":[{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-linux.tar.xz","dir":"Agda-nightly"}]},"win32":{"x64":[{"url":"https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip","dir":"Agda-nightly"}]}},"compatibility":{"agda-stdlib":"1.7.1"}},"2.6.2.2":{"binary":{"darwin":{"x64":[{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-macos-11-icu71.1-ghc9.2.4.zip","sha256":"a72435a774355dd837945a5764bf6778188d387488c356d034ca44bf7f8eec85"},{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-macos-12-icu71.1-ghc9.2.4.zip","sha256":"d1205dd6527033c5011e1800e26bc24dc784d5a761bebebf20da150a70c5de3a"}]},"linux":{"x64":[{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04-icu66.1-ghc9.2.4.zip","sha256":"d15b2f41d1d9b6e95f75e388a66e1439610cb6d1cc5c90b3f136e79d020aa367"},{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-22.04-icu70.1-ghc9.2.4.zip","sha256":"d49021a4dd6852648d64a8911be8e90b76c0adab92d14d54e018287b20712e72"}]},"win32":{"x64":[{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022-icu72.1-ghc9.2.4.zip","sha256":"e442bf8ec6e6dc6cbffe6537144878a2eef0057a43c7bdd3a5d4d9828ae20582"}]}},"compatibility":{"agda-stdlib":"1.7.1","ghc":"8.0 - 9.2"},"configuration":{"darwin":"--flags=+enable-cluster-counting\\n--flags=+optimise-heavily\\n","linux":"--enable-split-sections\\n--flags=+enable-cluster-counting\\n--flags=+optimise-heavily\\n","win32":"--enable-split-sections\\n--flags=+enable-cluster-counting\\n"}},"2.6.2.1":{"binary":{"darwin":{"x64":[{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-macos-11-icu71.1-ghc9.0.2.zip","sha256":"a63c6465c5251dc7a7bb9336fed995571bcc7c2f89839d16257bc0f8da0182c4"},{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-macos-12-icu71.1-ghc9.0.2.zip","sha256":"d10863cba4aa7cf7a539f6a6922846be1773cac8bc2bea76d773a007fff60510"}]},"linux":{"x64":[{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-ubuntu-20.04-icu66.1-ghc9.0.2.zip","sha256":"9182e391336e2359b707deebf11a87b1a098979c053ddfd1468c3485bee064d6"},{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-ubuntu-22.04-icu70.1-ghc9.0.2.zip","sha256":"a7d48d29f41a21efd683b04ae321112f7dc40944f8df29e8a76319e52941d7a8"}]},"win32":{"x64":[{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-windows-2022-icu72.1-ghc9.0.2.zip","sha256":"1bdbc325826268bbd8289cc0737dbab3390e4767da13c269c22847a45d1df86a"}]}},"compatibility":{"agda-stdlib":"1.7.1","ghc":"8.0 - 9.2"},"configuration":{"darwin":"--flags=+enable-cluster-counting\\n--flags=+optimise-heavily\\n","linux":"--enable-split-sections\\n--flags=+enable-cluster-counting\\n--flags=+optimise-heavily\\n","win32":"--enable-split-sections\\n--flags=+enable-cluster-counting\\n"}},"2.6.2":{"binary":{"darwin":{"x64":[{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-macos-11-icu71.1-ghc9.0.2.zip","sha256":"37e20554406421132c7ee68c13cc3d325c081ed9d5bcd842d52f181b53b076fc"},{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-macos-12-icu71.1-ghc9.0.2.zip","sha256":"d45220cf1c8204483dfe0b97aeaa13127e70d9b80811de2b3b92219606647cb2"}]},"linux":{"x64":[{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-ubuntu-20.04-icu66.1-ghc9.0.2.zip","sha256":"272c7f465eff8e4a4b3946415131d29977966f8543013d876b5d36ecea7f29af"},{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-ubuntu-22.04-icu70.1-ghc9.0.2.zip","sha256":"ca014d2053274d8b8d69d25be4c6c75988a5e59794739420582a179227a95fa1"}]},"win32":{"x64":[{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-windows-2022-icu72.1-ghc9.0.2.zip","sha256":"be38e10485e6d3a2836d330a7e08de6993b5ce112803f4efa56c11a0c15eeffa"}]}},"compatibility":{"agda-stdlib":"1.7 - 1.7.1","ghc":"8.0 - 9.0"},"configuration":{"darwin":"--flags=+enable-cluster-counting\\n--flags=+optimise-heavily\\n","linux":"--enable-split-sections\\n--flags=+enable-cluster-counting\\n--flags=+optimise-heavily\\n","win32":"--enable-split-sections\\n--flags=+enable-cluster-counting\\n"}},"2.6.1.3":{"binary":{"darwin":{"x64":[{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-macos-11-icu71.1-ghc8.10.7.zip","sha256":"ebd241eeb7951f1e227bdd668683c5362402ab32484cb888d0ec22f9a75f2a1c"},{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-macos-12-icu71.1-ghc8.10.7.zip","sha256":"1828e2ae06621d70acb8c0fa5c6bf8fb14b40a4be34d26c5a69c1c40b712717d"}]},"linux":{"x64":[{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-18.04-icu60.2-ghc8.10.7.zip","sha256":"19afe986efbe7fafcf7b5e6b1b3709e7fcdc6c8b381d4f5c7da8464875ee7a24"},{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-20.04-icu66.1-ghc8.10.7.zip","sha256":"7632e8a38ad01129e342c0b4b25160a20865566ab8b48422a6bd520120882001"},{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-22.04-icu70.1-ghc8.10.7.zip","sha256":"b52dacaa226f914d470edf517c4c172bd275ecbf4ec1315e0ed92758daae095a"}]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"1.5 - 1.6","ghc":"8.0 - 8.10"},"configuration":{"darwin":"--flags=+enable-cluster-counting\\n","linux":"--enable-split-sections\\n--flags=+enable-cluster-counting\\n","win32":"--enable-split-sections\\n--flags=+enable-cluster-counting\\n"}},"2.6.0.1":{"binary":{"darwin":{"x64":[{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-macos-11-icu71.1-ghc8.6.5.zip","sha256":"0831433eeac32c0dced3358ecbcd6b6fe84015e9c331e87a4e0b15eb9ec0d7a6"},{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-macos-12-icu71.1-ghc8.6.5.zip","sha256":"19e8a75237940f4ab28cd19e74e08f000a88c7f448c700a922399456c7e86aec"}]},"linux":{"x64":[{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-18.04-icu60.2-ghc8.6.5.zip","sha256":"46db43c131b97fa91b088304a17efc2df1670635ea55dcf9fb6a768d00268f5f"},{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-20.04-icu66.1-ghc8.6.5.zip","sha256":"4e248165fa319878468a77c1cb037101712e6ea08d21d611cc327fc220cda14c"},{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-22.04-icu70.1-ghc8.6.5.zip","sha256":"8bb8524b95a08bb15f599ece371039d045b90d47ac8c1a44014af746dae7e3fb"}]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"1.0.1 - 1.2","ghc":"7.10 - 8.6"},"configuration":"--flags=+enable-cluster-counting\\n"},"2.5.4.2":{"binary":{"darwin":{"x64":[{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-macos-11-icu71.1-ghc8.4.4.zip","sha256":"02bf624508d2fb2c7221cda40c1907cf4989bf709b9c1f33b63f4a909faedb7b"},{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-macos-12-icu71.1-ghc8.4.4.zip","sha256":"f6fe5530a66c2aa36696864841ef8d937f56d5f3ef4000e86bc657eee5a2807a"}]},"linux":{"x64":[{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-ubuntu-18.04-icu60.2-ghc8.4.4.zip"},{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-ubuntu-20.04-icu66.1-ghc8.4.4.zip","sha256":"5be8ca3253954c5602222936fd6901c5743bf56c19eb055a04f31e17564c4215"},{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-ubuntu-22.04-icu70.1-ghc8.4.4.zip","sha256":"f183a793a1dd0856f69a86bc17d293ec52b2270113507ff59811fa5de59ebf18"}]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.17","ghc":"7.10 - 8.4"},"configuration":"--flags=+enable-cluster-counting\\n"},"2.5.3":{"binary":{"darwin":{"x64":[{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-macos-11-icu71.1-ghc8.2.2.zip","sha256":"a13960b2e8946f1790f62b3c9db26dd80194e3b6e9e7a1d294a5932086121a9f"},{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-macos-12-icu71.1-ghc8.2.2.zip","sha256":"568fd9332f64c44b87898680593a8899f2e3e2531fdfed67375ae53fb14aaf17"}]},"linux":{"x64":[{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-ubuntu-18.04-icu60.2-ghc8.2.2.zip","sha256":"cb23807b957be00037cf8ac9c01949da21f850078d18cb8650c1715eaeaad9b3"},{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-ubuntu-20.04-icu66.1-ghc8.2.2.zip","sha256":"6a450bd50e7f403caf1d4e63d6381fc9fe0109053686b7e0b8a0ad5ba1eca9a1"}]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.14 - 0.15","ghc":"7.8 - 8.2"},"configuration":"--flags=+enable-cluster-counting\\n"},"2.5.2":{"binary":{"darwin":{"x64":[{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-macos-11-ghc8.0.2.zip","sha256":"922533fed4853ef07c6250075c3c0792fd36f930735a11852e3d990532f9487a"},{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-macos-12-ghc8.0.2.zip","sha256":"824733b1631c6f11d136ee81e76def02fe74f72acf8cbb74323012decb58e792"}]},"linux":{"x64":[{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-ubuntu-18.04-ghc8.0.2.zip","sha256":"9bf068a64c1e1a80d6c0b725f32d5fa7c1f551d523889433e781f2af5efa9342"},{"url":"https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-ubuntu-20.04-ghc8.0.2.zip","sha256":"6db78288847727714bafd1b8a4b493d40d8e4492990951bda9f893b3b73e6747"}]},"win32":{"x64":[]}},"compatibility":{"agda-stdlib":"0.13","ghc":"7.6 - 8.0"}},"2.5.1.2":{"compatibility":{"agda-stdlib":"0.12","ghc":"7.6 - 8.0"}},"2.4.2.5":{"compatibility":{"agda-stdlib":"0.11","ghc":"7.6 - 7.10"}},"2.4.2.4":{"compatibility":{"agda-stdlib":"0.11","ghc":"7.6 - 7.10"}},"2.4.2.3":{"compatibility":{"agda-stdlib":"0.10","ghc":"7.4 - 7.10"}},"2.4.2.2":{"compatibility":{"agda-stdlib":"0.9","ghc":"7.0 - 7.8"}},"2.4.2.1":{"compatibility":{"agda-stdlib":"0.9","ghc":"7.0 - 7.8"}},"2.4.2":{"compatibility":{"agda-stdlib":"0.8.1","ghc":"7.0 - 7.8"}},"2.4.0.2":{"compatibility":{"agda-stdlib":"0.8","ghc":"7.0 - 7.8"}},"2.4.0.1":{"compatibility":{"agda-stdlib":"0.8","ghc":"7.0 - 7.8"}},"2.4.0":{"compatibility":{"agda-stdlib":"0.8","ghc":"7.0 - 7.8"}},"2.3.2.2":{"compatibility":{"agda-stdlib":"0.7"}},"2.3.2.1":{"compatibility":{"agda-stdlib":"0.7"}},"2.3.2":{"compatibility":{"agda-stdlib":"0.7"}},"2.3.0.1":{"compatibility":{"agda-stdlib":"0.6"}},"2.3.0":{"compatibility":{"agda-stdlib":"0.6"}},"2.2.10":{"compatibility":{"agda-stdlib":"0.5"}},"2.2.8":{"compatibility":{"agda-stdlib":"0.4"}},"2.2.6":{"compatibility":{"agda-stdlib":"0.3"}},"2.2.4":{"compatibility":{"agda-stdlib":"0.2"}},"2.2.2":{"compatibility":{"agda-stdlib":"0.1"}},"2.2.0":{"compatibility":{"agda-stdlib":"0.1"}}}');
 
 /***/ }),
 
@@ -28797,7 +28735,7 @@ module.exports = JSON.parse('{"nightly":{"binary":{"darwin":{"x64":[{"url":"http
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"packageInfo":{"2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.4":"deprecated","2.5.4.1":"deprecated","2.6.0":"deprecated","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated"},"lastModified":"Thu, 05 Jan 2023 14:37:31 GMT"}');
+module.exports = JSON.parse('{"packageInfo":{"2.5.1":"deprecated","2.5.1.1":"deprecated","2.5.4":"deprecated","2.5.4.1":"deprecated","2.6.0":"deprecated","2.6.1":"deprecated","2.6.1.1":"deprecated","2.6.1.2":"deprecated"},"lastModified":"Thu, 05 Jan 2023 18:06:22 GMT"}');
 
 /***/ }),
 
@@ -28805,7 +28743,7 @@ module.exports = JSON.parse('{"packageInfo":{"2.5.1":"deprecated","2.5.1.1":"dep
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4.2":"normal","2.6.0.1":"normal","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Thu, 05 Jan 2023 14:37:31 GMT"}');
+module.exports = JSON.parse('{"packageInfo":{"2.2.0":"normal","2.2.10":"normal","2.2.2":"normal","2.2.4":"normal","2.2.6":"normal","2.2.8":"normal","2.3.0":"normal","2.3.0.1":"normal","2.3.2":"normal","2.3.2.1":"normal","2.3.2.2":"normal","2.4.0":"normal","2.4.0.1":"normal","2.4.0.2":"normal","2.4.2":"normal","2.4.2.1":"normal","2.4.2.2":"normal","2.4.2.3":"normal","2.4.2.4":"normal","2.4.2.5":"normal","2.5.1.2":"normal","2.5.2":"normal","2.5.3":"normal","2.5.4.2":"normal","2.6.0.1":"normal","2.6.1.3":"normal","2.6.2":"normal","2.6.2.1":"normal","2.6.2.2":"normal"},"lastModified":"Thu, 05 Jan 2023 18:06:22 GMT"}');
 
 /***/ }),
 
@@ -28821,7 +28759,7 @@ module.exports = JSON.parse('{"ghc":["9.4.2","9.4.1","9.2.4","9.2.3","9.2.2","9.
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"Setup Agda","author":"Wen Kokke","description":"Set up a specific version of Agda.","inputs":{"agda-version":{"default":"latest","description":"The Agda version.\\n\\nCan be \\"latest\\" or a specific version number (e.g., 2.6.2.2).\\n","required":false},"agda-stdlib-version":{"default":"none","description":"The Agda standard library version.\\n\\nCan be \\"none\\", \\"recommended\\", \\"latest\\", or a specific version number (e.g., 1.7.1).\\n\\nIf set to \\"recommended\\", it will install the latest version of the Agda\\nstandard library compatible with the specified Agda version, as specified\\non [the Agda Wiki](https://wiki.portal.chalmers.se/agda/Libraries/StandardLibrary).\\n\\nIf set to \\"latest\\" or a specific version number, it will install the\\nlatest or that specific version, regardless of compatibility with the\\nspecified Agda version.\\n","required":false},"agda-libraries":{"default":"","description":"A list of Agda libraries to install.\\n\\nLibraries must be specified by their Git URL and end in a version anchor,\\ne.g.,\\n\\n```yaml\\nagda-libraries: |\\n  https://github.com/agda/agda-categories.git#v0.1.7.1\\n  https://github.com/agda/cubical.git#v0.3\\n```\\n\\nTo setup the Agda standard library, use \\"agda-stdlib-version\\" instead, as\\nthat ensures that the standard library and Agda versions are compatible.\\n\\nThis input requires that the library has a tagged release and that the\\nrepository contains a .agda-lib file.\\n\\nThis input relies on the convention that the filename of the .agda-lib\\nfile is the name of the library, and will refuse to install any library\\nwhose .agda-lib file is simple named \\".agda-lib\\".\\n","required":false},"agda-defaults":{"default":"","description":"A list of installed Agda libraries to add to defaults.\\n\\nLibraries must be specified by the name of their .agda-lib file, e.g.,\\n\\n```yaml\\nagda-defaults: |\\n  standard-library\\n  agda-categories\\n  cubical\\n```\\n","required":false},"agda-executables":{"default":"","description":"A list of executables to register with Agda.\\n\\nExecutables must be specified by their name or path, e.g.,\\n\\n```yaml\\nagda-executables: |\\n  z3\\n  /bin/echo\\n```\\n","required":false},"force-build":{"description":"If specified, always build from source.\\n","required":false},"force-no-build":{"description":"If specified, never build from source.\\n","required":false},"force-cluster-counting":{"description":"If specified, build with cluster counting.\\n","required":false},"force-no-cluster-counting":{"description":"If specified, build without cluster counting.\\n","required":false},"force-optimise-heavily":{"description":"If specified, build with optimise heavily.\\n","required":false},"force-no-optimise-heavily":{"description":"If specified, build without optimise heavily.\\n","required":false},"ghc-version":{"default":"recommended","description":"Version of GHC to use.\\n\\nCan be \\"recommended\\", \\"latest\\", or a specific version number (e.g., 9.4.2).\\n\\nIf set to \\"recommended\\", it will get the latest version supported by\\n`haskell/actions/setup` which the Agda version is tested-with.\\nIf `ghc-version-match-exact` is set to false, it will favour versions\\nwhich are supported by `haskell/actions/setup`.\\n\\nIf set \\"latest\\" or to a specific GHC version, this version will be used\\neven if it is incompatible with the Agda version.\\n","required":false},"ghc-version-match-exact":{"description":"If specified, requires an exact match for the GHC version.\\n\\nBy default, this action uses the pre-installed version of GHC if it is\\ncompatible with the requested Agda version (see `ghc-version-range`) in\\nthe major and minor version numbers, ignoring the patch version.\\n","required":false},"ghc-version-range":{"default":"*","description":"If specified, restricts the range of allowed GHC versions.\\n\\nBy default, this action infers the set of compatible GHC versions from\\nthe `tested-with` field in Agda.cabalIf specified, this set of is then\\nfiltered by `ghc-version-range`.\\n","required":false},"pre-build-hook":{"default":"","description":"A shell script to be run before starting the build.\\n","required":false},"bdist-upload":{"description":"If specified, will upload a binary distribution for the specified Agda version.\\n","required":false},"bdist-name":{"default":"agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}","description":"If specified, will be used as a name for the binary distribution package.\\n\\nThe value is interpreted as a [mustache template](https://mustache.github.io/).\\nThe template may use `{{{agda-version}}}`, `{{{cabal-version}}}`,\\n`{{{ghc-version}}}`, `{{{icu-version}}}`, and `{{{upx-version}}}`,\\nwhich will be replaced by the concrete versions, if installed, and\\nto `{{{arch}}}`, `{{{platform}}}`, and `{{{release}}}`, which will be\\nreplaced by the system architecture, operating system, and operating\\nsystem release, as returned by\\n[the corresponding NodeJS functions](https://nodejs.org/api/os.html).\\n\\nOnly used when `bdist-upload` is specified.\\n","required":false},"bdist-license-report":{"description":"If specified, include a license report in the binary distribution.\\n\\nOnly used when `bdist-upload` is specified.\\n","required":false},"bdist-compress-exe":{"description":"If specified, the executables are compressed with [UPX](https://upx.github.io).\\n\\nBeware that on MacOS and Windows the resulting executables are unsigned,\\nand therefore will cause problems with security.\\nThere is a workaround for this on MacOS:\\n\\n```sh\\n# for each executable file in <package>/bin:\\nchmod +x <bin>\\nxattr -c <bin>\\n\\n# for each library file in <package>/lib:\\nchmod +w <lib>\\nxattr -c <lib>\\nchmod -w <lib>\\n```\\n\\nOnly used when `bdist-upload` is specified.\\n","required":false},"bdist-retention-days":{"default":"0","description":"Duration after which bdist will expire in days.\\n0 means using default retention.\\n\\nMinimum 1 day.\\nMaximum 90 days unless changed from the repository settings page.\\n","required":false},"cabal-version":{"default":"latest","description":"Version of Cabal to use. If set to \\"latest\\", it will always get the latest stable version.\\n","required":false},"stack-version":{"default":"latest","description":"Version of Stack to use. If set to \\"latest\\", it will always get the latest stable version.\\n","required":false},"enable-stack":{"description":"If specified, will setup Stack.\\n","required":false},"stack-no-global":{"description":"If specified, enable-stack must be set. Prevents installing GHC and Cabal globally.\\n","required":false},"stack-setup-ghc":{"description":"If specified, enable-stack must be set. Will run stack setup to install the specified GHC.\\n","required":false},"disable-matcher":{"description":"If specified, disables match messages from GHC as GitHub CI annotations.\\n","required":false}},"outputs":{"agda-version":{"description":"The resolved Agda version."},"agda-path":{"description":"The path of the agda executable _directory_."},"agda-data-path":{"description":"The path of the agda data _directory_."},"agda-exe":{"description":"The path of the agda _executable_."},"agda-mode-exe":{"description":"The path of the agda-mode _executable_."},"haskell-setup":{"description":"Whether or not actions/haskell/setup was called."},"ghc-path":{"description":"The path of the ghc executable _directory_."},"cabal-path":{"description":"The path of the cabal executable _directory_."},"stack-path":{"description":"The path of the stack executable _directory_."},"cabal-store":{"description":"The path to the cabal store."},"stack-root":{"description":"The path to the stack root (equal to the STACK_ROOT environment variable if it is set; otherwise an OS-specific default)."},"ghc-exe":{"description":"The path of the ghc _executable_."},"cabal-exe":{"description":"The path of the cabal _executable_."},"stack-exe":{"description":"The path of the stack _executable_."}},"runs":{"using":"node16","main":"dist/index.js"},"branding":{"icon":"feather","color":"purple"}}');
+module.exports = JSON.parse('{"name":"Setup Agda","author":"Wen Kokke","description":"Set up a specific version of Agda.","inputs":{"agda-version":{"default":"latest","description":"The Agda version.\\n\\nCan be \\"latest\\" or a specific version number (e.g., 2.6.2.2).\\n","required":false},"agda-stdlib-version":{"default":"none","description":"The Agda standard library version.\\n\\nCan be \\"none\\", \\"recommended\\", \\"latest\\", or a specific version number (e.g., 1.7.1).\\n\\nIf set to \\"recommended\\", it will install the latest version of the Agda\\nstandard library compatible with the specified Agda version, as specified\\non [the Agda Wiki](https://wiki.portal.chalmers.se/agda/Libraries/StandardLibrary).\\n\\nIf set to \\"latest\\" or a specific version number, it will install the\\nlatest or that specific version, regardless of compatibility with the\\nspecified Agda version.\\n","required":false},"agda-libraries":{"default":"","description":"A list of Agda libraries to install.\\n\\nLibraries must be specified by their Git URL and end in a version anchor,\\ne.g.,\\n\\n```yaml\\nagda-libraries: |\\n  https://github.com/agda/agda-categories.git#v0.1.7.1\\n  https://github.com/agda/cubical.git#v0.3\\n```\\n\\nTo setup the Agda standard library, use \\"agda-stdlib-version\\" instead, as\\nthat ensures that the standard library and Agda versions are compatible.\\n\\nThis input requires that the library has a tagged release and that the\\nrepository contains a .agda-lib file.\\n\\nThis input relies on the convention that the filename of the .agda-lib\\nfile is the name of the library, and will refuse to install any library\\nwhose .agda-lib file is simple named \\".agda-lib\\".\\n","required":false},"agda-defaults":{"default":"","description":"A list of installed Agda libraries to add to defaults.\\n\\nLibraries must be specified by the name of their .agda-lib file, e.g.,\\n\\n```yaml\\nagda-defaults: |\\n  standard-library\\n  agda-categories\\n  cubical\\n```\\n","required":false},"agda-executables":{"default":"","description":"A list of executables to register with Agda.\\n\\nExecutables must be specified by their name or path, e.g.,\\n\\n```yaml\\nagda-executables: |\\n  z3\\n  /bin/echo\\n```\\n","required":false},"force-build":{"description":"If specified, always build from source.\\n","required":false},"force-no-build":{"description":"If specified, never build from source.\\n","required":false},"ghc-version":{"default":"recommended","description":"Version of GHC to use.\\n\\nCan be \\"recommended\\", \\"latest\\", or a specific version number (e.g., 9.4.2).\\n\\nIf set to \\"recommended\\", it will get the latest version supported by\\n`haskell/actions/setup` which the Agda version is tested-with.\\nIf `ghc-version-match-exact` is set to false, it will favour versions\\nwhich are supported by `haskell/actions/setup`.\\n\\nIf set \\"latest\\" or to a specific GHC version, this version will be used\\neven if it is incompatible with the Agda version.\\n","required":false},"ghc-version-match-exact":{"description":"If specified, requires an exact match for the GHC version.\\n\\nBy default, this action uses the pre-installed version of GHC if it is\\ncompatible with the requested Agda version (see `ghc-version-range`) in\\nthe major and minor version numbers, ignoring the patch version.\\n","required":false},"ghc-version-range":{"default":"*","description":"If specified, restricts the range of allowed GHC versions.\\n\\nBy default, this action infers the set of compatible GHC versions from\\nthe `tested-with` field in Agda.cabalIf specified, this set of is then\\nfiltered by `ghc-version-range`.\\n","required":false},"pre-build-hook":{"default":"","description":"A shell script to be run before starting the build.\\n","required":false},"configuration":{"default":"recommended","description":"Can be \\"none\\", \\"recommended\\", or text.\\n\\nIf set to \\"none\\", no configuration flags will be passed to `cabal configure`.\\nIf set to \\"recommended\\", the recommended configuration flags will be passed to `cabal configure`.\\nOtherwise, the value will be passed to `cabal configure` verbatim.\\n\\nOnly used when building Agda from source.\\n"},"bdist-upload":{"description":"If specified, will upload a binary distribution for the specified Agda version.\\n","required":false},"bdist-name":{"default":"agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}","description":"If specified, will be used as a name for the binary distribution package.\\n\\nThe value is interpreted as a [mustache template](https://mustache.github.io/).\\nThe template may use `{{{agda-version}}}`, `{{{cabal-version}}}`,\\n`{{{ghc-version}}}`, `{{{icu-version}}}`, and `{{{upx-version}}}`,\\nwhich will be replaced by the concrete versions, if installed, and\\nto `{{{arch}}}`, `{{{platform}}}`, and `{{{release}}}`, which will be\\nreplaced by the system architecture, operating system, and operating\\nsystem release, as returned by\\n[the corresponding NodeJS functions](https://nodejs.org/api/os.html).\\n\\nOnly used when `bdist-upload` is specified.\\n","required":false},"bdist-license-report":{"description":"If specified, include a license report in the binary distribution.\\n\\nOnly used when `bdist-upload` is specified.\\n","required":false},"bdist-compress-exe":{"description":"If specified, the executables are compressed with [UPX](https://upx.github.io).\\n\\nBeware that on MacOS and Windows the resulting executables are unsigned,\\nand therefore will cause problems with security.\\nThere is a workaround for this on MacOS:\\n\\n```sh\\n# for each executable file in <package>/bin:\\nchmod +x <bin>\\nxattr -c <bin>\\n\\n# for each library file in <package>/lib:\\nchmod +w <lib>\\nxattr -c <lib>\\nchmod -w <lib>\\n```\\n\\nOnly used when `bdist-upload` is specified.\\n","required":false},"bdist-retention-days":{"default":"0","description":"Duration after which bdist will expire in days.\\n0 means using default retention.\\n\\nMinimum 1 day.\\nMaximum 90 days unless changed from the repository settings page.\\n","required":false},"cabal-version":{"default":"latest","description":"Version of Cabal to use. If set to \\"latest\\", it will always get the latest stable version.\\n","required":false},"stack-version":{"default":"latest","description":"Version of Stack to use. If set to \\"latest\\", it will always get the latest stable version.\\n","required":false},"enable-stack":{"description":"If specified, will setup Stack.\\n","required":false},"stack-no-global":{"description":"If specified, enable-stack must be set. Prevents installing GHC and Cabal globally.\\n","required":false},"stack-setup-ghc":{"description":"If specified, enable-stack must be set. Will run stack setup to install the specified GHC.\\n","required":false},"disable-matcher":{"description":"If specified, disables match messages from GHC as GitHub CI annotations.\\n","required":false}},"outputs":{"agda-version":{"description":"The resolved Agda version."},"agda-path":{"description":"The path of the agda executable _directory_."},"agda-data-path":{"description":"The path of the agda data _directory_."},"agda-exe":{"description":"The path of the agda _executable_."},"agda-mode-exe":{"description":"The path of the agda-mode _executable_."},"haskell-setup":{"description":"Whether or not actions/haskell/setup was called."},"ghc-path":{"description":"The path of the ghc executable _directory_."},"cabal-path":{"description":"The path of the cabal executable _directory_."},"stack-path":{"description":"The path of the stack executable _directory_."},"cabal-store":{"description":"The path to the cabal store."},"stack-root":{"description":"The path to the stack root (equal to the STACK_ROOT environment variable if it is set; otherwise an OS-specific default)."},"ghc-exe":{"description":"The path of the ghc _executable_."},"cabal-exe":{"description":"The path of the cabal _executable_."},"stack-exe":{"description":"The path of the stack _executable_."}},"runs":{"using":"node16","main":"dist/index.js"},"branding":{"icon":"feather","color":"purple"}}');
 
 /***/ }),
 

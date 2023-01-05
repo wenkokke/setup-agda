@@ -119,12 +119,14 @@ function loadAgdaUrlsByVersion(): {version: string; urls: string[]}[] {
   for (const agdaVersion of agdaVersions) {
     const urlsForThisVersion: string[] = []
     const versionInfo = agdaJson[agdaVersion] as {
-      binary: Record<string, object>
+      binary?: Record<string, object>
     }
-    for (const [_platform, byArch] of Object.entries(versionInfo.binary)) {
-      for (const [_arch, dists] of Object.entries(byArch)) {
-        for (const dist of dists as (string | {url: string})[]) {
-          urlsForThisVersion.push(typeof dist === 'string' ? dist : dist.url)
+    if (versionInfo?.binary !== undefined) {
+      for (const [_platform, byArch] of Object.entries(versionInfo.binary)) {
+        for (const [_arch, dists] of Object.entries(byArch)) {
+          for (const dist of dists as (string | {url: string})[]) {
+            urlsForThisVersion.push(typeof dist === 'string' ? dist : dist.url)
+          }
         }
       }
     }

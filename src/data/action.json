@@ -36,22 +36,6 @@
       "description": "If specified, never build from source.\n",
       "required": false
     },
-    "force-cluster-counting": {
-      "description": "If specified, build with cluster counting.\n",
-      "required": false
-    },
-    "force-no-cluster-counting": {
-      "description": "If specified, build without cluster counting.\n",
-      "required": false
-    },
-    "force-optimise-heavily": {
-      "description": "If specified, build with optimise heavily.\n",
-      "required": false
-    },
-    "force-no-optimise-heavily": {
-      "description": "If specified, build without optimise heavily.\n",
-      "required": false
-    },
     "ghc-version": {
       "default": "recommended",
       "description": "Version of GHC to use.\n\nCan be \"recommended\", \"latest\", or a specific version number (e.g., 9.4.2).\n\nIf set to \"recommended\", it will get the latest version supported by\n`haskell/actions/setup` which the Agda version is tested-with.\nIf `ghc-version-match-exact` is set to false, it will favour versions\nwhich are supported by `haskell/actions/setup`.\n\nIf set \"latest\" or to a specific GHC version, this version will be used\neven if it is incompatible with the Agda version.\n",
@@ -70,6 +54,10 @@
       "default": "",
       "description": "A shell script to be run before starting the build.\n",
       "required": false
+    },
+    "configuration": {
+      "default": "recommended",
+      "description": "Can be \"none\", \"recommended\", or text.\n\nIf set to \"none\", no configuration flags will be passed to `cabal configure`.\nIf set to \"recommended\", the recommended configuration flags will be passed to `cabal configure`.\nOtherwise, the value will be passed to `cabal configure` verbatim.\n\nOnly used when building Agda from source.\n"
     },
     "bdist-upload": {
       "description": "If specified, will upload a binary distribution for the specified Agda version.\n",

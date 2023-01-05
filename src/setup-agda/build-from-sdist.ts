@@ -7,6 +7,7 @@ import semver from 'semver'
 import * as opts from '../opts'
 import setupHaskell from '../setup-haskell'
 import * as util from '../util'
+import {ExecOptions} from '../util'
 import licenseReport from './license-report'
 import uploadBdist from './upload-bdist'
 
@@ -142,8 +143,6 @@ export default async function buildFromSource(
   return installDir
 }
 
-export const name = 'cabal'
-
 export async function build(
   sourceDir: string,
   installDir: string,
@@ -160,20 +159,21 @@ export async function build(
   // We pass the configuration flags to the pre-build hook, so
   // the pre-build hook can call `cabal configure` if desired:
   util.logging.info(`Run pre-build hook`)
-  const configFlags = cabalGetConfigFlagsFor(options)
+  const configFlags = resolveConfigFlags(options)
   const preBuildEnv = {
     ...process.env,
     CABAL_CONFIG_FLAGS: configFlags.join(' ')
   }
-  await opts.runPreBuildHook(options, {...execOptions, env: preBuildEnv})
+  await runPreBuildHook(options, {...execOptions, env: preBuildEnv})
 
-  // If no configuration exists, run `cabal configure` with $configFlags:
-  if (!fs.existsSync(path.join(sourceDir, 'cabal.project.local'))) {
-    util.logging.info(`Configure Agda-${options['agda-version']}`)
-    await util.cabal(['v2-configure', ...configFlags], execOptions)
-  }
+  // Configure Agda:
+  const cabalProjectLocalPath = path.join(sourceDir, 'cabal.project.local')
+  if (fs.existsSync(cabalProjectLocalPath))
+    util.logging.warning(`cabal.project already exists`)
+  util.logging.info(`Configure Agda-${options['agda-version']}`)
+  await util.cabal(['v2-configure', ...configFlags], execOptions)
 
-  // Run `cabal build`:
+  // Build Agda:
   util.logging.info(`Build Agda-${options['agda-version']}`)
   await util.cabal(['v2-build', 'exe:agda', 'exe:agda-mode'], execOptions)
 
@@ -193,41 +193,16 @@ export async function build(
   )
 }
 
-function cabalGetConfigFlagsFor(options: opts.BuildOptions): string[] {
-  // NOTE:
-  //   We set the build flags following Agda's deploy workflow, which builds
-  //   the nightly distributions, except that we disable --cluster-counting
-  //   for all builds. See:
-  //   https://github.com/agda/agda/blob/d5b5d90a3e34cf8cbae838bc20e94b74a20fea9c/src/github/workflows/deploy.yml#L37-L47
-  const flags: string[] = []
-  // Disable profiling:
-  flags.push('--disable-executable-profiling')
-  flags.push('--disable-library-profiling')
-  // If supported, pass Agda flag --cluster-counting
-  if (
-    !options['force-no-cluster-counting'] &&
-    opts.supportsClusterCounting(options)
-  ) {
-    flags.push('--flags=+enable-cluster-counting')
-  }
-  // If supported, pass Agda flag --optimise-heavily
-  if (
-    !options['force-no-optimise-heavily'] &&
-    opts.supportsOptimiseHeavily(options)
-  ) {
-    flags.push('--flags=+optimise-heavily')
-  }
-  // If supported, set --split-sections.
-  if (opts.supportsSplitSections(options)) {
-    flags.push('--enable-split-sections')
-  }
+function resolveConfigFlags(options: opts.BuildOptions): string[] {
+  // TODO: this fails for options which contain spaces
+  const flags: string[] = options.configuration
+    .split(/\s+/)
+    .map(line => line.trim())
   // Add extra-{include,lib}-dirs:
-  for (const includeDir of options['extra-include-dirs']) {
+  for (const includeDir of options['extra-include-dirs'])
     flags.push(`--extra-include-dirs=${includeDir}`)
-  }
-  for (const libDir of options['extra-lib-dirs']) {
+  for (const libDir of options['extra-lib-dirs'])
     flags.push(`--extra-lib-dirs=${libDir}`)
-  }
   return flags
 }
 
@@ -259,6 +234,20 @@ export async function supportedGhcVersions(
     )
   } else {
     return versions
+  }
+}
+
+async function runPreBuildHook(
+  options: Pick<opts.BuildOptions, 'pre-build-hook'>,
+  execOptions?: ExecOptions
+): Promise<void> {
+  if (options['pre-build-hook'] !== '') {
+    util.logging.info(
+      `Running pre-build hook:${os.EOL}${options['pre-build-hook']}`
+    )
+    execOptions = execOptions ?? {}
+    execOptions.input = Buffer.from(options['pre-build-hook'], 'utf-8')
+    await util.getOutput('sh', [], execOptions)
   }
 }
 

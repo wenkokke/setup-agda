@@ -117,19 +117,29 @@ export const agdaPackageInfoCache = hackage.mergePackageInfoCache(
 )
 
 // Type of distributions.
-export type DistType = 'zip' | 'tgz' | 'txz' | 'git'
+export type ArchiveDistType = 'zip' | 'tgz' | 'txz'
+export type RepositoryDistType = 'git'
+export type DistType = ArchiveDistType | RepositoryDistType
 
 // Type of distributions, e.g., zip files or Git repositories.
 export type Dist =
-  | string
-  | {url: string; dir?: string; tag?: string; distType?: DistType}
+  | string // <string> is shorthand for {url: <string>}
+  | {
+      url: string
+      dir?: string
+      sha256?: string // only used for ArchiveDistType
+      tag?: string // only used for RepositoryDistType
+      distType?: DistType
+    }
 
 export type AgdaInfo = Record<
   AgdaVersion | 'nightly',
   {
-    binary: Partial<Record<Platform, Partial<Record<Arch, Dist[]>>>>
-    compatibility: {
-      'agda-stdlib': string
+    binary?: Partial<Record<Platform, Partial<Record<Arch, Dist[]>>>>
+    configuration?: string | Record<Platform, string>
+    compatibility?: {
+      'agda-stdlib'?: string
+      ghc?: string
     }
   }
 >
@@ -176,6 +186,7 @@ export type SetupAgdaOption =
   | 'bdist-retention-days'
   | 'ghc-version-range'
   | 'pre-build-hook'
+  | 'configuration'
   | SetupHaskellOption
 
 export type SetupAgdaFlag =
@@ -183,10 +194,6 @@ export type SetupAgdaFlag =
   | 'bdist-compress-exe'
   | 'bdist-license-report'
   | 'bdist-upload'
-  | 'force-cluster-counting'
-  | 'force-no-cluster-counting'
-  | 'force-optimise-heavily'
-  | 'force-no-optimise-heavily'
   | 'force-build'
   | 'force-no-build'
   | 'ghc-version-match-exact'
@@ -199,9 +206,10 @@ export interface SetupAgdaInputs
 // Build options for this action:
 
 export interface BuildOptions extends SetupAgdaInputs {
-  // Type refinements of 'agda-version' and 'agda-stdlib-version':
+  // Type refinements:
   'agda-version': AgdaVersion | 'HEAD' | 'nightly'
   'agda-stdlib-version': AgdaStdlibVersion | 'experimental' | 'none'
+  configuration: string | 'none'
   // Libraries: paths to libraries that need to be added to AGDA_DIR/libraries:
   'agda-libraries-list-local': string[]
   // Libraries: distribution information for libraries that need to be installed and added to AGDA_DIR/libraries:

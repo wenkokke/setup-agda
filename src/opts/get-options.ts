@@ -79,14 +79,6 @@ export default async function getOptions(
     'force-build',
     'force-no-build'
   )
-  const [forceClusterCounting, forceNoClusterCounting] = getFlagPair(
-    'force-cluster-counting',
-    'force-no-cluster-counting'
-  )
-  const [forceOptimiseHeavily, forceNoOptimiseHeavily] = getFlagPair(
-    'force-optimise-heavily',
-    'force-no-optimise-heavily'
-  )
 
   // Parse the bdist name:
   const bdistName = parseBdistName(getOption('bdist-name'))
@@ -162,13 +154,13 @@ export default async function getOptions(
     'bdist-upload': getFlag('bdist-upload'),
     'force-build': forceBuild,
     'force-no-build': forceNoBuild,
-    'force-cluster-counting': forceClusterCounting,
-    'force-no-cluster-counting': forceNoClusterCounting,
-    'force-optimise-heavily': forceOptimiseHeavily,
-    'force-no-optimise-heavily': forceNoOptimiseHeavily,
     'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
     'ghc-version-range': ghcVersionRange,
     'pre-build-hook': getOption('pre-build-hook'),
+    configuration: resolveConfiguration(
+      agdaVersion,
+      getOption('configuration')
+    ),
 
     // Specified in opts.SetupHaskellInputs:
     'cabal-version': getOption('cabal-version'),
@@ -221,5 +213,36 @@ function parseBdistName(bdistName: string): string {
         ensureError(error).message
       ].join(os.EOL)
     )
+  }
+}
+
+function resolveConfiguration(
+  agdaVersion: opts.AgdaVersion | 'HEAD' | 'nightly',
+  configuration: string
+): string {
+  switch (agdaVersion) {
+    case 'HEAD':
+      return ''
+    case 'nightly':
+      return ''
+    default: {
+      const clean = (str: string): string =>
+        splitLines(str)
+          .map(ln => ln.trim())
+          .join(' ')
+      switch (configuration) {
+        case 'none':
+          return ''
+        case 'recommended': {
+          const {configuration} = opts.agdaInfo[agdaVersion]
+          if (configuration === undefined) return ''
+          else if (typeof configuration === 'string')
+            return clean(configuration)
+          else return clean(configuration[platform])
+        }
+        default:
+          return clean(configuration)
+      }
+    }
   }
 }
