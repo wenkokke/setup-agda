@@ -6,64 +6,72 @@ import bundledAgdaPackageInfoCacheForNormalVersions from '../data/Agda.versions.
 import bundledAgdaComponentsMap from '../data/Agda.components.json'
 import {platform, Platform, Arch} from './platform'
 
-// Bundled data & derived types:
+// Agda Components
 
-// Type of Agda components:
-
+/** The type of Agda components. */
 export type AgdaComponent = keyof typeof bundledAgdaComponentsMap
 
-// Values of Agda components:
-
+/** A dictionary mapping each Agda component to its corresponding executable name. */
 export const agdaComponents: Record<
   AgdaComponent,
   Record<'exe', string>
 > = bundledAgdaComponentsMap
 
-// Windows: add .exe extension
+// On Windows: add .exe extension
 if (platform === 'win32')
   for (const component of Object.keys(agdaComponents))
     agdaComponents[component as AgdaComponent].exe += '.exe'
 
-// Type of Agda versions:
+// Agda Normal Versions
+
+/** The type of Agda versions. */
 export type AgdaVersion =
   keyof typeof bundledAgdaPackageInfoCacheForNormalVersions.packageInfo
 
+/** A list of all Agda versions. */
 export const agdaVersions = Object.keys(
   bundledAgdaPackageInfoCacheForNormalVersions.packageInfo
 ) as AgdaVersion[]
 
-// Type guard for Agda versions:
+/** A type guard for Agda versions. */
 export function isAgdaVersion(version: string): version is AgdaVersion {
   return (agdaVersions as string[]).includes(version)
 }
 
-// Type of deprecated Agda versions:
+// Agda Deprecated Versions
+
+/** The type of deprecated Agda versions. */
 export type AgdaDeprecatedVersion =
   keyof typeof bundledAgdaPackageInfoCacheForDeprecatedVersions.packageInfo
 
+/** A list of all deprecated Agda versions. */
 export const agdaDeprecatedVersions = Object.keys(
   bundledAgdaPackageInfoCacheForDeprecatedVersions.packageInfo
 ) as AgdaVersion[]
 
-// Type guard for deprecated Agda versions:
+/** A type guard for deprecated Agda versions. */
 export function isDeprecatedAgdaVersion(
   version: string
 ): version is AgdaDeprecatedVersion {
   return (agdaDeprecatedVersions as string[]).includes(version)
 }
 
-// Type of Agda git refs:
+// Agda Git References
+
+/** The type of git references for the Agda repository. */
 export type AgdaGitRef = 'HEAD'
 
-// Type guard for Agda git refs:
+/** A type guard for git references for the Agda repository. */
 export function isAgdaGitRef(version: string): version is AgdaGitRef {
   return version === 'HEAD'
 }
 
-// Type of Agda version specifications, i.e., valid inputs to the action:
+// Agda Version Specifications
+
+/** The type of Agda version specifications, i.e., valid inputs to the action. */
 export type AgdaVersionSpec = AgdaVersion | AgdaGitRef | 'latest' | 'nightly'
 
-// Type guard for Agda version specifications:
+/** A type guard for Agda version specifications. */
 export function isAgdaVersionSpec(
   versionSpec: string
 ): versionSpec is AgdaVersionSpec {
@@ -75,21 +83,26 @@ export function isAgdaVersionSpec(
   )
 }
 
-// Type of agda-stdlib versions:
+// Agda Standard Library Versions
+
+/** The type of agda-stdlib versions. */
 export type AgdaStdlibVersion = keyof typeof bundledAgdaStdlibInfo
 
+/** A list of all agda-stdlib versions. */
 export const agdaStdlibVersions = Object.keys(
   bundledAgdaStdlibInfo
 ) as AgdaStdlibVersion[]
 
-// Type guard for agda-stdlib versions:
+/** A type guard for agda-stdlib versions. */
 export function isAgdaStdlibVersion(
   version: string
 ): version is AgdaStdlibVersion {
   return (agdaStdlibVersions as string[]).includes(version)
 }
 
-// Type of agda-stdlib version specifications, i.e., valid inputs to the action:
+// Agda Standard Library Version Specifications
+
+/** The type of agda-stdlib version specifications, i.e., valid inputs to the action. */
 export type AgdaStdlibVersionSpec =
   | AgdaStdlibVersion
   | 'recommended'
@@ -97,7 +110,7 @@ export type AgdaStdlibVersionSpec =
   | 'experimental'
   | 'none'
 
-// Type guard for agda-stdlib version specifications:
+/** A type guard for agda-stdlib version specifications. */
 export function isAgdaStdlibVersionSpec(
   versionSpec: string
 ): versionSpec is AgdaStdlibVersionSpec {
@@ -110,28 +123,40 @@ export function isAgdaStdlibVersionSpec(
   )
 }
 
-// List of Agda source distributions on Hackage:
+// Hackage Package Information
+
+/** A cached copy of the package information for the Agda package on Hackage. */
 export const agdaPackageInfoCache = hackage.mergePackageInfoCache(
   bundledAgdaPackageInfoCacheForDeprecatedVersions as hackage.PackageInfoCache,
   bundledAgdaPackageInfoCacheForNormalVersions as hackage.PackageInfoCache
 )
 
-// Type of distributions.
-export type ArchiveDistType = 'zip' | 'tgz' | 'txz'
-export type RepositoryDistType = 'git'
-export type DistType = ArchiveDistType | RepositoryDistType
+// Distributions
 
-// Type of distributions, e.g., zip files or Git repositories.
+/** The type of distributions types, e.g., zip archives, git repositories, etc. */
+export type DistType = 'zip' | 'tgz' | 'txz' | 'git'
+
+/** The type of distributions, i.e., the URL from which to download, with supplementary information. */
 export type Dist =
   | string // <string> is shorthand for {url: <string>}
   | {
       url: string
       dir?: string
-      sha256?: string // only used for ArchiveDistType
-      tag?: string // only used for RepositoryDistType
+      sha256?: string
+      tag?: string
       distType?: DistType
     }
 
+// Agda Source Distributions
+
+/**
+ * The type of the Agda.yml file, which is bundled with setup-agda,
+ * and contains all necessary information to build and install Agda.
+ *
+ * For each Agda version, it contains a series of binary distributions,
+ * as well as the recommended configuration for building from source, and
+ * the compatibility information for GHC and agda-stdlib.
+ */
 export type AgdaInfo = Record<
   AgdaVersion | 'nightly',
   {
@@ -144,18 +169,23 @@ export type AgdaInfo = Record<
   }
 >
 
-// For each Agda version:
-// - A list of all binary distributions
-// - A list of compatible agda-stdlib versions
+/** The contents of Agda.yml. */
 export const agdaInfo: AgdaInfo = bundledAgdaInfo
 
-// List of agda-stdlib source distributions on GitHub:
-//
-// NOTE: The type ensures that all source distributions are indexed under valid
-//       agda-stdlib version keys.
-export const agdaStdlibInfo = bundledAgdaStdlibInfo as Partial<
+// Agda Standard Library Source Distributions
+
+/**
+ * The type of the agda-stdlib.json file, which is bundled with setup-agda,
+ * and contains all necessary information to install agda-stdlib.
+ *
+ * For each agda-stdlib version it contains a source distributions.
+ */
+export type AgdaStdlibInfo = Partial<
   Record<AgdaStdlibVersion | 'experimental', {source: Dist}>
 >
+
+/** The contents of ./src/data/agda-stdlib.json. */
+export const agdaStdlibInfo = bundledAgdaStdlibInfo as AgdaStdlibInfo
 
 // Inputs for `haskell/actions/setup`
 

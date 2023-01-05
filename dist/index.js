@@ -1664,30 +1664,32 @@ const Agda_versions_deprecated_json_1 = __importDefault(__nccwpck_require__(1656
 const Agda_versions_normal_json_1 = __importDefault(__nccwpck_require__(2115));
 const Agda_components_json_1 = __importDefault(__nccwpck_require__(3172));
 const platform_1 = __nccwpck_require__(542);
-// Values of Agda components:
+/** A dictionary mapping each Agda component to its corresponding executable name. */
 exports.agdaComponents = Agda_components_json_1.default;
-// Windows: add .exe extension
+// On Windows: add .exe extension
 if (platform_1.platform === 'win32')
     for (const component of Object.keys(exports.agdaComponents))
         exports.agdaComponents[component].exe += '.exe';
+/** A list of all Agda versions. */
 exports.agdaVersions = Object.keys(Agda_versions_normal_json_1.default.packageInfo);
-// Type guard for Agda versions:
+/** A type guard for Agda versions. */
 function isAgdaVersion(version) {
     return exports.agdaVersions.includes(version);
 }
 exports.isAgdaVersion = isAgdaVersion;
+/** A list of all deprecated Agda versions. */
 exports.agdaDeprecatedVersions = Object.keys(Agda_versions_deprecated_json_1.default.packageInfo);
-// Type guard for deprecated Agda versions:
+/** A type guard for deprecated Agda versions. */
 function isDeprecatedAgdaVersion(version) {
     return exports.agdaDeprecatedVersions.includes(version);
 }
 exports.isDeprecatedAgdaVersion = isDeprecatedAgdaVersion;
-// Type guard for Agda git refs:
+/** A type guard for git references for the Agda repository. */
 function isAgdaGitRef(version) {
     return version === 'HEAD';
 }
 exports.isAgdaGitRef = isAgdaGitRef;
-// Type guard for Agda version specifications:
+/** A type guard for Agda version specifications. */
 function isAgdaVersionSpec(versionSpec) {
     return (isAgdaVersion(versionSpec) ||
         isAgdaGitRef(versionSpec) ||
@@ -1695,13 +1697,14 @@ function isAgdaVersionSpec(versionSpec) {
         versionSpec === 'nightly');
 }
 exports.isAgdaVersionSpec = isAgdaVersionSpec;
+/** A list of all agda-stdlib versions. */
 exports.agdaStdlibVersions = Object.keys(agda_stdlib_json_1.default);
-// Type guard for agda-stdlib versions:
+/** A type guard for agda-stdlib versions. */
 function isAgdaStdlibVersion(version) {
     return exports.agdaStdlibVersions.includes(version);
 }
 exports.isAgdaStdlibVersion = isAgdaStdlibVersion;
-// Type guard for agda-stdlib version specifications:
+/** A type guard for agda-stdlib version specifications. */
 function isAgdaStdlibVersionSpec(versionSpec) {
     return (isAgdaStdlibVersion(versionSpec) ||
         versionSpec === 'recommended' ||
@@ -1710,16 +1713,12 @@ function isAgdaStdlibVersionSpec(versionSpec) {
         versionSpec === 'none');
 }
 exports.isAgdaStdlibVersionSpec = isAgdaStdlibVersionSpec;
-// List of Agda source distributions on Hackage:
+// Hackage Package Information
+/** A cached copy of the package information for the Agda package on Hackage. */
 exports.agdaPackageInfoCache = hackage.mergePackageInfoCache(Agda_versions_deprecated_json_1.default, Agda_versions_normal_json_1.default);
-// For each Agda version:
-// - A list of all binary distributions
-// - A list of compatible agda-stdlib versions
+/** The contents of Agda.yml. */
 exports.agdaInfo = Agda_json_1.default;
-// List of agda-stdlib source distributions on GitHub:
-//
-// NOTE: The type ensures that all source distributions are indexed under valid
-//       agda-stdlib version keys.
+/** The contents of ./src/data/agda-stdlib.json. */
 exports.agdaStdlibInfo = agda_stdlib_json_1.default;
 
 
