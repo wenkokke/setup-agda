@@ -84,22 +84,6 @@ inputs:
     description: |
       If specified, never build from source.
     required: false
-  force-cluster-counting:
-    description: |
-      If specified, build with cluster counting.
-    required: false
-  force-no-cluster-counting:
-    description: |
-      If specified, build without cluster counting.
-    required: false
-  force-optimise-heavily:
-    description: |
-      If specified, build with optimise heavily.
-    required: false
-  force-no-optimise-heavily:
-    description: |
-      If specified, build without optimise heavily.
-    required: false
 
   ghc-version:
     default: 'recommended'

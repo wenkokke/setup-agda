@@ -367,30 +367,6 @@ This section describes all inputs:
 
   Default: `false`
 
-- `force-cluster-counting`
-
-  If specified, build with cluster counting.
-
-  Default: `false`
-
-- `force-no-cluster-counting`
-
-  If specified, build without cluster counting.
-
-  Default: `false`
-
-- `force-optimise-heavily`
-
-  If specified, build with optimise heavily.
-
-  Default: `false`
-
-- `force-no-optimise-heavily`
-
-  If specified, build without optimise heavily.
-
-  Default: `false`
-
 - `ghc-version`
 
   Version of GHC to use.

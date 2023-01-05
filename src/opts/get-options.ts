@@ -79,14 +79,6 @@ export default async function getOptions(
     'force-build',
     'force-no-build'
   )
-  const [forceClusterCounting, forceNoClusterCounting] = getFlagPair(
-    'force-cluster-counting',
-    'force-no-cluster-counting'
-  )
-  const [forceOptimiseHeavily, forceNoOptimiseHeavily] = getFlagPair(
-    'force-optimise-heavily',
-    'force-no-optimise-heavily'
-  )
 
   // Parse the bdist name:
   const bdistName = parseBdistName(getOption('bdist-name'))
@@ -162,10 +154,6 @@ export default async function getOptions(
     'bdist-upload': getFlag('bdist-upload'),
     'force-build': forceBuild,
     'force-no-build': forceNoBuild,
-    'force-cluster-counting': forceClusterCounting,
-    'force-no-cluster-counting': forceNoClusterCounting,
-    'force-optimise-heavily': forceOptimiseHeavily,
-    'force-no-optimise-heavily': forceNoOptimiseHeavily,
     'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
     'ghc-version-range': ghcVersionRange,
     'pre-build-hook': getOption('pre-build-hook'),
