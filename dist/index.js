@@ -1151,7 +1151,6 @@ const mustache_1 = __importDefault(__nccwpck_require__(8272));
 const fs = __importStar(__nccwpck_require__(7561));
 const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
-const semver = __importStar(__nccwpck_require__(1383));
 const ensure_error_1 = __importDefault(__nccwpck_require__(1151));
 const exec = __importStar(__nccwpck_require__(4369));
 const lines_1 = __nccwpck_require__(9152);
@@ -1160,6 +1159,7 @@ const resolve_agda_stdlib_version_1 = __importDefault(__nccwpck_require__(3237))
 const resolve_agda_version_1 = __importDefault(__nccwpck_require__(2349));
 const opts = __importStar(__nccwpck_require__(9150));
 const action_json_1 = __importDefault(__nccwpck_require__(4587));
+const resolve_ghc_version_1 = __importDefault(__nccwpck_require__(7530));
 function getOptions(inputs) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
@@ -1199,14 +1199,13 @@ function getOptions(inputs) {
         if (!opts.isAgdaStdlibVersionSpec(agdaStdlibVersionSpec))
             throw Error(`Unsupported value for input \`agda-stdlib-version\`: '${agdaStdlibVersionSpec}'`);
         const agdaStdlibVersion = (0, resolve_agda_stdlib_version_1.default)(agdaVersion, agdaStdlibVersionSpec);
+        // Resolve GHC version:
+        const ghcVersionSpec = getOption('ghc-version');
+        const ghcVersion = (0, resolve_ghc_version_1.default)(agdaVersion, ghcVersionSpec);
         // Check `stack-no-global`:
         const stackNoGlobal = getFlag('stack-no-global');
         if (stackNoGlobal)
             throw Error('Value `true` for input `stack-no-global` is unsupported.');
-        // Check `ghc-version-range`:
-        const ghcVersionRange = getOption('ghc-version-range');
-        if (!semver.validRange(ghcVersionRange))
-            throw Error('Input `ghc-version-range` is not a valid version range');
         // Check for contradictory options:
         const [forceBuild, forceNoBuild] = getFlagPair('force-build', 'force-no-build');
         // Parse the bdist name:
@@ -1282,15 +1281,13 @@ function getOptions(inputs) {
             'bdist-upload': getFlag('bdist-upload'),
             'force-build': forceBuild,
             'force-no-build': forceNoBuild,
-            'ghc-version-match-exact': getFlag('ghc-version-match-exact'),
-            'ghc-version-range': ghcVersionRange,
             'pre-build-hook': getOption('pre-build-hook'),
             configuration: resolveConfiguration(agdaVersion, getOption('configuration')),
             // Specified in opts.SetupHaskellInputs:
             'cabal-version': getOption('cabal-version'),
             'disable-matcher': getFlag('disable-matcher'),
             'enable-stack': getFlag('enable-stack'),
-            'ghc-version': getOption('ghc-version'),
+            'ghc-version': ghcVersion,
             'stack-no-global': stackNoGlobal,
             'stack-setup-ghc': getFlag('stack-setup-ghc'),
             'stack-version': getOption('stack-version'),
@@ -1594,97 +1591,33 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
-const node_os_1 = __importDefault(__nccwpck_require__(612));
 const semver_1 = __importDefault(__nccwpck_require__(1383));
 const Haskell_versions_json_1 = __importDefault(__nccwpck_require__(9673));
-const logging = __importStar(__nccwpck_require__(1942));
+const opts = __importStar(__nccwpck_require__(9150));
 // Resolving the GHC version to use:
-function resolveGhcVersion(options, currentVersion, versionsThatCanBuildAgda) {
-    (0, node_assert_1.default)(versionsThatCanBuildAgda.length > 0);
-    // Print configuration:
-    const versionsThatCanBeSetUp = Haskell_versions_json_1.default.ghc;
-    logging.info([
-        'Resolving GHC version:',
-        options['ghc-version'] === 'recommended'
-            ? `- selecting latest supported GHC version`
-            : `- GHC version must be exactly ${options['ghc-version']}`,
-        `- GHC version must match ${options['ghc-version-range']}`,
-        options['ghc-version-match-exact']
-            ? '- GHC version must match exactly'
-            : '- GHC version must match in major and minor number',
-        currentVersion === null
-            ? '- no GHC version is currently installed'
-            : `- GHC version ${currentVersion} is currently installed`,
-        `- haskell/actions/setup supports GHC versions:`,
-        `  ${versionsThatCanBeSetUp.join(', ')}`,
-        `- Agda ${options['agda-version']} supportes GHC versions:`,
-        `  ${versionsThatCanBuildAgda.join(', ')}`
-    ].join(node_os_1.default.EOL));
-    // Helpers for finding version matches:
-    const match = options['ghc-version-match-exact']
-        ? (v1, v2) => semver_1.default.eq(v1, v2)
-        : (v1, v2) => semver_1.default.major(v1) === semver_1.default.major(v2) &&
-            semver_1.default.minor(v1) === semver_1.default.minor(v2);
-    const canBuildAgda = (version) => versionsThatCanBuildAgda.filter(versionThatCanBuildAgda => match(version, versionThatCanBuildAgda));
-    const canBeSetUp = (version) => versionsThatCanBeSetUp.filter(versionThatCanBeSetUp => match(version, versionThatCanBeSetUp));
-    // If exact version was specified, emit warnings:
-    if (options['ghc-version'] !== 'recommended') {
-        const matchingVersionsThatCanBuildAgda = canBuildAgda(options['ghc-version']);
-        if (!matchingVersionsThatCanBuildAgda)
-            logging.warning([
-                `User-specified GHC ${options['ghc-version']}`,
-                `is not supported by Agda ${options['agda-version']}`
-            ].join(' '));
-        // Check if haskell/actions/setup supports specified version:
-        if (!canBeSetUp(options['ghc-version']) &&
-            (currentVersion === null ||
-                !match(options['ghc-version'], currentVersion)))
-            logging.warning([
-                `User-specified GHC ${options['ghc-version']}`,
-                'is not supported by haskell/actions/setup'
-            ].join(' '));
-        logging.info(`Selecting GHC ${options['ghc-version']}: user-specified`);
-        return {
-            version: options['ghc-version'],
-            matchingVersionsThatCanBuildAgda
-        };
+function resolveGhcVersion(agdaVersion, ghcVersionSpec) {
+    var _a;
+    if (ghcVersionSpec === 'recommended') {
+        if (agdaVersion === 'nightly')
+            throw Error('Cannot build Agda nightly; did you mean HEAD?');
+        const ghcVersionRange = agdaVersion === 'HEAD'
+            ? '*'
+            : (_a = opts.agdaInfo[agdaVersion].compatibility) === null || _a === void 0 ? void 0 : _a.ghc;
+        if (ghcVersionRange === undefined)
+            throw Error(`Could not determine compatible GHC versions for Agda ${agdaVersion}`);
+        const ghcVersion = semver_1.default.maxSatisfying(Haskell_versions_json_1.default.ghc, ghcVersionRange);
+        if (ghcVersion === null)
+            throw Error(`Cannot setup GHC version satisfying ${ghcVersionRange}`);
+        return ghcVersion;
     }
-    // Check if the currently installed version matches:
-    if (currentVersion !== null) {
-        const matchingVersionsThatCanBuildAgda = canBuildAgda(currentVersion);
-        if (matchingVersionsThatCanBuildAgda.length > 0) {
-            logging.info(`Selecting GHC ${currentVersion}: it is currently installed`);
-            return { version: currentVersion, matchingVersionsThatCanBuildAgda };
-        }
-    }
-    // Find which versions are supported:
-    logging.info('Compiling list of GHC version candidates...');
-    const candidates = [];
-    // NOTE: We start from the list of versions that can be set up, and allow
-    //       any version that matches a version that can build Agda.
-    for (const version of versionsThatCanBeSetUp) {
-        const matchingVersionsThatCanBuildAgda = canBuildAgda(version);
-        if (matchingVersionsThatCanBuildAgda.length === 0)
-            logging.info(`Reject GHC ${version}: unsupported by Agda`);
-        else if (!semver_1.default.satisfies(version, options['ghc-version-range']))
-            logging.info(`Reject GHC ${version}: excluded by user-provided range`);
-        else
-            candidates.push({
-                version,
-                matchingVersionsThatCanBuildAgda
-            });
-    }
-    if (candidates.length === 0) {
-        throw Error('No GHC version candidates');
+    else if (ghcVersionSpec === 'latest') {
+        const ghcVersion = semver_1.default.maxSatisfying(Haskell_versions_json_1.default.ghc, '*');
+        (0, node_assert_1.default)(ghcVersion !== null);
+        return ghcVersion;
     }
     else {
-        const versions = candidates.map(info => info.version);
-        logging.info(`GHC version candidates: ${versions.join(', ')}`);
+        return ghcVersionSpec;
     }
-    // Select the latest GHC version from the list of candidates:
-    const selected = candidates.reduce((latest, current) => semver_1.default.gte(latest.version, current.version) ? latest : current);
-    logging.info(`Selecting GHC ${selected.version}: latest supported version`);
-    return selected;
 }
 exports["default"] = resolveGhcVersion;
 
@@ -2029,13 +1962,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.supportedGhcVersions = exports.build = void 0;
-const glob = __importStar(__nccwpck_require__(8090));
 const node_assert_1 = __importDefault(__nccwpck_require__(8061));
 const fs = __importStar(__nccwpck_require__(7561));
 const os = __importStar(__nccwpck_require__(612));
 const path = __importStar(__nccwpck_require__(9411));
-const semver_1 = __importDefault(__nccwpck_require__(1383));
 const opts = __importStar(__nccwpck_require__(1352));
 const setup_haskell_1 = __importDefault(__nccwpck_require__(6933));
 const util = __importStar(__nccwpck_require__(4024));
@@ -2046,35 +1976,6 @@ function buildFromSource(options) {
         // If 'agda-version' is 'nightly' we must install from bdist:
         if (options['agda-version'] === 'nightly')
             return null;
-        const buildInfo = yield util.logging.group('🛠 Preparing to build Agda from source', () => __awaiter(this, void 0, void 0, function* () {
-            // Download the source:
-            util.logging.info('Download source distribution');
-            const sourceDir = yield util.getAgdaSdist(options);
-            util.logging.info(`Downloaded source distribution to ${sourceDir}`);
-            // Determine the GHC version:
-            const currentGhcVersion = yield util.ghcMaybeGetVersion();
-            const currentCabalVersion = yield util.cabalMaybeGetVersion();
-            const selectedGhc = opts.resolveGhcVersion(options, currentGhcVersion, yield supportedGhcVersions(sourceDir));
-            options['ghc-version'] = selectedGhc.version;
-            // Determine whether or not we can use the pre-installed build tools:
-            let requireSetup = false;
-            if (options['ghc-version'] !== 'recommended' &&
-                options['ghc-version'] !== 'latest' &&
-                options['ghc-version'] !== currentGhcVersion) {
-                util.logging.info(`Building with specified options requires a different GHC version`);
-                requireSetup = true;
-            }
-            if (options['cabal-version'] !== 'latest' &&
-                options['cabal-version'] !== currentCabalVersion) {
-                util.logging.info(`Building with specified options requires a different Cabal version`);
-                requireSetup = true;
-            }
-            return {
-                sourceDir,
-                requireSetup,
-                matchingGhcVersionsThatCanBuildAgda: selectedGhc.matchingVersionsThatCanBuildAgda
-            };
-        }));
         // 3. Install cabal-plan:
         let cabalPlan;
         if (options['bdist-license-report']) {
@@ -2085,10 +1986,8 @@ function buildFromSource(options) {
             }));
         }
         // 3. Setup GHC via <haskell/actions/setup>:
-        if (buildInfo.requireSetup) {
-            util.logging.info('📞 Calling "haskell/actions/setup"');
-            yield (0, setup_haskell_1.default)(options);
-        }
+        util.logging.info('📞 Calling "haskell/actions/setup"');
+        yield (0, setup_haskell_1.default)(options);
         // 4. Install ICU:
         if (opts.needsIcu(options)) {
             yield util.logging.group('🔠 Installing ICU', () => __awaiter(this, void 0, void 0, function* () {
@@ -2103,10 +2002,11 @@ function buildFromSource(options) {
         }
         // 5. Build:
         const installDir = opts.agdaInstallDir(options['agda-version']);
-        const { sourceDir, matchingGhcVersionsThatCanBuildAgda } = buildInfo;
-        yield util.logging.group('🏗 Building Agda', () => __awaiter(this, void 0, void 0, function* () {
-            yield build(sourceDir, installDir, options, matchingGhcVersionsThatCanBuildAgda);
-            yield util.cpR(path.join(sourceDir, 'src', 'data'), installDir);
+        const sourceDir = yield util.logging.group('🏗 Building Agda', () => __awaiter(this, void 0, void 0, function* () {
+            const mySourceDir = yield util.getAgdaSdist(options);
+            yield build(mySourceDir, installDir, options);
+            yield util.cpR(path.join(mySourceDir, 'src', 'data'), installDir);
+            return mySourceDir;
         }));
         // 7. Generate license report:
         if (options['bdist-license-report']) {
@@ -2132,9 +2032,7 @@ function buildFromSource(options) {
     });
 }
 exports["default"] = buildFromSource;
-function build(sourceDir, installDir, options, 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-matchingGhcVersionsThatCanBuildAgda) {
+function build(sourceDir, installDir, options) {
     return __awaiter(this, void 0, void 0, function* () {
         const execOptions = { cwd: sourceDir };
         // Run `cabal update`
@@ -2168,7 +2066,6 @@ matchingGhcVersionsThatCanBuildAgda) {
         ], execOptions);
     });
 }
-exports.build = build;
 function resolveConfigFlags(options) {
     // TODO: this fails for options which contain spaces
     const flags = options.configuration
@@ -2181,33 +2078,6 @@ function resolveConfigFlags(options) {
         flags.push(`--extra-lib-dirs=${libDir}`);
     return flags;
 }
-function supportedGhcVersions(sourceDir) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const versions = [];
-        const cabalFilePath = yield findCabalFile(sourceDir);
-        const cabalFileContents = fs.readFileSync(cabalFilePath).toString();
-        for (const match of cabalFileContents.matchAll(/GHC == (?<version>\d+\.\d+\.\d+)/g)) {
-            if (match.groups !== undefined) {
-                if (semver_1.default.valid(match.groups.version) !== null) {
-                    versions.push(match.groups.version);
-                }
-                else {
-                    util.logging.warning(`Could not parse GHC version '${match.groups.version}' in: ${cabalFilePath}`);
-                }
-            }
-        }
-        if (versions.length === 0) {
-            throw Error([
-                `Could not determine supported GHC versions for building with Cabal:`,
-                `${path.basename(cabalFilePath)} does not sepecify 'tested-with'.`
-            ].join(os.EOL));
-        }
-        else {
-            return versions;
-        }
-    });
-}
-exports.supportedGhcVersions = supportedGhcVersions;
 function runPreBuildHook(options, execOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         if (options['pre-build-hook'] !== '') {
@@ -2215,25 +2085,6 @@ function runPreBuildHook(options, execOptions) {
             execOptions = execOptions !== null && execOptions !== void 0 ? execOptions : {};
             execOptions.input = Buffer.from(options['pre-build-hook'], 'utf-8');
             yield util.getOutput('sh', [], execOptions);
-        }
-    });
-}
-function findCabalFile(sourceDir) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const cabalFileGlobber = yield glob.create(path.join(sourceDir, '*.cabal'), {
-            followSymbolicLinks: false,
-            implicitDescendants: false,
-            matchDirectories: false
-        });
-        const cabalFilePaths = yield cabalFileGlobber.glob();
-        if (cabalFilePaths.length !== 1) {
-            throw Error([
-                `Found multiple .cabal files:`,
-                ...cabalFilePaths.map(cabalFilePath => `- ${cabalFilePath}`)
-            ].join(os.EOL));
-        }
-        else {
-            return cabalFilePaths[0];
         }
     });
 }
@@ -28759,7 +28610,7 @@ module.exports = JSON.parse('{"ghc":["9.4.2","9.4.1","9.2.4","9.2.3","9.2.2","9.
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"Setup Agda","author":"Wen Kokke","description":"Set up a specific version of Agda.","inputs":{"agda-version":{"default":"latest","description":"The Agda version.\\n\\nCan be \\"latest\\" or a specific version number (e.g., 2.6.2.2).\\n","required":false},"agda-stdlib-version":{"default":"none","description":"The Agda standard library version.\\n\\nCan be \\"none\\", \\"recommended\\", \\"latest\\", or a specific version number (e.g., 1.7.1).\\n\\nIf set to \\"recommended\\", it will install the latest version of the Agda\\nstandard library compatible with the specified Agda version, as specified\\non [the Agda Wiki](https://wiki.portal.chalmers.se/agda/Libraries/StandardLibrary).\\n\\nIf set to \\"latest\\" or a specific version number, it will install the\\nlatest or that specific version, regardless of compatibility with the\\nspecified Agda version.\\n","required":false},"agda-libraries":{"default":"","description":"A list of Agda libraries to install.\\n\\nLibraries must be specified by their Git URL and end in a version anchor,\\ne.g.,\\n\\n```yaml\\nagda-libraries: |\\n  https://github.com/agda/agda-categories.git#v0.1.7.1\\n  https://github.com/agda/cubical.git#v0.3\\n```\\n\\nTo setup the Agda standard library, use \\"agda-stdlib-version\\" instead, as\\nthat ensures that the standard library and Agda versions are compatible.\\n\\nThis input requires that the library has a tagged release and that the\\nrepository contains a .agda-lib file.\\n\\nThis input relies on the convention that the filename of the .agda-lib\\nfile is the name of the library, and will refuse to install any library\\nwhose .agda-lib file is simple named \\".agda-lib\\".\\n","required":false},"agda-defaults":{"default":"","description":"A list of installed Agda libraries to add to defaults.\\n\\nLibraries must be specified by the name of their .agda-lib file, e.g.,\\n\\n```yaml\\nagda-defaults: |\\n  standard-library\\n  agda-categories\\n  cubical\\n```\\n","required":false},"agda-executables":{"default":"","description":"A list of executables to register with Agda.\\n\\nExecutables must be specified by their name or path, e.g.,\\n\\n```yaml\\nagda-executables: |\\n  z3\\n  /bin/echo\\n```\\n","required":false},"force-build":{"description":"If specified, always build from source.\\n","required":false},"force-no-build":{"description":"If specified, never build from source.\\n","required":false},"ghc-version":{"default":"recommended","description":"Version of GHC to use.\\n\\nCan be \\"recommended\\", \\"latest\\", or a specific version number (e.g., 9.4.2).\\n\\nIf set to \\"recommended\\", it will get the latest version supported by\\n`haskell/actions/setup` which the Agda version is tested-with.\\nIf `ghc-version-match-exact` is set to false, it will favour versions\\nwhich are supported by `haskell/actions/setup`.\\n\\nIf set \\"latest\\" or to a specific GHC version, this version will be used\\neven if it is incompatible with the Agda version.\\n","required":false},"ghc-version-match-exact":{"description":"If specified, requires an exact match for the GHC version.\\n\\nBy default, this action uses the pre-installed version of GHC if it is\\ncompatible with the requested Agda version (see `ghc-version-range`) in\\nthe major and minor version numbers, ignoring the patch version.\\n","required":false},"ghc-version-range":{"default":"*","description":"If specified, restricts the range of allowed GHC versions.\\n\\nBy default, this action infers the set of compatible GHC versions from\\nthe `tested-with` field in Agda.cabalIf specified, this set of is then\\nfiltered by `ghc-version-range`.\\n","required":false},"pre-build-hook":{"default":"","description":"A shell script to be run before starting the build.\\n","required":false},"configuration":{"default":"recommended","description":"Can be \\"none\\", \\"recommended\\", or text.\\n\\nIf set to \\"none\\", no configuration flags will be passed to `cabal configure`.\\nIf set to \\"recommended\\", the recommended configuration flags will be passed to `cabal configure`.\\nOtherwise, the value will be passed to `cabal configure` verbatim.\\n\\nOnly used when building Agda from source.\\n"},"bdist-upload":{"description":"If specified, will upload a binary distribution for the specified Agda version.\\n","required":false},"bdist-name":{"default":"agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}","description":"If specified, will be used as a name for the binary distribution package.\\n\\nThe value is interpreted as a [mustache template](https://mustache.github.io/).\\nThe template may use `{{{agda-version}}}`, `{{{cabal-version}}}`,\\n`{{{ghc-version}}}`, `{{{icu-version}}}`, and `{{{upx-version}}}`,\\nwhich will be replaced by the concrete versions, if installed, and\\nto `{{{arch}}}`, `{{{platform}}}`, and `{{{release}}}`, which will be\\nreplaced by the system architecture, operating system, and operating\\nsystem release, as returned by\\n[the corresponding NodeJS functions](https://nodejs.org/api/os.html).\\n\\nOnly used when `bdist-upload` is specified.\\n","required":false},"bdist-license-report":{"description":"If specified, include a license report in the binary distribution.\\n\\nOnly used when `bdist-upload` is specified.\\n","required":false},"bdist-compress-exe":{"description":"If specified, the executables are compressed with [UPX](https://upx.github.io).\\n\\nBeware that on MacOS and Windows the resulting executables are unsigned,\\nand therefore will cause problems with security.\\nThere is a workaround for this on MacOS:\\n\\n```sh\\n# for each executable file in <package>/bin:\\nchmod +x <bin>\\nxattr -c <bin>\\n\\n# for each library file in <package>/lib:\\nchmod +w <lib>\\nxattr -c <lib>\\nchmod -w <lib>\\n```\\n\\nOnly used when `bdist-upload` is specified.\\n","required":false},"bdist-retention-days":{"default":"0","description":"Duration after which bdist will expire in days.\\n0 means using default retention.\\n\\nMinimum 1 day.\\nMaximum 90 days unless changed from the repository settings page.\\n","required":false},"cabal-version":{"default":"latest","description":"Version of Cabal to use. If set to \\"latest\\", it will always get the latest stable version.\\n","required":false},"stack-version":{"default":"latest","description":"Version of Stack to use. If set to \\"latest\\", it will always get the latest stable version.\\n","required":false},"enable-stack":{"description":"If specified, will setup Stack.\\n","required":false},"stack-no-global":{"description":"If specified, enable-stack must be set. Prevents installing GHC and Cabal globally.\\n","required":false},"stack-setup-ghc":{"description":"If specified, enable-stack must be set. Will run stack setup to install the specified GHC.\\n","required":false},"disable-matcher":{"description":"If specified, disables match messages from GHC as GitHub CI annotations.\\n","required":false}},"outputs":{"agda-version":{"description":"The resolved Agda version."},"agda-path":{"description":"The path of the agda executable _directory_."},"agda-data-path":{"description":"The path of the agda data _directory_."},"agda-exe":{"description":"The path of the agda _executable_."},"agda-mode-exe":{"description":"The path of the agda-mode _executable_."},"haskell-setup":{"description":"Whether or not actions/haskell/setup was called."},"ghc-path":{"description":"The path of the ghc executable _directory_."},"cabal-path":{"description":"The path of the cabal executable _directory_."},"stack-path":{"description":"The path of the stack executable _directory_."},"cabal-store":{"description":"The path to the cabal store."},"stack-root":{"description":"The path to the stack root (equal to the STACK_ROOT environment variable if it is set; otherwise an OS-specific default)."},"ghc-exe":{"description":"The path of the ghc _executable_."},"cabal-exe":{"description":"The path of the cabal _executable_."},"stack-exe":{"description":"The path of the stack _executable_."}},"runs":{"using":"node16","main":"dist/index.js"},"branding":{"icon":"feather","color":"purple"}}');
+module.exports = JSON.parse('{"name":"Setup Agda","author":"Wen Kokke","description":"Set up a specific version of Agda.","inputs":{"agda-version":{"default":"latest","description":"The Agda version.\\n\\nCan be \\"latest\\" or a specific version number (e.g., 2.6.2.2).\\n","required":false},"agda-stdlib-version":{"default":"none","description":"The Agda standard library version.\\n\\nCan be \\"none\\", \\"recommended\\", \\"latest\\", or a specific version number (e.g., 1.7.1).\\n\\nIf set to \\"recommended\\", it will install the latest version of the Agda\\nstandard library compatible with the specified Agda version, as specified\\non [the Agda Wiki](https://wiki.portal.chalmers.se/agda/Libraries/StandardLibrary).\\n\\nIf set to \\"latest\\" or a specific version number, it will install the\\nlatest or that specific version, regardless of compatibility with the\\nspecified Agda version.\\n","required":false},"agda-libraries":{"default":"","description":"A list of Agda libraries to install.\\n\\nLibraries must be specified by their Git URL and end in a version anchor,\\ne.g.,\\n\\n```yaml\\nagda-libraries: |\\n  https://github.com/agda/agda-categories.git#v0.1.7.1\\n  https://github.com/agda/cubical.git#v0.3\\n```\\n\\nTo setup the Agda standard library, use \\"agda-stdlib-version\\" instead, as\\nthat ensures that the standard library and Agda versions are compatible.\\n\\nThis input requires that the library has a tagged release and that the\\nrepository contains a .agda-lib file.\\n\\nThis input relies on the convention that the filename of the .agda-lib\\nfile is the name of the library, and will refuse to install any library\\nwhose .agda-lib file is simple named \\".agda-lib\\".\\n","required":false},"agda-defaults":{"default":"","description":"A list of installed Agda libraries to add to defaults.\\n\\nLibraries must be specified by the name of their .agda-lib file, e.g.,\\n\\n```yaml\\nagda-defaults: |\\n  standard-library\\n  agda-categories\\n  cubical\\n```\\n","required":false},"agda-executables":{"default":"","description":"A list of executables to register with Agda.\\n\\nExecutables must be specified by their name or path, e.g.,\\n\\n```yaml\\nagda-executables: |\\n  z3\\n  /bin/echo\\n```\\n","required":false},"force-build":{"description":"If specified, always build from source.\\n","required":false},"force-no-build":{"description":"If specified, never build from source.\\n","required":false},"ghc-version":{"default":"recommended","description":"Version of GHC to use.\\n\\nCan be \\"recommended\\", \\"latest\\", or a specific version number (e.g., 9.4.2).\\n\\nIf set to \\"recommended\\", it will get the latest version supported by\\n`haskell/actions/setup` which the Agda version is tested-with.\\nIf `ghc-version-match-exact` is set to false, it will favour versions\\nwhich are supported by `haskell/actions/setup`.\\n\\nIf set \\"latest\\" or to a specific GHC version, this version will be used\\neven if it is incompatible with the Agda version.\\n","required":false},"pre-build-hook":{"default":"","description":"A shell script to be run before starting the build.\\n","required":false},"configuration":{"default":"recommended","description":"Can be \\"none\\", \\"recommended\\", or text.\\n\\nIf set to \\"none\\", no configuration flags will be passed to `cabal configure`.\\nIf set to \\"recommended\\", the recommended configuration flags will be passed to `cabal configure`.\\nOtherwise, the value will be passed to `cabal configure` verbatim.\\n\\nOnly used when building Agda from source.\\n"},"bdist-upload":{"description":"If specified, will upload a binary distribution for the specified Agda version.\\n","required":false},"bdist-name":{"default":"agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}","description":"If specified, will be used as a name for the binary distribution package.\\n\\nThe value is interpreted as a [mustache template](https://mustache.github.io/).\\nThe template may use `{{{agda-version}}}`, `{{{cabal-version}}}`,\\n`{{{ghc-version}}}`, `{{{icu-version}}}`, and `{{{upx-version}}}`,\\nwhich will be replaced by the concrete versions, if installed, and\\nto `{{{arch}}}`, `{{{platform}}}`, and `{{{release}}}`, which will be\\nreplaced by the system architecture, operating system, and operating\\nsystem release, as returned by\\n[the corresponding NodeJS functions](https://nodejs.org/api/os.html).\\n\\nOnly used when `bdist-upload` is specified.\\n","required":false},"bdist-license-report":{"description":"If specified, include a license report in the binary distribution.\\n\\nOnly used when `bdist-upload` is specified.\\n","required":false},"bdist-compress-exe":{"description":"If specified, the executables are compressed with [UPX](https://upx.github.io).\\n\\nBeware that on MacOS and Windows the resulting executables are unsigned,\\nand therefore will cause problems with security.\\nThere is a workaround for this on MacOS:\\n\\n```sh\\n# for each executable file in <package>/bin:\\nchmod +x <bin>\\nxattr -c <bin>\\n\\n# for each library file in <package>/lib:\\nchmod +w <lib>\\nxattr -c <lib>\\nchmod -w <lib>\\n```\\n\\nOnly used when `bdist-upload` is specified.\\n","required":false},"bdist-retention-days":{"default":"0","description":"Duration after which bdist will expire in days.\\n0 means using default retention.\\n\\nMinimum 1 day.\\nMaximum 90 days unless changed from the repository settings page.\\n","required":false},"cabal-version":{"default":"latest","description":"Version of Cabal to use. If set to \\"latest\\", it will always get the latest stable version.\\n","required":false},"stack-version":{"default":"latest","description":"Version of Stack to use. If set to \\"latest\\", it will always get the latest stable version.\\n","required":false},"enable-stack":{"description":"If specified, will setup Stack.\\n","required":false},"stack-no-global":{"description":"If specified, enable-stack must be set. Prevents installing GHC and Cabal globally.\\n","required":false},"stack-setup-ghc":{"description":"If specified, enable-stack must be set. Will run stack setup to install the specified GHC.\\n","required":false},"disable-matcher":{"description":"If specified, disables match messages from GHC as GitHub CI annotations.\\n","required":false}},"outputs":{"agda-version":{"description":"The resolved Agda version."},"agda-path":{"description":"The path of the agda executable _directory_."},"agda-data-path":{"description":"The path of the agda data _directory_."},"agda-exe":{"description":"The path of the agda _executable_."},"agda-mode-exe":{"description":"The path of the agda-mode _executable_."},"haskell-setup":{"description":"Whether or not actions/haskell/setup was called."},"ghc-path":{"description":"The path of the ghc executable _directory_."},"cabal-path":{"description":"The path of the cabal executable _directory_."},"stack-path":{"description":"The path of the stack executable _directory_."},"cabal-store":{"description":"The path to the cabal store."},"stack-root":{"description":"The path to the stack root (equal to the STACK_ROOT environment variable if it is set; otherwise an OS-specific default)."},"ghc-exe":{"description":"The path of the ghc _executable_."},"cabal-exe":{"description":"The path of the cabal _executable_."},"stack-exe":{"description":"The path of the stack _executable_."}},"runs":{"using":"node16","main":"dist/index.js"},"branding":{"icon":"feather","color":"purple"}}');
 
 /***/ }),
 

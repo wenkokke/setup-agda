@@ -1,9 +1,7 @@
-import * as glob from '@actions/glob'
 import assert from 'node:assert'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
-import semver from 'semver'
 import * as opts from '../opts'
 import setupHaskell from '../setup-haskell'
 import * as util from '../util'
@@ -11,65 +9,11 @@ import {ExecOptions} from '../util'
 import licenseReport from './license-report'
 import uploadBdist from './upload-bdist'
 
-interface BuildInfo {
-  sourceDir: string
-  requireSetup: boolean
-  matchingGhcVersionsThatCanBuildAgda: string[]
-}
-
 export default async function buildFromSource(
   options: opts.BuildOptions
 ): Promise<string | null> {
   // If 'agda-version' is 'nightly' we must install from bdist:
   if (options['agda-version'] === 'nightly') return null
-
-  const buildInfo = await util.logging.group(
-    '🛠 Preparing to build Agda from source',
-    async (): Promise<BuildInfo> => {
-      // Download the source:
-      util.logging.info('Download source distribution')
-      const sourceDir = await util.getAgdaSdist(options)
-      util.logging.info(`Downloaded source distribution to ${sourceDir}`)
-
-      // Determine the GHC version:
-      const currentGhcVersion = await util.ghcMaybeGetVersion()
-      const currentCabalVersion = await util.cabalMaybeGetVersion()
-      const selectedGhc = opts.resolveGhcVersion(
-        options,
-        currentGhcVersion,
-        await supportedGhcVersions(sourceDir)
-      )
-      options['ghc-version'] = selectedGhc.version
-
-      // Determine whether or not we can use the pre-installed build tools:
-      let requireSetup = false
-      if (
-        options['ghc-version'] !== 'recommended' &&
-        options['ghc-version'] !== 'latest' &&
-        options['ghc-version'] !== currentGhcVersion
-      ) {
-        util.logging.info(
-          `Building with specified options requires a different GHC version`
-        )
-        requireSetup = true
-      }
-      if (
-        options['cabal-version'] !== 'latest' &&
-        options['cabal-version'] !== currentCabalVersion
-      ) {
-        util.logging.info(
-          `Building with specified options requires a different Cabal version`
-        )
-        requireSetup = true
-      }
-      return {
-        sourceDir,
-        requireSetup,
-        matchingGhcVersionsThatCanBuildAgda:
-          selectedGhc.matchingVersionsThatCanBuildAgda
-      }
-    }
-  )
 
   // 3. Install cabal-plan:
   let cabalPlan: string
@@ -82,10 +26,8 @@ export default async function buildFromSource(
   }
 
   // 3. Setup GHC via <haskell/actions/setup>:
-  if (buildInfo.requireSetup) {
-    util.logging.info('📞 Calling "haskell/actions/setup"')
-    await setupHaskell(options)
-  }
+  util.logging.info('📞 Calling "haskell/actions/setup"')
+  await setupHaskell(options)
 
   // 4. Install ICU:
   if (opts.needsIcu(options)) {
@@ -103,15 +45,11 @@ export default async function buildFromSource(
 
   // 5. Build:
   const installDir = opts.agdaInstallDir(options['agda-version'])
-  const {sourceDir, matchingGhcVersionsThatCanBuildAgda} = buildInfo
-  await util.logging.group('🏗 Building Agda', async () => {
-    await build(
-      sourceDir,
-      installDir,
-      options,
-      matchingGhcVersionsThatCanBuildAgda
-    )
-    await util.cpR(path.join(sourceDir, 'src', 'data'), installDir)
+  const sourceDir = await util.logging.group('🏗 Building Agda', async () => {
+    const mySourceDir = await util.getAgdaSdist(options)
+    await build(mySourceDir, installDir, options)
+    await util.cpR(path.join(mySourceDir, 'src', 'data'), installDir)
+    return mySourceDir
   })
 
   // 7. Generate license report:
@@ -143,12 +81,10 @@ export default async function buildFromSource(
   return installDir
 }
 
-export async function build(
+async function build(
   sourceDir: string,
   installDir: string,
-  options: opts.BuildOptions,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  matchingGhcVersionsThatCanBuildAgda: string[]
+  options: opts.BuildOptions
 ): Promise<void> {
   const execOptions: util.ExecOptions = {cwd: sourceDir}
 
@@ -206,37 +142,6 @@ function resolveConfigFlags(options: opts.BuildOptions): string[] {
   return flags
 }
 
-export async function supportedGhcVersions(
-  sourceDir: string
-): Promise<string[]> {
-  const versions: string[] = []
-  const cabalFilePath = await findCabalFile(sourceDir)
-  const cabalFileContents = fs.readFileSync(cabalFilePath).toString()
-  for (const match of cabalFileContents.matchAll(
-    /GHC == (?<version>\d+\.\d+\.\d+)/g
-  )) {
-    if (match.groups !== undefined) {
-      if (semver.valid(match.groups.version) !== null) {
-        versions.push(match.groups.version)
-      } else {
-        util.logging.warning(
-          `Could not parse GHC version '${match.groups.version}' in: ${cabalFilePath}`
-        )
-      }
-    }
-  }
-  if (versions.length === 0) {
-    throw Error(
-      [
-        `Could not determine supported GHC versions for building with Cabal:`,
-        `${path.basename(cabalFilePath)} does not sepecify 'tested-with'.`
-      ].join(os.EOL)
-    )
-  } else {
-    return versions
-  }
-}
-
 async function runPreBuildHook(
   options: Pick<opts.BuildOptions, 'pre-build-hook'>,
   execOptions?: ExecOptions
@@ -248,24 +153,5 @@ async function runPreBuildHook(
     execOptions = execOptions ?? {}
     execOptions.input = Buffer.from(options['pre-build-hook'], 'utf-8')
     await util.getOutput('sh', [], execOptions)
-  }
-}
-
-async function findCabalFile(sourceDir: string): Promise<string> {
-  const cabalFileGlobber = await glob.create(path.join(sourceDir, '*.cabal'), {
-    followSymbolicLinks: false,
-    implicitDescendants: false,
-    matchDirectories: false
-  })
-  const cabalFilePaths = await cabalFileGlobber.glob()
-  if (cabalFilePaths.length !== 1) {
-    throw Error(
-      [
-        `Found multiple .cabal files:`,
-        ...cabalFilePaths.map(cabalFilePath => `- ${cabalFilePath}`)
-      ].join(os.EOL)
-    )
-  } else {
-    return cabalFilePaths[0]
   }
 }

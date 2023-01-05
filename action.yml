@@ -100,23 +100,6 @@ inputs:
       If set "latest" or to a specific GHC version, this version will be used
       even if it is incompatible with the Agda version.
     required: false
-  ghc-version-match-exact:
-    description: |
-      If specified, requires an exact match for the GHC version.
-
-      By default, this action uses the pre-installed version of GHC if it is
-      compatible with the requested Agda version (see `ghc-version-range`) in
-      the major and minor version numbers, ignoring the patch version.
-    required: false
-  ghc-version-range:
-    default: '*'
-    description: |
-      If specified, restricts the range of allowed GHC versions.
-
-      By default, this action infers the set of compatible GHC versions from
-      the `tested-with` field in Agda.cabalIf specified, this set of is then
-      filtered by `ghc-version-range`.
-    required: false
 
   pre-build-hook:
     default: ''

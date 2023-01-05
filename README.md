@@ -383,26 +383,6 @@ This section describes all inputs:
 
   Default: `recommended`
 
-- `ghc-version-match-exact`
-
-  If specified, requires an exact match for the GHC version.
-  
-  By default, this action uses the pre-installed version of GHC if it is
-  compatible with the requested Agda version (see `ghc-version-range`) in
-  the major and minor version numbers, ignoring the patch version.
-
-  Default: `false`
-
-- `ghc-version-range`
-
-  If specified, restricts the range of allowed GHC versions.
-  
-  By default, this action infers the set of compatible GHC versions from
-  the `tested-with` field in Agda.cabalIf specified, this set of is then
-  filtered by `ghc-version-range`.
-
-  Default: `*`
-
 - `pre-build-hook`
 
   A shell script to be run before starting the build.

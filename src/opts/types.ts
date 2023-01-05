@@ -184,7 +184,6 @@ export type SetupAgdaOption =
   | 'agda-executables'
   | 'bdist-name'
   | 'bdist-retention-days'
-  | 'ghc-version-range'
   | 'pre-build-hook'
   | 'configuration'
   | SetupHaskellOption
@@ -196,7 +195,6 @@ export type SetupAgdaFlag =
   | 'bdist-upload'
   | 'force-build'
   | 'force-no-build'
-  | 'ghc-version-match-exact'
   | SetupHaskellFlag
 
 export interface SetupAgdaInputs
