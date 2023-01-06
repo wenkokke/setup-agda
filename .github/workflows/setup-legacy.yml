@@ -39,6 +39,7 @@ jobs:
         shell: sh
         working-directory: tests/agda-stdlib
     strategy:
+      fail-fast: false
       matrix:
         os:
           [
@@ -105,6 +106,7 @@ jobs:
         shell: sh
         working-directory: tests/agda-categories
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
@@ -129,6 +131,7 @@ jobs:
         shell: sh
         working-directory: tests/agda-categories-default
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
@@ -145,6 +148,7 @@ jobs:
           agda-libraries: |
             https://github.com/agda/cubical.git#v0.3
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
@@ -169,6 +173,7 @@ jobs:
         shell: sh
         working-directory: tests/agda-stdlib-default
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
 

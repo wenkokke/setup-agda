@@ -1,15 +1,22 @@
-import * as logging from '../logging'
-import * as exec from '../exec'
-import ensureError from '../ensure-error'
+import * as exec from '../exec.js'
+import ensureError from 'ensure-error'
+import { ExecOptions } from '../exec.js'
 
-export async function getGhcInfo(
-  execOptions?: exec.ExecOptions
-): Promise<Partial<Record<string, string>>> {
-  let ghcInfoString = await ghc(['--info'], execOptions)
+export default async function ghc(
+  args: string[],
+  options?: ExecOptions
+): Promise<string> {
+  return await exec.getOutput('ghc', args, options)
+}
+
+ghc.getInfo = async (
+  options?: ExecOptions
+): Promise<Partial<Record<string, string>>> => {
+  let ghcInfoString = await ghc(['--info'], options)
   ghcInfoString = ghcInfoString.replace(/\(/g, '[').replace(/\)/g, ']')
   const ghcInfo = JSON.parse(ghcInfoString) as [string, string][]
   return Object.fromEntries(
-    ghcInfo.map(entry => [
+    ghcInfo.map((entry) => [
       // "Target platform" -> 'ghc-info-target-platform'
       `ghc-info-${entry[0].toLowerCase().replace(/ /g, '-')}`,
       entry[1]
@@ -17,25 +24,18 @@ export async function getGhcInfo(
   )
 }
 
-export async function ghc(
-  args: string[],
-  execOptions?: exec.ExecOptions
-): Promise<string> {
-  return await exec.getOutput('ghc', args, execOptions)
-}
-
-export async function ghcGetVersion(): Promise<string> {
+ghc.getVersion = async (): Promise<string> => {
   return exec.getVersion('ghc', {
     versionFlag: '--numeric-version',
     silent: true
   })
 }
 
-export async function ghcMaybeGetVersion(): Promise<string | null> {
+ghc.maybeGetVersion = async (): Promise<string | null> => {
   try {
-    return await ghcGetVersion()
+    return await ghc.getVersion()
   } catch (error) {
-    logging.info(
+    logger.info(
       `Could not get installed GHC version: ${ensureError(error).message}`
     )
     return null

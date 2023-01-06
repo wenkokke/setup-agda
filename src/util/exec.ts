@@ -2,19 +2,18 @@ import * as exec from '@actions/exec'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import * as io from '@actions/io'
-import * as opts from '../opts'
-import ensureError from './ensure-error'
-import * as logging from '../util/logging'
+import ensureError from 'ensure-error'
+import { platform } from './platform.js'
 
-export {ExecOptions} from '@actions/exec'
-export {findInPath, which} from '@actions/io'
+export { ExecOptions } from '@actions/exec'
+export { default as which } from 'which'
 
 export async function getOutput(
   prog: string,
   args: string[],
   execOptions?: exec.ExecOptions
 ): Promise<string> {
-  const {output} = await getOutputAndErrors(prog, args, execOptions)
+  const { output } = await getOutputAndErrors(prog, args, execOptions)
   return output
 }
 
@@ -22,7 +21,7 @@ export async function getOutputAndErrors(
   prog: string,
   args: string[],
   execOptions?: exec.ExecOptions
-): Promise<{output: string; errors: string}> {
+): Promise<{ output: string; errors: string }> {
   let output = ''
   let errors = ''
   execOptions = execOptions ?? {}
@@ -39,7 +38,7 @@ export async function getOutputAndErrors(
   errors = errors.trim()
   const exitCode = await exec.exec(prog, args, execOptions)
   if (exitCode === 0) {
-    return {output, errors}
+    return { output, errors }
   } else {
     throw Error(
       `The call to ${prog} failed with exit code ${exitCode}:${os.EOL}${errors}`
@@ -49,7 +48,7 @@ export async function getOutputAndErrors(
 
 // Wrappers for filesystem functions
 
-export {CopyOptions, MoveOptions} from '@actions/io'
+export { CopyOptions, MoveOptions } from '@actions/io'
 
 export async function cp(
   source: string,
@@ -58,7 +57,7 @@ export async function cp(
 ): Promise<void> {
   source = escape(source)
   dest = escape(dest)
-  logging.info(`cp ${source} ${dest}`)
+  logger.info(`cp ${source} ${dest}`)
   try {
     return await io.cp(source, dest, options)
   } catch (error) {
@@ -95,26 +94,26 @@ export async function mv(
 ): Promise<void> {
   source = escape(source)
   dest = escape(dest)
-  logging.info(`mv ${source} ${dest}`)
+  logger.info(`mv ${source} ${dest}`)
   return await io.mv(source, dest, options)
 }
 
 export async function mkdirP(dir: string): Promise<void> {
   dir = escape(dir)
-  logging.info(`mkdir -p ${dir}`)
+  logger.info(`mkdir -p ${dir}`)
   return await io.mkdirP(dir)
 }
 
 export async function rmRF(inputPath: string): Promise<void> {
   inputPath = escape(inputPath)
-  logging.info(`rm -rf ${inputPath}`)
+  logger.info(`rm -rf ${inputPath}`)
   return await io.rmRF(inputPath)
 }
 
 export async function lsR(inputPath: string): Promise<string> {
   try {
     inputPath = escape(inputPath)
-    logging.info(`ls -R ${inputPath}`)
+    logger.info(`ls -R ${inputPath}`)
     return await getOutput('ls', ['-R', inputPath])
   } catch (error) {
     return ensureError(error).message
@@ -122,11 +121,11 @@ export async function lsR(inputPath: string): Promise<string> {
 }
 
 function escape(filePath: string): string {
-  switch (opts.platform) {
-    case 'darwin':
+  switch (platform) {
+    case 'macos':
     case 'linux':
       return filePath.replace(/(?<!\\) /g, '\\ ')
-    case 'win32':
+    case 'windows':
     default:
       return filePath
   }

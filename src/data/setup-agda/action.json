@@ -1,0 +1,154 @@
+{
+  "name": "Setup Agda",
+  "author": "Wen Kokke",
+  "description": "Set up a specific version of Agda.",
+  "inputs": {
+    "agda-version": {
+      "default": "latest",
+      "description": "The Agda version.\n\nCan be \"latest\" or a specific version number (e.g., 2.6.2.2).\n",
+      "required": false
+    },
+    "agda-stdlib-version": {
+      "default": "none",
+      "description": "The Agda standard library version.\n\nCan be \"none\", \"recommended\", \"latest\", or a specific version number (e.g., 1.7.1).\n\nIf set to \"recommended\", it will install the latest version of the Agda\nstandard library compatible with the specified Agda version, as specified\non [the Agda Wiki](https://wiki.portal.chalmers.se/agda/Libraries/StandardLibrary).\n\nIf set to \"latest\" or a specific version number, it will install the\nlatest or that specific version, regardless of compatibility with the\nspecified Agda version.\n",
+      "required": false
+    },
+    "agda-libraries": {
+      "default": "",
+      "description": "A list of Agda libraries to install.\n\nLibraries must be specified by their Git URL and end in a version anchor,\ne.g.,\n\n```yaml\nagda-libraries: |\n  https://github.com/agda/agda-categories.git#v0.1.7.1\n  https://github.com/agda/cubical.git#v0.3\n```\n\nTo setup the Agda standard library, use \"agda-stdlib-version\" instead, as\nthat ensures that the standard library and Agda versions are compatible.\n\nThis input requires that the library has a tagged release and that the\nrepository contains a .agda-lib file.\n\nThis input relies on the convention that the filename of the .agda-lib\nfile is the name of the library, and will refuse to install any library\nwhose .agda-lib file is simple named \".agda-lib\".\n",
+      "required": false
+    },
+    "agda-defaults": {
+      "default": "",
+      "description": "A list of installed Agda libraries to add to defaults.\n\nLibraries must be specified by the name of their .agda-lib file, e.g.,\n\n```yaml\nagda-defaults: |\n  standard-library\n  agda-categories\n  cubical\n```\n",
+      "required": false
+    },
+    "agda-executables": {
+      "default": "",
+      "description": "A list of executables to register with Agda.\n\nExecutables must be specified by their name or path, e.g.,\n\n```yaml\nagda-executables: |\n  z3\n  /bin/echo\n```\n",
+      "required": false
+    },
+    "force-build": {
+      "description": "If specified, always build from source.\n",
+      "required": false
+    },
+    "force-no-build": {
+      "description": "If specified, never build from source.\n",
+      "required": false
+    },
+    "ghc-version": {
+      "default": "recommended",
+      "description": "Version of GHC to use.\n\nCan be \"recommended\", \"latest\", or a specific version number (e.g., 9.4.2).\n\nIf set to \"recommended\", it will get the latest version supported by\n`haskell/actions/setup` which the Agda version is tested-with.\nIf `ghc-version-match-exact` is set to false, it will favour versions\nwhich are supported by `haskell/actions/setup`.\n\nIf set \"latest\" or to a specific GHC version, this version will be used\neven if it is incompatible with the Agda version.\n",
+      "required": false
+    },
+    "pre-build-hook": {
+      "default": "",
+      "description": "A shell script to be run before starting the build.\n",
+      "required": false
+    },
+    "configure-options": {
+      "default": "recommended",
+      "description": "Can be \"none\", \"recommended\", or text.\n\nIf set to \"none\", no configuration flags will be passed to `cabal configure`.\nIf set to \"recommended\", the recommended configuration flags will be passed to `cabal configure`.\nOtherwise, the value will be passed to `cabal configure` verbatim.\n\nOnly used when building Agda from source.\n"
+    },
+    "bundle": {
+      "description": "If specified, bundle Agda and its non-standard dependencies, and upload\nthe bundle as an artifact.\n",
+      "required": false
+    },
+    "bundle-name": {
+      "default": "agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}",
+      "description": "If specified, will be used as a name for the bundle.\n\nThe value is interpreted as a [mustache template](https://mustache.github.io/).\nThe template may use `{{{agda-version}}}`, `{{{cabal-version}}}`,\n`{{{ghc-version}}}`, `{{{icu-version}}}`, and `{{{upx-version}}}`,\nwhich will be replaced by the concrete versions, if installed, and\nto `{{{arch}}}`, `{{{platform}}}`, and `{{{release}}}`, which will be\nreplaced by the system architecture, operating system, and operating\nsystem release, as returned by\n[the corresponding NodeJS functions](https://nodejs.org/api/os.html).\n\nOnly used when `bundle` is specified.\n",
+      "required": false
+    },
+    "bundle-license-report": {
+      "description": "If specified, include a license report in the bundle.\n\nOnly used when `bundle` is specified.\n",
+      "required": false
+    },
+    "bundle-compress": {
+      "description": "If specified, the executables are compressed with [UPX](https://upx.github.io).\n\nBeware that on MacOS and Windows the resulting executables are unsigned,\nand therefore will cause problems with security.\nThere is a workaround for this on MacOS:\n\n```sh\n# for each executable file in <package>/bin:\nchmod +x <bin>\nxattr -c <bin>\n\n# for each library file in <package>/lib:\nchmod +w <lib>\nxattr -c <lib>\nchmod -w <lib>\n```\n\nOnly used when `bundle` is specified.\n",
+      "required": false
+    },
+    "bundle-retention-days": {
+      "default": "0",
+      "description": "Duration after which bundle will expire in days.\n0 means using default retention.\n\nMinimum 1 day.\nMaximum 90 days unless changed from the repository settings page.\n",
+      "required": false
+    },
+    "cabal-version": {
+      "default": "latest",
+      "description": "Version of Cabal to use. If set to \"latest\", it will always get the latest stable version.\n",
+      "required": false
+    },
+    "stack-version": {
+      "default": "latest",
+      "description": "Version of Stack to use. If set to \"latest\", it will always get the latest stable version.\n",
+      "required": false
+    },
+    "enable-stack": {
+      "description": "If specified, will setup Stack.\n",
+      "required": false
+    },
+    "stack-no-global": {
+      "description": "If specified, enable-stack must be set. Prevents installing GHC and Cabal globally.\n",
+      "required": false
+    },
+    "stack-setup-ghc": {
+      "description": "If specified, enable-stack must be set. Will run stack setup to install the specified GHC.\n",
+      "required": false
+    },
+    "disable-matcher": {
+      "description": "If specified, disables match messages from GHC as GitHub CI annotations.\n",
+      "required": false
+    }
+  },
+  "outputs": {
+    "agda-version": {
+      "description": "The resolved Agda version."
+    },
+    "agda-path": {
+      "description": "The path of the agda executable _directory_."
+    },
+    "agda-data-path": {
+      "description": "The path of the agda data _directory_."
+    },
+    "agda-exe": {
+      "description": "The path of the agda _executable_."
+    },
+    "agda-mode-exe": {
+      "description": "The path of the agda-mode _executable_."
+    },
+    "setup-haskell": {
+      "description": "Whether or not actions/haskell/setup was called."
+    },
+    "ghc-path": {
+      "description": "The path of the ghc executable _directory_."
+    },
+    "cabal-path": {
+      "description": "The path of the cabal executable _directory_."
+    },
+    "stack-path": {
+      "description": "The path of the stack executable _directory_."
+    },
+    "cabal-store": {
+      "description": "The path to the cabal store."
+    },
+    "stack-root": {
+      "description": "The path to the stack root (equal to the STACK_ROOT environment variable if it is set; otherwise an OS-specific default)."
+    },
+    "ghc-exe": {
+      "description": "The path of the ghc _executable_."
+    },
+    "cabal-exe": {
+      "description": "The path of the cabal _executable_."
+    },
+    "stack-exe": {
+      "description": "The path of the stack _executable_."
+    }
+  },
+  "runs": {
+    "using": "node16",
+    "main": "./dist/action.js"
+  },
+  "branding": {
+    "icon": "feather",
+    "color": "purple"
+  }
+}

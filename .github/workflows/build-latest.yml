@@ -27,17 +27,17 @@ jobs:
         uses: ./
         with:
           agda-version: 'latest'
-          bdist-name: |
+          bundle: true
+          bundle-compress: ${{ runner.os == 'Linux' }}
+          bundle-license-report: true
+          bundle-name: |
             agda-{{{agda-version}}}
                 -{{{arch}}}
-                -${{ matrix.os }}
+                -{{{release}}}
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
                 -cabal{{{cabal-version}}}
-          bdist-license-report: true
-          bdist-upload: true
           force-build: true
-          force-no-optimise-heavily: ${{ runner.os == 'Windows' }}
     strategy:
       fail-fast: false
       matrix:

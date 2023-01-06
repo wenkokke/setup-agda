@@ -1,13 +1,20 @@
 {
   "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
-    "outDir": "./lib",
+    "target": "ES6",
+    "module": "CommonJS",
+    "noEmit": true,
     "rootDir": "./src",
     "strict": true,
     "resolveJsonModule": true,
     "noImplicitAny": true,
     "esModuleInterop": true
   },
-  "include": ["src/**/*.ts", "src/**/*.json"]
+  "include": [
+    "src/**/*.d.ts",
+    "src/**/*.ts",
+    "src/**/*.json",
+    "src/data/licenses/gmp/LICENSE",
+    "src/data/licenses/icu/LICENSE",
+    "src/data/licenses/zlib/LICENSE"
+  ]
 }
