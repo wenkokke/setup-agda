@@ -1,5 +1,8 @@
-import * as exec from '../exec'
+import * as exec from '../exec.js'
 
-export async function xattr(...args: string[]): Promise<string> {
-  return await exec.getOutput('xattr', args)
+export default async function xattr(
+  args: string[],
+  options?: exec.ExecOptions
+): Promise<string> {
+  return await exec.getOutput('xattr', args, options)
 }

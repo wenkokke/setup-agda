@@ -1,0 +1,32 @@
+Bundled license information:
+
+tmp/lib/tmp.js:
+  /*!
+   * Tmp
+   *
+   * Copyright (c) 2011-2017 KARASZI Istvan <github@spam.raszi.hu>
+   *
+   * MIT Licensed
+   */
+
+isobject/index.js:
+  /*!
+   * isobject <https://github.com/jonschlinkert/isobject>
+   *
+   * Copyright (c) 2014-2017, Jon Schlinkert.
+   * Released under the MIT License.
+   */
+
+object.pick/index.js:
+  /*!
+   * object.pick <https://github.com/jonschlinkert/object.pick>
+   *
+   * Copyright (c) 2014-2015 Jon Schlinkert, contributors.
+   * Licensed under the MIT License
+   */
+
+mustache/mustache.mjs:
+  /*!
+   * mustache.js - Logic-less {{mustache}} templates with JavaScript
+   * http://github.com/janl/mustache.js
+   */

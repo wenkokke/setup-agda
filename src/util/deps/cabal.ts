@@ -1,26 +1,26 @@
-import * as logging from '../logging'
-import * as exec from '../exec'
-import ensureError from '../ensure-error'
+import * as exec from '../exec.js'
+import ensureError from 'ensure-error'
+import { ExecOptions } from '../exec.js'
 
-export async function cabal(
+export default async function cabal(
   args: string[],
-  execOptions?: exec.ExecOptions
+  options?: ExecOptions
 ): Promise<string> {
-  return await exec.getOutput('cabal', args, execOptions)
+  return await exec.getOutput('cabal', args, options)
 }
 
-export async function cabalGetVersion(): Promise<string> {
+cabal.getVersion = async (): Promise<string> => {
   return exec.getVersion('cabal', {
     versionFlag: '--numeric-version',
     silent: true
   })
 }
 
-export async function cabalMaybeGetVersion(): Promise<string | null> {
+cabal.maybeGetVersion = async (): Promise<string | null> => {
   try {
-    return await cabalGetVersion()
+    return await cabal.getVersion()
   } catch (error) {
-    logging.info(
+    logger.info(
       `Could not get installed Cabal version: ${ensureError(error).message}`
     )
     return null
