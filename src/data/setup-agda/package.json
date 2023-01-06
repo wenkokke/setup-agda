@@ -15,6 +15,7 @@
     "@actions/io": "^1.1.2",
     "commander": "^9.5.0",
     "ensure-error": "^4.0.0",
+    "inquirer": "^9.1.4",
     "linux-os-info": "^2.0.0",
     "linux-release-info": "^3.0.0",
     "macos-release": "^3.1.0",
@@ -60,6 +61,7 @@
   "devDependencies": {
     "@actions/cache": "^3.1.2",
     "@types/glob": "^8.0.0",
+    "@types/inquirer": "^9.0.3",
     "@types/js-yaml": "^4.0.5",
     "@types/mustache": "^4.2.2",
     "@types/node": "^18.11.17",

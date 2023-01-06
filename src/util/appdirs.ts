@@ -2,58 +2,82 @@ import * as opts from './platform.js'
 import * as path from 'node:path'
 import * as os from 'node:os'
 
+// Directories for agdaup:
+
 /**
- * The cache for `setup-agda`.
+ * The directory where agdaup stores its global configuration files.
  *
- * Used to cache downloads, tools, etc.
+ * By convention, we use the same directory for Agda and Agda library installations.
+ *
+ * Resolves to `~/.agda` on Linux and macOS and to `%AppData%\agda` on Windows.
  */
-export function setupAgdaCacheDir(...parts: string[]): string {
+export function agdaupDir(): string {
   switch (opts.platform) {
     case 'linux':
-      return path.join(os.homedir(), '.agdaup', ...parts)
     case 'macos':
-      return path.join(os.homedir(), '.agdaup', ...parts)
+      return path.join(os.homedir(), '.agdaup')
     case 'windows':
-      return path.join(os.homedir(), 'AppData', 'Roaming', 'agdaup', ...parts)
+      return path.join(os.homedir(), 'AppData', 'Roaming', 'agdaup')
   }
 }
 
-// Directories for Agda installation:
+/**
+ * The cache for `setup-agda`.
+ *
+ * The directory to use as a cache.
+ *
+ * Resolves to `$agdaupDir/cache/$paths
+ */
+export function agdaupCacheDir(...parts: string[]): string {
+  return path.join(agdaupDir(), 'cache', ...parts)
+}
+
+/**
+ * The directory to which to install the given Agda version.
+ *
+ * Resolves to `$agdaupDir` or `$agdaupDir/agda/$version`.
+ */
+export function agdaInstallDir(version?: string): string {
+  if (version === undefined) {
+    return agdaupDir()
+  } else {
+    return path.join(agdaupDir(), 'agda', version)
+  }
+}
+
+/**
+ * The directory to which to install the binaries for the given Agda version.
+ *
+ * Resolves to `$agdaupDir/bin` or `$agdaupDir/agda/$version/bin`.
+ */
+export function agdaBinDir(version?: string): string {
+  return path.join(agdaInstallDir(version), 'bin')
+}
+
+/**
+ * The directory to which to install the data for the given Agda version.
+ *
+ * Resolves to `$agdaupDir/data` or `$agdaupDir/agda/$version/data`.
+ */
+export function agdaDataDir(version?: string): string {
+  return path.join(agdaInstallDir(version), 'data')
+}
+
+// Directories for agda:
 
 /**
  * The directory where Agda stores its global configuration files.
- *
- * By convention, we use the same directory for Agda and Agda library installations.
  *
  * Resolves to `~/.agda` on Linux and macOS and to `%AppData%\agda` on Windows.
  */
 export function agdaDir(): string {
   switch (opts.platform) {
     case 'linux':
-      return path.join(os.homedir(), '.agda')
     case 'macos':
       return path.join(os.homedir(), '.agda')
     case 'windows':
       return path.join(os.homedir(), 'AppData', 'Roaming', 'agda')
   }
-}
-
-/**
- * The directory to which to install the given Agda version.
- *
- * Resolves to `$agdaDir/agda/$version.
- */
-export function agdaInstallDir(version: string): string {
-  return path.join(agdaDir(), 'agda', version)
-}
-
-/**
- * The directory to use as a cache.
- *
- * Resolves to `$agdaDir/caches/$paths
- */
-export function agdaCacheDir(...paths: string[]): string {
-  return path.join(agdaDir(), 'caches', ...paths)
 }
 
 /**
@@ -70,8 +94,11 @@ export function agdaLibrariesFile(): string {
  *
  * Resolves to `$agdaDir/defaults`.
  */
-export function agdaDefaultsFile(): string {
-  return path.join(agdaDir(), 'defaults')
+export function agdaDefaultsFile(version?: string): string {
+  return path.join(
+    version === undefined ? agdaDir() : agdaInstallDir(version),
+    'defaults'
+  )
 }
 
 /**
@@ -79,17 +106,23 @@ export function agdaDefaultsFile(): string {
  *
  * Resolves to `$agdaDir/executables`.
  */
-export function agdaExecutablesFile(): string {
-  return path.join(agdaDir(), 'executables')
+export function agdaExecutablesFile(version?: string): string {
+  return path.join(
+    version === undefined ? agdaDir() : agdaInstallDir(version),
+    'executables'
+  )
 }
 
 /**
  * The directory where to install Agda libraries.
  *
- * Resolves to `$agdaDir/libraries.d`.
+ * Resolves to `$agdaupDir/libraries.d`.
  */
-export function agdaLibrariesInstallDir(): string {
-  return path.join(agdaDir(), 'libraries.d')
+export function agdaLibrariesInstallDir(version?: string): string {
+  return path.join(
+    version === undefined ? agdaDir() : agdaInstallDir(version),
+    'libraries.d'
+  )
 }
 
 /**

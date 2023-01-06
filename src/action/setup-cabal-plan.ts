@@ -1,6 +1,6 @@
 import * as cache from '@actions/cache'
 import * as path from 'node:path'
-import { setupAgdaCacheDir } from '../util/appdirs.js'
+import { agdaupCacheDir } from '../util/appdirs.js'
 import cabal from '../util/deps/cabal.js'
 import { mkdirP } from '../util/exec.js'
 import { platform, release } from '../util/platform.js'
@@ -12,7 +12,7 @@ import { GhcNotFound, GhcVersionMismatch } from '../util/errors.js'
 import ensureError from 'ensure-error'
 
 const version = '0.7.2.3'
-const installDir = setupAgdaCacheDir(path.join('cabal-plan', version))
+const installDir = agdaupCacheDir(path.join('cabal-plan', version))
 const primaryKey = `cabal-plan-${version}-${platform}-${release}`
 const ghcVersionConstraint = '>=8.2.1'
 const cabalPlanExe =

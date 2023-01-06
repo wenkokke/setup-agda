@@ -13,7 +13,7 @@ import pwsh from './deps/pwsh.js'
 import powershell from './deps/powershell.js'
 import { pipeline } from 'node:stream/promises'
 import fetch from 'node-fetch'
-import { agdaCacheDir } from './appdirs.js'
+import { agdaupCacheDir } from './appdirs.js'
 import assert from 'node:assert'
 import { Dist, DistType } from './types.js'
 
@@ -126,7 +126,7 @@ async function downloadAttempt(
 
 async function distDest(dist: Dist): Promise<string> {
   const url = typeof dist === 'string' ? dist : dist.url
-  const dest = agdaCacheDir(path.basename(new URL(url).pathname))
+  const dest = agdaupCacheDir(path.basename(new URL(url).pathname))
   const dir = await ensureDestDir(path.dirname(dest))
   assert(dir === path.dirname(dest))
   return dest

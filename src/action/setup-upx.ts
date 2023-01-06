@@ -1,5 +1,5 @@
 import * as path from 'node:path'
-import { setupAgdaCacheDir } from '../util/appdirs.js'
+import { agdaupCacheDir } from '../util/appdirs.js'
 import brew from '../util/deps/homebrew.js'
 import { platform } from '../util/platform.js'
 import * as simver from '../util/simver.js'
@@ -10,7 +10,7 @@ const version = '3.96'
 export default async function setupUpx(): Promise<string> {
   switch (platform) {
     case 'linux': {
-      const dest = setupAgdaCacheDir(path.join('upx', version))
+      const dest = agdaupCacheDir(path.join('upx', version))
       return await download(
         {
           url: `https://github.com/upx/upx/releases/download/v${version}/upx-${version}-amd64_linux.tar.xz`,
@@ -31,7 +31,7 @@ export default async function setupUpx(): Promise<string> {
       return 'upx'
     }
     case 'windows': {
-      const dest = setupAgdaCacheDir(path.join('upx', version))
+      const dest = agdaupCacheDir(path.join('upx', version))
       return await download(
         {
           url: `https://github.com/upx/upx/releases/download/v${version}/upx-${version}-win64.zip`,
