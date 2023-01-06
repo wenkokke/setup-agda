@@ -1,5 +1,5 @@
 import macosRelease from 'macos-release'
-import linuxRelease from 'linux-release-info'
+import linuxRelease from 'linux-os-info'
 import windowsRelease from 'windows-release'
 import { release as osRelease } from 'node:os'
 import ensureError from 'ensure-error'
@@ -50,16 +50,22 @@ export const release = ((): string => {
     }
     case 'linux': {
       try {
-        const releaseInfo = linuxRelease.releaseInfo({ mode: 'sync' }) as {
-          id: string
-          version_id: string
+        const releaseInfo = linuxRelease({ mode: 'sync' })
+        const releaseId =
+          typeof releaseInfo.id === 'string' ? releaseInfo.id : null
+        const releaseVersionId =
+          typeof releaseInfo.version_id === 'string'
+            ? releaseInfo.version_id
+            : null
+        if (releaseId !== null && releaseVersionId !== null) {
+          return `${releaseInfo.id}-${releaseInfo.version_id}`
         }
-        return `${releaseInfo.id}-${releaseInfo.version_id}`
       } catch (error) {
-        logger.warning(ensureError(error))
-        logger.info(JSON.stringify(linuxRelease))
-        return 'linux-unknown'
+        logger.warning(
+          `Could not determine Linux release: ${ensureError(error).message}`
+        )
       }
+      return 'linux-unknown'
     }
     case 'windows': {
       const releaseInfo = windowsRelease(osRelease())

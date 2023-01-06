@@ -1,5 +1,5 @@
-import cache from '@actions/cache'
-import path from 'node:path'
+import * as cache from '@actions/cache'
+import * as path from 'node:path'
 import { setupAgdaCacheDir } from '../util/appdirs.js'
 import cabal from '../util/deps/cabal.js'
 import { mkdirP } from '../util/exec.js'

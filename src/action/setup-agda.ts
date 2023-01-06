@@ -41,7 +41,7 @@ export default async function setupAgda(options: ActionOptions): Promise<void> {
 
   // Try to install Agda from a binary distribution:
   if (!options['force-build'] && !success) {
-    logger.group(
+    await logger.group(
       `Install Agda ${options['agda-version']} from prebuilt bundle`,
       async () => {
         try {
@@ -59,7 +59,7 @@ export default async function setupAgda(options: ActionOptions): Promise<void> {
 
   // Try to install Agda from a source distribution:
   if (!options['force-no-build'] && !success) {
-    const buildResult = await logger.group(
+    const buildResult = await await logger.group(
       `Build Agda ${options['agda-version']} from source`,
       async () => {
         try {
@@ -118,7 +118,7 @@ export default async function setupAgda(options: ActionOptions): Promise<void> {
     )
 
     if (buildResult !== undefined) {
-      logger.group(
+      await logger.group(
         `Upload bundle for Agda ${options['agda-version']}`,
         async () => {
           const { buildOptions, installDir } = buildResult
@@ -157,7 +157,7 @@ export default async function setupAgda(options: ActionOptions): Promise<void> {
   // Setup libraries:
   const librariesToRegister: string[] = []
   const defaultLibraries = splitLines(options['agda-defaults'])
-  logger.group(`Install libraries for Agda`, async () => {
+  await logger.group(`Install libraries for Agda`, async () => {
     const librariesToInstall: Dist[] = []
 
     // If 'agda-stdlib-version' was set, add the correct source distribution to
@@ -220,7 +220,7 @@ export default async function setupAgda(options: ActionOptions): Promise<void> {
       librariesToRegister.push(libraryFile)
     }
   })
-  logger.group(`Register libraries with Agda`, async () => {
+  await logger.group(`Register libraries with Agda`, async () => {
     // Register the requested libraries:
     for (const libraryFile of librariesToRegister) {
       // TODO: This relies on the .agda-lib file having the same name as the library.
@@ -230,7 +230,7 @@ export default async function setupAgda(options: ActionOptions): Promise<void> {
   })
 
   // Register executables:
-  logger.group(`Register executables with Agda`, async () => {
+  await logger.group(`Register executables with Agda`, async () => {
     const executablesToRegister = splitLines(options['agda-executables'])
     for (const executablePath of executablesToRegister) {
       registerExecutable(executablePath)
@@ -238,7 +238,7 @@ export default async function setupAgda(options: ActionOptions): Promise<void> {
   })
 
   // Configure the environment:
-  logger.group(`Configure environment for Agda`, async () => {
+  await logger.group(`Configure environment for Agda`, async () => {
     const installBinDir = path.join(installDir, 'bin')
     const installDataDir = path.join(installDir, 'data')
     logger.debug(`Set Agda_datadir to ${installDataDir}`)

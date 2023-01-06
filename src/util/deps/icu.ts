@@ -243,8 +243,6 @@ export async function icuBundle(
           const depTo = `@loader_path/agda-${options['agda-version']}-${depName}.${version}.dylib`
           await installNameTool(['-change', depFrom, depTo, libTo])
         }
-        // NOTE: This overrides any previously set run path.
-        await patchelf(['--set-rpath', '$ORIGIN', libTo])
       }
       // Change dependencies on Agda executables:
       const binsAndDepsToChange: [string, string[]][] = [
@@ -280,7 +278,7 @@ export async function icuBundle(
       const libs = new Set<string>()
       for (const libdir of libdirs) {
         for (const libname of libnames) {
-          const pattern = path.join(libdir, `${libname}.${version}.dylib`)
+          const pattern = path.join(libdir, `${libname}${versionMajor}.dll`)
           for (const lib of glob.sync(pattern)) {
             logger.debug(`Found ${lib}`)
             libs.add(lib)

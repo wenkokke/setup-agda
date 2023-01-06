@@ -9,18 +9,6 @@ tmp/lib/tmp.js:
    * MIT Licensed
    */
 
-linux-release-info/dist/index.js:
-  /*!
-   * linux-release-info
-   * Get Linux release info (distribution name, version, arch, release, etc.)
-   * from '/etc/os-release' or '/usr/lib/os-release' files and from native os
-   * module. On Windows and Darwin platforms it only returns common node os module
-   * info (platform, hostname, release, and arch)
-   *
-   * Licensed under MIT
-   * Copyright (c) 2018-2020 [Samuel Carreira]
-   */
-
 isobject/index.js:
   /*!
    * isobject <https://github.com/jonschlinkert/isobject>
