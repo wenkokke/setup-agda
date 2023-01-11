@@ -37,6 +37,7 @@ jobs:
         shell: sh
         working-directory: tests/agda
     strategy:
+      fail-fast: false
       matrix:
         os:
           [

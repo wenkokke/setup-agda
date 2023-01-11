@@ -1,7 +1,7 @@
 export type SimVer = number[][]
 
 export function parse(version: string): SimVer {
-  return version.split('.').map(part => part.split('_').map(parseInt))
+  return version.split('.').map((part) => part.split('_').map(parseInt))
 }
 
 export type SimRng = [SimVer, SimVer]
@@ -117,11 +117,11 @@ export function maxSatisfying(
   range: string | SimRng
 ): string | null {
   if (typeof range === 'string') range = parseRange(range)
-  return max(versions.filter(version => satisfies(version, range)))
+  return max(versions.filter((version) => satisfies(version, range)))
 }
 
 export function max(versions: (string | SimVer)[]): string | null {
-  const simvers = versions.map(version => {
+  const simvers = versions.map((version) => {
     if (typeof version === 'string') {
       return parse(version)
     } else {

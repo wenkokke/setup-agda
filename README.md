@@ -33,7 +33,9 @@ If an older version of GHC is needed to build the specified version, `setup-agda
 
 ```yaml
 name: minimal
-on: [push]
+on:
+  push:
+    branches: ['main']
 jobs:
   check:
     name: Check greet.agda
@@ -57,7 +59,9 @@ jobs:
 
 ```yaml
 name: basic
-on: [push]
+on:
+  push:
+    branches: ['main']
 jobs:
   check:
     name: Check hello-world-dep.agda
@@ -84,7 +88,9 @@ jobs:
 
 ```yaml
 name: matrix
-on: [push]
+on:
+  push:
+    branches: ['main']
 jobs:
   check:
     name: Check hello-world-proof.agda
@@ -126,7 +132,9 @@ jobs:
 
 ```yaml
 name: complex
-on: [push]
+on:
+  push:
+    branches: ['main']
 jobs:
   check:
     name: Check wenkokke/schmitty
@@ -389,7 +397,7 @@ This section describes all inputs:
 
   Default: `false`
 
-- `configuration`
+- `configure-options`
 
   Can be "none", "recommended", or text.
   
@@ -401,13 +409,13 @@ This section describes all inputs:
 
   Default: `recommended`
 
-- `bdist-upload`
+- `bundle-upload`
 
   If specified, will upload a binary distribution for the specified Agda version.
 
   Default: `false`
 
-- `bdist-name`
+- `bundle-name`
 
   If specified, will be used as a name for the binary distribution package.
   
@@ -420,19 +428,19 @@ This section describes all inputs:
   system release, as returned by
   [the corresponding NodeJS functions](https://nodejs.org/api/os.html).
   
-  Only used when `bdist-upload` is specified.
+  Only used when `bundle-upload` is specified.
 
   Default: `agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}`
 
-- `bdist-license-report`
+- `bundle-license-report`
 
   If specified, include a license report in the binary distribution.
   
-  Only used when `bdist-upload` is specified.
+  Only used when `bundle-upload` is specified.
 
   Default: `false`
 
-- `bdist-compress-exe`
+- `bundle-compress`
 
   If specified, the executables are compressed with [UPX](https://upx.github.io).
   
@@ -451,13 +459,13 @@ This section describes all inputs:
   chmod -w <lib>
   ```
   
-  Only used when `bdist-upload` is specified.
+  Only used when `bundle-upload` is specified.
 
   Default: `false`
 
-- `bdist-retention-days`
+- `bundle-retention-days`
 
-  Duration after which bdist will expire in days.
+  Duration after which bundle will expire in days.
   0 means using default retention.
   
   Minimum 1 day.

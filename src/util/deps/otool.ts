@@ -1,5 +1,9 @@
-import * as exec from '../exec'
+import * as exec from '../exec.js'
+import { ExecOptions } from '../exec.js'
 
-export async function otool(...args: string[]): Promise<string> {
-  return await exec.getOutput('otool', args)
+export default async function otool(
+  args: string[],
+  options?: ExecOptions
+): Promise<string> {
+  return await exec.getOutput('otool', args, options)
 }

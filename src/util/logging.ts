@@ -1,6 +1,0 @@
-export {debug} from '@actions/core'
-export {info} from '@actions/core'
-export {warning} from '@actions/core'
-export {error} from '@actions/core'
-export {group} from '@actions/core'
-export {setOutput} from '@actions/core'

@@ -29,15 +29,14 @@ jobs:
         uses: ./
         with:
           agda-version: 'HEAD'
-          bdist-upload: true
-          bdist-name: |
+          bundle-upload: true
+          bundle-name: |
             agda-{{{agda-version}}}
                 -{{{arch}}}
                 -${{ matrix.os }}
                 -icu{{{icu-version}}}
                 -ghc{{{ghc-version}}}
           force-build: true
-          force-no-optimise-heavily: true
     strategy:
       matrix:
         os: [ubuntu-22.04, ubuntu-20.04, macos-11, macos-12, windows-2022]
