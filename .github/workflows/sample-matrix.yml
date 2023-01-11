@@ -1,5 +1,7 @@
 name: matrix
-on: [push]
+on:
+  push:
+    branches: ['main']
 jobs:
   check:
     name: Check hello-world-proof.agda

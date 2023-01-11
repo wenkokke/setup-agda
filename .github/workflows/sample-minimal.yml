@@ -1,5 +1,7 @@
 name: minimal
-on: [push]
+on:
+  push:
+    branches: ['main']
 jobs:
   check:
     name: Check greet.agda

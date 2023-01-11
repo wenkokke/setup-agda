@@ -1,5 +1,7 @@
 name: complex
-on: [push]
+on:
+  push:
+    branches: ['main']
 jobs:
   check:
     name: Check wenkokke/schmitty

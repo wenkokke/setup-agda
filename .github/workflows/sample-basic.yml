@@ -1,5 +1,7 @@
 name: basic
-on: [push]
+on:
+  push:
+    branches: ['main']
 jobs:
   check:
     name: Check hello-world-dep.agda
