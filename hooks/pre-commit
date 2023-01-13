@@ -4,7 +4,7 @@ fail="$(mktemp)"
 
 # Build action & cli:
 { npm run all || echo > "$fail"; }
-git add src/data/**/*.json dist/action.js dist/action.js.LEGAL.txt
+git add src/data/*.json src/data/**/*.json dist/action.js dist/action.js.LEGAL.txt
 
 # Check if any of the previous commands failed:
 if [ -s "$fail" ]
