@@ -52,10 +52,10 @@ If an older version of GHC is needed to build the specified version, `setup-agda
     <th>11</th><th>12</th>
     <th>2019</th><th>2022</th>
   </tr>
-{%- for supported in supported_versions %}
+{%- for supported in supportedVersions %}
   <tr>
     <td>{{ supported.version | trim }}</td>
-    {%- for platform in known_platforms %}
+    {%- for platform in knownPlatforms %}
     <td>
     {%- if supported.platforms[platform].build -%}
     📦 & 🏗

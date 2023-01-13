@@ -4,36 +4,37 @@
 
 When a new Agda version is released:
 
-1. Run `npm run update-agda-info` to update the Agda versions from Hackage.
-2. Add a new entry to `src/data/Agda.json`.
+1. Add a new entry to `data/Agda.yml`.
    You can use the template below, replacing `$AGDA_VERSION` with the new version, and replacing `$AGDA_STDLIB_VERSION_RANGE` and `$GHC_VERSION_RANGE` with the appropriate version ranges.
-   ```json
-   "$AGDA_VERSION": {
-     "binary": {
-       "darwin": {
-         "x64": [
-         ]
-       },
-       "linux": {
-         "x64": [
-         ]
-       },
-       "win32": {
-         "x64": [
-         ]
-       }
-     },
-     "compatibility": {
-       "agda-stdlib": "$AGDA_STDLIB_VERSION_RANGE",
-       "ghc": "$GHC_VERSION_RANGE"
-     }
-   },
+   ```yaml
+   $AGDA_VERSION:
+     binary:
+       macos:
+         x64: []
+       linux:
+         x64: []
+       windows:
+         x64: []
+     compatibility:
+       agda-stdlib: $AGDA_STDLIB_VERSION_RANGE
+       ghc: $GHC_VERSION_RANGE
+     configuration:
+       macos: |
+         --flags=+enable-cluster-counting
+         --flags=+optimise-heavily
+       linux: |
+         --enable-split-sections
+         --flags=+enable-cluster-counting
+         --flags=+optimise-heavily
+       windows: |
+         --enable-split-sections
+         --flags=+enable-cluster-counting
    ```
-3. Commit and push your changes.
-   The CI will build binary distributions for the latest release, which is likely the release you're trying to add.
-4. Attach the binary distributions to the latest release, and add the URLs to the entry you added in the previous step.
-5. Add the newly added version to `.github/workflows/setup-legacy.yml`.
-6. Commit and push your changes.
+2. Commit and push your changes.
+   The CI will build binaries for the latest release, which is likely the release you're trying to add.
+3. Attach the binaries to the latest release, and add the URLs for the binary bundles and their SHA256 hashes to the entry you added in the previous step.
+4. Add the newly added version to `.github/workflows/setup-legacy.yml`.
+5. Commit and push your changes.
 
 ## Add new standard library version
 

@@ -106,7 +106,7 @@ inputs:
     description: |
       A shell script to be run before starting the build.
     required: false
-  configuration:
+  configure-options:
     default: 'recommended'
     description: |
       Can be "none", "recommended", or text.
@@ -117,14 +117,15 @@ inputs:
 
       Only used when building Agda from source.
 
-  bdist-upload:
+  bundle:
     description: |
-      If specified, will upload a binary distribution for the specified Agda version.
+      If specified, bundle Agda and its non-standard dependencies, and upload
+      the bundle as an artifact.
     required: false
-  bdist-name:
+  bundle-name:
     default: 'agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}'
     description: |
-      If specified, will be used as a name for the binary distribution package.
+      If specified, will be used as a name for the bundle.
 
       The value is interpreted as a [mustache template](https://mustache.github.io/).
       The template may use `{{{agda-version}}}`, `{{{cabal-version}}}`,
@@ -135,15 +136,15 @@ inputs:
       system release, as returned by
       [the corresponding NodeJS functions](https://nodejs.org/api/os.html).
 
-      Only used when `bdist-upload` is specified.
+      Only used when `bundle` is specified.
     required: false
-  bdist-license-report:
+  bundle-license-report:
     description: |
-      If specified, include a license report in the binary distribution.
+      If specified, include a license report in the bundle.
 
-      Only used when `bdist-upload` is specified.
+      Only used when `bundle` is specified.
     required: false
-  bdist-compress-exe:
+  bundle-compress:
     description: |
       If specified, the executables are compressed with [UPX](https://upx.github.io).
 
@@ -162,12 +163,12 @@ inputs:
       chmod -w <lib>
       ```
 
-      Only used when `bdist-upload` is specified.
+      Only used when `bundle` is specified.
     required: false
-  bdist-retention-days:
+  bundle-retention-days:
     default: '0'
     description: |
-      Duration after which bdist will expire in days.
+      Duration after which bundle will expire in days.
       0 means using default retention.
 
       Minimum 1 day.
@@ -213,7 +214,7 @@ outputs:
     description: 'The path of the agda _executable_.'
   agda-mode-exe:
     description: 'The path of the agda-mode _executable_.'
-  haskell-setup:
+  setup-haskell:
     description: 'Whether or not actions/haskell/setup was called.'
 
   # If it is called, the following outputs are set by actions/haskell/setup:
@@ -236,7 +237,7 @@ outputs:
 
 runs:
   using: 'node16'
-  main: 'dist/index.js'
+  main: './dist/action.js'
 
 branding:
   icon: feather

@@ -2,32 +2,27 @@
 
 fail="$(mktemp)"
 
-# Update data files & README
-echo "Update Agda.json from Agda.yml"
-{ npm run update-data-agda || echo > "$fail"; }
-git add src/data/Agda.json
-echo "Update action.json from action.yml"
-{ npm run update-data-action || echo > "$fail"; }
-git add src/data/action.json
-echo "Update README.md"
-{ npm run update-readme || echo > "$fail"; }
-git add README.md
-
-# Package action to dist:
-echo "Package action to dist"
+# Build action & cli:
 { npm run all || echo > "$fail"; }
-git add dist/*
+git add src/data/**/*.json dist/action.js dist/action.js.LEGAL.txt
 
-# Check files with pre-commit
+# Check if any of the previous commands failed:
+if [ -s "$fail" ]
+then
+    rm "$fail"
+    exit 1
+fi
+
 echo "Run pre-commit"
 { pre-commit run --all-files || echo > "$fail"; }
 
 # Check if any of the previous commands failed:
-if [ ! -s "$fail" ]
+if [ -s "$fail" ]
 then
-    rm "$fail"
-    exit 0
-else
     rm "$fail"
     exit 1
 fi
+
+# Exit successfully
+rm "$fail"
+exit 0
