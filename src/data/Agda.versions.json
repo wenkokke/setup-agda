@@ -322,7 +322,7 @@
       "agda-stdlib": "0.14 - 0.15",
       "ghc": "7.8 - 8.2"
     },
-    "configuration": "--flags=+enable-cluster-counting\n"
+    "configuration": "--allow-newer=Cabal\n--flags=+enable-cluster-counting\n"
   },
   "2.5.2": {
     "binary": {
