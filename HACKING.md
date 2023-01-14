@@ -1,238 +1,104 @@
-# How to maintain `setup-agda`?
-
-## Add a new Agda version
+# How to add a new Agda version
 
 When a new Agda version is released:
 
-1. Add a new entry to `data/Agda.yml`.
-   You can use the template below, replacing `$AGDA_VERSION` with the new version, and replacing `$AGDA_STDLIB_VERSION_RANGE` and `$GHC_VERSION_RANGE` with the appropriate version ranges.
-   ```yaml
-   $AGDA_VERSION:
-     binary:
-       macos:
-         x64: []
-       linux:
-         x64: []
-       windows:
-         x64: []
-     compatibility:
-       agda-stdlib: $AGDA_STDLIB_VERSION_RANGE
-       ghc: $GHC_VERSION_RANGE
-     configuration:
-       macos: |
-         --flags=+enable-cluster-counting
-         --flags=+optimise-heavily
-       linux: |
-         --enable-split-sections
-         --flags=+enable-cluster-counting
-         --flags=+optimise-heavily
-       windows: |
-         --enable-split-sections
-         --flags=+enable-cluster-counting
-   ```
-2. Commit and push your changes.
-   The CI will build binaries for the latest release, which is likely the release you're trying to add.
-3. Attach the binaries to the latest release, and add the URLs for the binary bundles and their SHA256 hashes to the entry you added in the previous step.
-4. Add the newly added version to `.github/workflows/setup-legacy.yml`.
-5. Commit and push your changes.
+1.  Add a new entry to `data/Agda.yml`. You can use the template below, replacing `$AGDA_VERSION` with the new version, and replacing `$AGDA_STDLIB_VERSION_RANGE` and `$GHC_VERSION_RANGE` with the appropriate version ranges:
 
-## Add new standard library version
+    ```yaml
+    $AGDA_VERSION:
+      binary:
+        macos:
+          x64: []
+        linux:
+          x64: []
+        windows:
+          x64: []
+      compatibility:
+        agda-stdlib: $AGDA_STDLIB_VERSION_RANGE
+        ghc: $GHC_VERSION_RANGE
+      configuration:
+        macos: |
+          --flags=+enable-cluster-counting
+          --flags=+optimise-heavily
+        linux: |
+          --enable-split-sections
+          --flags=+enable-cluster-counting
+          --flags=+optimise-heavily
+        windows: |
+          --enable-split-sections
+          --flags=+enable-cluster-counting
+    ```
 
-1. Add a new entry to `src/data/agda-stdlib.json`.
-   You can use the template below, replacing `$AGDA_STDLIB_VERSION` with the new version.
-   ```json
-   "$AGDA_STDLIB_VERSION": {
-     "source": {
-       "url": "https://github.com/agda/agda-stdlib/archive/refs/tags/v$AGDA_STDLIB_VERSION.zip",
-       "dir": "agda-stdlib-$AGDA_STDLIB_VERSION"
-     }
-   },
-   ```
-2. Bump the `compatibility.agda-stdlib` range for each compatible Agda version in `src/data/Agda.json`.
-3. Commit and push your changes.
+2.  If you have not installed the pre-commit hook in `hooks/pre-commit`,
+    either install it now:
+
+    ```bash
+    cp ./hooks/pre-commit .git/hooks/pre-commit
+    ```
+
+    ...or run it manually before every commit:
+
+    ```bash
+    sh ./hooks/pre-commit
+    ```
+
+    Commit and push your changes.
+
+    The workflow `build-latest` will build binaries for the latest release,
+    which you can find here: <https://github.com/wenkokke/setup-agda/actions/workflows/build-latest.yml> When the workflow has completed, you can find the binary bundles under `Summary`.
+
+3.  Attach the binary bundles to the latest release and add the download URLs and their SHA256 hashes to the entry you added in the previous step.
+
+4.  Add a job for building the new version to `.github/workflows/build-legacy.yml`. You can copy and edit the job for the previous version. In most cases, you only need to change the version number and the required GHC version.
+
+5.  Add a job for setting up the new version to `.github/workflows/setup-legacy.yml`. In most cases, you only need to change the version number.
+
+6.  Commit and push your changes.
+
+## How to add a new standard library version
+
+1.  Add a new entry to `./data/agda-stdlib.versions.yml`. You can use the template below, replacing `$AGDA_STDLIB_VERSION` with the new version.
+
+    ```yaml
+    '$AGDA_STDLIB_VERSION':
+    source:
+      url: https://github.com/agda/agda-stdlib/archive/refs/tags/v$AGDA_STDLIB_VERSION.zip
+      tag: v$AGDA_STDLIB_VERSION
+      dir: agda-stdlib-$AGDA_STDLIB_VERSION
+    ```
+
+2.  Edit the `compatibility.agda-stdlib` range to include the new version for each compatible Agda version in `./data/Agda.yml`.
+
+3.  Commit and push your changes.
 
 ## Update `haskell/actions` submodule
 
-1. Run the following commands, replacing `$HASKELL_ACTIONS_VERSION` with the tag for the new version:
-   ```sh
-   cd vendor/haskell/actions
-   git pull
-   git checkout $HASKELL_ACTIONS_VERSION
-   ```
-2. Commit and push your changes.
+1.  Run the following commands, replacing `$HASKELL_ACTIONS_VERSION_TAG` with the tag for the new version:
 
-# How to add an input?
+    ```bash
+    cd vendor/haskell/actions
+    git pull
+    git checkout $HASKELL_ACTIONS_VERSION_TAG
+    ```
 
-There are two types of inputs: boolean flags and string options. Some of the steps below are conditional on which type of input you're specifying. These will be prefixed by (Flag) or (Option).
+2.  Commit and push your changes.
 
-1. Add the input to the `inputs` dictionary in `action.yml`:
+# How to add an input to the `setup-agda` action
 
-   - Create a new entry in `inputs` where the key is the option name.
-   - Add a description field. Descriptions are automatically included in the `README.md`, and can be styled using Markdown.
-   - Add `required: false`. No input should be mandatory.
-   - (Flag)
-     The default value is always false, do not specify `default`.
-   - (Option)
-     Specify a default value as `default: XXX`.
+1.  Add the input to the `inputs` dictionary in `./action.yml`:
 
-2. Add the input to `BuildOptions` in `opts/types.ts`:
+    - Create a new entry in `inputs` where the key is the option name.
+    - Add a description field. Descriptions are automatically included in the `README.md`, and can be styled using Markdown.
+    - Add `required: false`. No input should be mandatory.
+    - For a _boolean flag_, the default value is always false. Never include the `default` field.
+    - For a _string option_, always include the `default` field.
 
-   - (Flag)
-     Add the input name to the `SetupAgdaFlag` type in `opts/types.ts`; or
-   - (Option)
-     Add the input name to the `SetupAgdaOption` type in `opts/types.ts`.
+2.  Edit `./src/util/types.ts`.
 
-   The `SetupAgdaFlag` and `SetupAgdaOption` types are merged into the `SetupAgdaInputs` type, which is itself merged into `BuildOptions`.
+    Your input is automatically included in the `ActionOptions` type, which contains the values of all inputs provided to the action.
 
-3. Set the input in the `getOptions` function in `opts/get-options.ts`:
+    If your input is required by a specific command---e.g., install, build---you should edit to the appropriate types and functions.
 
-   Set the input in the defintion of `options` in the body of `getOptions`.
-   Options defined in `SetupAgdaInputs` are set in alphabetical order, under the following comment:
+    For instance, if your input is used by the build command in `./src/cli/build.ts`, you add the input name to the `BuildOptionKey` type, and edit the `pickBuildOptions` function to pick your input from the `ActionOptions`.
 
-   ```javascript
-   // Specified in opts.SetupAgdaInputs
-   ```
-
-   For most inputs, you can simply add the following line:
-
-   - (Flag)
-     Add `'flag-name': getFlag('flag-name'),` .
-   - (Option)
-     Add `'option-name': getOption('option-name'),`.
-
-   If your input needs validation or special handling, you can add this in the body of `getOptions` above the definition of the `options` object, _e.g._, as done for `agda-version`.
-
-4. Congratulations, you're done!
-
-# How does `setup-agda` work?
-
-`setup-agda` is a GitHub Action which downloads or builds various Agda
-versions.
-
-The `src` directory contains all source code for the action in TypeScript.
-
-The `lib` directory contains the _compiled_ code in JavaScript. This directory
-is generated by calling `npm run build`.
-
-The `dist` directory contains the _packaged_ code, which bundles the compiled
-code of this library and _all its dependencies_ into a single JavaScript file,
-(`index.js`), a mapping file (`index.js.map`), and the combined licenses of all
-dependencies (`licenses.txt`).
-This directory is generated by calling `npm run package`.
-The `index.js` file is the _actual_ entry point for GitHub Actions.
-
-When run the action proceeds as follows:
-
-0.  **gather inputs**
-
-    The entry for the GitHub Action is `main.ts`, which gathers the inputs for the action, validates them, and passes them to `setup-agda`.
-
-    Specifically, the function used to gather and validate the inputs is `opts.getOptions`, which is passed one argument, `core.getInput`.
-    The argument determines how the options are retrieved, and `core.getInput` is provided by GitHub Actions.
-
-    (`setup-agda` can also be used as a library, in which case the user will pass in a different function for getting inputs.)
-
-    `opts.getOptions` contains all the logic for parsing and validating inputs.
-
-    It resolves the Agda version (`./src/opts/resolve-agda-version`):
-
-    - if the user passes "latest" it resolves that to the latest known version by checking `./src/data/Agda.versions.normal.json`, which lists all known versions (as returned by Hackage); or
-    - if the user passes a specific version number, it checks if that version is a known version by checking the above file, and checks that it is not deprecated by checking `./src/data/Agda.versions.deprecated.json`.
-
-    The files `Agda.versions.normal.json` and `Agda.versions.deprecated.json` can be updated by calling `npm run update-agda-info`.
-
-    It resolves the agda-stdlib version (`./src/opts/resolve-agda-stdlib-version`):
-
-    - if the user passes "latest" it resolves that to the latest known version by checking `./src/data/agda-stdlib.sdist.json`, which lists all known versions (as found on GitHub); or
-    - if the user passes "recommended" it resolves that to the latest known version that is known to be compatible with the requested Agda version by checking `./src/data/Agda.agda-stdlib-compat.json`, which lists all compatible versions (as found on [the Agda Wiki][standardlibrarycompat]).
-
-    The files `agda-stdlib.sdist.json` and `Agda.agda-stdlib-compat.json` require manual maintenance when a new version of `agda-stdlib` is released.
-
-1.  **try the GitHub tool cache**
-
-    See `./src/setup-agda/install-from-tool-cache.ts`.
-
-    The action, in an act of _pure optimism_, checks whether or not Agda is included in the GitHub tool cache. This will _never_ return a result on the GitHub runners, unless GitHub decides to preinstall Agda. However, it _will_ return a result on a custom runner which includes Agda.
-
-2.  **try our custom binary distributions**
-
-    See `./src/setup-agda/install-from-bdist`.
-
-    The action checks `./src/data/Agda.bdist.json` to see if there is a distribution suitable for the requested Agda version which is compatible with the current platform.
-
-    The file `Agda.bdist.json` requires manual maintenance whenever a support for a new binary distribution is added.
-
-    Generally, the binary distributions are generally stored on the [`latest`][latest] release on GitHub, but theoretically, the index could list any URL.
-
-    If a binary distribution is found, the action downloads it, tests it, and installs it.
-
-3.  **build from source**
-
-    See `./src/setup-agda/build-from-sdist`.
-
-    If there are no binary distributions, the action tries to build Agda from source.
-
-    - Download the source from Hackage or GitHub.
-
-      See `getAgdaSdist` in `./src/util/app/agda.ts`.
-
-    - Setup GHC with `haskell/actions/setup`.
-
-      See `./src/setup-haskell.ts`.
-
-      We determine the compatible GHC versions by inspecting we inspect the `tested-with` field in `Agda.cabal`. See `supportedGhcVersions` in `./src/setup-agda/build-from-sdist.ts`.
-
-      We pick the latest compatible GHC version.
-
-      If the `ghc-version-range` input is passed, we only pick versions that _also_ satisfy that version range.
-
-      If the `ghc-version` input is passed, we _ignore compatibility_ and use that version.
-
-      See `./src/opts/resolve-ghc-version.ts`.
-
-    - If building with `--enable-cluster-counting`, setup ICU.
-
-      By default, we build with `--enable-cluster-counting` for any version which supports it and for which we know how to install ICU.
-
-      See `setup` in `./src/util/lib/icu.ts` and both `supportsClusterCounting` and `needsIcu` in `./opts/compat.ts`.
-
-    - Build Agda.
-
-      See `build` in `./src/setup-agda/build-from-sdist.ts`.
-
-    - Test Agda.
-
-      We test Agda by compiling its builtin modules.
-
-      See `agdaTest` in `./src/util/app/agda.ts`.
-
-    - Install Agda.
-
-      We copy the Agda binaries and data files to `AGDA_DIR/agda/{agda-version}/` and configure the environment so `agda` and `agda-mode` are on the PATH and `Agda_datadir` points to the data files.
-
-      See `configureEnvFor` in `./src/util/app/agda.ts`.
-
-4.  **setup libraries**
-
-    If the user passed `agda-stdlib-version` or `agda-libraries`, we install each library to `AGDA_DIR/libraries.d/{library-name}/{library-version}/` and register them in the libraries file.
-
-    If the user passed `agda-stdlib-default` or `agda-defaults` we register each library in the defaults file.
-
-5.  **upload binary distribution**
-
-    If the user passed `bdist-upload`, we package a binary distribution, and upload it as a GitHub artifact.
-
-    See `./src/setup-agda/upload-bdist.ts`.
-
-    If the Agda library was compiled with `--enable-cluster-counting`, we bundle ICU.
-
-    See `bundle` in `./src/util/lib/icu.ts`.
-
-    If the user passed `bdist-compress-exe`, we compress the binaries with UPX.
-
-    See `./src/util/app/upx.ts` and `compressBin` in `./src/setup-agda/upload-bdist.ts`.
-
-    This is the method by which the custom binary distributions are produced.
-
-[standardlibrarycompat]: https://wiki.portal.chalmers.se/agda/Libraries/StandardLibrary
-[latest]: https://github.com/wenkokke/setup-agda/releases/tag/latest
+    If your input requires validation, you should perform this validation in the corresponding pick function, e.g., `pickBuildOptions`.
