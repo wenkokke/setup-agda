@@ -238,7 +238,7 @@ outputs:
 
 runs:
   using: 'node16'
-  main: './dist/action.js'
+  main: './dist/action.cjs'
 
 branding:
   icon: feather

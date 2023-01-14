@@ -1,5 +1,5 @@
-import { ExecOptions } from '../exec'
-import { platform } from '../platform'
+import { ExecOptions } from '../exec.js'
+import { platform } from '../platform.js'
 
 const pathSep = platform === 'windows' ? ';' : ':'
 

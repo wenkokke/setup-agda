@@ -9,6 +9,7 @@ esbuild.build({
   platform: 'node',
   target: 'node16',
   outdir: './dist',
+  outExtension: { '.js': '.cjs' },
   define: {
     'logger.debug': 'logger_debug',
     'logger.error': 'logger_error',
@@ -17,9 +18,8 @@ esbuild.build({
     'logger.isDebug': 'logger_isDebug',
     'logger.warning': 'logger_warning'
   },
-  inject: ['./shim/logger-cli.js'],
-  // The 'fsevents' dependency is included as a peerDependency by nunjucks,
-  // but is not used at either run- or compile-time. Therefore, I believe it
-  // is safe to mark it as external.
+  inject: ['./shim/logger-cli.mjs'],
+  // The 'fsevents' package is an optional peerDependency for nunjucks,
+  // but is not used. I believe it is safe to mark it as external.
   external: ['fsevents']
 })

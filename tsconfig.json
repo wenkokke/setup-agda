@@ -1,13 +1,14 @@
 {
   "compilerOptions": {
     "target": "ES6",
-    "module": "CommonJS",
+    "module": "Node16",
     "noEmit": true,
     "rootDir": "./src",
     "strict": true,
     "resolveJsonModule": true,
     "noImplicitAny": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "moduleResolution": "Node16"
   },
   "include": [
     "src/**/*.d.ts",

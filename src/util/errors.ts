@@ -1,4 +1,4 @@
-import { AgdaVersion, Dist } from './types'
+import { AgdaVersion, Dist } from './types.js'
 import * as os from 'node:os'
 
 export class AgdaLibraryUnsupportedSpecification extends Error {

@@ -5,13 +5,13 @@ import {
   pickInstallOptions,
   pickSetOptions,
   version
-} from './util/types'
-import installAgda from './cli/install'
-import buildAgda from './cli/build'
-import setAgda from './cli/set'
+} from './util/types.js'
+import installAgda from './cli/install.js'
+import buildAgda from './cli/build.js'
+import setAgda from './cli/set.js'
 import { exit } from 'node:process'
 import ensureError from 'ensure-error'
-import tui from './cli/tui'
+import tui from './cli/tui.js'
 
 program
   .name('agdaup')

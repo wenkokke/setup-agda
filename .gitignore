@@ -1,7 +1,7 @@
 # Distribtion
 /dist/agdaup-*
-/dist/cli.js
-/dist/cli.js.LEGAL.txt
+/dist/cli.cjs
+/dist/cli.cjs.LEGAL.txt
 
 # Dependency directory
 node_modules

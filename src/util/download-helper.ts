@@ -109,7 +109,7 @@ async function downloadAttempt(
   // Ensure we have a destination filepath:
   const outputFile = await ensureDestFile(dest)
   // Download the file:
-  const response = await fetch(url)
+  const response = await fetch.default(url)
   if (!response.ok || response.body === null) {
     throw new Error(`Could not download ${url}: ${response.statusText}`)
   } else {

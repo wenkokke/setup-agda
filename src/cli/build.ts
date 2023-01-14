@@ -36,7 +36,7 @@ import {
   isAgdaGitRef,
   isAgdaVersion
 } from '../util/types.js'
-import { Has } from '../util/has'
+import { Has } from '../util/has.js'
 import test from './test.js'
 
 export default async function build(options: BuildOptions): Promise<void> {

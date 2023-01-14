@@ -16,5 +16,5 @@ export default async function setupHaskell(
       }
     })
   )
-  await setupHaskellAction(inputs as Record<string, string>)
+  await setupHaskellAction.default(inputs as Record<string, string>)
 }

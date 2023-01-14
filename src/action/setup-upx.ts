@@ -3,7 +3,7 @@ import { agdaupCacheDir } from '../util/appdirs.js'
 import brew from '../util/deps/homebrew.js'
 import { platform } from '../util/platform.js'
 import * as simver from '../util/simver.js'
-import download from '../util/download-helper'
+import download from '../util/download-helper.js'
 
 const version = '3.96'
 

@@ -1,8 +1,8 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
-import { agdaBinDir, agdaDataDir } from '../util/appdirs'
-import { mkdirP } from '../util/exec'
-import { agdaComponents, SetOptions } from '../util/types'
+import { agdaBinDir, agdaDataDir } from '../util/appdirs.js'
+import { mkdirP } from '../util/exec.js'
+import { agdaComponents, SetOptions } from '../util/types.js'
 
 export default async function set(options: SetOptions): Promise<void> {
   // Ensure the Agda version is installed:

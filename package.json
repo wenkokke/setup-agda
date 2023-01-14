@@ -5,6 +5,7 @@
   "description": "Set up a specific version of Agda.",
   "author": "Wen Kokke",
   "license": "MIT",
+  "type": "module",
   "engines": {
     "node": ">=16"
   },
@@ -13,6 +14,9 @@
     "@actions/core": "^1.6.0",
     "@actions/exec": "^1.1.1",
     "@actions/io": "^1.1.2",
+    "@inquirer/checkbox": "^0.0.30-alpha.0",
+    "@inquirer/core": "^0.0.30-alpha.0",
+    "@inquirer/select": "^0.0.29-alpha.0",
     "commander": "^9.5.0",
     "ensure-error": "^4.0.0",
     "inquirer": "^9.1.4",
@@ -62,6 +66,7 @@
     "@types/glob": "^8.0.0",
     "@types/inquirer": "^9.0.3",
     "@types/js-yaml": "^4.0.5",
+    "@types/mute-stream": "^0.0.1",
     "@types/node": "^18.11.17",
     "@types/node-fetch": "^2.6.2",
     "@types/nunjucks": "^3.2.1",
