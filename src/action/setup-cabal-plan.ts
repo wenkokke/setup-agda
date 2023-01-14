@@ -13,7 +13,7 @@ import ensureError from 'ensure-error'
 
 const version = '0.7.2.3'
 const installDir = agdaupCacheDir(path.join('cabal-plan', version))
-const primaryKey = `cabal-plan-${version}-${platform}-${release}`
+const primaryKey = `cache-${release}-cabal-plan-${version}`
 const ghcVersionConstraint = '>=8.2.1'
 const cabalPlanExe =
   platform === 'windows'
