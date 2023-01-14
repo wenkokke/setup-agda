@@ -508,8 +508,7 @@
     "compatibility": {
       "agda-stdlib": "0.13",
       "ghc": "7.6 - 8.0"
-    },
-    "configuration": "--constraint=\"monadplus<1.4.3\"\n"
+    }
   },
   "2.5.1.2": {
     "compatibility": {
