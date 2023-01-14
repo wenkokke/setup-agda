@@ -13,12 +13,12 @@ jobs:
         with:
           agda-version: 'latest'
           bundle-name: |
-            agda-{{{agda-version}}}
-                -{{{arch}}}
+            agda-{{agda-version}}
+                -{{arch}}
                 -ubuntu-20.04
-                -icu{{{icu-version}}}
-                -ghc{{{ghc-version}}}
-                -cabal{{{cabal-version}}}
+                -icu{{icu-version}}
+                -ghc{{ghc-version}}
+                -cabal{{cabal-version}}
           bundle-license-report: true
           bundle: true
           force-build: true

@@ -17,5 +17,9 @@ esbuild.build({
     'logger.isDebug': 'logger_isDebug',
     'logger.warning': 'logger_warning'
   },
-  inject: ['./shim/logger-action.js']
+  inject: ['./shim/logger-action.js'],
+  // The 'fsevents' dependency is included as a peerDependency by nunjucks,
+  // but is not used at either run- or compile-time. Therefore, I believe it
+  // is safe to mark it as external.
+  external: ['fsevents']
 })

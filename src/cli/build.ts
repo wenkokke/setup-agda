@@ -1,43 +1,43 @@
+import ensureError from 'ensure-error'
 import assert from 'node:assert'
 import * as fs from 'node:fs'
+import { rm } from 'node:fs/promises'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import { pipeline } from 'node:stream/promises'
+import semver from 'semver'
 import tmp from 'tmp'
 import bundledLicenses from '../data/licenses.json'
 import { agdaInstallDir } from '../util/appdirs.js'
-import cabal from '../util/deps/cabal.js'
 import cabalPlan from '../util/deps/cabal-plan.js'
+import cabal from '../util/deps/cabal.js'
+import ghc from '../util/deps/ghc.js'
 import {
   icuBundle,
   icuConfigureOptions,
   icuGetVersion,
   icuNeeded
 } from '../util/deps/icu.js'
+import upx from '../util/deps/upx.js'
 import download from '../util/download-helper.js'
-import test from './test.js'
-import { cpR, ExecOptions, mkdirP, mv } from '../util/exec.js'
-import {
-  agdaInfo,
-  agdaComponents,
-  AgdaGitRef,
-  BuildOptions,
-  Dist,
-  isAgdaGitRef,
-  isAgdaVersion
-} from '../util/types.js'
-import ghc from '../util/deps/ghc.js'
-import semver from 'semver'
 import {
   GhcNotFound,
   GhcVersionConstraintNotFound,
   GhcVersionMismatch
 } from '../util/errors.js'
-import upx from '../util/deps/upx.js'
-import { rm } from 'node:fs/promises'
-import Mustache from 'mustache'
+import { cpR, ExecOptions, mkdirP, mv } from '../util/exec.js'
 import { arch, platform, release } from '../util/platform.js'
-import ensureError from 'ensure-error'
+import {
+  agdaComponents,
+  AgdaGitRef,
+  agdaInfo,
+  BuildOptions,
+  Dist,
+  isAgdaGitRef,
+  isAgdaVersion
+} from '../util/types.js'
+import { Has } from '../util/has'
+import test from './test.js'
 
 export default async function build(options: BuildOptions): Promise<void> {
   // Check if the installed GHC version is correct:
@@ -233,8 +233,7 @@ async function licenseReport(
 }
 
 build.renderBundleName = async (
-  template: string,
-  options: BuildOptions
+  options: Has<BuildOptions, 'bundle-options'>
 ): Promise<string> => {
   // Get the GHC and Cabal versions:
   const ghcVersion = await ghc.maybeGetVersion()
@@ -248,7 +247,7 @@ build.renderBundleName = async (
       logger.warning(ensureError(error))
     }
   }
-  return Mustache.render(template, {
+  return options['bundle-options']?.['bundle-name-template'].render({
     'agda-version': options['agda-version'],
     'ghc-version': ghcVersion,
     'cabal-version': cabalVersion,

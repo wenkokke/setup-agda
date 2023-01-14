@@ -31,6 +31,7 @@ import {
   AgdaLibraryUnsupportedSpecification
 } from '../util/errors.js'
 import cabalPlan from '../util/deps/cabal-plan.js'
+import { has } from '../util/has.js'
 
 export default async function setupAgda(options: ActionOptions): Promise<void> {
   // Find an existing Agda build or build from source:
@@ -122,12 +123,8 @@ export default async function setupAgda(options: ActionOptions): Promise<void> {
         `Upload bundle for Agda ${options['agda-version']}`,
         async () => {
           const { buildOptions, installDir } = buildResult
-          if (buildOptions['bundle-options'] !== undefined) {
-            const bundleOptions = buildOptions['bundle-options']
-            const bundleName = await build.renderBundleName(
-              bundleOptions['bundle-name'],
-              buildOptions
-            )
+          if (has(buildOptions, ['bundle-options'])) {
+            const bundleName = await build.renderBundleName(buildOptions)
             // Upload bundle:
             const artifactClient = artifact.create()
             const uploadInfo = await artifactClient.uploadArtifact(

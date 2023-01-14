@@ -420,18 +420,19 @@ This section describes all inputs:
 
   If specified, will be used as a name for the bundle.
   
-  The value is interpreted as a [mustache template](https://mustache.github.io/).
-  The template may use `{{{agda-version}}}`, `{{{cabal-version}}}`,
-  `{{{ghc-version}}}`, `{{{icu-version}}}`, and `{{{upx-version}}}`,
-  which will be replaced by the concrete versions, if installed, and
-  to `{{{arch}}}`, `{{{platform}}}`, and `{{{release}}}`, which will be
-  replaced by the system architecture, operating system, and operating
-  system release, as returned by
-  [the corresponding NodeJS functions](https://nodejs.org/api/os.html).
+  The value is interpreted as a [nunjucks template](https://mozilla.github.io/nunjucks/).
+  The template may use `{{agda-version}}`, `{{cabal-version}}`,
+  `{{ghc-version}}`, `{{icu-version}}`, which will be replace by the
+  concrete versions, if used, and `{{arch}}`, `{{platform}}`, and
+  `{{release}}`. The variable `{{arch}}` is replaced by the system
+  architecture---e.g., `x64`, `arm64`, etc. The variable `{{platform}}`
+  is replaced by one of of `linux`, `macos`, or `windows`. The variable
+  `{{release}}` is replaced by a release identifier, e.g., `ubuntu-22.04`,
+  `macos-12`, or `windows-2022`.
   
   Only used when `bundle` is specified.
 
-  Default: `agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}`
+  Default: `agda-{{agda-version}}-{{arch}}-{{platform}}`
 
 - `bundle-license-report`
 

@@ -1,6 +1,6 @@
-import Mustache from 'mustache'
 import assert from 'node:assert'
 import os from 'node:os'
+import nunjucks from 'nunjucks'
 import pick from 'object.pick'
 import semver from 'semver'
 import bundledSetupAgdaPackage from '../data/setup-agda/package.json'
@@ -434,6 +434,7 @@ export type BundleOptionKey =
 /** The type of options for the bundle command. */
 export interface BundleOptions extends Pick<ActionOptions, BundleOptionKey> {
   upx?: string
+  'bundle-name-template': nunjucks.Template
 }
 
 /** Pick the BundleOptions from a larger object and validate them. */
@@ -443,7 +444,18 @@ function pickBundleOptions<
   // Validate the bundle name:
   const bundleName = options['bundle-name'].split(/\s+/g).join('').trim()
   try {
-    Mustache.parse(bundleName)
+    const env = nunjucks.configure({
+      autoescape: false,
+      throwOnUndefined: true
+    })
+    const tpl = new nunjucks.Template(bundleName, env, undefined, true)
+
+    // Return the validated BundleOptions:
+    return {
+      ...pick(options, ['bundle', 'bundle-compress', 'bundle-license-report']),
+      'bundle-name': bundleName,
+      'bundle-name-template': tpl
+    }
   } catch (error) {
     throw Error(
       [
@@ -451,12 +463,6 @@ function pickBundleOptions<
         ensureError(error).message
       ].join(os.EOL)
     )
-  }
-
-  // Return the validated BundleOptions:
-  return {
-    ...pick(options, ['bundle', 'bundle-compress', 'bundle-license-report']),
-    'bundle-name': bundleName
   }
 }
 

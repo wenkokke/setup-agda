@@ -55,8 +55,8 @@
       "required": false
     },
     "bundle-name": {
-      "default": "agda-{{{agda-version}}}-{{{arch}}}-{{{platform}}}",
-      "description": "If specified, will be used as a name for the bundle.\n\nThe value is interpreted as a [mustache template](https://mustache.github.io/).\nThe template may use `{{{agda-version}}}`, `{{{cabal-version}}}`,\n`{{{ghc-version}}}`, `{{{icu-version}}}`, and `{{{upx-version}}}`,\nwhich will be replaced by the concrete versions, if installed, and\nto `{{{arch}}}`, `{{{platform}}}`, and `{{{release}}}`, which will be\nreplaced by the system architecture, operating system, and operating\nsystem release, as returned by\n[the corresponding NodeJS functions](https://nodejs.org/api/os.html).\n\nOnly used when `bundle` is specified.\n",
+      "default": "agda-{{agda-version}}-{{arch}}-{{platform}}",
+      "description": "If specified, will be used as a name for the bundle.\n\nThe value is interpreted as a [nunjucks template](https://mozilla.github.io/nunjucks/).\nThe template may use `{{agda-version}}`, `{{cabal-version}}`,\n`{{ghc-version}}`, `{{icu-version}}`, which will be replace by the\nconcrete versions, if used, and `{{arch}}`, `{{platform}}`, and\n`{{release}}`. The variable `{{arch}}` is replaced by the system\narchitecture---e.g., `x64`, `arm64`, etc. The variable `{{platform}}`\nis replaced by one of of `linux`, `macos`, or `windows`. The variable\n`{{release}}` is replaced by a release identifier, e.g., `ubuntu-22.04`,\n`macos-12`, or `windows-2022`.\n\nOnly used when `bundle` is specified.\n",
       "required": false
     },
     "bundle-license-report": {
