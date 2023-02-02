@@ -246,21 +246,22 @@ export async function icuBundle(
         }
       }
       // Change dependencies on Agda executables:
-      const binNames: string[] = [agdaComponents['Agda:exe:agda'].exe]
-      for (const binName of binNames) {
+      const binsAndDepsToChange: [string, string[]][] = [
+        [agdaComponents['Agda:exe:agda'].exe, ['libicuuc', 'libicui18n']]
+      ]
+      for (const [binName, depNames] of binsAndDepsToChange) {
         const binPath = path.join(dest, 'bin', binName)
         const binLibs = await otool.getSharedLibraries(binPath)
-        for (const lib of libs) {
-          const libNameFrom = path.basename(lib)
-          const libFrom = binLibs.find(
-            (lib) => path.basename(lib) === libNameFrom
+        for (const depName of depNames) {
+          const libFrom = binLibs.find((lib) =>
+            path
+              .basename(lib)
+              .match(new RegExp(`^${depName}\\.([\\d.]+)\\.dylib$`))
           )
           if (libFrom === undefined) {
-            logger.warning(
-              `skip ${libNameFrom}: not in [${binLibs.join(', ')}]`
-            )
+            logger.warning(`skip ${depName}: not in [${binLibs.join(', ')}]`)
           } else {
-            const libNameTo = `agda-${options['agda-version']}-${libNameFrom}.${version}.dylib`
+            const libNameTo = `agda-${options['agda-version']}-${depName}.${version}.dylib`
             const libTo = `@executable_path/../lib/${libNameTo}`
             await installNameTool.change(libFrom, libTo, binPath)
           }
