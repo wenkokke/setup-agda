@@ -42,24 +42,6 @@ program
   .option('--verbosity [verbosity]', 'set the verbosity', 'info')
   .action(install)
 
-program
-  .command('build')
-  .description('Alias for install with --build.')
-  .argument('<installable>')
-  .argument('<version>')
-  .option('--bundle', 'bundle ICU with Agda', false)
-  .option('--configure-option [options...]', 'options passed to Cabal')
-  .option('--verbosity [verbosity]', 'set the verbosity', 'info')
-  .action(build)
-
-async function build(
-  installable: string,
-  version: string,
-  options: InstallCommandOptions
-): Promise<never> {
-  return await install(installable, version, { ...options, build: true })
-}
-
 async function install(
   installable: string,
   version: string,
@@ -75,6 +57,8 @@ async function install(
           'agda-version': version,
           bundle: options.bundle ? 'true' : ''
         })
+        // --bundle implies --build:
+        if (options.bundle) options.build = true
         if (!options.build) {
           const installOptions = pickInstallOptions(actionOptions)
           await logger.group(
