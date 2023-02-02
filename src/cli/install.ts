@@ -1,5 +1,5 @@
 import glob from 'glob'
-import * as fs from 'node:fs'
+import fs from 'fs-extra'
 import * as path from 'node:path'
 import { agdaInstallDir } from '../util/appdirs.js'
 import download from '../util/download-helper.js'
@@ -9,7 +9,6 @@ import test from './test.js'
 import chmod from '../util/deps/chmod.js'
 import xattr from '../util/deps/xattr.js'
 import ensureError from 'ensure-error'
-import { cpR, mkdirP } from '../util/exec.js'
 import {
   AgdaInstallDirExists,
   AgdaRejectedAllDists,
@@ -48,8 +47,8 @@ export default async function install(options: InstallOptions): Promise<void> {
       // Copy binary distribution to install directory:
       const dest = options.dest ?? agdaInstallDir(options['agda-version'])
       if (fs.existsSync(dest)) throw new AgdaInstallDirExists(dest)
-      await mkdirP(path.dirname(dest))
-      await cpR(tmpDir, dest)
+      await fs.mkdirp(path.dirname(dest))
+      await fs.copy(tmpDir, dest)
       return
     } catch (error) {
       logger.warning(

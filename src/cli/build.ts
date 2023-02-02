@@ -1,7 +1,6 @@
 import ensureError from 'ensure-error'
 import assert from 'node:assert'
-import * as fs from 'node:fs'
-import { rm } from 'node:fs/promises'
+import fs from 'fs-extra'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import { pipeline } from 'node:stream/promises'
@@ -25,7 +24,7 @@ import {
   GhcVersionConstraintNotFound,
   GhcVersionMismatch
 } from '../util/errors.js'
-import { cpR, ExecOptions, mkdirP, mv } from '../util/exec.js'
+import { ExecOptions } from '../util/exec.js'
 import { arch, platform, release } from '../util/platform.js'
 import {
   agdaComponents,
@@ -95,7 +94,7 @@ export default async function build(options: BuildOptions): Promise<void> {
 
   // Build & Install:
   const destBinDir = path.join(destDir, 'bin')
-  await mkdirP(destBinDir)
+  await fs.mkdirp(destBinDir)
   await cabal(
     [
       'v2-install',
@@ -108,7 +107,7 @@ export default async function build(options: BuildOptions): Promise<void> {
 
   // Install data files:
   const destDataDir = path.join(destDir, 'data')
-  await cpR(path.join(tmpDir, 'src', 'data'), destDataDir)
+  await fs.copy(path.join(tmpDir, 'src', 'data'), destDataDir)
 
   // Create the license report:
   if (options['bundle-options']?.['bundle-license-report']) {
@@ -139,9 +138,9 @@ export default async function build(options: BuildOptions): Promise<void> {
       for (const bin of Object.values(agdaComponents)) {
         const binPath = path.join(destDir, 'bin', bin.exe)
         const bakPath = path.join(destDir, 'bin', `backup-${bin.exe}`)
-        await mv(binPath, bakPath)
+        await fs.rename(binPath, bakPath)
         await upx(bundleOptions.upx ?? null, ['--best', '-o', binPath, bakPath])
-        await rm(bakPath)
+        await fs.rm(bakPath)
       }
     }
   }

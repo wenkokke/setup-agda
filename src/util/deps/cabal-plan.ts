@@ -1,10 +1,10 @@
 import glob from 'glob'
-import * as fs from 'node:fs'
+import fs from 'fs-extra'
 import * as http from 'node:http'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import { pipeline } from 'node:stream/promises'
-import { ExecOptions, getOutputAndErrors, mkdirP } from '../exec.js'
+import { ExecOptions, getOutputAndErrors } from '../exec.js'
 import { BuildOptions } from '../types.js'
 
 // TODO: edit ExecOptions.env.PATH instead of passing cabalPlanPath
@@ -69,7 +69,7 @@ const cabalPlan = {
                     depName,
                     'LICENSE'
                   )
-                  await mkdirP(path.join(licenseDir, depName))
+                  await fs.mkdirp(path.join(licenseDir, depName))
                   await pipeline(res, fs.createWriteStream(depLicensePath))
                   licenses[depName] = depLicensePath
                   resolve()

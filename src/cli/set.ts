@@ -1,7 +1,6 @@
-import * as fs from 'node:fs'
+import fs from 'fs-extra'
 import * as path from 'node:path'
 import { agdaBinDir, agdaDataDir } from '../util/appdirs.js'
-import { mkdirP } from '../util/exec.js'
 import { agdaComponents, SetOptions } from '../util/types.js'
 
 export default async function set(options: SetOptions): Promise<void> {
@@ -13,7 +12,7 @@ export default async function set(options: SetOptions): Promise<void> {
     throw Error(`${versionBinDir} is not a directory`)
   // Ensure the global bin directory exists:
   const globalBinDir = agdaBinDir()
-  if (!fs.existsSync(globalBinDir)) await mkdirP(globalBinDir)
+  if (!fs.existsSync(globalBinDir)) await fs.mkdirp(globalBinDir)
   if (!fs.statSync(versionBinDir).isDirectory())
     throw Error(`${versionBinDir} exists and is not a directory`)
   // Link the Agda executables:
@@ -43,6 +42,6 @@ export default async function set(options: SetOptions): Promise<void> {
     }
   }
   // Link the new data directory:
-  await mkdirP(path.dirname(globalDataDir))
+  await fs.mkdirp(path.dirname(globalDataDir))
   fs.symlinkSync(versionDataDir, globalDataDir)
 }

@@ -1,9 +1,9 @@
 import glob from 'glob'
 import path from 'node:path'
+import fs from 'fs-extra'
 import { agdaLibraryInstallDir } from '../util/appdirs.js'
 import download from '../util/download-helper.js'
 import { AgdaLibNotFound } from '../util/errors.js'
-import { cpR, mkdirP } from '../util/exec.js'
 import { Dist } from '../util/types.js'
 
 // TODO: Add custom logic for installing known libraries, which currently means the standard library.
@@ -30,8 +30,8 @@ export default async function installLibrary(dist: Dist): Promise<string> {
     libraryVersion,
     libraryExperimental
   )
-  await mkdirP(path.dirname(libraryTo))
-  await cpR(libraryFrom, libraryTo)
+  await fs.mkdirp(path.dirname(libraryTo))
+  await fs.copy(libraryFrom, libraryTo)
   logger.info(`Installed ${libraryName} to ${libraryTo}`)
   return path.join(libraryTo, `${libraryName}.agda-lib`)
 }

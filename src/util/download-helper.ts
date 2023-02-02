@@ -1,11 +1,10 @@
 // Adapted from tool-cache.ts in @actions/tool-cache
 
-import * as fs from 'node:fs'
+import fs from 'fs-extra'
 import * as path from 'node:path'
 import * as exec from './exec.js'
 import * as tmp from 'tmp'
 import unzip from './deps/unzip.js'
-import { mkdirP } from './exec.js'
 import { RetryHelper } from './retry-helper.js'
 import { platform } from './platform.js'
 import tar from './deps/tar.js'
@@ -59,7 +58,7 @@ async function ensureDestDir(
   if (typeof destDir !== 'string') {
     const tmpDir = tmp.dirSync(destDir).name
     logger.debug(`Created temporary directory ${tmpDir}`)
-    await mkdirP(tmpDir)
+    await fs.mkdirp(tmpDir)
     return tmpDir
   } else {
     if (fs.existsSync(destDir)) {
@@ -70,7 +69,7 @@ async function ensureDestDir(
         throw Error(`Expected directory: ${destDir}`)
       }
     } else {
-      await mkdirP(destDir)
+      await fs.mkdirp(destDir)
       return destDir
     }
   }

@@ -1,10 +1,10 @@
 import * as path from 'node:path'
+import fs from 'fs-extra'
 import pkgConfig from './pkg-config.js'
 import { platform } from '../platform.js'
 import brew from './homebrew.js'
 import glob from 'glob'
 import { agdaComponents, BuildOptions } from '../types.js'
-import { cp, mkdirP } from '../exec.js'
 import patchelf from './patchelf.js'
 import * as simver from '../simver.js'
 import installNameTool from './install-name-tool.js'
@@ -159,12 +159,12 @@ export async function icuBundle(
         }
       }
       // Copy the found ICU libraries and update their sonames:
-      await mkdirP(path.join(dest, 'lib'))
+      await fs.mkdirp(path.join(dest, 'lib'))
       for (const libFrom of libs) {
         const libName = path.basename(libFrom, `.so.${version}`)
         const libNameTo = `agda-${options['agda-version']}-${libName}.so.${version}`
         const libTo = path.join(dest, 'lib', libNameTo)
-        await cp(libFrom, libTo)
+        await fs.copyFile(libFrom, libTo)
         await patchelf(['--set-soname', libNameTo, libTo])
       }
       // Change the internal dependencies between the libraries:
@@ -221,12 +221,12 @@ export async function icuBundle(
         }
       }
       // Copy the found ICU libraries and update their ids:
-      await mkdirP(path.join(dest, 'lib'))
+      await fs.mkdirp(path.join(dest, 'lib'))
       for (const libFrom of libs) {
         const libName = path.basename(libFrom, `.${version}.dylib`)
         const libNameTo = `agda-${options['agda-version']}-${libName}.${version}.dylib`
         const libTo = path.join(dest, 'lib', libNameTo)
-        await cp(libFrom, libTo)
+        await fs.copyFile(libFrom, libTo)
         await installNameTool(['-id', libNameTo, libTo])
       }
       // Change the internal dependencies between the libraries:
@@ -289,7 +289,7 @@ export async function icuBundle(
       for (const libFrom of libs) {
         const libName = path.basename(libFrom)
         const libTo = path.join(dest, 'bin', libName)
-        await cp(libFrom, libTo)
+        await fs.copyFile(libFrom, libTo)
       }
       break
     }

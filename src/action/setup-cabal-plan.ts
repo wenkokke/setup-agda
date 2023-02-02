@@ -1,8 +1,8 @@
 import * as cache from '@actions/cache'
 import * as path from 'node:path'
+import fs from 'fs-extra'
 import { agdaupCacheDir } from '../util/appdirs.js'
 import cabal from '../util/deps/cabal.js'
-import { mkdirP } from '../util/exec.js'
 import { platform, release } from '../util/platform.js'
 import * as semver from 'semver'
 import ghc from '../util/deps/ghc.js'
@@ -42,7 +42,7 @@ export default async function setupCabalPlan(): Promise<string> {
   // Install `cabal-plan` with `license-report`:
   logger.info(`Install cabal-plan ${version} to ${installDir}`)
   await cabal(['v2-update'])
-  await mkdirP(installDir)
+  await fs.mkdirp(installDir)
   await cabal([
     'v2-install',
     `cabal-plan-${version}`,

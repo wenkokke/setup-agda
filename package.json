@@ -13,7 +13,6 @@
     "@actions/artifact": "^1.1.0",
     "@actions/core": "^1.6.0",
     "@actions/exec": "^1.1.1",
-    "@actions/io": "^1.1.2",
     "@inquirer/checkbox": "^0.0.30-alpha.0",
     "@inquirer/core": "^0.0.30-alpha.0",
     "@inquirer/select": "^0.0.29-alpha.0",
@@ -64,6 +63,7 @@
   },
   "devDependencies": {
     "@actions/cache": "^3.1.2",
+    "@types/fs-extra": "^11.0.1",
     "@types/glob": "^8.0.0",
     "@types/inquirer": "^9.0.3",
     "@types/js-yaml": "^4.0.5",
