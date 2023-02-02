@@ -15,19 +15,18 @@ function splitPath(PATH?: string): string[] {
   )
 }
 
-const msysPaths = ['C:\\msys64\\mingw64\\bin', 'C:\\msys64\\usr\\bin']
+const msysPaths =
+  platform === 'windows'
+    ? ['C:\\msys64\\mingw64\\bin', 'C:\\msys64\\usr\\bin']
+    : []
 
 export default {
   paths: msysPaths,
   path: joinPath(msysPaths),
   modifyExecOptions: (options?: ExecOptions): ExecOptions => {
     if (platform === 'windows') {
-      if (options === undefined) {
-        options = {}
-      }
-      if (options.env === undefined) {
-        options.env = {}
-      }
+      if (options === undefined) options = {}
+      if (options.env === undefined) options.env = {}
       const pathDirs = splitPath(options.env.PATH)
       options.env.PATH = joinPath([...pathDirs, ...msysPaths])
       return options
