@@ -1,4 +1,4 @@
-import * as fs from 'node:fs'
+import fs from 'fs-extra'
 import * as path from 'node:path'
 import nunjucks from 'nunjucks'
 import url from 'url'

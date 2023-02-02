@@ -1,5 +1,5 @@
 import glob from 'glob'
-import * as fs from 'node:fs'
+import fs from 'fs-extra'
 import * as path from 'node:path'
 import url from 'url'
 import prettier from 'prettier'

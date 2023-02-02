@@ -1,5 +1,5 @@
 import assert from 'node:assert'
-import * as fs from 'node:fs'
+import fs from 'fs-extra'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import { agdaDefaultsFile, agdaLibrariesFile } from '../util/appdirs.js'
@@ -21,8 +21,10 @@ export default function registerLibrary(
       `Agda libraries file already contains a copy of ${newLibrary.name}`
     )
   const newLibraries = [...oldLibraries, newLibrary]
+  const librariesFile = agdaLibrariesFile()
+  fs.mkdirpSync(path.dirname(librariesFile))
   fs.writeFileSync(
-    agdaLibrariesFile(),
+    librariesFile,
     newLibraries
       .map((libraryParsedPath) => path.format(libraryParsedPath))
       .join(os.EOL)
@@ -32,6 +34,8 @@ export default function registerLibrary(
   if (isDefault === true) {
     const oldDefaults = agda.readDefaultsSync()
     const newDefaults = [...oldDefaults, newLibrary.name]
-    fs.writeFileSync(agdaDefaultsFile(), newDefaults.join(os.EOL))
+    const defaultsFile = agdaDefaultsFile()
+    fs.mkdirpSync(path.dirname(defaultsFile))
+    fs.writeFileSync(defaultsFile, newDefaults.join(os.EOL))
   }
 }

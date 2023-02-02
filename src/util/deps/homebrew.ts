@@ -1,4 +1,4 @@
-import * as fs from 'node:fs'
+import fs from 'fs-extra'
 import ensureError from 'ensure-error'
 import exec, { ExecOptions } from '../exec.js'
 
