@@ -42,7 +42,7 @@
     "setup"
   ],
   "scripts": {
-    "agdaup": "npm run check-cli && npm run build-cli && node ./dist/cli.js",
+    "agdaup": "npm run check-cli && npm run build-cli && node ./dist/cli.cjs",
     "all": "npm run build && npm run format && npm run lint",
     "prebuild": "npm run bundle-data && npm run check",
     "build": "npm run build-action && npm run build-cli && npm run build-readme",

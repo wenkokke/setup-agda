@@ -105,3 +105,6 @@ lib/**/*
 
 # Agda files
 _build/
+
+# Haskell files
+dist-newstyle/
