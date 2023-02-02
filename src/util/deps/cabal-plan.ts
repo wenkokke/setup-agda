@@ -42,7 +42,7 @@ const cabalPlan = {
       const { stderr } = await exec(
         cabalPlanPath,
         ['license-report', `--licensedir=${licenseDir}`, component],
-        { ...options, stderr: true }
+        options
       )
       // Read the generated licenses, and add them to $licenses:
       for (const depLicensePath of glob.sync(path.join(licenseDir, '*', '*'))) {

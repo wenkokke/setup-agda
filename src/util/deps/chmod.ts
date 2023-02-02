@@ -5,7 +5,7 @@ import exec, { ExecOptions } from '../exec.js'
 export default async function chmod(
   args: string[],
   options?: ExecOptions
-): Promise<string> {
+): Promise<void> {
   assert(platform !== 'windows', 'MSYS2 does not support chmod')
-  return await exec('chmod', args, options)
+  await exec('chmod', args, options)
 }

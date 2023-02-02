@@ -4,16 +4,17 @@ import exec, { ExecOptions } from '../exec.js'
 export default async function ghc(
   args: string[],
   options?: ExecOptions
-): Promise<string> {
-  return await exec('ghc', args, options)
+): Promise<void> {
+  await exec('ghc', args, options)
 }
 
 ghc.getInfo = async (
   options?: ExecOptions
 ): Promise<Partial<Record<string, string>>> => {
-  let ghcInfoString = await ghc(['--info'], options)
-  ghcInfoString = ghcInfoString.replace(/\(/g, '[').replace(/\)/g, ']')
-  const ghcInfo = JSON.parse(ghcInfoString) as [string, string][]
+  const { stdout } = await exec('ghc', ['--info'], options)
+  const ghcInfo = JSON.parse(
+    stdout.replace(/\(/g, '[').replace(/\)/g, ']')
+  ) as [string, string][]
   return Object.fromEntries(
     ghcInfo.map((entry) => [
       // "Target platform" -> 'ghc-info-target-platform'
@@ -24,7 +25,8 @@ ghc.getInfo = async (
 }
 
 ghc.getVersion = async (): Promise<string> => {
-  return exec('ghc', ['--numeric-version'])
+  const { stdout } = await exec('ghc', ['--numeric-version'])
+  return stdout
 }
 
 ghc.maybeGetVersion = async (): Promise<string | null> => {

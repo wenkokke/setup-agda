@@ -5,8 +5,8 @@ const name = 'powershell'
 export default async function powershell(
   args: string[],
   options?: ExecOptions
-): Promise<string> {
-  return await exec(name, args, options)
+): Promise<void> {
+  await exec(name, args, options)
 }
 
 powershell.which = async (): Promise<string | null> => {

@@ -18,9 +18,9 @@ export interface AgdaOptions {
 export default async function agda(
   args: string[],
   options?: Partial<AgdaOptions> & ExecOptions
-): Promise<string> {
+): Promise<void> {
   const [agdaBin, optionsWithDataDir] = resolveAgdaOptions(options)
-  return await exec(agdaBin, args, optionsWithDataDir)
+  await exec(agdaBin, args, optionsWithDataDir)
 }
 
 agda.readLibrariesSync = (): path.ParsedPath[] => {
@@ -46,7 +46,7 @@ agda.readExecutablesSync = (): string[] => {
 
 function resolveAgdaOptions(
   options?: Partial<AgdaOptions> & ExecOptions
-): [string, ExecOptions & { stderr: false }] {
+): [string, ExecOptions] {
   const agdaPath = options?.agdaPath ?? agdaComponents['Agda:exe:agda'].exe
   // Set 'Agda_datadir' if it is explicitly passed:
   const agdaDataDirUndefined =
@@ -64,13 +64,13 @@ function resolveAgdaOptions(
       }
     }
   }
-  return [agdaPath, { ...options, stderr: false }]
+  return [agdaPath, { ...options }]
 }
 agda.getVersion = async (
   options?: Partial<AgdaOptions> & ExecOptions
 ): Promise<string> => {
   const [agdaBin, optionsWithDataDir] = resolveAgdaOptions(options)
-  const stdout = await exec(agdaBin, ['--version'], optionsWithDataDir)
+  const { stdout } = await exec(agdaBin, ['--version'], optionsWithDataDir)
   if (stdout.startsWith('Agda version ')) {
     return stdout.substring('Agda version '.length).trim()
   } else {
@@ -81,11 +81,17 @@ agda.getVersion = async (
 agda.getDataDir = async (
   options?: Partial<AgdaOptions> & ExecOptions
 ): Promise<string> => {
+  const [agdaBin, optionsWithDataDir] = resolveAgdaOptions(options)
   // Support for --print-agda-dir was added in 2.6.2
   // https://github.com/agda/agda/commit/942c4a86d4941ba14d73ff173bd7d2b26e54da6c
   const agdaVersion = await agda.getVersion(options)
   if (simver.gte(agdaVersion, '2.6.2')) {
-    return await agda(['--print-agda-dir'], options)
+    const { stdout } = await exec(
+      agdaBin,
+      ['--print-agda-dir'],
+      optionsWithDataDir
+    )
+    return stdout
   } else {
     const agdaDataDir = options?.agdaDataDir ?? options?.env?.Agda_datadir
     if (agdaDataDir !== undefined) return agdaDataDir

@@ -4,5 +4,6 @@ export async function dumpbin(
   args: string[],
   options?: ExecOptions
 ): Promise<string> {
-  return await exec('dumpbin', args, options)
+  const { stdout } = await exec('dumpbin', args, options)
+  return stdout
 }

@@ -6,6 +6,6 @@ export default async function upx(
   upxPath: string | null,
   args: string[],
   options?: ExecOptions
-): Promise<string> {
-  return await exec(upxPath ?? 'upx', args, options)
+): Promise<void> {
+  await exec(upxPath ?? 'upx', args, options)
 }

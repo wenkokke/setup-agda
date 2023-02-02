@@ -80,6 +80,7 @@ async function install(
           await installAgda(installOptions)
         } else {
           const buildOptions = await pickBuildOptions(actionOptions)
+          buildOptions.verbosity = options.verbosity // Set verbosity
           await buildAgda(buildOptions)
         }
         return exit(0)

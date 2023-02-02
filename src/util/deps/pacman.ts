@@ -5,9 +5,9 @@ import msys from './msys.js'
 export default async function pacman(
   args: string[],
   options?: ExecOptions
-): Promise<string> {
+): Promise<void> {
   const pacmanPath = await pacman.which()
-  return await exec(pacmanPath ?? 'pacman', args, options)
+  await exec(pacmanPath ?? 'pacman', args, options)
 }
 
 pacman.which = async (): Promise<string | null> => {
@@ -25,7 +25,12 @@ pacman.getVersion = async (
   pkg: string,
   options?: ExecOptions
 ): Promise<string | undefined> => {
-  const pkgInfo = await pacman(['--noconfirm', '-Qs', pkg], options)
+  const pacmanPath = await pacman.which()
+  const { stdout: pkgInfo } = await exec(
+    pacmanPath ?? 'pacman',
+    ['--noconfirm', '-Qs', pkg],
+    options
+  )
   const pkgVersionRegExp = /(?<version>\d[\d.]+\d)/
   const pkgVersion = pkgInfo.match(pkgVersionRegExp)?.groups?.version?.trim()
   if (pkgVersion !== undefined) return pkgVersion

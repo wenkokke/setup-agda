@@ -141,7 +141,7 @@ export default async function downloadHelper(
   destDir = await ensureDestDir(destDir)
 
   // Download package depending on the type of URL:
-  logger.info(`Downloading package from ${dist.url}`)
+  logger.debug(`Downloading package from ${dist.url}`)
   switch (dist.distType ?? inferDistType(dist.url)) {
     case 'zip': {
       const source = await distDest(dist)

@@ -479,6 +479,7 @@ export interface BuildOptions extends Pick<ActionOptions, BuildOptionKey> {
   'cabal-plan'?: string
   'working-directory'?: string
   dest?: string
+  verbosity?: Verbosity
 }
 
 /** Pick the BuildOptions from a larger object and validate them. */

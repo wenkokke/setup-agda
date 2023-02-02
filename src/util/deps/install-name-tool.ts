@@ -5,8 +5,8 @@ import otool from './otool.js'
 export default async function installNameTool(
   args: string[],
   options?: ExecOptions
-): Promise<string> {
-  return await exec('install_name_tool', args, options)
+): Promise<void> {
+  await exec('install_name_tool', args, options)
 }
 
 installNameTool.change = async (
@@ -14,7 +14,7 @@ installNameTool.change = async (
   libTo: string,
   target: string,
   options?: ExecOptions
-): Promise<string> => {
+): Promise<void> => {
   const sharedLibraries = await otool.getSharedLibraries(target, options)
   if (!sharedLibraries.includes(libFrom)) {
     const prettySharedLibraryList = sharedLibraries
@@ -24,5 +24,5 @@ installNameTool.change = async (
       `${target} does not use shared library ${libFrom}:${os.EOL}${prettySharedLibraryList}`
     )
   }
-  return await installNameTool(['-change', libFrom, libTo, target], options)
+  await installNameTool(['-change', libFrom, libTo, target], options)
 }

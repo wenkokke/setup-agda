@@ -75,43 +75,79 @@ export default async function build(options: BuildOptions): Promise<void> {
   }
 
   // Get the source:
-  const tmpDir = isAgdaGitRef(options['agda-version'])
-    ? await download(agdaGitDist(options['agda-version']))
-    : await download(agdaPkgDist(options['agda-version']))
+  const tmpDir = await logger.group(
+    `Download source for Agda ${options['agda-version']}`,
+    async () => {
+      if (isAgdaGitRef(options['agda-version'])) {
+        return await download(agdaGitDist(options['agda-version']))
+      } else {
+        return await download(agdaPkgDist(options['agda-version']))
+      }
+    }
+  )
 
   // Options for running commands in the working directory:
-  const execOptions: ExecOptions = { cwd: tmpDir }
+  const execOptions: ExecOptions = {
+    cwd: tmpDir
+  }
+
+  // Determine the appropriate Cabal verbosity:
+  const cabalVerbosityFlag = cabal.getVerbosityFlag(options.verbosity)
 
   // Update the Cabal package database:
-  await cabal(['v2-update'])
+  await cabal(['v2-update', cabalVerbosityFlag])
 
   // Configure the build:
-  const cabalProjectLocalPath = path.join(tmpDir, 'cabal.project.local')
-  if (fs.existsSync(cabalProjectLocalPath))
-    logger.warning(`cabal.project already exists`)
-  const configureOptions = options['configure-options'].split(/\s+/)
-  await cabal(['v2-configure', ...configureOptions], execOptions)
+  await logger.group(
+    `Configure build for Agda ${options['agda-version']}`,
+    async () => {
+      const cabalProjectLocalPath = path.join(tmpDir, 'cabal.project.local')
+      if (fs.existsSync(cabalProjectLocalPath))
+        logger.warning(`cabal.project already exists`)
+      const configureOptions = options['configure-options'].split(/\s+/)
+      await cabal(
+        ['v2-configure', cabalVerbosityFlag, ...configureOptions],
+        execOptions
+      )
+    }
+  )
 
   // Build & Install:
   const destBinDir = path.join(destDir, 'bin')
   await fs.mkdirp(destBinDir)
-  await cabal(
-    [
-      'v2-install',
-      ...Object.keys(agdaComponents),
-      '--install-method=copy',
-      `--installdir=${destBinDir}`
-    ],
-    execOptions
+  await logger.group(
+    `Install binaries for Agda ${options['agda-version']}`,
+    async () => {
+      await cabal(
+        [
+          'v2-install',
+          ...Object.keys(agdaComponents),
+          cabalVerbosityFlag,
+          '--install-method=copy',
+          `--installdir=${destBinDir}`
+        ],
+        execOptions
+      )
+    }
   )
 
   // Install data files:
   const destDataDir = path.join(destDir, 'data')
-  await fs.copy(path.join(tmpDir, 'src', 'data'), destDataDir)
+  await logger.group(
+    `Install data files for Agda ${options['agda-version']}`,
+    async () => {
+      await fs.copy(path.join(tmpDir, 'src', 'data'), destDataDir)
+    }
+  )
 
   // Create the license report:
   if (options['bundle-options']?.['bundle-license-report']) {
-    await licenseReport(tmpDir, destDir, options)
+    await logger.group(
+      `Generate license report for Agda ${options['agda-version']}`,
+      async () => {
+        await licenseReport(tmpDir, destDir, options)
+      }
+    )
   }
 
   // Bundle ICU on Windows:

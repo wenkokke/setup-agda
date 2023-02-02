@@ -5,8 +5,8 @@ const name = 'pwsh'
 export default async function pwsh(
   args: string[],
   options?: ExecOptions
-): Promise<string> {
-  return await exec(name, args, options)
+): Promise<void> {
+  await exec(name, args, options)
 }
 
 pwsh.which = async (): Promise<string | null> => {

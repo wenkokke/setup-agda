@@ -5,8 +5,8 @@ import exec, { ExecOptions } from '../exec.js'
 export default async function brew(
   args: string[],
   options?: ExecOptions
-): Promise<string> {
-  return await exec('brew', args, options)
+): Promise<void> {
+  await exec('brew', args, options)
 }
 
 brew.getVersion = async (
@@ -16,7 +16,12 @@ brew.getVersion = async (
   const formulaVersionRegExp = new RegExp(`${formula} (?<version>[\\d._]+)`)
   let formulaVersions = ''
   try {
-    formulaVersions = await brew(['list', '--formula', '--versions'], options)
+    const { stdout } = await exec(
+      'brew',
+      ['list', '--formula', '--versions'],
+      options
+    )
+    formulaVersions = stdout
   } catch (error) {
     throw Error(`Could not get version for ${formula}: ${ensureError(error)}`)
   }
@@ -31,8 +36,6 @@ brew.getPrefix = async (
   formula: string,
   options?: ExecOptions
 ): Promise<string> => {
-  let prefix = await brew(['--prefix', formula], options)
-  prefix = prefix.trim()
-  prefix = fs.realpathSync(prefix)
-  return prefix
+  const { stdout } = await exec('brew', ['--prefix', formula], options)
+  return fs.realpathSync(stdout.trim())
 }
