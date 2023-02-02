@@ -9,6 +9,7 @@ import patchelf from './patchelf.js'
 import * as simver from '../simver.js'
 import installNameTool from './install-name-tool.js'
 import msys from './msys.js'
+import otool from './otool.js'
 
 export function icuNeeded(options: BuildOptions): boolean {
   // NOTE:
@@ -245,18 +246,16 @@ export async function icuBundle(
         }
       }
       // Change dependencies on Agda executables:
-      const binsAndDepsToChange: [string, string[]][] = [
-        [agdaComponents['Agda:exe:agda'].exe, ['libicui18n', 'libicuuc']]
-      ]
-      for (const [binName, depNames] of binsAndDepsToChange) {
+      const binNames: string[] = [agdaComponents['Agda:exe:agda'].exe]
+      for (const binName of binNames) {
         const binPath = path.join(dest, 'bin', binName)
+        const binLibs = await otool.getSharedLibraries(binPath)
         for (const lib of libs) {
-          const libNameFrom = path.basename(lib, `.${version}.dylib`)
-          if (depNames.includes(libNameFrom)) {
-            const libFrom = path.join(
-              path.dirname(lib),
-              `${libNameFrom}.${versionMajor}.dylib`
-            )
+          const libNameFrom = path.basename(lib)
+          const libFrom = binLibs.find(
+            (lib) => path.basename(lib) === libNameFrom
+          )
+          if (libFrom !== undefined) {
             const libNameTo = `agda-${options['agda-version']}-${libNameFrom}.${version}.dylib`
             const libTo = `@executable_path/../lib/${libNameTo}`
             await installNameTool.change(libFrom, libTo, binPath)

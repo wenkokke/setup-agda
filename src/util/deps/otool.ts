@@ -1,7 +1,5 @@
 import os from 'node:os'
 import exec, { ExecOptions } from '../exec.js'
-import fs from 'node:fs'
-import path from 'node:path'
 
 export default async function otool(
   args: string[],
