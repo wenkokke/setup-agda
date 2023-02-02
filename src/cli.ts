@@ -77,11 +77,17 @@ async function install(
         })
         if (!options.build) {
           const installOptions = pickInstallOptions(actionOptions)
-          await installAgda(installOptions)
+          await logger.group(
+            `Install Agda ${installOptions['agda-version']} from prebuilt binaries`,
+            async () => await installAgda(installOptions)
+          )
         } else {
           const buildOptions = await pickBuildOptions(actionOptions)
           buildOptions.verbosity = options.verbosity // Set verbosity
-          await buildAgda(buildOptions)
+          await logger.group(
+            `Install Agda ${buildOptions['agda-version']} from source`,
+            async () => await buildAgda(buildOptions)
+          )
         }
         return exit(0)
       } catch (error) {

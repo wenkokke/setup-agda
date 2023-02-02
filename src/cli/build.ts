@@ -75,16 +75,16 @@ export default async function build(options: BuildOptions): Promise<void> {
   }
 
   // Get the source:
-  const tmpDir = await logger.group(
-    `Download source for Agda ${options['agda-version']}`,
-    async () => {
-      if (isAgdaGitRef(options['agda-version'])) {
-        return await download(agdaGitDist(options['agda-version']))
-      } else {
-        return await download(agdaPkgDist(options['agda-version']))
-      }
+  const tmpDir = await (async () => {
+    const agdaVersion = options['agda-version']
+    if (isAgdaGitRef(agdaVersion)) {
+      logger.info(`Download source from GitHub`)
+      return await download(agdaGitDist(agdaVersion))
+    } else {
+      logger.info(`Download source from Hackage`)
+      return await download(agdaPkgDist(agdaVersion))
     }
-  )
+  })()
 
   // Options for running commands in the working directory:
   const execOptions: ExecOptions = {
@@ -98,56 +98,40 @@ export default async function build(options: BuildOptions): Promise<void> {
   await cabal(['v2-update', cabalVerbosityFlag])
 
   // Configure the build:
-  await logger.group(
-    `Configure build for Agda ${options['agda-version']}`,
-    async () => {
-      const cabalProjectLocalPath = path.join(tmpDir, 'cabal.project.local')
-      if (fs.existsSync(cabalProjectLocalPath))
-        logger.warning(`cabal.project already exists`)
-      const configureOptions = options['configure-options'].split(/\s+/)
-      await cabal(
-        ['v2-configure', cabalVerbosityFlag, ...configureOptions],
-        execOptions
-      )
-    }
+  logger.info(`Configure build`)
+  const cabalProjectLocalPath = path.join(tmpDir, 'cabal.project.local')
+  if (fs.existsSync(cabalProjectLocalPath))
+    logger.warning(`cabal.project already exists`)
+  const configureOptions = options['configure-options'].split(/\s+/)
+  await cabal(
+    ['v2-configure', cabalVerbosityFlag, ...configureOptions],
+    execOptions
   )
 
   // Build & Install:
+  logger.info(`Install binaries`)
   const destBinDir = path.join(destDir, 'bin')
   await fs.mkdirp(destBinDir)
-  await logger.group(
-    `Install binaries for Agda ${options['agda-version']}`,
-    async () => {
-      await cabal(
-        [
-          'v2-install',
-          ...Object.keys(agdaComponents),
-          cabalVerbosityFlag,
-          '--install-method=copy',
-          `--installdir=${destBinDir}`
-        ],
-        execOptions
-      )
-    }
+  await cabal(
+    [
+      'v2-install',
+      ...Object.keys(agdaComponents),
+      cabalVerbosityFlag,
+      '--install-method=copy',
+      `--installdir=${destBinDir}`
+    ],
+    execOptions
   )
 
   // Install data files:
+  logger.info(`Install data files`)
   const destDataDir = path.join(destDir, 'data')
-  await logger.group(
-    `Install data files for Agda ${options['agda-version']}`,
-    async () => {
-      await fs.copy(path.join(tmpDir, 'src', 'data'), destDataDir)
-    }
-  )
+  await fs.copy(path.join(tmpDir, 'src', 'data'), destDataDir)
 
   // Create the license report:
   if (options['bundle-options']?.['bundle-license-report']) {
-    await logger.group(
-      `Generate license report for Agda ${options['agda-version']}`,
-      async () => {
-        await licenseReport(tmpDir, destDir, options)
-      }
-    )
+    logger.info(`Generate license report`)
+    await licenseReport(tmpDir, destDir, options)
   }
 
   // Bundle ICU on Windows:
@@ -157,6 +141,7 @@ export default async function build(options: BuildOptions): Promise<void> {
   //       As a fix, we also bundle ICU with Agda for the local build.
   //
   if (icuNeeded(options) && platform === 'windows') {
+    logger.info(`Bundle ICU`)
     await icuBundle(destDir, options)
   }
 
@@ -166,11 +151,13 @@ export default async function build(options: BuildOptions): Promise<void> {
 
     // Bundle ICU on Linux and macOS (see above for Windows):
     if (icuNeeded(options) && platform !== 'windows') {
+      logger.info(`Bundle ICU`)
       await icuBundle(destDir, options)
     }
 
     // Compress binaries:
     if (bundleOptions['bundle-compress']) {
+      logger.info(`Compress binaries with UPX`)
       for (const bin of Object.values(agdaComponents)) {
         const binPath = path.join(destDir, 'bin', bin.exe)
         const bakPath = path.join(destDir, 'bin', `backup-${bin.exe}`)
@@ -182,6 +169,7 @@ export default async function build(options: BuildOptions): Promise<void> {
   }
 
   // Test:
+  logger.info(`Test binaries`)
   await test({
     agdaPath: path.join(destBinDir, agdaComponents['Agda:exe:agda'].exe),
     agdaDataDir: destDataDir
