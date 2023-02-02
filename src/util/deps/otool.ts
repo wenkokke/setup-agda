@@ -17,7 +17,7 @@ otool.getSharedLibraries = async (
   const output = await otool(['-L', target], options)
   const outputLines = output.split(/\r?\n/g)
   // Drop the first line:
-  const firstLine = outputLines.pop()?.trim()
+  const firstLine = outputLines.shift()?.trim()
   if (firstLine !== `${target}:`) {
     logger.warning(
       `Could not parse the output of 'otool -L':${os.EOL}${output}`

@@ -75,16 +75,10 @@ export default async function build(options: BuildOptions): Promise<void> {
   }
 
   // Get the source:
-  const tmpDir = await (async () => {
-    const agdaVersion = options['agda-version']
-    if (isAgdaGitRef(agdaVersion)) {
-      logger.info(`Download source from GitHub`)
-      return await download(agdaGitDist(agdaVersion))
-    } else {
-      logger.info(`Download source from Hackage`)
-      return await download(agdaPkgDist(agdaVersion))
-    }
-  })()
+  logger.info(`Download source`)
+  const tmpDir = isAgdaGitRef(options['agda-version'])
+    ? await download(agdaGitDist(options['agda-version']))
+    : await download(agdaPkgDist(options['agda-version']))
 
   // Options for running commands in the working directory:
   const execOptions: ExecOptions = {
@@ -141,7 +135,7 @@ export default async function build(options: BuildOptions): Promise<void> {
   //       As a fix, we also bundle ICU with Agda for the local build.
   //
   if (icuNeeded(options) && platform === 'windows') {
-    logger.info(`Copy ICU`)
+    logger.info(`Bundle libraries`)
     await icuBundle(destDir, options)
   }
 
@@ -151,13 +145,13 @@ export default async function build(options: BuildOptions): Promise<void> {
 
     // Bundle ICU on Linux and macOS (see above for Windows):
     if (icuNeeded(options) && platform !== 'windows') {
-      logger.info(`Copy ICU`)
+      logger.info(`Bundle libraries`)
       await icuBundle(destDir, options)
     }
 
     // Compress binaries:
     if (bundleOptions['bundle-compress']) {
-      logger.info(`Compress binaries with UPX`)
+      logger.info(`Compress Agda`)
       for (const bin of Object.values(agdaComponents)) {
         const binPath = path.join(destDir, 'bin', bin.exe)
         const bakPath = path.join(destDir, 'bin', `backup-${bin.exe}`)
@@ -169,7 +163,7 @@ export default async function build(options: BuildOptions): Promise<void> {
   }
 
   // Test:
-  logger.info(`Test binaries`)
+  logger.info(`Test`)
   await test({
     agdaPath: path.join(destBinDir, agdaComponents['Agda:exe:agda'].exe),
     agdaDataDir: destDataDir

@@ -226,7 +226,7 @@ export async function icuBundle(
         const libName = path.basename(libFrom, `.${version}.dylib`)
         const libNameTo = `agda-${options['agda-version']}-${libName}.${version}.dylib`
         const libTo = path.join(dest, 'lib', libNameTo)
-        await fs.copyFile(libFrom, libTo)
+        await fs.copy(libFrom, libTo, { dereference: true })
         await installNameTool(['-id', libNameTo, libTo])
       }
       // Change the internal dependencies between the libraries:
