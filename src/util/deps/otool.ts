@@ -1,6 +1,7 @@
 import os from 'node:os'
 import exec, { ExecOptions } from '../exec.js'
 import fs from 'node:fs'
+import path from 'node:path'
 
 export default async function otool(
   args: string[],
@@ -23,12 +24,5 @@ otool.getSharedLibraries = async (
       `Could not parse the output of 'otool -L':${os.EOL}${output}`
     )
   }
-  return outputLines.map((line) => {
-    const libPath = line.trimStart().split(/\s+/, 2).at(0)
-    if (libPath !== undefined && fs.existsSync(libPath)) {
-      return libPath
-    } else {
-      throw Error(`Uknown library '${libPath}'`)
-    }
-  })
+  return outputLines.map((line) => line.trimStart().split(/\s+/, 2)[0])
 }
