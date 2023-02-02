@@ -1,26 +1,14 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import pino from 'pino'
-import pinoPretty from 'pino-pretty'
+import pinoPretty, { colorizerFactory } from 'pino-pretty'
 import ensureError from 'ensure-error'
 
 /** The global logger for the command-line application. */
 let logger = undefined
 
-function logger_instance() {
-  if (logger === undefined) {
-    logger = pino(
-      pinoPretty({
-        colorize: true,
-        include: 'level',
-        messageKey: 'msg',
-        messageFormat: `{msg}`
-      })
-    )
-  }
-  return logger
-}
+const DEFAULT_VERBOSITY = 'info'
 
-const VERBOSITY_MAPPING = {
+const verbosityToLevel = {
   trace: 10,
   debug: 20,
   info: 30,
@@ -28,6 +16,34 @@ const VERBOSITY_MAPPING = {
   error: 50,
   fatal: 60,
   silent: Infinity
+}
+const levelToVerbosity = Object.fromEntries(
+  Object.entries(verbosityToLevel).map((value) => value.reverse())
+)
+
+const levelColorizer = colorizerFactory(true)
+
+function logger_instance() {
+  if (logger === undefined) {
+    logger = pino(
+      pinoPretty({
+        colorize: true,
+        include: '',
+        messageKey: 'msg',
+        messageFormat: (log, messageKey) => {
+          const msg = log[messageKey]
+          const level = log.level
+          const verbosity = levelToVerbosity[level] ?? DEFAULT_VERBOSITY
+          if (verbosity === DEFAULT_VERBOSITY) {
+            return msg
+          } else {
+            return `${levelColorizer(level)}: ${msg}`
+          }
+        }
+      })
+    )
+  }
+  return logger
 }
 
 export function logger_trace(message) {
@@ -75,12 +91,18 @@ export async function logger_group(name, fn) {
 }
 
 export function logger_isDebug() {
-  logger_instance().isLevelEnabled(VERBOSITY_MAPPING.debug)
+  logger_instance().isLevelEnabled(verbosityToLevel.debug)
 }
 
 export function logger_setVerbosity(verbosity) {
+  if (typeof verbosity === 'string') {
+    verbosity = verbosity.toLowerCase()
+  } else {
+    logger_warning(`Unknown verbosity ${JSON.stringify(verbosity)}`)
+    verbosity = DEFAULT_VERBOSITY
+  }
   try {
-    const level = VERBOSITY_MAPPING[verbosity]
+    const level = verbosityToLevel[verbosity]
     logger_instance().level = level
   } catch (error) {
     logger_error(error)

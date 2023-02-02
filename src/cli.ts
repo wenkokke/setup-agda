@@ -39,7 +39,7 @@ program
   .option('--build', 'build Agda from source', false)
   .option('--bundle', 'bundle ICU with Agda', false)
   .option('--configure-option [options...]', 'options passed to Cabal')
-  .option('--verbosity', 'set the verbosity', 'info')
+  .option('--verbosity [verbosity]', 'set the verbosity', 'info')
   .action(install)
 
 program
@@ -49,6 +49,7 @@ program
   .argument('<version>')
   .option('--bundle', 'bundle ICU with Agda', false)
   .option('--configure-option [options...]', 'options passed to Cabal')
+  .option('--verbosity [verbosity]', 'set the verbosity', 'info')
   .action(build)
 
 async function build(
@@ -56,8 +57,7 @@ async function build(
   version: string,
   options: InstallCommandOptions
 ): Promise<never> {
-  options.build = true
-  return await install(installable, version, options)
+  return await install(installable, version, { ...options, build: true })
 }
 
 async function install(
@@ -102,6 +102,7 @@ program
   .description('Set the current Agda version.')
   .argument('<settable>')
   .argument('<version>')
+  .option('--verbosity [verbosity]', 'set the verbosity', 'info')
   .action(set)
 
 interface SetCommandOptions {
