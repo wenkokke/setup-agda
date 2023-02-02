@@ -24,10 +24,11 @@ program.command('tui').action(tui)
 
 // Install
 
-interface CliInstallOptions {
+interface InstallCommandOptions {
   build?: boolean
   bundle?: boolean
   configureOption?: string[]
+  verbosity?: Verbosity
 }
 
 program
@@ -38,6 +39,7 @@ program
   .option('--build', 'build Agda from source', false)
   .option('--bundle', 'bundle ICU with Agda', false)
   .option('--configure-option [options...]', 'options passed to Cabal')
+  .option('--verbosity', 'set the verbosity', 'info')
   .action(install)
 
 program
@@ -52,7 +54,7 @@ program
 async function build(
   installable: string,
   version: string,
-  options: CliInstallOptions
+  options: InstallCommandOptions
 ): Promise<never> {
   options.build = true
   return await install(installable, version, options)
@@ -61,8 +63,11 @@ async function build(
 async function install(
   installable: string,
   version: string,
-  options: CliInstallOptions
+  options: InstallCommandOptions
 ): Promise<never> {
+  if (options.verbosity !== undefined) {
+    logger.setVerbosity(options.verbosity)
+  }
   switch (installable.toLowerCase()) {
     case 'agda': {
       try {
@@ -99,7 +104,18 @@ program
   .argument('<version>')
   .action(set)
 
-async function set(settable: string, version: string): Promise<never> {
+interface SetCommandOptions {
+  verbosity?: Verbosity
+}
+
+async function set(
+  settable: string,
+  version: string,
+  options: SetCommandOptions
+): Promise<never> {
+  if (options.verbosity !== undefined) {
+    logger.setVerbosity(options.verbosity)
+  }
   switch (settable.toLowerCase()) {
     case 'agda': {
       try {

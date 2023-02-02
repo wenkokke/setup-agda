@@ -11,12 +11,15 @@ esbuild.build({
   outdir: './dist',
   outExtension: { '.js': '.cjs' },
   define: {
+    'logger.trace': 'logger_trace',
     'logger.debug': 'logger_debug',
-    'logger.error': 'logger_error',
-    'logger.group': 'logger_group',
     'logger.info': 'logger_info',
+    'logger.warning': 'logger_warning',
+    'logger.error': 'logger_error',
+    'logger.fatal': 'logger_fatal',
+    'logger.group': 'logger_group',
     'logger.isDebug': 'logger_isDebug',
-    'logger.warning': 'logger_warning'
+    'logger.setVerbosity': 'logger_setVerbosity'
   },
   inject: ['./shim/logger-cli.mjs'],
   // The 'fsevents' package is an optional peerDependency for nunjucks,

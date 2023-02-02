@@ -93,10 +93,7 @@ export default async function build(options: BuildOptions): Promise<void> {
   const configureOptions = options['configure-options'].split(/\s+/)
   await cabal(['v2-configure', ...configureOptions], execOptions)
 
-  // Build:
-  await cabal(['v2-build', ...Object.keys(agdaComponents)], execOptions)
-
-  // Install executables:
+  // Build & Install:
   const destBinDir = path.join(destDir, 'bin')
   await mkdirP(destBinDir)
   await cabal(
