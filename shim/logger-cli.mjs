@@ -6,7 +6,16 @@ import ensureError from 'ensure-error'
 let logger = undefined
 
 function logger_instance() {
-  if (logger === undefined) logger = pino()
+  if (logger === undefined) {
+    logger = pino({
+      transport: {
+        target: 'pino-pretty',
+        options: {
+          colorize: true
+        }
+      }
+    })
+  }
   return logger
 }
 
