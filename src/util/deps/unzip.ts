@@ -1,8 +1,8 @@
-import * as exec from '../exec.js'
+import exec, { ExecOptions } from '../exec.js'
 
 export default async function tar(
   args: string[],
-  options?: exec.ExecOptions
+  options?: ExecOptions
 ): Promise<string> {
-  return await exec.exec('unzip', args, options)
+  return await exec('unzip', args, options)
 }

@@ -1,20 +1,22 @@
-import * as exec from '../exec.js'
-import { ExecOptions, which } from '../exec.js'
+import pick from 'object.pick'
+import exec, { ExecOptions } from '../exec.js'
 import msys from './msys.js'
 
 export default async function pacman(
   args: string[],
   options?: ExecOptions
 ): Promise<string> {
-  const pacmanPath = pacman.which() ?? 'pacman'
-  return await exec.exec(pacmanPath, args, options)
+  const pacmanPath = await pacman.which()
+  return await exec(pacmanPath ?? 'pacman', args, options)
 }
 
-pacman.which = (): string | null => {
-  return (
-    which.sync('pacman', { nothrow: true, path: msys.path }) ??
-    which.sync('pacman', { nothrow: true })
-  )
+pacman.which = async (): Promise<string | null> => {
+  const pacmanPath = await exec.which('pacman')
+  if (pacmanPath !== null) {
+    return pacmanPath
+  } else {
+    return await exec.which('pacman', pick(msys, ['path']))
+  }
 }
 
 pacman.existsSync = (): boolean => pacman.which() !== null

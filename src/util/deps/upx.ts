@@ -1,5 +1,4 @@
-import * as exec from '../exec.js'
-import { ExecOptions } from '../exec.js'
+import exec, { ExecOptions } from '../exec.js'
 
 // TODO: edit ExecOptions.env.PATH instead of passing upxPath
 
@@ -8,5 +7,5 @@ export default async function upx(
   args: string[],
   options?: ExecOptions
 ): Promise<string> {
-  return await exec.exec(upxPath ?? 'upx', args, options)
+  return await exec(upxPath ?? 'upx', args, options)
 }

@@ -1,12 +1,11 @@
-import * as exec from '../exec.js'
 import ensureError from 'ensure-error'
-import { ExecOptions } from '../exec.js'
+import exec, { ExecOptions } from '../exec.js'
 
 export default async function ghc(
   args: string[],
   options?: ExecOptions
 ): Promise<string> {
-  return await exec.exec('ghc', args, options)
+  return await exec('ghc', args, options)
 }
 
 ghc.getInfo = async (
@@ -25,10 +24,7 @@ ghc.getInfo = async (
 }
 
 ghc.getVersion = async (): Promise<string> => {
-  return exec.getVersion('ghc', {
-    versionFlag: '--numeric-version',
-    silent: true
-  })
+  return exec('ghc', ['--numeric-version'])
 }
 
 ghc.maybeGetVersion = async (): Promise<string | null> => {

@@ -229,7 +229,7 @@ async function unzipPwsh(source: string, destDir: string): Promise<void> {
   // To match the file overwrite behavior on nix systems, we use the overwrite = true
   // flag for ExtractToDirectory and the -Force flag for Expand-Archive as a fallback.
   // Attempt to use pwsh with ExtractToDirectory, if this fails attempt Expand-Archive
-  if (pwsh.existsSync()) {
+  if (await pwsh.exists()) {
     const pwshCommand = [
       `$ErrorActionPreference = 'Stop' ;`,
       `try { Add-Type -AssemblyName System.IO.Compression.ZipFile } catch { } ;`,
@@ -247,7 +247,7 @@ async function unzipPwsh(source: string, destDir: string): Promise<void> {
       pwshCommand
     ]
     await pwsh(args)
-  } else if (powershell.existsSync()) {
+  } else if (await powershell.exists()) {
     const powershellCommand = [
       `$ErrorActionPreference = 'Stop' ;`,
       `try { Add-Type -AssemblyName System.IO.Compression.FileSystem } catch { } ;`,

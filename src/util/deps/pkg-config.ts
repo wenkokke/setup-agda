@@ -1,6 +1,6 @@
 import * as os from 'node:os'
-import * as exec from '../exec.js'
-import { ExecOptions, which } from '../exec.js'
+import pick from 'object.pick'
+import exec, { ExecOptions } from '../exec.js'
 import { platform } from '../platform.js'
 import msys from './msys.js'
 
@@ -14,15 +14,17 @@ export default async function pkgConfig(
   args: string[],
   options?: ExecOptions
 ): Promise<string> {
-  const pkgConfigPath = pkgConfig.which() ?? 'pkg-config'
-  return await exec.exec(pkgConfigPath, args, options)
+  const pkgConfigPath = await pkgConfig.which()
+  return await exec(pkgConfigPath ?? 'pkg-config', args, options)
 }
 
-pkgConfig.which = (): string | null => {
-  return (
-    which.sync('pkg-config', { nothrow: true, path: msys.path }) ??
-    which.sync('pkg-config', { nothrow: true })
-  )
+pkgConfig.which = async (): Promise<string | null> => {
+  const pacmanPath = await exec.which('pkg-config')
+  if (pacmanPath !== null) {
+    return pacmanPath
+  } else {
+    return await exec.which('pkg-config', pick(msys, ['path']))
+  }
 }
 
 pkgConfig.existsSync = (): boolean => pkgConfig.which() !== null

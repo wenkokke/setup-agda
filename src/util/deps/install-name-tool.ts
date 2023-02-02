@@ -1,13 +1,12 @@
 import os from 'node:os'
-import * as exec from '../exec.js'
-import { ExecOptions } from '../exec.js'
+import exec, { ExecOptions } from '../exec.js'
 import otool from './otool.js'
 
 export default async function installNameTool(
   args: string[],
   options?: ExecOptions
 ): Promise<string> {
-  return await exec.exec('install_name_tool', args, options)
+  return await exec('install_name_tool', args, options)
 }
 
 installNameTool.change = async (

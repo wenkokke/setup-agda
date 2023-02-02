@@ -22,9 +22,13 @@ export default {
   path: joinPath(msysPaths),
   modifyExecOptions: (options?: ExecOptions): ExecOptions => {
     if (platform === 'windows') {
-      if (options === undefined) options = {}
-      if (options.env === undefined) options.env = {}
-      const pathDirs = splitPath(options.env?.PATH ?? process.env.PATH)
+      if (options === undefined) {
+        options = {}
+      }
+      if (options.env === undefined) {
+        options.env = {}
+      }
+      const pathDirs = splitPath(options.env.PATH)
       options.env.PATH = joinPath([...pathDirs, ...msysPaths])
       return options
     } else {

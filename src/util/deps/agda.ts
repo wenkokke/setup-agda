@@ -5,8 +5,7 @@ import {
   agdaExecutablesFile,
   agdaLibrariesFile
 } from '../appdirs.js'
-import exec from '../exec.js'
-import { ExecOptions } from '../exec.js'
+import exec, { ExecOptions } from '../exec.js'
 import { splitLines } from '../lines.js'
 import * as simver from '../simver.js'
 import { agdaComponents } from '../types.js'
@@ -90,9 +89,17 @@ agda.getDataDir = async (
   } else {
     const agdaDataDir = options?.agdaDataDir ?? options?.env?.Agda_datadir
     if (agdaDataDir !== undefined) return agdaDataDir
-    const agdaBin =
-      options?.agdaPath ??
-      (await exec.which(agdaComponents['Agda:exe:agda'].exe))
-    return path.join(path.basename(agdaBin), '..', 'data')
+    let agdaPath = options?.agdaPath ?? null
+    if (agdaPath === null) {
+      agdaPath = await exec.which(agdaComponents['Agda:exe:agda'].exe, {
+        path: options?.env?.PATH
+      })
+      if (agdaPath === null) {
+        throw Error(
+          `Could not find Agda executable; did you add Agda to the PATH?`
+        )
+      }
+    }
+    return path.join(path.basename(agdaPath), '..', 'data')
   }
 }

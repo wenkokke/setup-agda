@@ -1,15 +1,19 @@
-import * as exec from '../exec.js'
-import { which } from '../exec.js'
+import exec, { ExecOptions } from '../exec.js'
 
 const name = 'pwsh'
 
 export default async function pwsh(
   args: string[],
-  options?: exec.ExecOptions
+  options?: ExecOptions
 ): Promise<string> {
-  return await exec.exec(name, args, options)
+  return await exec(name, args, options)
 }
 
-pwsh.existsSync = (): boolean => {
-  return which.sync(name, { nothrow: true }) !== null
+pwsh.which = async (): Promise<string | null> => {
+  return exec.which(name)
+}
+
+pwsh.exists = async (): Promise<boolean> => {
+  const pwshPath = await exec.which(name)
+  return pwshPath !== null
 }

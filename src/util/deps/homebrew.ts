@@ -1,13 +1,12 @@
-import * as exec from '../exec.js'
 import * as fs from 'node:fs'
 import ensureError from 'ensure-error'
-import { ExecOptions } from '../exec.js'
+import exec, { ExecOptions } from '../exec.js'
 
 export default async function brew(
   args: string[],
   options?: ExecOptions
 ): Promise<string> {
-  return await exec.exec('brew', args, options)
+  return await exec('brew', args, options)
 }
 
 brew.getVersion = async (
