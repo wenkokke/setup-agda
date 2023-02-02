@@ -241,7 +241,7 @@ export async function icuBundle(
         for (const depName of depNames) {
           const depFrom = `@loader_path/${depName}.${versionMajor}.dylib`
           const depTo = `@loader_path/agda-${options['agda-version']}-${depName}.${version}.dylib`
-          await installNameTool(['-change', depFrom, depTo, libTo])
+          await installNameTool.change(depFrom, depTo, libTo)
         }
       }
       // Change dependencies on Agda executables:
@@ -259,7 +259,7 @@ export async function icuBundle(
             )
             const libNameTo = `agda-${options['agda-version']}-${libNameFrom}.${version}.dylib`
             const libTo = `@executable_path/../lib/${libNameTo}`
-            await installNameTool(['-change', libFrom, libTo, binPath])
+            await installNameTool.change(libFrom, libTo, binPath)
           }
         }
       }
