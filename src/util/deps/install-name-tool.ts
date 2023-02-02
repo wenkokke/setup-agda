@@ -7,7 +7,7 @@ export default async function installNameTool(
   args: string[],
   options?: ExecOptions
 ): Promise<string> {
-  return await exec.getOutput('install_name_tool', args, options)
+  return await exec.exec('install_name_tool', args, options)
 }
 
 installNameTool.change = async (

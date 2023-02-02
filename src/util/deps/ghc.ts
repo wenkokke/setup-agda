@@ -6,7 +6,7 @@ export default async function ghc(
   args: string[],
   options?: ExecOptions
 ): Promise<string> {
-  return await exec.getOutput('ghc', args, options)
+  return await exec.exec('ghc', args, options)
 }
 
 ghc.getInfo = async (

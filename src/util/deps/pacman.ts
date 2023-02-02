@@ -7,7 +7,7 @@ export default async function pacman(
   options?: ExecOptions
 ): Promise<string> {
   const pacmanPath = pacman.which() ?? 'pacman'
-  return await exec.getOutput(pacmanPath, args, options)
+  return await exec.exec(pacmanPath, args, options)
 }
 
 pacman.which = (): string | null => {

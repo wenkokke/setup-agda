@@ -6,7 +6,7 @@ export default async function cabal(
   args: string[],
   options?: ExecOptions
 ): Promise<string> {
-  return await exec.getOutput('cabal', args, options)
+  return await exec.exec('cabal', args, options)
 }
 
 cabal.getVersion = async (): Promise<string> => {

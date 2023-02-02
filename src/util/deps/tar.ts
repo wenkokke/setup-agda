@@ -5,7 +5,7 @@ export default async function tar(
   args: string[],
   options?: ExecOptions
 ): Promise<string> {
-  return await exec.getOutput('tar', args, options)
+  return await exec.exec('tar', args, options)
 }
 
 tar.isGNU = async (): Promise<boolean> => {

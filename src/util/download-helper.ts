@@ -171,7 +171,7 @@ export default async function downloadHelper(
       break
     }
     case 'git': {
-      await exec.getOutput(
+      await exec.exec(
         'git',
         [
           ['clone'],
@@ -183,10 +183,10 @@ export default async function downloadHelper(
         ].flat()
       )
       if (fs.existsSync(path.join(destDir, '.gitmodules'))) {
-        await exec.getOutput('git', ['submodule', 'init'], {
+        await exec.exec('git', ['submodule', 'init'], {
           cwd: destDir
         })
-        await exec.getOutput('git', ['submodule', 'update', '--depth=1'], {
+        await exec.exec('git', ['submodule', 'update', '--depth=1'], {
           cwd: destDir
         })
       }

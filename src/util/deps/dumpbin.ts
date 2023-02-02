@@ -5,5 +5,5 @@ export async function dumpbin(
   args: string[],
   options?: ExecOptions
 ): Promise<string> {
-  return await exec.getOutput('dumpbin', args, options)
+  return await exec.exec('dumpbin', args, options)
 }

@@ -4,5 +4,5 @@ export default async function tar(
   args: string[],
   options?: exec.ExecOptions
 ): Promise<string> {
-  return await exec.getOutput('unzip', args, options)
+  return await exec.exec('unzip', args, options)
 }

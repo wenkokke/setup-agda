@@ -8,5 +8,5 @@ export default async function chmod(
   options?: ExecOptions
 ): Promise<string> {
   assert(platform !== 'windows', 'MSYS2 does not support chmod')
-  return await exec.getOutput('chmod', args, options)
+  return await exec.exec('chmod', args, options)
 }

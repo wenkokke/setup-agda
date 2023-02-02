@@ -8,5 +8,5 @@ export default async function upx(
   args: string[],
   options?: ExecOptions
 ): Promise<string> {
-  return await exec.getOutput(upxPath ?? 'upx', args, options)
+  return await exec.exec(upxPath ?? 'upx', args, options)
 }

@@ -7,7 +7,7 @@ export default async function brew(
   args: string[],
   options?: ExecOptions
 ): Promise<string> {
-  return await exec.getOutput('brew', args, options)
+  return await exec.exec('brew', args, options)
 }
 
 brew.getVersion = async (

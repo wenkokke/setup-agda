@@ -15,7 +15,7 @@ export default async function pkgConfig(
   options?: ExecOptions
 ): Promise<string> {
   const pkgConfigPath = pkgConfig.which() ?? 'pkg-config'
-  return await exec.getOutput(pkgConfigPath, args, options)
+  return await exec.exec(pkgConfigPath, args, options)
 }
 
 pkgConfig.which = (): string | null => {

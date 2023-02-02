@@ -21,7 +21,7 @@ export default async function agda(
   options?: Partial<AgdaOptions> & ExecOptions
 ): Promise<string> {
   const [agdaBin, optionsWithDataDir] = resolveAgdaOptions(options)
-  return await exec.getOutput(agdaBin, args, optionsWithDataDir)
+  return await exec.exec(agdaBin, args, optionsWithDataDir)
 }
 
 agda.readLibrariesSync = (): path.ParsedPath[] => {

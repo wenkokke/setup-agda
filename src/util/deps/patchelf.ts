@@ -5,5 +5,5 @@ export default async function patchelf(
   args: string[],
   options?: ExecOptions
 ): Promise<string> {
-  return await exec.getOutput('patchelf', args, options)
+  return await exec.exec('patchelf', args, options)
 }

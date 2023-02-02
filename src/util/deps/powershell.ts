@@ -7,7 +7,7 @@ export default async function powershell(
   args: string[],
   options?: exec.ExecOptions
 ): Promise<string> {
-  return await exec.getOutput(name, args, options)
+  return await exec.exec(name, args, options)
 }
 
 powershell.existsSync = (): boolean => {

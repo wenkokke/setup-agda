@@ -7,7 +7,7 @@ export default async function otool(
   args: string[],
   options?: ExecOptions
 ): Promise<string> {
-  return await exec.getOutput('otool', args, options)
+  return await exec.exec('otool', args, options)
 }
 
 otool.getSharedLibraries = async (
