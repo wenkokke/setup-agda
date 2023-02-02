@@ -25,8 +25,7 @@ program.command('tui').action(tui)
 // Install
 
 interface InstallCommandOptions {
-  build?: boolean
-  bundle?: boolean
+  build?: boolean | string
   configureOption?: string[]
   verbosity?: Verbosity
 }
@@ -36,8 +35,7 @@ program
   .description('Install Agda or an Agda library.')
   .argument('<installable>')
   .argument('<version-or-url>')
-  .option('--build', 'build Agda from source', false)
-  .option('--bundle', 'bundle ICU with Agda', false)
+  .option('--build [bundle]', 'build Agda from source', false)
   .option('--configure-option [options...]', 'options passed to Cabal')
   .option('--verbosity [verbosity]', 'set the verbosity', 'info')
   .action(install)
@@ -47,18 +45,24 @@ async function install(
   version: string,
   options: InstallCommandOptions
 ): Promise<never> {
+  // Validate & set verbosity:
   if (options.verbosity !== undefined) {
     logger.setVerbosity(options.verbosity)
+  }
+  // Validate --build flag:
+  if (![undefined, true, false, 'bundle'].includes(options.build)) {
+    logger.error(
+      `unsupported value for --build: expected --build or --build=bundle`
+    )
+    exit(1)
   }
   switch (installable.toLowerCase()) {
     case 'agda': {
       try {
         const actionOptions = await getOptions({
           'agda-version': version,
-          bundle: options.bundle ? 'true' : ''
+          bundle: options.build === 'bundle' ? 'true' : ''
         })
-        // --bundle implies --build:
-        if (options.bundle) options.build = true
         if (!options.build) {
           const installOptions = pickInstallOptions(actionOptions)
           await logger.group(
@@ -105,6 +109,7 @@ async function set(
   version: string,
   options: SetCommandOptions
 ): Promise<never> {
+  // Validate & set verbosity:
   if (options.verbosity !== undefined) {
     logger.setVerbosity(options.verbosity)
   }

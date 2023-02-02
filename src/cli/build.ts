@@ -98,7 +98,6 @@ export default async function build(options: BuildOptions): Promise<void> {
   await cabal(['v2-update', cabalVerbosityFlag])
 
   // Configure the build:
-  logger.info(`Configure build`)
   const cabalProjectLocalPath = path.join(tmpDir, 'cabal.project.local')
   if (fs.existsSync(cabalProjectLocalPath))
     logger.warning(`cabal.project already exists`)
@@ -109,7 +108,7 @@ export default async function build(options: BuildOptions): Promise<void> {
   )
 
   // Build & Install:
-  logger.info(`Install binaries`)
+  logger.info(`Build Agda`)
   const destBinDir = path.join(destDir, 'bin')
   await fs.mkdirp(destBinDir)
   await cabal(
@@ -124,7 +123,7 @@ export default async function build(options: BuildOptions): Promise<void> {
   )
 
   // Install data files:
-  logger.info(`Install data files`)
+  logger.info(`Copy data files`)
   const destDataDir = path.join(destDir, 'data')
   await fs.copy(path.join(tmpDir, 'src', 'data'), destDataDir)
 
@@ -141,7 +140,7 @@ export default async function build(options: BuildOptions): Promise<void> {
   //       As a fix, we also bundle ICU with Agda for the local build.
   //
   if (icuNeeded(options) && platform === 'windows') {
-    logger.info(`Bundle ICU`)
+    logger.info(`Copy ICU`)
     await icuBundle(destDir, options)
   }
 
@@ -151,7 +150,7 @@ export default async function build(options: BuildOptions): Promise<void> {
 
     // Bundle ICU on Linux and macOS (see above for Windows):
     if (icuNeeded(options) && platform !== 'windows') {
-      logger.info(`Bundle ICU`)
+      logger.info(`Copy ICU`)
       await icuBundle(destDir, options)
     }
 
@@ -226,7 +225,7 @@ async function licenseReport(
     licenseCacheDirResult.name
   )
   for (const [depName, depLicensePath] of Object.entries(cabalPlanLicenses)) {
-    assert(depLicensePath !== undefined)
+    assert(depLicensePath !== undefined, `License for ${depName} undefined`)
     fs.appendFileSync(licensesTxt, depHeader(depName))
     await licensesTxtAppendStream(fs.createReadStream(depLicensePath))
   }

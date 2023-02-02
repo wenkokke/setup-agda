@@ -10,9 +10,15 @@ export default function registerLibrary(
   isDefault = false
 ): void {
   // Check agdaLibraryFile exists & refers to an agda-lib file:
-  assert(fs.existsSync(libraryFile))
+  assert(
+    fs.existsSync(libraryFile),
+    `Could not find .agda-lib file: ${libraryFile}`
+  )
   const newLibrary = path.parse(path.resolve(libraryFile))
-  assert(newLibrary.ext === '.agda-lib')
+  assert(
+    newLibrary.ext === '.agda-lib',
+    `Library file path does not end in .agda-lib: ${libraryFile}`
+  )
 
   // Load the current libraries file:
   const oldLibraries = agda.readLibrariesSync()

@@ -127,7 +127,10 @@ async function distDest(dist: Dist): Promise<string> {
   const url = typeof dist === 'string' ? dist : dist.url
   const dest = agdaupCacheDir(path.basename(new URL(url).pathname))
   const dir = await ensureDestDir(path.dirname(dest))
-  assert(dir === path.dirname(dest))
+  assert(
+    dir === path.dirname(dest),
+    `ensureDestDir changed the directory: ${dir} !== ${path.dirname(dest)}`
+  )
   return dest
 }
 
