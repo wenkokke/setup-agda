@@ -255,7 +255,11 @@ export async function icuBundle(
           const libFrom = binLibs.find(
             (lib) => path.basename(lib) === libNameFrom
           )
-          if (libFrom !== undefined) {
+          if (libFrom === undefined) {
+            logger.warning(
+              `skip ${libNameFrom}: not in [${binLibs.join(', ')}]`
+            )
+          } else {
             const libNameTo = `agda-${options['agda-version']}-${libNameFrom}.${version}.dylib`
             const libTo = `@executable_path/../lib/${libNameTo}`
             await installNameTool.change(libFrom, libTo, binPath)
