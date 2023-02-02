@@ -117,7 +117,8 @@ export default async function build(options: BuildOptions): Promise<void> {
       ...Object.keys(agdaComponents),
       cabalVerbosityFlag,
       '--install-method=copy',
-      `--installdir=${destBinDir}`
+      `--installdir=${destBinDir}`,
+      '--overwrite-policy=always'
     ],
     execOptions
   )
