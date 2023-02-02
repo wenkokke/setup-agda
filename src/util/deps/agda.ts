@@ -5,7 +5,7 @@ import {
   agdaExecutablesFile,
   agdaLibrariesFile
 } from '../appdirs.js'
-import * as exec from '../exec.js'
+import exec from '../exec.js'
 import { ExecOptions } from '../exec.js'
 import { splitLines } from '../lines.js'
 import * as simver from '../simver.js'
@@ -21,7 +21,7 @@ export default async function agda(
   options?: Partial<AgdaOptions> & ExecOptions
 ): Promise<string> {
   const [agdaBin, optionsWithDataDir] = resolveAgdaOptions(options)
-  return await exec.exec(agdaBin, args, optionsWithDataDir)
+  return await exec(agdaBin, args, optionsWithDataDir)
 }
 
 agda.readLibrariesSync = (): path.ParsedPath[] => {
@@ -47,7 +47,7 @@ agda.readExecutablesSync = (): string[] => {
 
 function resolveAgdaOptions(
   options?: Partial<AgdaOptions> & ExecOptions
-): [string, ExecOptions | undefined] {
+): [string, ExecOptions & { stderr: false }] {
   const agdaPath = options?.agdaPath ?? agdaComponents['Agda:exe:agda'].exe
   // Set 'Agda_datadir' if it is explicitly passed:
   const agdaDataDirUndefined =
@@ -65,21 +65,18 @@ function resolveAgdaOptions(
       }
     }
   }
-  return [agdaPath, options]
+  return [agdaPath, { ...options, stderr: false }]
 }
 agda.getVersion = async (
   options?: Partial<AgdaOptions> & ExecOptions
 ): Promise<string> => {
   const [agdaBin, optionsWithDataDir] = resolveAgdaOptions(options)
-  const versionOptions = {
-    ...optionsWithDataDir,
-    parseOutput: (progOutput: string): string => {
-      if (progOutput.startsWith('Agda version '))
-        return progOutput.substring('Agda version '.length).trim()
-      else throw Error(`Could not parse Agda version: '${progOutput}'`)
-    }
+  const stdout = await exec(agdaBin, ['--version'], optionsWithDataDir)
+  if (stdout.startsWith('Agda version ')) {
+    return stdout.substring('Agda version '.length).trim()
+  } else {
+    throw Error(`Could not parse Agda version: '${stdout}'`)
   }
-  return await exec.getVersion(agdaBin, versionOptions)
 }
 
 agda.getDataDir = async (

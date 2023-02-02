@@ -2,7 +2,7 @@
 
 import fs from 'fs-extra'
 import * as path from 'node:path'
-import * as exec from './exec.js'
+import exec from './exec.js'
 import * as tmp from 'tmp'
 import unzip from './deps/unzip.js'
 import { RetryHelper } from './retry-helper.js'
@@ -171,7 +171,7 @@ export default async function downloadHelper(
       break
     }
     case 'git': {
-      await exec.exec(
+      await exec(
         'git',
         [
           ['clone'],
@@ -183,10 +183,10 @@ export default async function downloadHelper(
         ].flat()
       )
       if (fs.existsSync(path.join(destDir, '.gitmodules'))) {
-        await exec.exec('git', ['submodule', 'init'], {
+        await exec('git', ['submodule', 'init'], {
           cwd: destDir
         })
-        await exec.exec('git', ['submodule', 'update', '--depth=1'], {
+        await exec('git', ['submodule', 'update', '--depth=1'], {
           cwd: destDir
         })
       }

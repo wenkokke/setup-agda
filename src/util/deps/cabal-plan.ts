@@ -4,7 +4,7 @@ import * as http from 'node:http'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import { pipeline } from 'node:stream/promises'
-import { ExecOptions, getOutputAndErrors } from '../exec.js'
+import exec, { ExecOptions } from '../exec.js'
 import { BuildOptions } from '../types.js'
 
 // TODO: edit ExecOptions.env.PATH instead of passing cabalPlanPath
@@ -39,10 +39,10 @@ const cabalPlan = {
     const licenses: Partial<Record<string, string>> = {}
     for (const component of components) {
       // Run `cabal-plan license-report` and save the licenses to $licenseDir:
-      const { errors } = await getOutputAndErrors(
+      const { stderr } = await exec(
         cabalPlanPath,
         ['license-report', `--licensedir=${licenseDir}`, component],
-        options
+        { ...options, stderr: true }
       )
       // Read the generated licenses, and add them to $licenses:
       for (const depLicensePath of glob.sync(path.join(licenseDir, '*', '*'))) {
@@ -50,7 +50,7 @@ const cabalPlan = {
         licenses[depName] = depLicensePath
       }
       // Process the warnings and download the missing licenses:
-      const errorMessages = errors
+      const errorMessages = stderr
         .split(os.EOL)
         .map((errorMessage) => errorMessage.trim())
       for (const errorMessage of errorMessages) {

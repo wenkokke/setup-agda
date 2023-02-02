@@ -1,5 +1,19 @@
+import { ExecaReturnValue } from 'execa'
 import { AgdaVersion, Dist } from './types.js'
 import * as os from 'node:os'
+
+export class ExecError extends Error {
+  constructor(result: ExecaReturnValue<string>) {
+    super(
+      [
+        `Command exited with exit code ${result.exitCode}:`,
+        `  ${result.command}`,
+        `Message:`,
+        result.stderr
+      ].join(os.EOL)
+    )
+  }
+}
 
 export class AgdaLibraryUnsupportedSpecification extends Error {
   constructor(lib: string | URL) {

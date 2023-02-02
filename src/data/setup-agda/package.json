@@ -12,12 +12,12 @@
   "dependencies": {
     "@actions/artifact": "^1.1.0",
     "@actions/core": "^1.6.0",
-    "@actions/exec": "^1.1.1",
     "@inquirer/checkbox": "^0.0.30-alpha.0",
     "@inquirer/core": "^0.0.30-alpha.0",
     "@inquirer/select": "^0.0.29-alpha.0",
     "commander": "^9.5.0",
     "ensure-error": "^4.0.0",
+    "execa": "^6.1.0",
     "inquirer": "^9.1.4",
     "linux-os-info": "^2.0.0",
     "linux-release-info": "^3.0.0",

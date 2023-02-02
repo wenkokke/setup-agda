@@ -1,62 +1,46 @@
-import { exec as oldExec, ExecOptions } from '@actions/exec'
-import * as os from 'node:os'
+import { execa } from 'execa'
+import pick from 'object.pick'
+import which from 'which'
+import { ExecError } from './errors.js'
 
-export { ExecOptions } from '@actions/exec'
-export { default as which } from 'which'
-
-export async function exec(
-  prog: string,
-  args: string[],
-  execOptions?: ExecOptions
-): Promise<string> {
-  const { output } = await getOutputAndErrors(prog, args, execOptions)
-  return output
+export interface ExecOptions {
+  cwd?: string
+  env?: NodeJS.ProcessEnv
+  stderr?: boolean
 }
 
-export async function getOutputAndErrors(
-  prog: string,
+export default exec
+
+async function exec(
+  file: string,
   args: string[],
-  execOptions?: ExecOptions
-): Promise<{ output: string; errors: string }> {
-  let output = ''
-  let errors = ''
-  execOptions = execOptions ?? {}
-  execOptions.ignoreReturnCode = true
-  execOptions.listeners = {
-    stdout: (data: Buffer) => {
-      output += data.toString()
-    },
-    stderr: (data: Buffer) => {
-      errors += data.toString()
+  options: ExecOptions & { stderr: true }
+): Promise<{ stdout: string; stderr: string }>
+
+async function exec(
+  file: string,
+  args: string[],
+  options?: ExecOptions | undefined
+): Promise<string>
+
+async function exec(
+  file: string,
+  args: string[],
+  options?: ExecOptions
+): Promise<string | { stdout: string; stderr: string }> {
+  const execaOptions = pick(options ?? {}, ['cwd', 'env'])
+  const result = await execa(file, args, execaOptions)
+  if (result.exitCode === 0) {
+    if (options?.stderr === true) {
+      return pick(result, ['stdout', 'stderr'])
+    } else {
+      return result.stdout
     }
-  }
-  output = output.trim()
-  errors = errors.trim()
-  const exitCode = await oldExec(prog, args, execOptions)
-  if (exitCode === 0) {
-    return { output, errors }
   } else {
-    throw Error(
-      `The call to ${prog} failed with exit code ${exitCode}:${os.EOL}${errors}`
-    )
+    throw new ExecError(result)
   }
 }
 
-// Helper for getting the version number from an executable
-
-export interface VersionOptions extends ExecOptions {
-  versionFlag?: string
-  parseOutput?: (progOutput: string) => string
-}
-
-export async function getVersion(
-  prog: string,
-  options?: VersionOptions
-): Promise<string> {
-  const versionFlag = options?.versionFlag ?? '--version'
-  let progOutput = await exec(prog, [versionFlag], options)
-  progOutput = progOutput.trim()
-  return options?.parseOutput !== undefined
-    ? options?.parseOutput(progOutput)
-    : progOutput
+exec.which = async (file: string): Promise<string> => {
+  return await which(file)
 }

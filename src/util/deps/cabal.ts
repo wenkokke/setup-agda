@@ -1,19 +1,15 @@
-import * as exec from '../exec.js'
 import ensureError from 'ensure-error'
-import { ExecOptions } from '../exec.js'
+import exec, { ExecOptions } from '../exec.js'
 
 export default async function cabal(
   args: string[],
   options?: ExecOptions
 ): Promise<string> {
-  return await exec.exec('cabal', args, options)
+  return await exec('cabal', args, options)
 }
 
 cabal.getVersion = async (): Promise<string> => {
-  return exec.getVersion('cabal', {
-    versionFlag: '--numeric-version',
-    silent: true
-  })
+  return await exec('cabal', ['--numeric-version'])
 }
 
 cabal.maybeGetVersion = async (): Promise<string | null> => {
