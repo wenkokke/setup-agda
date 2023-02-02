@@ -1,12 +1,20 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import pino from 'pino'
+import pinoPretty from 'pino-pretty'
 import ensureError from 'ensure-error'
 
 /** The global logger for the command-line application. */
 let logger = undefined
 
 function logger_instance() {
-  if (logger === undefined) logger = pino()
+  if (logger === undefined) {
+    logger = pino(
+      pinoPretty({
+        colorize: true,
+        messageFormat: '{levelLabel}:'
+      })
+    )
+  }
   return logger
 }
 

@@ -24,6 +24,12 @@ program.command('tui').action(tui)
 
 // Install
 
+interface CliInstallOptions {
+  build?: boolean
+  bundle?: boolean
+  configureOption?: string[]
+}
+
 program
   .command('install')
   .description('Install Agda or an Agda library.')
@@ -34,10 +40,22 @@ program
   .option('--configure-option [options...]', 'options passed to Cabal')
   .action(install)
 
-interface CliInstallOptions {
-  build?: boolean
-  bundle?: boolean
-  configureOption?: string[]
+program
+  .command('build')
+  .description('Alias for install with --build.')
+  .argument('<installable>')
+  .argument('<version>')
+  .option('--bundle', 'bundle ICU with Agda', false)
+  .option('--configure-option [options...]', 'options passed to Cabal')
+  .action(build)
+
+async function build(
+  installable: string,
+  version: string,
+  options: CliInstallOptions
+): Promise<never> {
+  options.build = true
+  return await install(installable, version, options)
 }
 
 async function install(
