@@ -483,6 +483,7 @@ export interface BuildOptions extends Pick<ActionOptions, BuildOptionKey> {
   'working-directory'?: string
   dest?: string
   verbosity?: Verbosity
+  env?: Partial<Record<string, string>>
 }
 
 /** Pick the BuildOptions from a larger object and validate them. */

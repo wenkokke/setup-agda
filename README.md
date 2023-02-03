@@ -190,6 +190,16 @@ jobs:
     <th>2019</th><th>2022</th>
   </tr>
   <tr>
+    <td>2.6.3</td>
+    <td></td>
+    <td></td>
+    <td>📦 & 🏗</td>
+    <td></td>
+    <td></td>
+    <td>📦 only</td>
+    <td>📦 & 🏗</td>
+  </tr>
+  <tr>
     <td>2.6.2.2</td>
     <td></td>
     <td>📦 & 🏗</td>

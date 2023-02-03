@@ -34,9 +34,6 @@ export function icuNeeded(options: BuildOptions): boolean {
 export async function icuConfigureOptions(
   options: BuildOptions
 ): Promise<BuildOptions> {
-  // Add --extra-prog-path
-  for (const msysPath of msys.paths)
-    options['configure-options'] += ` --extra-prog-path=${msysPath}`
   // Add --extra-include-dirs and --extra-lib-dirs
   const { version, includedirs, libdirs } = await icuGetInfo()
   logger.debug(`Found icu-i18n ${version}`)
@@ -44,14 +41,28 @@ export async function icuConfigureOptions(
     options['configure-options'] += ` --extra-include-dirs=${includedir}`
   for (const libdir of libdirs)
     options['configure-options'] += ` --extra-lib-dirs=${libdir}`
+  // On macOS: add PKG_CONFIG_PATH
+  if (platform === 'macos') {
+    options.env = options.env ?? {}
+    options.env.PKG_CONFIG_PATH = await icuGetPkgConfigPath(
+      options.env.PKG_CONFIG_PATH
+    )
+  }
+
+  // On Windows: add MSYS
+  if (platform === 'windows')
+    for (const msysPath of msys.paths)
+      options['configure-options'] += ` --extra-prog-path=${msysPath}`
   logger.debug(`Extended configure options: ${options['configure-options']}`)
   return options
 }
 
 /** Get the value of the `PKG_CONFIG_PATH` updated for ICU. */
-async function icuGetPkgConfigPath(): Promise<string> {
+async function icuGetPkgConfigPath(pkgConfigPath?: string): Promise<string> {
   // Get the entries currently in the PKG_CONFIG_PATH:
-  const pkgConfigDirs = pkgConfig.splitPath(process.env?.PKG_CONFIG_PATH)
+  const pkgConfigDirs = pkgConfig.splitPath(
+    pkgConfigPath ?? process.env?.PKG_CONFIG_PATH
+  )
   // Optionally add the path for ICU:
   switch (platform) {
     case 'macos': {

@@ -82,7 +82,8 @@ export default async function build(options: BuildOptions): Promise<void> {
 
   // Options for running commands in the working directory:
   const execOptions: ExecOptions = {
-    cwd: tmpDir
+    cwd: tmpDir,
+    env: options.env
   }
 
   // Determine the appropriate Cabal verbosity:

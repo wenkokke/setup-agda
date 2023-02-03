@@ -36,10 +36,20 @@
         "x64": []
       },
       "linux": {
-        "x64": []
+        "x64": [
+          {
+            "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.3-x64-ubuntu-22.04-ghc9.4.4-icu70.1.zip",
+            "target": "ubuntu-22.04"
+          }
+        ]
       },
       "windows": {
-        "x64": []
+        "x64": [
+          {
+            "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.3-x64-windows-2022-ghc9.4.4-icu70.1.zip",
+            "target": "windows-2022"
+          }
+        ]
       }
     },
     "compatibility": {
