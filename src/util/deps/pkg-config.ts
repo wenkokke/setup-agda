@@ -1,5 +1,4 @@
 import * as os from 'node:os'
-import pick from 'object.pick'
 import exec, { ExecOptions } from '../exec.js'
 import { platform } from '../platform.js'
 import msys from './msys.js'
@@ -20,11 +19,11 @@ export default async function pkgConfig(
 }
 
 pkgConfig.which = async (): Promise<string | null> => {
-  const pacmanPath = await exec.which('pkg-config')
-  if (pacmanPath !== null) {
-    return pacmanPath
+  const msysPkgConfigPath = await exec.which('pkg-config', { path: msys.path })
+  if (msysPkgConfigPath !== null) {
+    return msysPkgConfigPath
   } else {
-    return await exec.which('pkg-config', pick(msys, ['path']))
+    return await exec.which('pkg-config')
   }
 }
 

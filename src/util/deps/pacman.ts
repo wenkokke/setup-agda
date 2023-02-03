@@ -1,4 +1,3 @@
-import pick from 'object.pick'
 import exec, { ExecOptions } from '../exec.js'
 import msys from './msys.js'
 
@@ -11,11 +10,11 @@ export default async function pacman(
 }
 
 pacman.which = async (): Promise<string | null> => {
-  const pacmanPath = await exec.which('pacman')
-  if (pacmanPath !== null) {
-    return pacmanPath
+  const msysPacmanPath = await exec.which('pacman', { path: msys.path })
+  if (msysPacmanPath !== null) {
+    return msysPacmanPath
   } else {
-    return await exec.which('pacman', pick(msys, ['path']))
+    return await exec.which('pacman')
   }
 }
 
