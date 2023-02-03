@@ -18,7 +18,7 @@ pacman.which = async (): Promise<string | null> => {
   }
 }
 
-pacman.existsSync = (): boolean => pacman.which() !== null
+pacman.exists = async (): Promise<boolean> => (await pacman.which()) !== null
 
 pacman.getVersion = async (
   pkg: string,

@@ -27,7 +27,8 @@ pkgConfig.which = async (): Promise<string | null> => {
   }
 }
 
-pkgConfig.existsSync = (): boolean => pkgConfig.which() !== null
+pkgConfig.exists = async (): Promise<boolean> =>
+  (await pkgConfig.which()) !== null
 
 async function getList(
   name: string,
