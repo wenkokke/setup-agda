@@ -221,7 +221,7 @@ jobs:
   </tr>
   <tr>
     <td>2.6.1.3</td>
-    <td>📦 & 🏗</td>
+    <td></td>
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
@@ -231,7 +231,7 @@ jobs:
   </tr>
   <tr>
     <td>2.6.0.1</td>
-    <td>📦 & 🏗</td>
+    <td></td>
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
@@ -251,7 +251,7 @@ jobs:
   </tr>
   <tr>
     <td>2.5.3</td>
-    <td>📦 & 🏗</td>
+    <td></td>
     <td>📦 & 🏗</td>
     <td>📦 only</td>
     <td>📦 & 🏗</td>
@@ -261,7 +261,7 @@ jobs:
   </tr>
   <tr>
     <td>2.5.2</td>
-    <td>📦 & 🏗</td>
+    <td></td>
     <td>📦 & 🏗</td>
     <td>📦 only</td>
     <td>📦 & 🏗</td>
