@@ -37,12 +37,6 @@ jobs:
           bundle: true
           bundle-compress: ${{ runner.os == 'Linux' }}
           bundle-license-report: true
-          bundle-name: |
-            agda-{{agda-version}}
-                -{{arch}}
-                -{{release}}
-                -icu{{icu-version}}
-                -ghc{{ghc-version}}
           cabal-version: '3.8'
           force-build: true
           ghc-version: '9.2.4'
@@ -64,12 +58,6 @@ jobs:
           bundle: true
           bundle-compress: ${{ runner.os == 'Linux' }}
           bundle-license-report: true
-          bundle-name: |
-            agda-{{agda-version}}
-                -{{arch}}
-                -{{release}}
-                -icu{{icu-version}}
-                -ghc{{ghc-version}}
           cabal-version: '3.8'
           force-build: true
           # NOTE: We can't use GHC 9.2.4, because it ships with an
@@ -93,12 +81,6 @@ jobs:
           bundle: true
           bundle-compress: ${{ runner.os == 'Linux' }}
           bundle-license-report: true
-          bundle-name: |
-            agda-{{agda-version}}
-                -{{arch}}
-                -{{release}}
-                -icu{{icu-version}}
-                -ghc{{ghc-version}}
           cabal-version: '3.8'
           force-build: true
           ghc-version: '9.0.2'
@@ -120,12 +102,6 @@ jobs:
           bundle: true
           bundle-compress: ${{ runner.os == 'Linux' }}
           bundle-license-report: true
-          bundle-name: |
-            agda-{{agda-version}}
-                -{{arch}}
-                -{{release}}
-                -icu{{icu-version}}
-                -ghc{{ghc-version}}
           cabal-version: '3.8'
           force-build: true
           ghc-version: '8.10.7'
@@ -147,12 +123,6 @@ jobs:
           bundle: true
           bundle-compress: ${{ runner.os == 'Linux' }}
           bundle-license-report: true
-          bundle-name: |
-            agda-{{agda-version}}
-                -{{arch}}
-                -{{release}}
-                -icu{{icu-version}}
-                -ghc{{ghc-version}}
           cabal-version: '3.8'
           force-build: true
           ghc-version: '8.6.5'
@@ -174,12 +144,6 @@ jobs:
           bundle: true
           bundle-compress: ${{ runner.os == 'Linux' }}
           bundle-license-report: true
-          bundle-name: |
-            agda-{{agda-version}}
-                -{{arch}}
-                -{{release}}
-                -icu{{icu-version}}
-                -ghc{{ghc-version}}
           cabal-version: '3.8'
           force-build: true
           ghc-version: '8.4.4'
@@ -202,12 +166,6 @@ jobs:
           bundle: true
           bundle-compress: ${{ runner.os == 'Linux' }}
           bundle-license-report: true
-          bundle-name: |
-            agda-{{agda-version}}
-                -{{arch}}
-                -{{release}}
-                -icu{{icu-version}}
-                -ghc{{ghc-version}}
           cabal-version: '3.8'
           force-build: true
           ghc-version: '8.2.2'

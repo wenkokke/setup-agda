@@ -31,12 +31,6 @@ jobs:
           agda-version: 'HEAD'
           bundle: true
           bundle-license-report: true
-          bundle-name: |
-            agda-{{agda-version}}
-                -{{arch}}
-                -{{release}}
-                -icu{{icu-version}}
-                -ghc{{ghc-version}}
           force-build: true
     strategy:
       matrix:

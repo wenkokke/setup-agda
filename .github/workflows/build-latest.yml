@@ -30,13 +30,6 @@ jobs:
           bundle: true
           bundle-compress: ${{ runner.os == 'Linux' }}
           bundle-license-report: true
-          bundle-name: |
-            agda-{{agda-version}}
-                -{{arch}}
-                -{{release}}
-                -icu{{icu-version}}
-                -ghc{{ghc-version}}
-                -cabal{{cabal-version}}
           force-build: true
     strategy:
       fail-fast: false

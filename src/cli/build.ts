@@ -261,13 +261,15 @@ build.renderBundleName = async (
       logger.warning(ensureError(error))
     }
   }
-  return options['bundle-options']?.['bundle-name-template'].render({
-    'agda-version': options['agda-version'],
-    'ghc-version': ghcVersion,
-    'cabal-version': cabalVersion,
-    'icu-version': icuVersion,
+  const context = {
+    agda: options['agda-version'],
+    ghc: ghcVersion,
+    cabal: cabalVersion,
+    icu: icuVersion,
     arch,
     platform,
     release
-  })
+  }
+  logger.debug(`Render bundle name with context: ${JSON.stringify(context)}`)
+  return options['bundle-options']?.['bundle-name-template'].render(context)
 }

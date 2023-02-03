@@ -421,18 +421,23 @@ This section describes all inputs:
   If specified, will be used as a name for the bundle.
   
   The value is interpreted as a [nunjucks template](https://mozilla.github.io/nunjucks/).
-  The template may use `{{agda-version}}`, `{{cabal-version}}`,
-  `{{ghc-version}}`, `{{icu-version}}`, which will be replace by the
-  concrete versions, if used, and `{{arch}}`, `{{platform}}`, and
-  `{{release}}`. The variable `{{arch}}` is replaced by the system
-  architecture---e.g., `x64`, `arm64`, etc. The variable `{{platform}}`
-  is replaced by one of of `linux`, `macos`, or `windows`. The variable
-  `{{release}}` is replaced by a release identifier, e.g., `ubuntu-22.04`,
-  `macos-12`, or `windows-2022`.
+  The template may use `{{agda}}`, `{{cabal}}`, `{{ghc}}`, `{{icu}}`,
+  which will be replaced by their respective versions, if used, and
+  `{{arch}}`, `{{platform}}`, and `{{release}}`. The variable `{{arch}}`
+  is replaced by the system architecture---e.g., `x64`, `arm64`, etc.
+  The variable `{{platform}}` is replaced by one of of `linux`, `macos`,
+  or `windows`. The variable `{{release}}` is replaced by a release
+  identifier, e.g., `ubuntu-22.04`, `macos-12`, or `windows-2022`.
   
   Only used when `bundle` is specified.
 
-  Default: `agda-{{agda-version}}-{{arch}}-{{platform}}`
+  Default: `agda-{{ agda }}
+    -{{ arch }}
+    -{{ release }}
+    -ghc{{ ghc }}
+    -cabal{{ cabal }}
+    {% if icu %}-icu{{ icu }}{% endif %}
+`
 
 - `bundle-license-report`
 

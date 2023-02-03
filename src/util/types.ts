@@ -442,7 +442,10 @@ function pickBundleOptions<
   Options extends Pick<ActionOptions, BundleOptionKey>
 >(options: Options): BundleOptions {
   // Validate the bundle name:
-  const bundleName = options['bundle-name'].split(/\s+/g).join('').trim()
+  const bundleName = options['bundle-name']
+    .split(/\r?\n/g)
+    .map((line) => line.trim())
+    .join('')
   try {
     const env = nunjucks.configure({
       autoescape: false,
