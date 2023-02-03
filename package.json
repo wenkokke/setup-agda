@@ -43,6 +43,7 @@
     "all": "npm run build && npm run format && npm run lint && npm run package"
   },
   "devDependencies": {
+    "@types/js-yaml": "^4.0.5",
     "@types/mustache": "^4.2.2",
     "@types/node": "^18.11.17",
     "@types/nunjucks": "^3.2.1",
@@ -50,8 +51,8 @@
     "@types/semver": "^7.3.13",
     "@types/tmp": "^0.2.3",
     "@typescript-eslint/parser": "^5.47.1",
-    "eslint": "^8.30.0",
     "@vercel/ncc": "^0.36.0",
+    "eslint": "^8.30.0",
     "eslint-plugin-github": "^4.6.0",
     "js-yaml": "^4.1.0",
     "nunjucks": "^3.2.3",

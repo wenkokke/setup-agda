@@ -34,19 +34,20 @@
     "binary": {
       "darwin": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.2.2-x64-macos-11-icu71.1-ghc9.2.4.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.2.2-x64-macos-12-icu71.1-ghc9.2.4.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-macos-11-ghc9.2.4-icu71.1.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-macos-12-ghc9.2.4-icu71.1.zip"
         ]
       },
       "linux": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.2.2-x64-ubuntu-20.04-icu66.1-ghc9.2.4.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.2.2-x64-ubuntu-22.04-icu66.1-ghc9.2.4.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-20.04-ghc9.2.4-icu66.1.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-ubuntu-22.04-ghc9.2.4-icu70.1.zip"
         ]
       },
       "win32": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.2.2-x64-windows-2022-icu72.1-ghc9.2.4.zip"
+          "https://msp.cis.strath.ac.uk/files/agda/agda-2.6.2.2-x64-windows-2022-icu72.1-ghc9.2.4.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.2-x64-windows-2022-ghc9.2.4-icu72.1.zip"
         ]
       }
     },
@@ -59,19 +60,20 @@
     "binary": {
       "darwin": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.2.1-x64-macos-11-icu71.1-ghc9.0.2.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.2.1-x64-macos-12-icu71.1-ghc9.0.2.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-macos-11-ghc9.0.2-icu71.1.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-macos-12-ghc9.0.2-icu71.1.zip"
         ]
       },
       "linux": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.2.1-x64-ubuntu-20.04-icu66.1-ghc9.0.2.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.2.1-x64-ubuntu-22.04-icu66.1-ghc9.0.2.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-ubuntu-20.04-ghc9.0.2-icu66.1.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-ubuntu-22.04-ghc9.0.2-icu70.1.zip"
         ]
       },
       "win32": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.2.1-x64-windows-2022-icu72.1-ghc9.0.2.zip"
+          "https://msp.cis.strath.ac.uk/files/agda/agda-2.6.2.1-x64-windows-2022-icu72.1-ghc9.0.2.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2.1-x64-windows-2022-ghc9.0.2-icu72.1.zip"
         ]
       }
     },
@@ -84,19 +86,20 @@
     "binary": {
       "darwin": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.2-x64-macos-11-icu71.1-ghc9.0.2.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.2-x64-macos-12-icu71.1-ghc9.0.2.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-macos-11-ghc9.0.2-icu71.1.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-macos-12-ghc9.0.2-icu71.1.zip"
         ]
       },
       "linux": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.2-x64-ubuntu-20.04-icu66.1-ghc9.0.2.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.2-x64-ubuntu-22.04-icu66.1-ghc9.0.2.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-ubuntu-20.04-ghc9.0.2-icu66.1.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-ubuntu-22.04-ghc9.0.2-icu70.1.zip"
         ]
       },
       "win32": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.2-x64-windows-2022-icu72.1-ghc9.0.2.zip"
+          "https://msp.cis.strath.ac.uk/files/agda/agda-2.6.2-x64-windows-2022-icu72.1-ghc9.0.2.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-windows-2022-ghc9.0.2-icu72.1.zip"
         ]
       }
     },
@@ -109,15 +112,14 @@
     "binary": {
       "darwin": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.1.3-x64-macos-11-icu71.1-ghc8.10.7.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.1.3-x64-macos-12-icu71.1-ghc8.10.7.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-macos-11-ghc8.10.7-icu71.1.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-macos-12-ghc8.10.7-icu71.1.zip"
         ]
       },
       "linux": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.1.3-x64-ubuntu-18.04-icu66.1-ghc8.10.7.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.1.3-x64-ubuntu-20.04-icu66.1-ghc8.10.7.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.1.3-x64-ubuntu-22.04-icu66.1-ghc8.10.7.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-20.04-ghc8.10.7-icu66.1.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-22.04-ghc8.10.7-icu70.1.zip"
         ]
       },
       "win32": {
@@ -129,70 +131,18 @@
       "ghc": "8.0 - 8.10"
     }
   },
-  "2.6.1.2": {
-    "binary": {
-      "darwin": {
-        "x64": []
-      },
-      "linux": {
-        "x64": []
-      },
-      "win32": {
-        "x64": []
-      }
-    },
-    "compatibility": {
-      "agda-stdlib": "1.5",
-      "ghc": "8.0 - 8.10"
-    }
-  },
-  "2.6.1.1": {
-    "binary": {
-      "darwin": {
-        "x64": []
-      },
-      "linux": {
-        "x64": []
-      },
-      "win32": {
-        "x64": []
-      }
-    },
-    "compatibility": {
-      "agda-stdlib": "1.4 - 1.5",
-      "ghc": "8.0 - 8.10"
-    }
-  },
-  "2.6.1": {
-    "binary": {
-      "darwin": {
-        "x64": []
-      },
-      "linux": {
-        "x64": []
-      },
-      "win32": {
-        "x64": []
-      }
-    },
-    "compatibility": {
-      "agda-stdlib": "1.3 - 1.6",
-      "ghc": "8.0 - 8.8"
-    }
-  },
   "2.6.0.1": {
     "binary": {
       "darwin": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.0.1-x64-macos-11-icu71.1-ghc8.6.5.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.0.1-x64-macos-12-icu71.1-ghc8.6.5.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-macos-11-ghc8.6.5-icu71.1.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-macos-12-ghc8.6.5-icu71.1.zip"
         ]
       },
       "linux": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.0.1-x64-ubuntu-18.04-icu66.1-ghc8.6.5.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.0.1-x64-ubuntu-20.04-icu66.1-ghc8.6.5.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.6.0.1-x64-ubuntu-22.04-icu66.1-ghc8.6.5.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-20.04-ghc8.6.5-icu66.1.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-22.04-ghc8.6.5-icu70.1.zip"
         ]
       },
       "win32": {
@@ -204,35 +154,18 @@
       "ghc": "7.10 - 8.6"
     }
   },
-  "2.6.0": {
-    "binary": {
-      "darwin": {
-        "x64": []
-      },
-      "linux": {
-        "x64": []
-      },
-      "win32": {
-        "x64": []
-      }
-    },
-    "compatibility": {
-      "agda-stdlib": "1.0 - 1.0.1",
-      "ghc": "7.10 - 8.6"
-    }
-  },
   "2.5.4.2": {
     "binary": {
       "darwin": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.5.4.2-x64-macos-11-icu71.1-ghc8.4.4.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.5.4.2-x64-macos-12-icu71.1-ghc8.4.4.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-macos-11-ghc8.4.4-icu71.1.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-macos-12-ghc8.4.4-icu71.1.zip"
         ]
       },
       "linux": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.5.4.2-x64-ubuntu-20.04-icu66.1-ghc8.4.4.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.5.4.2-x64-ubuntu-22.04-icu66.1-ghc8.4.4.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-ubuntu-20.04-ghc8.4.4-icu66.1.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-ubuntu-22.04-ghc8.4.4-icu70.1.zip"
         ]
       },
       "win32": {
@@ -244,52 +177,17 @@
       "ghc": "7.10 - 8.4"
     }
   },
-  "2.5.4.1": {
-    "binary": {
-      "darwin": {
-        "x64": []
-      },
-      "linux": {
-        "x64": []
-      },
-      "win32": {
-        "x64": []
-      }
-    },
-    "compatibility": {
-      "agda-stdlib": "0.16 - 0.17",
-      "ghc": "7.10 - 8.4"
-    }
-  },
-  "2.5.4": {
-    "binary": {
-      "darwin": {
-        "x64": []
-      },
-      "linux": {
-        "x64": []
-      },
-      "win32": {
-        "x64": []
-      }
-    },
-    "compatibility": {
-      "agda-stdlib": "0.16 - 0.17",
-      "ghc": "7.10 - 8.4"
-    }
-  },
   "2.5.3": {
     "binary": {
       "darwin": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.5.3-x64-macos-11-icu71.1-ghc8.2.2.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.5.3-x64-macos-12-icu71.1-ghc8.2.2.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-macos-11-ghc8.2.2-icu71.1.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-macos-12-ghc8.2.2-icu71.1.zip"
         ]
       },
       "linux": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.5.3-x64-ubuntu-18.04-icu66.1-ghc8.2.2.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.5.3-x64-ubuntu-20.04-icu66.1-ghc8.2.2.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-ubuntu-20.04-ghc8.2.2-icu66.1.zip"
         ]
       },
       "win32": {
@@ -305,14 +203,13 @@
     "binary": {
       "darwin": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.5.2-x64-macos-11-ghc8.0.2.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.5.2-x64-macos-12-ghc8.0.2.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-macos-11-ghc8.0.2.zip",
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-macos-12-ghc8.0.2.zip"
         ]
       },
       "linux": {
         "x64": [
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.5.2-x64-ubuntu-18.04-ghc8.0.2.zip",
-          "https://github.com/wenkokke/setup-agda/releases/download/v1.2.0/agda-2.5.2-x64-ubuntu-20.04-ghc8.0.2.zip"
+          "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.2-x64-ubuntu-20.04-ghc8.0.2.zip"
         ]
       },
       "win32": {
@@ -339,40 +236,6 @@
     "compatibility": {
       "agda-stdlib": "0.12",
       "ghc": "7.6 - 8.0"
-    }
-  },
-  "2.5.1.1": {
-    "binary": {
-      "darwin": {
-        "x64": []
-      },
-      "linux": {
-        "x64": []
-      },
-      "win32": {
-        "x64": []
-      }
-    },
-    "compatibility": {
-      "agda-stdlib": "0.12",
-      "ghc": "7.6 - 7.10"
-    }
-  },
-  "2.5.1": {
-    "binary": {
-      "darwin": {
-        "x64": []
-      },
-      "linux": {
-        "x64": []
-      },
-      "win32": {
-        "x64": []
-      }
-    },
-    "compatibility": {
-      "agda-stdlib": "0.12",
-      "ghc": "7.6 - 7.10"
     }
   },
   "2.4.2.5": {
