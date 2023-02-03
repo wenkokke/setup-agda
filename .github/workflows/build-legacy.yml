@@ -188,11 +188,6 @@ jobs:
           bundle: true
           bundle-compress: ${{ runner.os == 'Linux' }}
           bundle-license-report: true
-          bundle-name: |
-            agda-{{agda-version}}
-                -{{arch}}
-                -{{release}}
-                -ghc{{ghc-version}}
           cabal-version: '3.8'
           force-build: true
           ghc-version: '8.0.2'
