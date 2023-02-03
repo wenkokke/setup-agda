@@ -1,4 +1,11 @@
 {
+  "1.7.2": {
+    "source": {
+      "url": "https://github.com/agda/agda-stdlib/archive/refs/tags/v1.7.2.zip",
+      "tag": "v1.7.2",
+      "dir": "agda-stdlib-1.7.2"
+    }
+  },
   "1.7.1": {
     "source": {
       "url": "https://github.com/agda/agda-stdlib/archive/refs/tags/v1.7.1.zip",

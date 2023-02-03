@@ -13,7 +13,29 @@ nightly:
         - url: https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip
           dir: Agda-nightly
   compatibility:
-    agda-stdlib: 1.7.1
+    agda-stdlib: '1.7.2'
+2.6.3:
+  binary:
+    macos:
+      x64: []
+    linux:
+      x64: []
+    windows:
+      x64: []
+  compatibility:
+    agda-stdlib: '1.7.2'
+    ghc: '8.0.2 - 9.4.4'
+  configuration:
+    macos: |
+      --flags=+enable-cluster-counting
+      --flags=+optimise-heavily
+    linux: |
+      --enable-split-sections
+      --flags=+enable-cluster-counting
+      --flags=+optimise-heavily
+    windows: |
+      --enable-split-sections
+      --flags=+enable-cluster-counting
 2.6.2.2:
   binary:
     macos:
@@ -53,8 +75,8 @@ nightly:
           sha256: e442bf8ec6e6dc6cbffe6537144878a2eef0057a43c7bdd3a5d4d9828ae20582
           target: windows-2022
   compatibility:
-    agda-stdlib: 1.7.1
-    ghc: 8.0 - 9.2
+    agda-stdlib: '1.7.1'
+    ghc: '8.0 - 9.2'
   configuration:
     macos: |
       --flags=+enable-cluster-counting
@@ -105,8 +127,8 @@ nightly:
           sha256: 1bdbc325826268bbd8289cc0737dbab3390e4767da13c269c22847a45d1df86a
           target: windows-2022
   compatibility:
-    agda-stdlib: 1.7.1
-    ghc: 8.0 - 9.2
+    agda-stdlib: '1.7.1'
+    ghc: '8.0 - 9.2'
   configuration:
     macos: |
       --flags=+enable-cluster-counting
@@ -157,8 +179,8 @@ nightly:
           sha256: be38e10485e6d3a2836d330a7e08de6993b5ce112803f4efa56c11a0c15eeffa
           target: windows-2022
   compatibility:
-    agda-stdlib: 1.7 - 1.7.1
-    ghc: 8.0 - 9.0
+    agda-stdlib: '1.7 - 1.7.1'
+    ghc: '8.0 - 9.0'
   configuration:
     macos: |
       --flags=+enable-cluster-counting
@@ -209,8 +231,8 @@ nightly:
     windows:
       x64: []
   compatibility:
-    agda-stdlib: 1.5 - 1.6
-    ghc: 8.0 - 8.10
+    agda-stdlib: '1.5 - 1.6'
+    ghc: '8.0 - 8.10'
   configuration:
     macos: |
       --flags=+enable-cluster-counting
@@ -259,8 +281,8 @@ nightly:
     windows:
       x64: []
   compatibility:
-    agda-stdlib: 1.0.1 - 1.2
-    ghc: 7.10 - 8.6
+    agda-stdlib: '1.0.1 - 1.2'
+    ghc: '7.10 - 8.6'
   configuration: |
     --flags=+enable-cluster-counting
 2.5.4.2:
@@ -297,7 +319,7 @@ nightly:
       x64: []
   compatibility:
     agda-stdlib: '0.17'
-    ghc: 7.10 - 8.4
+    ghc: '7.10 - 8.4'
   configuration: |
     --flags=+enable-cluster-counting
 2.5.3:
@@ -333,8 +355,8 @@ nightly:
     windows:
       x64: []
   compatibility:
-    agda-stdlib: 0.14 - 0.15
-    ghc: 7.8 - 8.2
+    agda-stdlib: '0.14 - 0.15'
+    ghc: '7.8 - 8.2'
   configuration: |
     --allow-newer=Cabal
     --flags=+enable-cluster-counting
@@ -372,47 +394,47 @@ nightly:
       x64: []
   compatibility:
     agda-stdlib: '0.13'
-    ghc: 7.6 - 8.0
+    ghc: '7.6 - 8.0'
 2.5.1.2:
   compatibility:
     agda-stdlib: '0.12'
-    ghc: 7.6 - 8.0
+    ghc: '7.6 - 8.0'
 2.4.2.5:
   compatibility:
     agda-stdlib: '0.11'
-    ghc: 7.6 - 7.10
+    ghc: '7.6 - 7.10'
 2.4.2.4:
   compatibility:
     agda-stdlib: '0.11'
-    ghc: 7.6 - 7.10
+    ghc: '7.6 - 7.10'
 2.4.2.3:
   compatibility:
     agda-stdlib: '0.10'
-    ghc: 7.4 - 7.10
+    ghc: '7.4 - 7.10'
 2.4.2.2:
   compatibility:
     agda-stdlib: '0.9'
-    ghc: 7.0 - 7.8
+    ghc: '7.0 - 7.8'
 2.4.2.1:
   compatibility:
     agda-stdlib: '0.9'
-    ghc: 7.0 - 7.8
+    ghc: '7.0 - 7.8'
 2.4.2:
   compatibility:
-    agda-stdlib: 0.8.1
-    ghc: 7.0 - 7.8
+    agda-stdlib: '0.8.1'
+    ghc: '7.0 - 7.8'
 2.4.0.2:
   compatibility:
     agda-stdlib: '0.8'
-    ghc: 7.0 - 7.8
+    ghc: '7.0 - 7.8'
 2.4.0.1:
   compatibility:
     agda-stdlib: '0.8'
-    ghc: 7.0 - 7.8
+    ghc: '7.0 - 7.8'
 2.4.0:
   compatibility:
     agda-stdlib: '0.8'
-    ghc: 7.0 - 7.8
+    ghc: '7.0 - 7.8'
 2.3.2.2:
   compatibility:
     agda-stdlib: '0.7'

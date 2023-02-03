@@ -27,7 +27,29 @@
       }
     },
     "compatibility": {
-      "agda-stdlib": "1.7.1"
+      "agda-stdlib": "1.7.2"
+    }
+  },
+  "2.6.3": {
+    "binary": {
+      "macos": {
+        "x64": []
+      },
+      "linux": {
+        "x64": []
+      },
+      "windows": {
+        "x64": []
+      }
+    },
+    "compatibility": {
+      "agda-stdlib": "1.7.2",
+      "ghc": "8.0.2 - 9.4.4"
+    },
+    "configuration": {
+      "macos": "--flags=+enable-cluster-counting\n--flags=+optimise-heavily\n",
+      "linux": "--enable-split-sections\n--flags=+enable-cluster-counting\n--flags=+optimise-heavily\n",
+      "windows": "--enable-split-sections\n--flags=+enable-cluster-counting\n"
     }
   },
   "2.6.2.2": {
