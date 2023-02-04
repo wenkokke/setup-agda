@@ -192,9 +192,9 @@ jobs:
   <tr>
     <td>2.6.3</td>
     <td></td>
-    <td></td>
     <td>📦 & 🏗</td>
-    <td></td>
+    <td>📦 & 🏗</td>
+    <td>📦 & 🏗</td>
     <td>📦 & 🏗</td>
     <td>📦 only</td>
     <td>📦 & 🏗</td>
