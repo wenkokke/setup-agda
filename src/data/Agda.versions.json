@@ -63,7 +63,7 @@
       "windows": {
         "x64": [
           {
-            "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.3-x64-windows-2022-ghc9.4.4-icu70.1.zip",
+            "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.3-x64-windows-2022-ghc9.4.4-icu72.1.zip",
             "sha256": "2143d880a85da0d71951b7471e6f3414f6c07ce6cd70e936fd0451b0b9d46951",
             "target": "windows-2022"
           }
