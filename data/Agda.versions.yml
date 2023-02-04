@@ -17,7 +17,9 @@ nightly:
 2.6.3:
   binary:
     macos:
-      x64: []
+      x64:
+        - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.3-x64-macos-12-ghc9.4.4-icu72.1.zip
+          target: macos-12
     linux:
       x64:
         - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.3-x64-ubuntu-22.04-ghc9.4.4-icu70.1.zip

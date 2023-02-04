@@ -195,7 +195,7 @@ jobs:
     <td></td>
     <td>📦 & 🏗</td>
     <td></td>
-    <td></td>
+    <td>📦 & 🏗</td>
     <td>📦 only</td>
     <td>📦 & 🏗</td>
   </tr>
