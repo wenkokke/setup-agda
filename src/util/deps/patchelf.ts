@@ -6,3 +6,10 @@ export default async function patchelf(
 ): Promise<void> {
   await exec('patchelf', args, options)
 }
+patchelf.getSharedLibaries = async (
+  target: string,
+  options?: ExecOptions
+): Promise<string> => {
+  const { stdout } = await exec('patchelf', ['--print-needed', target], options)
+  return stdout
+}

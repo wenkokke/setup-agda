@@ -37,6 +37,9 @@ import {
 } from '../util/types.js'
 import { Has } from '../util/has.js'
 import test from './test.js'
+import patchelf from '../util/deps/patchelf.js'
+import otool from '../util/deps/otool.js'
+import { dumpbin } from '../util/deps/dumpbin.js'
 
 export default async function build(options: BuildOptions): Promise<void> {
   // Check if the installed GHC version is correct:
@@ -148,6 +151,18 @@ export default async function build(options: BuildOptions): Promise<void> {
     if (icuNeeded(options) && platform !== 'windows') {
       logger.info(`Bundle libraries`)
       await icuBundle(destDir, options)
+    }
+
+    // Logging: print shared libraries
+    if (logger.isDebug()) {
+      for (const bin of Object.values(agdaComponents)) {
+        try {
+          const binPath = path.join(destDir, 'bin', bin.exe)
+          logger.debug(await build.getSharedLibraries(binPath))
+        } catch (error) {
+          logger.warning(ensureError(error))
+        }
+      }
     }
 
     // Compress binaries:
@@ -273,4 +288,19 @@ build.renderBundleName = async (
   }
   logger.debug(`Render bundle name with context: ${JSON.stringify(context)}`)
   return options['bundle-options']?.['bundle-name-template'].render(context)
+}
+
+build.getSharedLibraries = async (target: string): Promise<string> => {
+  switch (platform) {
+    case 'linux': {
+      return await patchelf.getSharedLibaries(target)
+    }
+    case 'macos': {
+      const sharedLibraries = await otool.getSharedLibraries(target)
+      return sharedLibraries.join(os.EOL)
+    }
+    case 'windows': {
+      return await dumpbin.getSharedLibraries(target)
+    }
+  }
 }

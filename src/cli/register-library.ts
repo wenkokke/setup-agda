@@ -4,6 +4,7 @@ import * as os from 'node:os'
 import * as path from 'node:path'
 import { agdaDefaultsFile, agdaLibrariesFile } from '../util/appdirs.js'
 import agda from '../util/deps/agda.js'
+import ensureError from 'ensure-error'
 
 export default function registerLibrary(
   libraryFile: string,
@@ -43,5 +44,33 @@ export default function registerLibrary(
     const defaultsFile = agdaDefaultsFile()
     fs.mkdirpSync(path.dirname(defaultsFile))
     fs.writeFileSync(defaultsFile, newDefaults.join(os.EOL))
+  }
+
+  // Logging: print libraries file
+  if (logger.isDebug()) {
+    try {
+      logger.debug(
+        [
+          `${agdaLibrariesFile()}:`,
+          ...agda.readLibrariesSync().map((exe) => `- ${exe}`)
+        ].join(os.EOL)
+      )
+    } catch (error) {
+      logger.warning(ensureError(error))
+    }
+  }
+
+  // Logging: print defaults file
+  if (logger.isDebug()) {
+    try {
+      logger.debug(
+        [
+          `${agdaDefaultsFile()}:`,
+          ...agda.readDefaultsSync().map((exe) => `- ${exe}`)
+        ].join(os.EOL)
+      )
+    } catch (error) {
+      logger.warning(ensureError(error))
+    }
   }
 }
