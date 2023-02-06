@@ -139,6 +139,7 @@ jobs:
   check:
     name: Check wenkokke/schmitty
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
     runs-on: ${{ matrix.os }}
@@ -165,6 +166,10 @@ jobs:
             https://github.com/wenkokke/schmitty.git#v1.0.1
           agda-executables: |
             ${{ steps.setup-z3.outputs.z3-root }}/z3
+
+      - if: runner.os == 'Linux'
+        run: |
+          ls -al ${{ steps.setup-z3.outputs.z3-root }}/z3
 
       # Run the test suite for wenkokke/schmitty:
       - name: Test Schmitty
