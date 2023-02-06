@@ -18,7 +18,7 @@ jobs:
 
       # Setup Z3 using cda-tum/setup-z3
       - id: setup-z3
-        uses: cda-tum/setup-z3@v1
+        uses: cda-tum/setup-z3@v1.0.7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
