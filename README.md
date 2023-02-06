@@ -151,7 +151,7 @@ jobs:
 
       # Setup Z3 using cda-tum/setup-z3
       - id: setup-z3
-        uses: cda-tum/setup-z3@v1.0.7
+        uses: cda-tum/setup-z3@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -165,13 +165,7 @@ jobs:
             https://github.com/gallais/agdarsec.git#v0.5.0
             https://github.com/wenkokke/schmitty.git#v1.0.1
           agda-executables: |
-            ${{ steps.setup-z3.outputs.z3-root }}/z3
-
-      - if: runner.os == 'Linux'
-        run: which z3
-
-      - if: runner.os == 'Linux'
-        run: ls -al ${{ steps.setup-z3.outputs.z3-root }}/z3
+            ${{ steps.setup-z3.outputs.z3-root }}/bin/z3
 
       # Run the test suite for wenkokke/schmitty:
       - name: Test Schmitty
