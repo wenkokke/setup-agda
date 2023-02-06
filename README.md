@@ -168,8 +168,10 @@ jobs:
             ${{ steps.setup-z3.outputs.z3-root }}/z3
 
       - if: runner.os == 'Linux'
-        run: |
-          ls -al ${{ steps.setup-z3.outputs.z3-root }}/z3
+        run: which z3
+
+      - if: runner.os == 'Linux'
+        run: ls -al ${{ steps.setup-z3.outputs.z3-root }}/z3
 
       # Run the test suite for wenkokke/schmitty:
       - name: Test Schmitty
