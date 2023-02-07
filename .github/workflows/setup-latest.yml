@@ -2,11 +2,11 @@ name: setup latest
 
 on:
   push:
-    branches: ['main']
+    branches: ['v2.0.0']
     paths: ['**.ts', '**.js', '**.json', '**.yml']
 
   pull_request:
-    branches: ['main']
+    branches: ['v2.0.0']
     paths: ['**.ts', '**.js', '**.json', '**.yml']
     types: [opened, synchronize, reopened]
 
