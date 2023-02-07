@@ -30,7 +30,7 @@ jobs:
           bundle: true
           bundle-compress: ${{ runner.os == 'Linux' }}
           bundle-license-report: true
-          cabal-version: "3.8"
+          cabal-version: '3.8'
           force-build: true
     strategy:
       fail-fast: false
