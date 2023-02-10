@@ -1,5 +1,6 @@
 import { program } from 'commander'
 import {
+  agdaStdlibInfo,
   getOptions,
   pickBuildOptions,
   pickInstallOptions,
@@ -12,6 +13,9 @@ import setAgda from './cli/set.js'
 import { exit } from 'node:process'
 import ensureError from 'ensure-error'
 import tui from './cli/tui.js'
+import os from 'node:os'
+import agda from './util/deps/agda.js'
+import installLibrary from './cli/install-library.js'
 
 program
   .name('agdaup')
@@ -83,6 +87,30 @@ async function install(
         return exit(1)
       }
     }
+    case 'agda-stdlib':
+    case 'standard-library': {
+      try {
+        const agdaVersion = agda.getSetVersion() ?? 'latest'
+        const actionOptions = await getOptions({
+          'agda-version': agdaVersion,
+          'agda-stdlib-version': version
+        })
+        const agdaStdlibVersion = actionOptions['agda-stdlib-version']
+        if (agdaStdlibVersion === 'none') {
+          return exit(0)
+        }
+        const agdaStdlibDist = agdaStdlibInfo[agdaStdlibVersion]
+        if (agdaStdlibDist?.source === undefined) {
+          logger.fatal(`No distribution for agda-stdlib ${agdaStdlibVersion}`)
+          return exit(1)
+        }
+        await installLibrary(agdaStdlibDist?.source)
+        return exit(0)
+      } catch (error) {
+        logger.error(ensureError(error))
+        return exit(1)
+      }
+    }
     default: {
       process.stderr.write(`Cannot install '${installable}'`)
       return exit(1)
@@ -129,6 +157,23 @@ async function set(
     default: {
       process.stderr.write(`Cannot set '${settable}'`)
       return exit(1)
+    }
+  }
+}
+
+// List
+
+program.command('list').action(list)
+
+async function list(): Promise<void> {
+  const installedVersions = agda.getInstalledVersions()
+  const setVersion = agda.getSetVersion()
+  process.stdout.write(`Agda versions:${os.EOL}${os.EOL}`)
+  for (const installedVersion of installedVersions) {
+    if (installedVersion === setVersion) {
+      process.stdout.write(`* ${installedVersion}${os.EOL}`)
+    } else {
+      process.stdout.write(`  ${installedVersion}${os.EOL}`)
     }
   }
 }

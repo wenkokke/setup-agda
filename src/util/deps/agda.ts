@@ -1,14 +1,17 @@
 import fs from 'fs-extra'
+import glob from 'glob'
 import * as path from 'node:path'
 import {
+  agdaBinDir,
   agdaDefaultsFile,
   agdaExecutablesFile,
-  agdaLibrariesFile
+  agdaLibrariesFile,
+  agdaupDir
 } from '../appdirs.js'
 import exec, { ExecOptions } from '../exec.js'
 import { splitLines } from '../lines.js'
 import * as simver from '../simver.js'
-import { agdaComponents } from '../types.js'
+import { agdaComponents, AgdaVersion, isAgdaVersion } from '../types.js'
 
 export interface AgdaOptions {
   agdaPath: string
@@ -107,5 +110,31 @@ agda.getDataDir = async (
       }
     }
     return path.join(path.basename(agdaPath), '..', 'data')
+  }
+}
+
+agda.getInstalledVersions = (): AgdaVersion[] => {
+  return glob
+    .sync(path.join(agdaupDir(), 'agda', '*'))
+    .flatMap((dir: string): AgdaVersion[] => {
+      const agdaVersion = path.basename(dir)
+      return isAgdaVersion(agdaVersion) ? [agdaVersion] : []
+    })
+}
+
+agda.getSetVersion = (): AgdaVersion | null => {
+  const setAgda = path.join(agdaBinDir(), agdaComponents['Agda:exe:agda'].exe)
+  if (fs.existsSync(setAgda)) {
+    const realAgda = fs.realpathSync(setAgda)
+    const realAgdaBinDir = path.dirname(realAgda)
+    const realAgdaInstallDir = path.dirname(realAgdaBinDir)
+    const realAgdaVersion = path.basename(realAgdaInstallDir)
+    if (isAgdaVersion(realAgdaVersion)) {
+      return realAgdaVersion
+    } else {
+      return null
+    }
+  } else {
+    return null
   }
 }
