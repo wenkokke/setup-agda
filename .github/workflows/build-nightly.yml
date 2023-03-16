@@ -29,6 +29,8 @@ jobs:
         uses: ./
         with:
           agda-version: 'HEAD'
+          cabal-version: "3.8"
+          ghc-version: "9.4"
           bundle: true
           bundle-license-report: true
           force-build: true
