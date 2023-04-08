@@ -1,4 +1,3 @@
-import * as cache from '@actions/cache'
 import * as path from 'node:path'
 import fs from 'fs-extra'
 import { agdaupCacheDir } from '../util/appdirs.js'
@@ -13,25 +12,11 @@ import ensureError from 'ensure-error'
 
 const version = '0.7.2.3'
 const installDir = agdaupCacheDir(path.join('cabal-plan', version))
-const primaryKey = `cache-${release}-cabal-plan-${version}`
 const ghcVersionConstraint = '>=8.2.1'
 const cabalPlanExe =
   platform === 'windows'
     ? path.join(installDir, 'cabal-plan.exe')
     : path.join(installDir, 'cabal-plan')
-
-setupCabalPlan.restoreCache = async (): Promise<string | null> => {
-  // Check the cache for cabal-plan:
-  if (!cache.isFeatureAvailable()) return null
-  const cacheHit = await cache.restoreCache([installDir], primaryKey)
-  if (cacheHit === undefined) return null
-  return cabalPlanExe
-}
-
-setupCabalPlan.saveCache = async (): Promise<void> => {
-  if (!cache.isFeatureAvailable()) return
-  await cache.saveCache([installDir], primaryKey)
-}
 
 /** Install `cabal-plan`. */
 export default async function setupCabalPlan(): Promise<string> {

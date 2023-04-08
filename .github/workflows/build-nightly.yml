@@ -25,12 +25,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-      # Work around for the fact that the versions of Cabal and GHC
-      # that ship with the GitHub runners are incompatible.
-      - uses: haskell/actions/setup@v2
-        with:
-          ghc-version: '9.4'
-          cabal-version: '3.8'
       - name: Build Agda (nightly)
         uses: ./
         with:

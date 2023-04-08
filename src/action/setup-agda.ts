@@ -75,18 +75,11 @@ export default async function setupAgda(options: ActionOptions): Promise<void> {
 
           // If cabal-plan is needed:
           if (cabalPlan.needed(buildOptions)) {
-            // Try to restore it from the cache:
-            const cabalPlanCache = await setupCabalPlan.restoreCache()
-            if (cabalPlanCache !== null) {
-              buildOptions['cabal-plan'] = cabalPlanCache
-            } else {
-              // Otherwise, if it best to build cabal-plan before we call
-              // setup-haskell, do so, and cache it:
-              const whenSetupCabalPlan = await setupCabalPlan.when(buildOptions)
-              if (whenSetupCabalPlan === 'before-setup-haskell') {
-                buildOptions['cabal-plan'] = await setupCabalPlan()
-                await setupCabalPlan.saveCache()
-              }
+            // If it best to build cabal-plan before we call
+            // setup-haskell, do so, and cache it:
+            const whenSetupCabalPlan = await setupCabalPlan.when(buildOptions)
+            if (whenSetupCabalPlan === 'before-setup-haskell') {
+              buildOptions['cabal-plan'] = await setupCabalPlan()
             }
           }
 
@@ -105,7 +98,6 @@ export default async function setupAgda(options: ActionOptions): Promise<void> {
             buildOptions['cabal-plan'] === undefined
           ) {
             buildOptions['cabal-plan'] = await setupCabalPlan()
-            await setupCabalPlan.saveCache()
           }
 
           // Run build:
