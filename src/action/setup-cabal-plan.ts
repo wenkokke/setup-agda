@@ -24,7 +24,7 @@ const cabalPlanExe =
 /** Install `cabal-plan`. */
 export default async function setupCabalPlan(): Promise<string> {
   // Setup GHC and Cabal:
-  setupHaskell({
+  await setupHaskell({
     'ghc-version': ghcVersion,
     'cabal-version': cabalVersion
   })
