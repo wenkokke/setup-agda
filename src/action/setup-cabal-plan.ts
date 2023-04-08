@@ -2,13 +2,14 @@ import * as path from 'node:path'
 import fs from 'fs-extra'
 import { agdaupCacheDir } from '../util/appdirs.js'
 import cabal from '../util/deps/cabal.js'
-import { platform, release } from '../util/platform.js'
+import { platform } from '../util/platform.js'
 import * as semver from 'semver'
 import ghc from '../util/deps/ghc.js'
 import { BuildOptions } from '../util/types.js'
 import cabalPlan from '../util/deps/cabal-plan.js'
 import { GhcNotFound, GhcVersionMismatch } from '../util/errors.js'
 import ensureError from 'ensure-error'
+import setupHaskell from './setup-haskell.js'
 
 const version = '0.7.2.3'
 const installDir = agdaupCacheDir(path.join('cabal-plan', version))
@@ -20,9 +21,11 @@ const cabalPlanExe =
 
 /** Install `cabal-plan`. */
 export default async function setupCabalPlan(): Promise<string> {
-  // Check the GHC version:
-  const currentGhcVersion = await ghc.maybeGetVersion()
-  assertGhcVersionOk(currentGhcVersion)
+  // Setup GHC and Cabal:
+  setupHaskell({
+    'ghc-version': '9.4',
+    'cabal-version': '3.8'
+  })
 
   // Install `cabal-plan` with `license-report`:
   logger.info(`Install cabal-plan ${version} to ${installDir}`)

@@ -3,7 +3,7 @@ import setupHaskellAction from 'setup-haskell'
 import { SetupHaskellActionOptions } from '../util/types.js'
 
 export default async function setupHaskell(
-  options: SetupHaskellActionOptions
+  options: Partial<SetupHaskellActionOptions>
 ): Promise<void> {
   assert(options['ghc-version'] !== 'recommended')
   const inputs = Object.fromEntries<string>(
