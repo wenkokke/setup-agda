@@ -14,6 +14,8 @@ import setupHaskell from './setup-haskell.js'
 const version = '0.7.2.3'
 const installDir = agdaupCacheDir(path.join('cabal-plan', version))
 const ghcVersionConstraint = '>=8.2.1'
+const ghcVersion = '9.4'
+const cabalVersion = '3.8'
 const cabalPlanExe =
   platform === 'windows'
     ? path.join(installDir, 'cabal-plan.exe')
@@ -23,8 +25,8 @@ const cabalPlanExe =
 export default async function setupCabalPlan(): Promise<string> {
   // Setup GHC and Cabal:
   setupHaskell({
-    'ghc-version': '9.4',
-    'cabal-version': '3.8'
+    'ghc-version': ghcVersion,
+    'cabal-version': cabalVersion
   })
 
   // Install `cabal-plan` with `license-report`:
