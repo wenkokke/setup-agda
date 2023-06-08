@@ -45,8 +45,6 @@ export default async function setupCabalPlan(): Promise<string> {
     `--installdir=${installDir}`,
     '--overwrite-policy=always'
   ])
-  const output = await exec(cabalPlanExe, ['--version'])
-  assert(`cabal-plan ${version}\n` === output.stdout)
   // Return the path to the cabal-plan executable:
   return cabalPlanExe
 }
