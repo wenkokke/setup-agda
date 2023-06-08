@@ -10,8 +10,10 @@ import cabalPlan from '../util/deps/cabal-plan.js'
 import { GhcNotFound, GhcVersionMismatch } from '../util/errors.js'
 import ensureError from 'ensure-error'
 import setupHaskell from './setup-haskell.js'
+import exec from '../util/exec.js'
+import assert from 'node:assert'
 
-const version = '0.7.2.3'
+const version = '0.7.3.0'
 const installDir = agdaupCacheDir(path.join('cabal-plan', version))
 const ghcVersionConstraint = '>=8.2.1'
 const ghcVersion = '9.4'
@@ -36,12 +38,15 @@ export default async function setupCabalPlan(): Promise<string> {
   await cabal([
     'v2-install',
     `cabal-plan-${version}`,
+    '-f+exe',
     '-f+license-report',
     '--ignore-project',
     '--install-method=copy',
     `--installdir=${installDir}`,
     '--overwrite-policy=always'
   ])
+  const output = await exec(cabalPlanExe, ['--numeric-version'])
+  assert(`cabal-plan ${version}\n` === output.stdout)
   // Return the path to the cabal-plan executable:
   return cabalPlanExe
 }
