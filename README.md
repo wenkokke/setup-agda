@@ -522,6 +522,18 @@ This section describes all inputs:
 
   Default: `false`
 
+- `cabal-update`
+
+  Set to `false` to prevent `cabal update` from being run.
+
+  Default: `false`
+
+- `ghcup-release-channel`
+
+  A release channel URL to add to ghcup via `ghcup config add-release-channel`.
+
+  Default: `false`
+
 - `disable-matcher`
 
   If specified, disables match messages from GHC as GitHub CI annotations.

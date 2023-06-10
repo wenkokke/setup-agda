@@ -94,9 +94,17 @@
       "description": "If specified, enable-stack must be set. Will run stack setup to install the specified GHC.\n",
       "required": false
     },
+    "cabal-update": {
+      "required": false,
+      "description": "Set to `false` to prevent `cabal update` from being run."
+    },
+    "ghcup-release-channel": {
+      "required": false,
+      "description": "A release channel URL to add to ghcup via `ghcup config add-release-channel`."
+    },
     "disable-matcher": {
-      "description": "If specified, disables match messages from GHC as GitHub CI annotations.\n",
-      "required": false
+      "required": false,
+      "description": "If specified, disables match messages from GHC as GitHub CI annotations."
     }
   },
   "outputs": {
