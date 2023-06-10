@@ -206,13 +206,16 @@ inputs:
     required: false
   cabal-update:
     required: false
-    description: 'Set to `false` to prevent `cabal update` from being run.'
+    description: |
+      If specified, will run `cabal update`.
   ghcup-release-channel:
     required: false
-    description: 'A release channel URL to add to ghcup via `ghcup config add-release-channel`.'
+    description: |
+      If specified, value is added as a ghcup release channel via `ghcup config add-release-channel`.
   disable-matcher:
     required: false
-    description: 'If specified, disables match messages from GHC as GitHub CI annotations.'
+    description: |
+      If specified, disables match messages from GHC as GitHub CI annotations.
 
 outputs:
   agda-version:
