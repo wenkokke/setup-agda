@@ -524,13 +524,13 @@ This section describes all inputs:
 
 - `cabal-update`
 
-  Set to `false` to prevent `cabal update` from being run.
+  If specified, will run `cabal update`.
 
   Default: `false`
 
 - `ghcup-release-channel`
 
-  A release channel URL to add to ghcup via `ghcup config add-release-channel`.
+  If specified, value is added as a ghcup release channel via `ghcup config add-release-channel`.
 
   Default: `false`
 
