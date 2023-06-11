@@ -1,3 +1,4 @@
+import * as core from '@actions/core'
 import assert from 'node:assert'
 import setupHaskellAction from 'setup-haskell'
 import { SetupHaskellActionOptions } from '../util/types.js'
@@ -16,5 +17,6 @@ export default async function setupHaskell(
       }
     })
   )
+  core.setOutput('setup-haskell', 'true')
   await setupHaskellAction.default(inputs as Record<string, string>)
 }

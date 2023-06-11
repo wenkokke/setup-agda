@@ -236,8 +236,9 @@ export default async function setupAgda(options: ActionOptions): Promise<void> {
     core.addPath(installBinDir)
 
     // Set outputs for GitHub Action:
-    core.setOutput('agda-data-path', installDataDir)
+    core.setOutput('agda-version', options['agda-version'])
     core.setOutput('agda-path', installBinDir)
+    core.setOutput('agda-data-path', installDataDir)
     const installAgdaPath = path.join(
       installBinDir,
       agdaComponents['Agda:exe:agda'].exe
