@@ -25,7 +25,7 @@ jobs:
 
       # Setup the versions of Agda specified in the matrix,
       # together with their recommended versions of agda-stdlib:
-      - uses: wenkokke/setup-agda@v2.0.0
+      - uses: wenkokke/setup-agda@v2.0.1
         with:
           agda-version: ${{ matrix.agda-version }}
           agda-stdlib-version: 'recommended'

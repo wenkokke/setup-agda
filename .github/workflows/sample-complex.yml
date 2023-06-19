@@ -24,7 +24,7 @@ jobs:
 
       # Setup Agda 2.6.2.2 together with agda-stdlib 1.7.1, agdarsec 0.5.0,
       # and schmitty 1.0.1, and register Z3 as a safe executable with Agda:
-      - uses: wenkokke/setup-agda@v2.0.0
+      - uses: wenkokke/setup-agda@v2.0.1
         with:
           agda-version: '2.6.2.2'
           agda-stdlib-version: '1.7.1'
