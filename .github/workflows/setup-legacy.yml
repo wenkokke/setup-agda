@@ -2,11 +2,11 @@ name: setup legacy
 
 on:
   push:
-    branches: ['main']
+    branches: ['v2.0.1']
     paths: ['**.ts', '**.js', '**.json', '**.yml']
 
   pull_request:
-    branches: ['main']
+    branches: ['v2.0.1']
     paths: ['**.ts', '**.js', '**.json', '**.yml']
     types: [opened, synchronize, reopened]
 
