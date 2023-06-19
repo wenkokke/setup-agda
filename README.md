@@ -44,7 +44,7 @@ jobs:
       - uses: actions/checkout@v3
 
       # Setup the latest version of Agda:
-      - uses: wenkokke/setup-agda@v2.0.0
+      - uses: wenkokke/setup-agda@v2
 
       # Check greet.agda, which you can find in tests/agda:
       - run: agda greet.agda
@@ -70,7 +70,7 @@ jobs:
       - uses: actions/checkout@v3
 
       # Setup Agda 2.6.2.2 with its recommended version of agda-stdlib:
-      - uses: wenkokke/setup-agda@v2.0.0
+      - uses: wenkokke/setup-agda@v2
         with:
           agda-version: '2.6.2.2'
           agda-stdlib-version: 'recommended'
@@ -114,7 +114,7 @@ jobs:
 
       # Setup the versions of Agda specified in the matrix,
       # together with their recommended versions of agda-stdlib:
-      - uses: wenkokke/setup-agda@v2.0.0
+      - uses: wenkokke/setup-agda@v2
         with:
           agda-version: ${{ matrix.agda-version }}
           agda-stdlib-version: 'recommended'
@@ -157,7 +157,7 @@ jobs:
 
       # Setup Agda 2.6.2.2 together with agda-stdlib 1.7.1, agdarsec 0.5.0,
       # and schmitty 1.0.1, and register Z3 as a safe executable with Agda:
-      - uses: wenkokke/setup-agda@v2.0.0
+      - uses: wenkokke/setup-agda@v2
         with:
           agda-version: '2.6.2.2'
           agda-stdlib-version: '1.7.1'
