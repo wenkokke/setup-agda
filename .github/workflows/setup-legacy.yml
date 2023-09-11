@@ -19,7 +19,7 @@ jobs:
     name: Setup Agda (${{ matrix.agda-version }}) on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Agda (${{ matrix.agda-version }})
         uses: ./
         with:
@@ -92,7 +92,7 @@ jobs:
     name: Setup Agda (2.6.2.2) with agda-categories (0.1.7.1)
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Agda
         uses: ./
         with:
@@ -115,7 +115,7 @@ jobs:
     name: Setup Agda (2.6.2.2) with agda-categories (0.1.7.1) as default
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Agda
         uses: ./
         with:
@@ -140,7 +140,7 @@ jobs:
     name: Setup Agda (2.6.2.2) with cubical (0.3)
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Agda
         uses: ./
         with:
@@ -157,7 +157,7 @@ jobs:
     name: Setup Agda (latest) with agda-stdlib (recommended) as default
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Agda
         uses: ./
         with:
@@ -182,7 +182,7 @@ jobs:
     name: Setup Agda (latest) with access to /bin/echo
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Agda
         uses: ./
         with:
