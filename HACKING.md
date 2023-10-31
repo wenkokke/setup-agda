@@ -71,12 +71,12 @@ When a new Agda version is released:
 
 3.  Commit and push your changes.
 
-## Update `haskell/actions` submodule
+## Update `haskell-actions/setup` submodule
 
 1.  Run the following commands, replacing `$HASKELL_ACTIONS_VERSION_TAG` with the tag for the new version:
 
     ```bash
-    cd vendor/haskell/actions
+    cd vendor/haskell-actions/setup
     git pull
     git checkout $HASKELL_ACTIONS_VERSION_TAG
     ```
