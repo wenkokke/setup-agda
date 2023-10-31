@@ -2,7 +2,7 @@
 
 When a new Agda version is released:
 
-1.  Add a new entry to `data/Agda.yml`. You can use the template below, replacing `$AGDA_VERSION` with the new version, and replacing `$AGDA_STDLIB_VERSION_RANGE` and `$GHC_VERSION_RANGE` with the appropriate version ranges:
+1.  Add a new entry to `data/Agda.versions.yml`. You can use the template below, replacing `$AGDA_VERSION` with the new version, and replacing `$AGDA_STDLIB_VERSION_RANGE` and `$GHC_VERSION_RANGE` with the appropriate version ranges:
 
     ```yaml
     $AGDA_VERSION:

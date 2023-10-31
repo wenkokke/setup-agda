@@ -13,7 +13,29 @@ nightly:
         - url: https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip
           dir: Agda-nightly
   compatibility:
-    agda-stdlib: '1.7.2'
+    agda-stdlib: '1.7.3'
+2.6.4:
+  binary:
+    macos:
+      x64: []
+    linux:
+      x64: []
+    windows:
+      x64: []
+  compatibility:
+    agda-stdlib: '1.7.3'
+    ghc: '8.6.5 - 9.6.3'
+  configuration:
+    macos: |
+      --flags=+enable-cluster-counting
+      --flags=+optimise-heavily
+    linux: |
+      --enable-split-sections
+      --flags=+enable-cluster-counting
+      --flags=+optimise-heavily
+    windows: |
+      --enable-split-sections
+      --flags=+enable-cluster-counting
 2.6.3:
   binary:
     macos:
