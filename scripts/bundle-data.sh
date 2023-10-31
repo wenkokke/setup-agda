@@ -18,7 +18,7 @@ js-yaml "$ROOT_DIR/data/agda-stdlib.versions.yml" \
 | prettier --parser=json > "$ROOT_DIR/src/data/agda-stdlib.versions.json" \
 || echo > "$fail"
 
-cat "$ROOT_DIR/vendor/haskell/actions/setup/src/versions.json" \
+cat "$ROOT_DIR/vendor/haskell-actions/setup/src/versions.json" \
 | prettier --parser=json > "$ROOT_DIR/src/data/setup-haskell/versions.json" \
 || echo > "$fail"
 
@@ -30,7 +30,7 @@ js-yaml "$ROOT_DIR/action.yml" \
 | prettier --parser=json > "$ROOT_DIR/src/data/setup-agda/action.json" \
 || echo > "$fail"
 
-js-yaml "$ROOT_DIR/vendor/haskell/actions/setup/action.yml" \
+js-yaml "$ROOT_DIR/vendor/haskell-actions/setup/action.yml" \
 | prettier --parser=json > "$ROOT_DIR/src/data/setup-haskell/action.json" \
 || echo > "$fail"
 
