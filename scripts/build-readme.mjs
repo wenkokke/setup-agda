@@ -51,7 +51,6 @@ function loadSampleWorkflows() {
 
 // NOTE: This order must correspond to the order in README.md.njk!
 const knownPlatforms = [
-  'ubuntu-18.04',
   'ubuntu-20.04',
   'ubuntu-22.04',
   'macos-11',
