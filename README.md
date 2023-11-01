@@ -181,7 +181,7 @@ jobs:
 <table>
   <tr>
     <th></th>
-    <th colspan="3">Ubuntu</th>
+    <th colspan="2">Ubuntu</th>
     <th colspan="2">macOs</th>
     <th colspan="2">Windows</th>
   </tr>
