@@ -1,4 +1,6 @@
-# How to add a new Agda version
+# Hacking
+
+## How to add a new Agda version
 
 When a new Agda version is released:
 
@@ -111,7 +113,7 @@ When a new Agda version is released:
 
 2.  Commit and push your changes.
 
-# How to add an input to the `setup-agda` action
+## How to add an input to the `setup-agda` action
 
 1.  Add the input to the `inputs` dictionary in `./action.yml`:
 
