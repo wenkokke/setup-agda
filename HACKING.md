@@ -2,6 +2,8 @@
 
 When a new Agda version is released:
 
+0.  Create a new branch, named `agda-v$AGDA-VERSION`, replacing `$AGDA_VERSION` with the new version.
+
 1.  Add a new entry to `data/Agda.versions.yml`. You can use the template below, replacing `$AGDA_VERSION` with the new version, and replacing `$AGDA_STDLIB_VERSION_RANGE` and `$GHC_VERSION_RANGE` with the appropriate version ranges:
 
     ```yaml
@@ -44,10 +46,36 @@ When a new Agda version is released:
 
     Commit and push your changes.
 
+    Open a pull request for your branch.
+
     The workflow `build-latest` will build binaries for the latest release,
     which you can find here: <https://github.com/wenkokke/setup-agda/actions/workflows/build-latest.yml> When the workflow has completed, you can find the binary bundles under `Summary`.
 
-3.  Attach the binary bundles to the latest release and add the download URLs and their SHA256 hashes to the entry you added in the previous step.
+3.  Download the built binary bundles from the completed workflow.
+
+    The binary bundle filenames should follow the following pattern, where:
+
+    - `$AGDA_VERSION`: The Agda version.
+    - `$ARCH`: The architecture, e.g., x64 or arm64.
+    - `$OS`: The operating system version, e.g., `ubuntu-22.04`, `macos-13`, `windows-2022`.
+    - `$GHC_VERSION`: The GHC version used to compile Agda.
+    - `$ICU_VERSION`: The ICU version included in the binary bundle. If the binary bundle was built without cluster counting, the ICU tag should be omitted from the filename.
+
+    ```plaintext
+    agda-$AGDA_VERSION-$ARCH-$OS-ghc$GHC_VERSION-icu$ICU_VERSION.zip
+    ```
+
+    Add the binary bundles to the existing latest release.
+
+    Find the download URLs for the new binary bundles. These URLs follow the following pattern, where `$BINARY_BUNDLE_FILE_NAME` refers to the filename format described above:
+
+    ```plaintext
+    https://github.com/wenkokke/setup-agda/releases/download/latest/$BINARY_BUNDLE_FILE_NAME
+    ```
+
+    Find the SHA256 checksums of the new binary bundles. These can be computed using the `shasum` utility, e.g., by running `shasum -a 256 agda-*.zip`.
+
+    Add the download URLs and their SHA256 hashes to the entry you added in the previous step.
 
 4.  Add a job for building the new version to `.github/workflows/build-legacy.yml`. You can copy and edit the job for the previous version. In most cases, you only need to change the version number and the required GHC version.
 
