@@ -1,4 +1,6 @@
-# v1.2.0
+# Changelog
+
+## v1.2.0
 
 ### Support for licenses
 
@@ -14,7 +16,7 @@ Added support for automatically generating a `licenses.txt` file when building a
 
 There have been numerous bug fixes to account for either changes in behaviour of the GitHub runners (e.g., trailing newlines in pkg-config output) or in corner cases (e.g., use-cases which use Agda's allowlist for executables).
 
-# v1.1.0
+## v1.1.0
 
 ### Support for libraries, defaults, and executables
 
@@ -59,6 +61,6 @@ agda-executables: |
 
 Fixed a bug where providing a concrete version number for `agda-stdlib-version` would cause the action to fail.
 
-# v1.0.0
+## v1.0.0
 
 First version.
