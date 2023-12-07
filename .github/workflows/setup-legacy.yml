@@ -99,16 +99,16 @@ jobs:
         uses: ./
         with:
           force-no-build: true
-          agda-version: ${ matrix.versions.agda }
-          agda-stdlib-version: ${ matrix.versions.agda-stdlib }
-          agda-defaults: ${ matrix.setup-as-default.agda-defaults }
+          agda-version: ${{ matrix.versions.agda }}
+          agda-stdlib-version: ${{ matrix.versions.agda-stdlib }}
+          agda-defaults: ${{ matrix.setup-as-default.agda-defaults }}
           agda-libraries: |
-            https://github.com/agda/agda-categories.git#v${ matrix.versions.agda-categories }
+            https://github.com/agda/agda-categories.git#v${{ matrix.versions.agda-categories }}
       - name: Test Agda with agda-categories
         run: |
           agda -v0 hello-categories.agda
         shell: sh
-        working-directory: ${ matrix.setup-as-default.working-directory }
+        working-directory: ${{ matrix.setup-as-default.working-directory }}
     strategy:
       fail-fast: false
       matrix:
@@ -124,7 +124,7 @@ jobs:
             working-directory: tests/agda-categories-default
 
   setup-with-agda-stdlib:
-    name: Setup Agda (${ matrix.versions.agda }) with agda-stdlib (${ matrix.versions.agda-stdlib })
+    name: Setup Agda (${{ matrix.versions.agda }}) with agda-stdlib (${{ matrix.versions.agda-stdlib }})
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -132,16 +132,16 @@ jobs:
         uses: ./
         with:
           force-no-build: true
-          agda-version: ${ matrix.versions.agda }
-          agda-stdlib-version: ${ matrix.versions.agda-stdlib }
-          agda-defaults: ${ matrix.setup-as-default.agda-defaults }
+          agda-version: ${{ matrix.versions.agda }}
+          agda-stdlib-version: ${{ matrix.versions.agda-stdlib }}
+          agda-defaults: ${{ matrix.setup-as-default.agda-defaults }}
       - name: Test Agda with agda-stdlib
         run: |
           agda -v0 hello-world-dep.agda
           agda -v0 hello-world-dep-lookup.agda
           agda -v0 hello-world-proof.agda
         shell: sh
-        working-directory: ${ matrix.setup-as-default.working-directory }
+        working-directory: ${{ matrix.setup-as-default.working-directory }}
     strategy:
       fail-fast: false
       matrix:
@@ -156,7 +156,7 @@ jobs:
             working-directory: tests/agda-stdlib-default
 
   setup-with-access-to-echo:
-    name: Setup Agda (${ matrix.versions.agda }) with access to /bin/echo
+    name: Setup Agda (${{ matrix.versions.agda }}) with access to /bin/echo
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -164,7 +164,7 @@ jobs:
         uses: ./
         with:
           force-no-build: true
-          agda-version: ${ matrix.versions.agda }
+          agda-version: ${{ matrix.versions.agda }}
           agda-executables: |
             /bin/echo
       - name: Test Agda with /bin/echo
