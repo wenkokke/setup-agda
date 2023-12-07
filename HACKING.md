@@ -57,12 +57,12 @@ When a new Agda version is released:
 
     - `$AGDA_VERSION`: The Agda version.
     - `$ARCH`: The architecture, e.g., x64 or arm64.
-    - `$OS`: The operating system version, e.g., `ubuntu-22.04`, `macos-13`, `windows-2022`.
+    - `$RELEASE`: The OS release, e.g., `ubuntu-22.04`, `macos-13`, `windows-2022`.
     - `$GHC_VERSION`: The GHC version used to compile Agda.
     - `$ICU_VERSION`: The ICU version included in the binary bundle. If the binary bundle was built without cluster counting, the ICU tag should be omitted from the filename.
 
     ```plaintext
-    agda-$AGDA_VERSION-$ARCH-$OS-ghc$GHC_VERSION-icu$ICU_VERSION.zip
+    agda-$AGDA_VERSION-$ARCH-$RELEASE-ghc$GHC_VERSION-icu$ICU_VERSION.zip
     ```
 
     Add the binary bundles to the existing latest release.

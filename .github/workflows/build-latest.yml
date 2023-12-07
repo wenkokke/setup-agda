@@ -28,6 +28,12 @@ jobs:
         with:
           agda-version: 'latest'
           bundle: true
+          bundle-name: |
+            agda-{{ agda }}
+                -{{ arch }}
+                -{{ release }}
+                -ghc{{ ghc }}
+                {% if icu %}-icu{{ icu }}{% endif %}
           bundle-compress: ${{ runner.os == 'Linux' }}
           bundle-license-report: true
           cabal-version: '3.8'
