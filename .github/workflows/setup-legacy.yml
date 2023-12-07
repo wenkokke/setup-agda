@@ -152,7 +152,7 @@ jobs:
           - agda-defaults: ''
             working-directory: tests/agda-stdlib
           - agda-defaults: |
-              agda-stdlib
+              standard-library
             working-directory: tests/agda-stdlib-default
 
   setup-with-access-to-echo:
