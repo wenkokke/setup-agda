@@ -91,7 +91,7 @@ jobs:
   ################################################################################
 
   setup-with-agda-categories:
-    name: Setup Agda (${ matrix.versions.agda }) with agda-categories (${ matrix.versions.agda-categories })
+    name: Setup Agda (${{ matrix.versions.agda }}) with agda-categories (${{ matrix.versions.agda-categories }})
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
