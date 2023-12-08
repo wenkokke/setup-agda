@@ -14,6 +14,46 @@ nightly:
           dir: Agda-nightly
   compatibility:
     agda-stdlib: '1.7.3'
+2.6.4.1:
+  binary:
+    macos:
+      x64:
+        - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.4.1-x64-macos-11-ghc9.4.7-icu73.2.zip
+          sha256: aa716b624d8351fb962600f9a95fad3a17bbb0ea969d32b636c27c567b4b2cc5
+          target: macos-11
+        - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.4.1-x64-macos-12-ghc9.4.7-icu73.2.zip
+          sha256: d56b21198cc87b05634501535c26980604dbed9459255643ede054dda6e96889
+          target: macos-12
+        - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.4.1-x64-macos-13-ghc9.4.7-icu73.2.zip
+          sha256: b3a61968f2e7b94b76bb6ca9276dc8f499c2d89cccb1e1a3f9fb6d4dc98da631
+          target: macos-13
+    linux:
+      x64:
+        - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.4.1-x64-ubuntu-20.04-ghc9.4.7-icu66.1.zip
+          sha256: 22adb4ee6be4ecafd7bc1efc91121944de18cc988e8098e8474f4c8bf67fb004
+          target: ubuntu-20.04
+        - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.4.1-x64-ubuntu-22.04-ghc9.4.7-icu70.1.zip
+          sha256: bd6aca2275ec9947643f51fe30826714a451aadef681d83c70a48c4a36c31665
+          target: ubuntu-22.04
+    windows:
+      x64:
+        - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.4.1-x64-windows-2022-ghc9.4.7-icu74.1.zip
+          sha256: 19a761f43e0370f8e82e4ea7dd80e4b222e12b9b0a1e1539bf8d6d08d5188e81
+          target: windows-2022
+  compatibility:
+    agda-stdlib: '1.7.3'
+    ghc: '8.6.5 - 9.8.1'
+  configuration:
+    macos: |
+      --flags=+enable-cluster-counting
+      --flags=+optimise-heavily
+    linux: |
+      --enable-split-sections
+      --flags=+enable-cluster-counting
+      --flags=+optimise-heavily
+    windows: |
+      --enable-split-sections
+      --flags=+enable-cluster-counting
 2.6.4:
   binary:
     macos:

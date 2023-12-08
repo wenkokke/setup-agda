@@ -53,6 +53,7 @@ jobs:
           ]
         agda-version:
           [
+            '2.6.4.1',
             '2.6.4',
             '2.6.3',
             '2.6.2.2',
@@ -87,101 +88,11 @@ jobs:
             os: windows-2022
 
   ################################################################################
-  # Setup Agda (latest) on Ubuntu (latest) with various libraries & executables
+  # Setup Agda on Ubuntu with various libraries & executables
   ################################################################################
 
   setup-with-agda-categories:
-    name: Setup Agda (2.6.2.2) with agda-categories (0.1.7.1)
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup Agda
-        uses: ./
-        with:
-          force-no-build: true
-          agda-version: '2.6.2.2'
-          agda-stdlib-version: '1.7'
-          agda-libraries: |
-            https://github.com/agda/agda-categories.git#v0.1.7.1
-      - name: Test Agda with agda-categories
-        run: |
-          agda -v0 hello-categories.agda
-        shell: sh
-        working-directory: tests/agda-categories
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-
-  setup-with-agda-categories-as-default:
-    name: Setup Agda (2.6.2.2) with agda-categories (0.1.7.1) as default
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup Agda
-        uses: ./
-        with:
-          force-no-build: true
-          agda-version: '2.6.2.2'
-          agda-stdlib-version: '1.7'
-          agda-libraries: |
-            https://github.com/agda/agda-categories.git#v0.1.7.1
-          agda-defaults: |
-            agda-categories
-      - name: Test Agda with agda-categories as default
-        run: |
-          agda -v0 hello-categories.agda
-        shell: sh
-        working-directory: tests/agda-categories-default
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-
-  setup-with-cubical:
-    name: Setup Agda (2.6.2.2) with cubical (0.3)
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup Agda
-        uses: ./
-        with:
-          force-no-build: true
-          agda-version: '2.6.2.2'
-          agda-libraries: |
-            https://github.com/agda/cubical.git#v0.3
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-
-  setup-with-agda-stdlib-as-default:
-    name: Setup Agda (latest) with agda-stdlib (recommended) as default
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup Agda
-        uses: ./
-        with:
-          force-no-build: true
-          agda-version: 'latest'
-          agda-stdlib-version: 'recommended'
-          agda-defaults: |
-            standard-library
-      - name: Test Agda with agda-stdlib as default
-        run: |
-          agda -v0 hello-world-dep.agda
-          agda -v0 hello-world-dep-lookup.agda
-          agda -v0 hello-world-proof.agda
-        shell: sh
-        working-directory: tests/agda-stdlib-default
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-
-  setup-with-access-to-echo:
-    name: Setup Agda (latest) with access to /bin/echo
+    name: Setup Agda (${{ matrix.versions.agda }}) with agda-categories (${{ matrix.versions.agda-categories }})
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -189,7 +100,72 @@ jobs:
         uses: ./
         with:
           force-no-build: true
-          agda-version: 'latest'
+          agda-version: ${{ matrix.versions.agda }}
+          agda-stdlib-version: ${{ matrix.versions.agda-stdlib }}
+          agda-defaults: ${{ matrix.setup-as-default.agda-defaults }}
+          agda-libraries: |
+            https://github.com/agda/agda-categories.git#v${{ matrix.versions.agda-categories }}
+      - name: Test Agda with agda-categories
+        run: |
+          agda -v0 hello-categories.agda
+        shell: sh
+        working-directory: ${{ matrix.setup-as-default.working-directory }}
+    strategy:
+      fail-fast: false
+      matrix:
+        versions:
+          - agda: '2.6.2.2'
+            agda-stdlib: '1.7'
+            agda-categories: '0.1.7.1'
+        setup-as-default:
+          - agda-defaults: ''
+            working-directory: tests/agda-categories
+          - agda-defaults: |
+              agda-categories
+            working-directory: tests/agda-categories-default
+
+  setup-with-agda-stdlib:
+    name: Setup Agda (${{ matrix.versions.agda }}) with agda-stdlib (${{ matrix.versions.agda-stdlib }})
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Agda
+        uses: ./
+        with:
+          force-no-build: true
+          agda-version: ${{ matrix.versions.agda }}
+          agda-stdlib-version: ${{ matrix.versions.agda-stdlib }}
+          agda-defaults: ${{ matrix.setup-as-default.agda-defaults }}
+      - name: Test Agda with agda-stdlib
+        run: |
+          agda -v0 hello-world-dep.agda
+          agda -v0 hello-world-dep-lookup.agda
+          agda -v0 hello-world-proof.agda
+        shell: sh
+        working-directory: ${{ matrix.setup-as-default.working-directory }}
+    strategy:
+      fail-fast: false
+      matrix:
+        versions:
+          - agda: '2.6.2.2'
+            agda-stdlib: '1.7'
+        setup-as-default:
+          - agda-defaults: ''
+            working-directory: tests/agda-stdlib
+          - agda-defaults: |
+              standard-library
+            working-directory: tests/agda-stdlib-default
+
+  setup-with-access-to-echo:
+    name: Setup Agda (${{ matrix.versions.agda }}) with access to /bin/echo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Agda
+        uses: ./
+        with:
+          force-no-build: true
+          agda-version: ${{ matrix.versions.agda }}
           agda-executables: |
             /bin/echo
       - name: Test Agda with /bin/echo
@@ -197,3 +173,9 @@ jobs:
           agda -v0 echo.agda
         shell: sh
         working-directory: tests/echo
+    strategy:
+      fail-fast: false
+      matrix:
+        versions:
+          - agda: '2.6.2.2'
+            agda-stdlib: '1.7'
