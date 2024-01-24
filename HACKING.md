@@ -97,7 +97,19 @@ When a new Agda version is released:
       dir: agda-stdlib-$AGDA_STDLIB_VERSION
     ```
 
-2.  Edit the `compatibility.agda-stdlib` range to include the new version for each compatible Agda version in `./data/Agda.yml`.
+2.  Edit the compatibility range for `agda-stdlib` to include the new version, for each compatible Agda version, in `./data/Agda.versions.yml`.
+
+    For an example, let's see how the entry for Agda v2.6.4.1 changed when `agda-stdlib` v2.0 was released.
+
+    ```diff
+    2.6.4.1:
+      ...
+      compatibility:
+    -   agda-stdlib: '1.7.3'
+    +   agda-stdlib: '1.7.3 - 2.0'
+        ghc: '8.6.5 - 9.8.1'
+      ...
+    ```
 
 3.  Commit and push your changes.
 
