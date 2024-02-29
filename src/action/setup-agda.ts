@@ -70,26 +70,6 @@ export default async function setupAgda(options: ActionOptions): Promise<void> {
           // Setup ICU if needed:
           if (icuNeeded(buildOptions)) await setupIcu()
 
-          // Get the current GHC version, if any:
-          const currentGhcVersion = await ghc.maybeGetVersion()
-
-          // If cabal-plan is needed:
-          if (cabalPlan.needed(buildOptions)) {
-            // If it best to build cabal-plan before we call
-            // setup-haskell, do so, and cache it:
-            const whenSetupCabalPlan = await setupCabalPlan.when(buildOptions)
-            if (whenSetupCabalPlan === 'before-setup-haskell') {
-              buildOptions['cabal-plan'] = await setupCabalPlan()
-            }
-          }
-
-          // Call setup-haskell to install the required version of GHC:
-          if (currentGhcVersion !== buildOptions['ghc-version']) {
-            await setupHaskell(pickSetupHaskellOptions(buildOptions))
-            // Set 'setup-haskell' output:
-            core.setOutput('setup-haskell', true)
-          }
-
           // If cabal-plan is needed, and we have not yet installed it,
           // we must have deferred it until after calling setup-haskell,
           // so build it now, and cache the result:
@@ -98,6 +78,16 @@ export default async function setupAgda(options: ActionOptions): Promise<void> {
             buildOptions['cabal-plan'] === undefined
           ) {
             buildOptions['cabal-plan'] = await setupCabalPlan()
+          }
+
+          // Get the current GHC version, if any:
+          const currentGhcVersion = await ghc.maybeGetVersion()
+
+          // Call setup-haskell to install the required version of GHC:
+          if (currentGhcVersion !== buildOptions['ghc-version']) {
+            await setupHaskell(pickSetupHaskellOptions(buildOptions))
+            // Set 'setup-haskell' output:
+            core.setOutput('setup-haskell', true)
           }
 
           // Run build:
