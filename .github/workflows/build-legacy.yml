@@ -39,6 +39,7 @@ jobs:
             macos-11,
             macos-12,
             macos-13,
+            macos-14,
             windows-2022
           ]
 
@@ -68,6 +69,7 @@ jobs:
             macos-11,
             macos-12,
             macos-13,
+            macos-14,
             windows-2022
           ]
 
@@ -97,6 +99,7 @@ jobs:
             macos-11,
             macos-12,
             macos-13,
+            macos-14,
             windows-2022
           ]
 
@@ -126,6 +129,7 @@ jobs:
             macos-11,
             macos-12,
             macos-13,
+            macos-14,
             windows-2022
           ]
 
@@ -157,6 +161,7 @@ jobs:
             macos-11,
             macos-12,
             macos-13,
+            macos-14,
             windows-2022
           ]
 
@@ -186,6 +191,7 @@ jobs:
             macos-11,
             macos-12,
             macos-13,
+            macos-14,
             windows-2022
           ]
 
@@ -208,7 +214,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12, macos-13]
+        os: [
+            ubuntu-20.04
+            ubuntu-22.04
+            macos-11
+            macos-12
+            macos-13
+            macos-14
+          ]
 
   # Build Agda 2.6.0.1
   build-legacy-2_6_0_1:
@@ -229,7 +242,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12, macos-13]
+        os: [
+            ubuntu-20.04
+            ubuntu-22.04
+            macos-11
+            macos-12
+            macos-13
+            macos-14
+          ]
 
   # Build Agda 2.5.4.2
   build-legacy-2_5_4_2:
@@ -250,7 +270,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12, macos-13]
+        os: [
+            ubuntu-20.04
+            ubuntu-22.04
+            macos-11
+            macos-12
+            macos-13
+            macos-14
+          ]
 
   # Build Agda 2.5.3
   build-legacy-2_5_3:
@@ -272,7 +299,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12, macos-13]
+        os: [
+            ubuntu-20.04
+            ubuntu-22.04
+            macos-11
+            macos-12
+            macos-13
+            macos-14
+          ]
 
   # Build Agda 2.5.2
   build-legacy-2_5_2:
@@ -294,4 +328,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12, macos-13]
+        os: [
+            ubuntu-20.04
+            ubuntu-22.04
+            macos-11
+            macos-12
+            macos-13
+            macos-14
+          ]
