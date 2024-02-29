@@ -111,7 +111,20 @@ When a new Agda version is released:
       ...
     ```
 
-3.  Commit and push your changes.
+3.  If you have not installed the pre-commit hook in `hooks/pre-commit`,
+    either install it now:
+
+    ```bash
+    cp ./hooks/pre-commit .git/hooks/pre-commit
+    ```
+
+    ...or run it manually before every commit:
+
+    ```bash
+    sh ./hooks/pre-commit
+    ```
+
+    Commit and push your changes.
 
 ## Update `haskell-actions/setup` submodule
 
