@@ -1,6 +1,6 @@
 {
   "name": "setup-agda",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "private": true,
   "description": "Set up a specific version of Agda.",
   "author": "Wen Kokke",
