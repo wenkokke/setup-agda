@@ -30,6 +30,28 @@
       "agda-stdlib": "1.7.3 - 2.0"
     }
   },
+  "2.6.4.3": {
+    "binary": {
+      "macos": {
+        "x64": []
+      },
+      "linux": {
+        "x64": []
+      },
+      "windows": {
+        "x64": []
+      }
+    },
+    "compatibility": {
+      "agda-stdlib": "1.7.3 - 2.0",
+      "ghc": "8.6.5 - 9.8.1"
+    },
+    "configuration": {
+      "macos": "--flags=+enable-cluster-counting\n--flags=+optimise-heavily\n",
+      "linux": "--enable-split-sections\n--flags=+enable-cluster-counting\n--flags=+optimise-heavily\n",
+      "windows": "--enable-split-sections\n--flags=+enable-cluster-counting\n"
+    }
+  },
   "2.6.4.1": {
     "binary": {
       "macos": {
