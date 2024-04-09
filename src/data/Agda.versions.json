@@ -33,6 +33,13 @@
   "2.6.4.3": {
     "binary": {
       "macos": {
+        "arm64": [
+          {
+            "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.4.3-arm64-macos-14-ghc9.4.4-icu74.2.zip",
+            "sha256": "82c7c67450119214261dbbba2b7ae759d139f77aae7eee46f38b5772e8c1064f",
+            "target": "macos-14"
+          }
+        ],
         "x64": [
           {
             "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.4.3-x64-macos-11-ghc9.8.1-icu73.2.zip",
@@ -78,6 +85,13 @@
   "2.6.4.1": {
     "binary": {
       "macos": {
+        "arm64": [
+          {
+            "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.4.1-arm64-macos-14-ghc9.4.4-icu74.2.zip",
+            "sha256": "1dc9ee02d9c774113f3ed5d31f95d9efdddad86139b5321e791acee6198c3368",
+            "target": "macos-14"
+          }
+        ],
         "x64": [
           {
             "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.4.1-x64-macos-11-ghc9.4.7-icu73.2.zip",
@@ -123,6 +137,13 @@
   "2.6.4": {
     "binary": {
       "macos": {
+        "arm64": [
+          {
+            "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.4-arm64-macos-14-ghc9.4.4-icu74.2.zip",
+            "sha256": "8f936b4d6d1c77fbd77e8ec03f85aa736fbce0f021b3dce8c8f76d61ed470444",
+            "target": "macos-14"
+          }
+        ],
         "x64": [
           {
             "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.4-x64-macos-11-ghc9.4.7-icu73.2.zip",
@@ -168,6 +189,13 @@
   "2.6.3": {
     "binary": {
       "macos": {
+        "arm64": [
+          {
+            "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.3-arm64-macos-14-ghc9.4.4-icu74.2.zip",
+            "sha256": "918a081c361d0fa858a7ed52498bd14bdb5da7794cc59a3b9fbc3abd4bdac8a2",
+            "target": "macos-14"
+          }
+        ],
         "x64": [
           {
             "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.3-x64-macos-11-ghc9.4.4-icu72.1.zip",

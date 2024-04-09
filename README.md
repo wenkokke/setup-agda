@@ -204,7 +204,7 @@ jobs:
     <td>✔</td>
     <td>✔</td>
     <td>✔</td>
-    <td></td>
+    <td>✔</td>
     <td>✔</td>
     <td>✔</td>
   </tr>
@@ -215,7 +215,7 @@ jobs:
     <td>✔</td>
     <td>✔</td>
     <td>✔</td>
-    <td></td>
+    <td>✔</td>
     <td>✔</td>
     <td>✔</td>
   </tr>
@@ -226,7 +226,7 @@ jobs:
     <td>✔</td>
     <td>✔</td>
     <td>✔</td>
-    <td></td>
+    <td>✔</td>
     <td>✔</td>
     <td>✔</td>
   </tr>
@@ -237,7 +237,7 @@ jobs:
     <td>✔</td>
     <td>✔</td>
     <td>✔</td>
-    <td></td>
+    <td>✔</td>
     <td>✔</td>
     <td>✔</td>
   </tr>
