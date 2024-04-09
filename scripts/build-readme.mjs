@@ -11,12 +11,11 @@ function main() {
   // Load sample workflows:
   const samples = loadSampleWorkflows()
   // Preprocess Agda.json for supported versions table:
-  const supportedVersions = loadSupportedVersions()
+  const support = buildSupportedTable()
   // Render README.md.njk
   const context = {
     ...actionYml,
-    knownPlatforms,
-    supportedVersions,
+    support,
     samples
   }
   nunjucks.configure({ autoescape: false })
@@ -48,56 +47,60 @@ function loadSampleWorkflows() {
 }
 
 // Load supported versions:
+const knownPlatforms = {
+  ubuntu: {
+    archs: ['x64'],
+    releases: ['20.04', '22.04']
+  },
+  macos: {
+    archs: ['x64', 'arm64'],
+    releases: ['11', '12', '13', '14']
+  },
+  windows: {
+    archs: ['x64'],
+    releases: ['2019', '2022']
+  }
+}
 
-// NOTE: This order must correspond to the order in README.md.njk!
-const knownPlatforms = [
-  'ubuntu-20.04',
-  'ubuntu-22.04',
-  'macos-11',
-  'macos-12',
-  'macos-13',
-  'macos-14',
-  'windows-2019',
-  'windows-2022'
-]
-
-function loadSupportedVersions() {
+function buildSupportedTable() {
   // Load table of binary distribution URLs by Agda version:
   const agdaUrlsByVersion = loadAgdaUrlsByVersion()
   // Construct the supported versions table:
-  const rows = []
+  const table = []
   // For each Agda version, and each platform, determine compatibility:
   for (const { version, urls } of agdaUrlsByVersion) {
-    const platforms = applyPlatformCompatibility(getPlatformSupport(urls))
-    rows.push({ version, platforms })
+    const releases = buildSupportTableRow(urls)
+    table.push([version, ...releases])
   }
-  return rows
+  return table
 }
 
-function getPlatformSupport(urls) {
-  const supported = {}
-  for (const platform of knownPlatforms) {
-    const build = urls.some(
-      (value) => value !== undefined && value.includes(platform)
-    )
-    const setup = build
-    supported[platform] = { build, setup }
+function buildSupportTableRow(urls) {
+  const row = []
+  for (const vendor of Object.keys(knownPlatforms)) {
+    for (const arch of knownPlatforms[vendor].archs) {
+      const supportedReleases = knownPlatforms[vendor].releases.filter(
+        (release) => isPlatformSupported(urls, { vendor, release, arch })
+      )
+      row.push(minimumRelease(vendor, supportedReleases) ?? '-')
+    }
   }
-  return supported
+  return row
 }
 
-function applyPlatformCompatibility(supported) {
-  // ubuntu-20.04 -> ubuntu-22.04
-  if (supported['ubuntu-20.04'].setup) supported['ubuntu-22.04'].setup = true
-  // macos-11 -> macos-12
-  if (supported['macos-11'].setup) supported['macos-12'].setup = true
-  // macos-12 -> macos-13
-  if (supported['macos-12'].setup) supported['macos-13'].setup = true
-  // windows-2019 -> windows-2022
-  if (supported['windows-2019'].setup) supported['windows-2022'].setup = true
-  // windows-2022 -> windows-2019
-  if (supported['windows-2022'].setup) supported['windows-2019'].setup = true
-  return supported
+function isPlatformSupported(urls, { vendor, release, arch }) {
+  return urls.some(
+    (value) =>
+      value !== undefined && value.includes(`${arch}-${vendor}-${release}`)
+  )
+}
+
+function minimumRelease(_vendor, releases) {
+  if (Array.isArray(releases)) {
+    return releases.sort().at(0)
+  } else {
+    return null
+  }
 }
 
 function urlList(obj) {

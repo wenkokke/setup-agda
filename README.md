@@ -179,159 +179,107 @@ jobs:
 ## Supported Versions
 
 <table>
+  <thead>
   <tr>
     <th></th>
-    <th colspan="2">Ubuntu</th>
-    <th colspan="4">macOs</th>
-    <th colspan="2">Windows</th>
-  </tr>
-  <tr>
-    <th></th>
-    <th>20.04</th><th>22.04</th>
-    <th>11</th><th>12</th><th>13</th><th>14</th>
-    <th>2019</th><th>2022</th>
+    <th colspan="1">Ubuntu</th>
+    <th colspan="2">macOS</th>
+    <th colspan="1">Windows</th>
   </tr>
   <tr>
     <th>Agda</th>
-    <th>x86-64</th><th>x86-64</th>
-    <th>x86-64</th><th>x86-64</th><th>x86-64</th><th>ARM64</th>
-    <th>AMD64</th><th>AMD64</th>
+    <th>x86-64</th>
+    <th>x86-64</th><th>ARM64</th>
+    <th>AMD64</th>
   </tr>
+  </thead>
+  <tbody>
   <tr>
     <td>2.6.4.3</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
+    <td>20.04</td>
+    <td>11</td>
+    <td>14</td>
+    <td>2022</td>
   </tr>
   <tr>
     <td>2.6.4.1</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
+    <td>20.04</td>
+    <td>11</td>
+    <td>14</td>
+    <td>2022</td>
   </tr>
   <tr>
     <td>2.6.4</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
+    <td>20.04</td>
+    <td>11</td>
+    <td>14</td>
+    <td>2022</td>
   </tr>
   <tr>
     <td>2.6.3</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
+    <td>20.04</td>
+    <td>11</td>
+    <td>14</td>
+    <td>2022</td>
   </tr>
   <tr>
     <td>2.6.2.2</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td></td>
-    <td>✔</td>
-    <td>✔</td>
+    <td>20.04</td>
+    <td>11</td>
+    <td>-</td>
+    <td>2022</td>
   </tr>
   <tr>
     <td>2.6.2.1</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td></td>
-    <td>✔</td>
-    <td>✔</td>
+    <td>20.04</td>
+    <td>11</td>
+    <td>-</td>
+    <td>2022</td>
   </tr>
   <tr>
     <td>2.6.2</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td></td>
-    <td>✔</td>
-    <td>✔</td>
+    <td>20.04</td>
+    <td>11</td>
+    <td>-</td>
+    <td>2022</td>
   </tr>
   <tr>
     <td>2.6.1.3</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>20.04</td>
+    <td>11</td>
+    <td>-</td>
+    <td>-</td>
   </tr>
   <tr>
     <td>2.6.0.1</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>20.04</td>
+    <td>11</td>
+    <td>-</td>
+    <td>-</td>
   </tr>
   <tr>
     <td>2.5.4.2</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>20.04</td>
+    <td>11</td>
+    <td>-</td>
+    <td>-</td>
   </tr>
   <tr>
     <td>2.5.3</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>20.04</td>
+    <td>11</td>
+    <td>-</td>
+    <td>-</td>
   </tr>
   <tr>
     <td>2.5.2</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td>✔</td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>20.04</td>
+    <td>11</td>
+    <td>-</td>
+    <td>-</td>
   </tr>
+  </tbody>
 </table>
-
-:heavy_check_mark:
 
 We encourage using the binary distributions. The binary distributions are tested on every commit. Building the latest Agda version is tested weekly on all platforms except Windows 2019. Please do not rely on the legacy builds, as these are not regularly tested. Please report any failing build _that is listed as working_, and we will update the table.
 
