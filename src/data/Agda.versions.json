@@ -425,12 +425,12 @@
         "x64": [
           {
             "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-macos-11-ghc8.4.4-icu73.2.zip",
-            "sha256": "f21aa390e0961c9d42cf1642be1e59295c0367fafd79d7347af2c47d1bb7fe19",
+            "sha256": "c1b82a2b2d3004860fcc009452c5feb1deea188226a06452acdfaf50b0131fbc",
             "target": "macos-11"
           },
           {
             "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-macos-12-ghc8.4.4-icu73.2.zip",
-            "sha256": "c431468fac904204a9fc423cbfc8f8497486cacda6893cdadbb2def34f7bd634",
+            "sha256": "759d73ebd3e9c3a8cd681e253400d2b19afbb2039d39bbda69899d39c354ad01",
             "target": "macos-12"
           }
         ]
@@ -465,12 +465,12 @@
         "x64": [
           {
             "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-macos-11-ghc8.2.2-icu73.2.zip",
-            "sha256": "a1ec2b5a63510939e805449ad5bfa35d32a6a5cff1ce8456107800cea442aa03",
+            "sha256": "0c414283faf3224ecebd50ea06a818b90cd44c1d17a4243102721735a9954eb2",
             "target": "macos-11"
           },
           {
             "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-macos-12-ghc8.2.2-icu73.2.zip",
-            "sha256": "4ba53b47911519c86ef28299b384b90ba5a4d61ec12c7220aa914b3d933853d6",
+            "sha256": "56f51922411cdf086cda921a8217b64a8cc23c659b1b4b99719eeb7632c42d1e",
             "target": "macos-12"
           }
         ]
