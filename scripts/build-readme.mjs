@@ -55,6 +55,8 @@ const knownPlatforms = [
   'ubuntu-22.04',
   'macos-11',
   'macos-12',
+  'macos-13',
+  'macos-14',
   'windows-2019',
   'windows-2022'
 ]
@@ -89,6 +91,8 @@ function applyPlatformCompatibility(supported) {
   if (supported['ubuntu-20.04'].setup) supported['ubuntu-22.04'].setup = true
   // macos-11 -> macos-12
   if (supported['macos-11'].setup) supported['macos-12'].setup = true
+  // macos-12 -> macos-13
+  if (supported['macos-12'].setup) supported['macos-13'].setup = true
   // windows-2019 -> windows-2022
   if (supported['windows-2019'].setup) supported['windows-2022'].setup = true
   // windows-2022 -> windows-2019
