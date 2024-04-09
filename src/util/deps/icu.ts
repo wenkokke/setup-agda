@@ -258,7 +258,10 @@ export async function icuBundle(
       }
       // Change dependencies on Agda executables:
       const binsAndDepsToChange: [string, string[]][] = [
-        [agdaComponents['Agda:exe:agda'].exe, ['libicuuc', 'libicui18n']]
+        [
+          agdaComponents['Agda:exe:agda'].exe,
+          ['libicuuc', 'libicui18n', 'libicudata']
+        ]
       ]
       for (const [binName, depNames] of binsAndDepsToChange) {
         const binPath = path.join(dest, 'bin', binName)
