@@ -10,6 +10,11 @@ on:
     paths: ['**.ts', '**.js', '**.json', '**.yml']
     types: [opened, synchronize, reopened]
 
+# Limit concurrent runs to one per branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   ################################################################################
   # Setup Agda (legacy) on every supported platform

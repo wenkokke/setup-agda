@@ -12,6 +12,11 @@ on:
   workflow_call:
   workflow_dispatch:
 
+# Limit concurrent runs to one per branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # Build Agda 2.6.4.3
   build-legacy-2_6_4_3:
