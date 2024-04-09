@@ -13,6 +13,27 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Build Agda 2.6.4.3
+  build-legacy-2_6_4_3:
+    name: Build Agda (2.6.4.3) on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Agda (2.6.4.3)
+        uses: ./
+        with:
+          agda-version: '2.6.4.3'
+          bundle: true
+          bundle-compress: ${{ runner.os == 'Linux' }}
+          bundle-license-report: true
+          cabal-version: '3.8'
+          force-build: true
+          ghc-version: '9.4.4'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12, windows-2022]
+
   # Build Agda 2.6.4.1
   build-legacy-2_6_4_1:
     name: Build Agda (2.6.4.1) on ${{ matrix.os }}
