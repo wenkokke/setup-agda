@@ -182,128 +182,154 @@ jobs:
   <tr>
     <th></th>
     <th colspan="2">Ubuntu</th>
-    <th colspan="2">macOs</th>
+    <th colspan="4">macOs</th>
     <th colspan="2">Windows</th>
   </tr>
   <tr>
-    <th>Agda</th>
+    <th></th>
     <th>20.04</th><th>22.04</th>
-    <th>11</th><th>12</th>
+    <th>11</th><th>12</th><th>13</th><th>14</th>
     <th>2019</th><th>2022</th>
   </tr>
   <tr>
+    <th>Agda</th>
+    <th>x86_64</th><th>x86_64</th>
+    <th>x86_64</th><th>x86_64</th><th>x86_64</th><th>arm64</th>
+    <th>AMD64</th><th>AMD64</th>
+  </tr>
+  <tr>
     <td>2.6.4.3</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 only</td>
-    <td>📦 only</td>
-    <td>📦 & 🏗</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:x:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
   </tr>
   <tr>
     <td>2.6.4.1</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 only</td>
-    <td>📦 only</td>
-    <td>📦 & 🏗</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:x:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
   </tr>
   <tr>
     <td>2.6.4</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 only</td>
-    <td>📦 only</td>
-    <td>📦 & 🏗</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:x:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
   </tr>
   <tr>
     <td>2.6.3</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 only</td>
-    <td>📦 only</td>
-    <td>📦 & 🏗</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:x:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
   </tr>
   <tr>
     <td>2.6.2.2</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 only</td>
-    <td>📦 only</td>
-    <td>📦 & 🏗</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:x:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
   </tr>
   <tr>
     <td>2.6.2.1</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 only</td>
-    <td>📦 only</td>
-    <td>📦 & 🏗</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:x:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
   </tr>
   <tr>
     <td>2.6.2</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 only</td>
-    <td>📦 only</td>
-    <td>📦 & 🏗</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:x:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
   </tr>
   <tr>
     <td>2.6.1.3</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 only</td>
-    <td></td>
-    <td></td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:x:</td>
+    <td>:x:</td>
+    <td>:x:</td>
   </tr>
   <tr>
     <td>2.6.0.1</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 only</td>
-    <td></td>
-    <td></td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:x:</td>
+    <td>:x:</td>
+    <td>:x:</td>
   </tr>
   <tr>
     <td>2.5.4.2</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 only</td>
-    <td></td>
-    <td></td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:x:</td>
+    <td>:x:</td>
+    <td>:x:</td>
   </tr>
   <tr>
     <td>2.5.3</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 only</td>
-    <td></td>
-    <td></td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:x:</td>
+    <td>:x:</td>
+    <td>:x:</td>
   </tr>
   <tr>
     <td>2.5.2</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 & 🏗</td>
-    <td>📦 only</td>
-    <td></td>
-    <td></td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:heavy_check_mark:</td>
+    <td>:x:</td>
+    <td>:x:</td>
+    <td>:x:</td>
   </tr>
 </table>
-
-If 📦 is specified, the platform supports setting up the Agda version from a binary distribution.
-
-If 🏗 is specified, the platform supports building the Agda version from source.
 
 We encourage using the binary distributions. The binary distributions are tested on every commit. Building the latest Agda version is tested weekly on all platforms except Windows 2019. Please do not rely on the legacy builds, as these are not regularly tested. Please report any failing build _that is listed as working_, and we will update the table.
 
