@@ -49,7 +49,7 @@
     "build": "npm run build-action && npm run build-cli && npm run build-readme",
     "build-action": "node ./scripts/build-action.mjs",
     "build-cli": "node ./scripts/build-cli.mjs",
-    "build-cli-exe": "node ./scripts/build-cli-exe.mjs",
+    "build-cli-exe": "npm run build-cli && node ./scripts/build-cli-exe.mjs",
     "build-readme": "node ./scripts/build-readme.mjs",
     "bundle-data": "node ./scripts/bundle-licenses.mjs && sh ./scripts/bundle-data.sh",
     "check": "npm run check-action && npm run check-cli",

@@ -29,7 +29,10 @@ program.command('tui').action(tui)
 // Install
 
 interface InstallCommandOptions {
-  build?: boolean | string
+  build: boolean
+  bundle: boolean
+  bundleName: string
+  bundleLicenseReport: boolean
   configureOption?: string[]
   verbosity?: Verbosity
 }
@@ -39,7 +42,18 @@ program
   .description('Install Agda or an Agda library.')
   .argument('<installable>')
   .argument('<version-or-url>')
-  .option('--build [bundle]', 'build Agda from source', false)
+  .option('--build', 'build Agda from source', false)
+  .option('--bundle', 'bundle Agda', false)
+  .option(
+    '--bundle-name',
+    'use as a name for the bundle',
+    'agda-{{ agda }}-{{ arch }}-{{ release }}-ghc{{ ghc }}-cabal{{ cabal }}{% if icu %}-icu{{ icu }}{% endif %}'
+  )
+  .option(
+    '--bundle-license-report',
+    'include a license report in the bundle',
+    false
+  )
   .option('--configure-option [options...]', 'options passed to Cabal')
   .option('--verbosity [verbosity]', 'set the verbosity', 'info')
   .action(install)
@@ -53,31 +67,27 @@ async function install(
   if (options.verbosity !== undefined) {
     logger.setVerbosity(options.verbosity)
   }
-  // Validate --build flag:
-  if (![undefined, true, false, 'bundle'].includes(options.build)) {
-    logger.error(
-      `unsupported value for --build: expected --build or --build=bundle`
-    )
-    exit(1)
-  }
   switch (installable.toLowerCase()) {
     case 'agda': {
       try {
         const actionOptions = await getOptions({
-          'agda-version': version,
-          bundle: options.build === 'bundle' ? 'true' : ''
+          'agda-version': version
         })
+        // Pass bundle options:
+        actionOptions.bundle = options.bundle
+        actionOptions['bundle-name'] = options.bundleName
+        actionOptions['bundle-license-report'] = options.bundleLicenseReport
         if (!options.build) {
           const installOptions = pickInstallOptions(actionOptions)
           await logger.group(
-            `Install Agda ${installOptions['agda-version']} from prebuilt binaries`,
+            `Installing Agda ${installOptions['agda-version']} from prebuilt binaries`,
             async () => await installAgda(installOptions)
           )
         } else {
           const buildOptions = await pickBuildOptions(actionOptions)
           buildOptions.verbosity = options.verbosity // Set verbosity
           await logger.group(
-            `Install Agda ${buildOptions['agda-version']} from source`,
+            `Installing Agda ${buildOptions['agda-version']} from source`,
             async () => await buildAgda(buildOptions)
           )
         }

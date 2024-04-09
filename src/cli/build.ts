@@ -78,10 +78,11 @@ export default async function build(options: BuildOptions): Promise<void> {
   }
 
   // Get the source:
-  logger.info(`Download source`)
+  logger.info(`Downloading`)
   const tmpDir = isAgdaGitRef(options['agda-version'])
     ? await download(agdaGitDist(options['agda-version']))
     : await download(agdaPkgDist(options['agda-version']))
+  logger.info(`Downloaded`)
 
   // Options for running commands in the working directory:
   const execOptions: ExecOptions = {
@@ -106,7 +107,7 @@ export default async function build(options: BuildOptions): Promise<void> {
   )
 
   // Build & Install:
-  logger.info(`Build Agda`)
+  logger.info(`Building`)
   const destBinDir = path.join(destDir, 'bin')
   await fs.mkdirp(destBinDir)
   await cabal(
@@ -122,13 +123,13 @@ export default async function build(options: BuildOptions): Promise<void> {
   )
 
   // Install data files:
-  logger.info(`Copy data files`)
+  logger.info(`Bundling data files`)
   const destDataDir = path.join(destDir, 'data')
   await fs.copy(path.join(tmpDir, 'src', 'data'), destDataDir)
 
   // Create the license report:
   if (options['bundle-options']?.['bundle-license-report']) {
-    logger.info(`Generate license report`)
+    logger.info(`Generating license report`)
     await licenseReport(tmpDir, destDir, options)
   }
 
@@ -139,7 +140,7 @@ export default async function build(options: BuildOptions): Promise<void> {
   //       As a fix, we also bundle ICU with Agda for the local build.
   //
   if (icuNeeded(options) && platform === 'windows') {
-    logger.info(`Bundle libraries`)
+    logger.info(`Bundling libraries`)
     await icuBundle(destDir, options)
   }
 
@@ -149,7 +150,7 @@ export default async function build(options: BuildOptions): Promise<void> {
 
     // Bundle ICU on Linux and macOS (see above for Windows):
     if (icuNeeded(options) && platform !== 'windows') {
-      logger.info(`Bundle libraries`)
+      logger.info(`Bundling libraries`)
       await icuBundle(destDir, options)
     }
 
@@ -167,7 +168,7 @@ export default async function build(options: BuildOptions): Promise<void> {
 
     // Compress binaries:
     if (bundleOptions['bundle-compress']) {
-      logger.info(`Compress Agda`)
+      logger.info(`Compressing`)
       for (const bin of Object.values(agdaComponents)) {
         const binPath = path.join(destDir, 'bin', bin.exe)
         const bakPath = path.join(destDir, 'bin', `backup-${bin.exe}`)
@@ -179,7 +180,7 @@ export default async function build(options: BuildOptions): Promise<void> {
   }
 
   // Test:
-  logger.info(`Test`)
+  logger.info(`Testing`)
   await test({
     agdaPath: path.join(destBinDir, agdaComponents['Agda:exe:agda'].exe),
     agdaDataDir: destDataDir

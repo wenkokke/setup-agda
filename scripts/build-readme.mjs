@@ -13,7 +13,6 @@ function main() {
   const samples = loadSampleWorkflows()
   // Preprocess Agda.json for supported versions table:
   const support = buildSupportedTable()
-  console.log(support)
   // Render README.md.njk
   const context = {
     ...actionYml,
