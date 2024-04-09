@@ -14,6 +14,43 @@ nightly:
           dir: Agda-nightly
   compatibility:
     agda-stdlib: '1.7.3 - 2.0'
+2.6.4.3:
+  binary:
+    macos:
+      x64:
+        - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.4.3-x64-macos-11-ghc9.8.1-icu73.2.zip
+          sha256: 44e5e7cf6db1c7e01b85895cf0f9fb35c5e7563b3111bd8994c8c51a80ebc97c
+          target: macos-11
+        - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.4.3-x64-macos-12-ghc9.8.1-icu73.2.zip
+          sha256: d8303e5a8d6557d543470617f07ed9a0932b1bd50d7946a398e88af6f664c1be
+          target: macos-12
+    linux:
+      x64:
+        - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.4.3-x64-ubuntu-20.04-ghc9.8.1-icu66.1.zip
+          sha256: 0fb040d7aaf1b86ece7bb20ebf8e42b1b398067d3e39cca16511ba842abd8f44
+          target: ubuntu-20.04
+        - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.4.3-x64-ubuntu-22.04-ghc9.8.1-icu70.1.zip
+          sha256: 22d4d7a2ca3af67e77c70f8717b2ea686ef29a62b43b25641e075dc7789d4202
+          target: ubuntu-22.04
+    windows:
+      x64:
+        - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.4.3-x64-windows-2022-ghc9.8.1-icu74.2.zip
+          sha256: 594b38f300cdeb31071f2ad4110e21ee24efb349b605c4f52353bb39ffaf8521
+          target: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.2-x64-windows-2022-ghc9.0.2-icu72.1.zip
+  compatibility:
+    agda-stdlib: '1.7.3 - 2.0'
+    ghc: '8.6.5 - 9.8.1'
+  configuration:
+    macos: |
+      --flags=+enable-cluster-counting
+      --flags=+optimise-heavily
+    linux: |
+      --enable-split-sections
+      --flags=+enable-cluster-counting
+      --flags=+optimise-heavily
+    windows: |
+      --enable-split-sections
+      --flags=+enable-cluster-counting
 2.6.4.1:
   binary:
     macos:
@@ -251,9 +288,6 @@ nightly:
           target: macos-12
     linux:
       x64:
-        # - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-18.04-ghc8.10.7-icu60.2.zip
-        #   sha256: 19afe986efbe7fafcf7b5e6b1b3709e7fcdc6c8b381d4f5c7da8464875ee7a24
-        #   target: ubuntu-18.04
         - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.1.3-x64-ubuntu-20.04-ghc8.10.7-icu66.1.zip
           sha256: 7632e8a38ad01129e342c0b4b25160a20865566ab8b48422a6bd520120882001
           target: ubuntu-20.04
@@ -286,9 +320,6 @@ nightly:
           target: macos-12
     linux:
       x64:
-        # - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-18.04-ghc8.6.5-icu60.2.zip
-        #   sha256: 46db43c131b97fa91b088304a17efc2df1670635ea55dcf9fb6a768d00268f5f
-        #   target: ubuntu-18.04
         - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.6.0.1-x64-ubuntu-20.04-ghc8.6.5-icu66.1.zip
           sha256: 4e248165fa319878468a77c1cb037101712e6ea08d21d611cc327fc220cda14c
           target: ubuntu-20.04
@@ -306,17 +337,11 @@ nightly:
   binary:
     macos:
       x64:
-        # - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-macos-11-ghc8.4.4-icu72.1.zip
-        #   sha256: 02bf624508d2fb2c7221cda40c1907cf4989bf709b9c1f33b63f4a909faedb7b
-        #   target: macos-11
-        # - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-macos-12-ghc8.4.4-icu72.1.zip
-        #   sha256: f6fe5530a66c2aa36696864841ef8d937f56d5f3ef4000e86bc657eee5a2807a
-        #   target: macos-12
         - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-macos-11-ghc8.4.4-icu73.2.zip
-          sha256: f21aa390e0961c9d42cf1642be1e59295c0367fafd79d7347af2c47d1bb7fe19
+          sha256: c1b82a2b2d3004860fcc009452c5feb1deea188226a06452acdfaf50b0131fbc
           target: macos-11
         - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.4.2-x64-macos-12-ghc8.4.4-icu73.2.zip
-          sha256: c431468fac904204a9fc423cbfc8f8497486cacda6893cdadbb2def34f7bd634
+          sha256: 759d73ebd3e9c3a8cd681e253400d2b19afbb2039d39bbda69899d39c354ad01
           target: macos-12
     linux:
       x64:
@@ -337,23 +362,14 @@ nightly:
   binary:
     macos:
       x64:
-        # - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-macos-11-ghc8.2.2-icu72.1.zip
-        #   sha256: a13960b2e8946f1790f62b3c9db26dd80194e3b6e9e7a1d294a5932086121a9f
-        #   target: macos-11
-        # - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-macos-12-ghc8.2.2-icu72.1.zip
-        #   sha256: 568fd9332f64c44b87898680593a8899f2e3e2531fdfed67375ae53fb14aaf17
-        #   target: macos-12
         - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-macos-11-ghc8.2.2-icu73.2.zip
-          sha256: a1ec2b5a63510939e805449ad5bfa35d32a6a5cff1ce8456107800cea442aa03
+          sha256: 0c414283faf3224ecebd50ea06a818b90cd44c1d17a4243102721735a9954eb2
           target: macos-11
         - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-macos-12-ghc8.2.2-icu73.2.zip
-          sha256: 4ba53b47911519c86ef28299b384b90ba5a4d61ec12c7220aa914b3d933853d6
+          sha256: 56f51922411cdf086cda921a8217b64a8cc23c659b1b4b99719eeb7632c42d1e
           target: macos-12
     linux:
       x64:
-        # - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-ubuntu-18.04-ghc8.2.2-icu60.2.zip
-        #   sha256: cb23807b957be00037cf8ac9c01949da21f850078d18cb8650c1715eaeaad9b3
-        #   target: ubuntu-18.04
         - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.5.3-x64-ubuntu-20.04-ghc8.2.2-icu66.1.zip
           sha256: 6a450bd50e7f403caf1d4e63d6381fc9fe0109053686b7e0b8a0ad5ba1eca9a1
           target: ubuntu-20.04
