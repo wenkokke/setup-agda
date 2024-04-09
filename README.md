@@ -178,108 +178,20 @@ jobs:
 
 ## Supported Versions
 
-<table>
-  <thead>
-  <tr>
-    <th></th>
-    <th colspan="1">Ubuntu</th>
-    <th colspan="2">macOS</th>
-    <th colspan="1">Windows</th>
-  </tr>
-  <tr>
-    <th>Agda</th>
-    <th>x86-64</th>
-    <th>x86-64</th><th>ARM64</th>
-    <th>AMD64</th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr>
-    <td>2.6.4.3</td>
-    <td>20.04</td>
-    <td>11</td>
-    <td>14</td>
-    <td>2022</td>
-  </tr>
-  <tr>
-    <td>2.6.4.1</td>
-    <td>20.04</td>
-    <td>11</td>
-    <td>14</td>
-    <td>2022</td>
-  </tr>
-  <tr>
-    <td>2.6.4</td>
-    <td>20.04</td>
-    <td>11</td>
-    <td>14</td>
-    <td>2022</td>
-  </tr>
-  <tr>
-    <td>2.6.3</td>
-    <td>20.04</td>
-    <td>11</td>
-    <td>14</td>
-    <td>2022</td>
-  </tr>
-  <tr>
-    <td>2.6.2.2</td>
-    <td>20.04</td>
-    <td>11</td>
-    <td>-</td>
-    <td>2022</td>
-  </tr>
-  <tr>
-    <td>2.6.2.1</td>
-    <td>20.04</td>
-    <td>11</td>
-    <td>-</td>
-    <td>2022</td>
-  </tr>
-  <tr>
-    <td>2.6.2</td>
-    <td>20.04</td>
-    <td>11</td>
-    <td>-</td>
-    <td>2022</td>
-  </tr>
-  <tr>
-    <td>2.6.1.3</td>
-    <td>20.04</td>
-    <td>11</td>
-    <td>-</td>
-    <td>-</td>
-  </tr>
-  <tr>
-    <td>2.6.0.1</td>
-    <td>20.04</td>
-    <td>11</td>
-    <td>-</td>
-    <td>-</td>
-  </tr>
-  <tr>
-    <td>2.5.4.2</td>
-    <td>20.04</td>
-    <td>11</td>
-    <td>-</td>
-    <td>-</td>
-  </tr>
-  <tr>
-    <td>2.5.3</td>
-    <td>20.04</td>
-    <td>11</td>
-    <td>-</td>
-    <td>-</td>
-  </tr>
-  <tr>
-    <td>2.5.2</td>
-    <td>20.04</td>
-    <td>11</td>
-    <td>-</td>
-    <td>-</td>
-  </tr>
-  </tbody>
-</table>
+| Agda    |  Ubuntu | macOS (Intel) | macOS (Apple) | Windows |
+| :------ | :-----: | :-----------: | :-----------: | :-----: |
+| 2.6.4.3 | >=20.04 |      >=11     |      >=14     |  >=2019 |
+| 2.6.4.1 | >=20.04 |      >=11     |      >=14     |  >=2019 |
+| 2.6.4   | >=20.04 |      >=11     |      >=14     |  >=2019 |
+| 2.6.3   | >=20.04 |      >=11     |      >=14     |  >=2019 |
+| 2.6.2.2 | >=20.04 |      >=11     |               |  >=2019 |
+| 2.6.2.1 | >=20.04 |      >=11     |               |  >=2019 |
+| 2.6.2   | >=20.04 |      >=11     |               |  >=2019 |
+| 2.6.1.3 | >=20.04 |      >=11     |               |         |
+| 2.6.0.1 | >=20.04 |      >=11     |               |         |
+| 2.5.4.2 | >=20.04 |      >=11     |               |         |
+| 2.5.3   | >=20.04 |      >=11     |               |         |
+| 2.5.2   | >=20.04 |      >=11     |               |         |
 
 We encourage using the binary distributions. The binary distributions are tested on every commit. Building the latest Agda version is tested weekly on all platforms except Windows 2019. Please do not rely on the legacy builds, as these are not regularly tested. Please report any failing build _that is listed as working_, and we will update the table.
 

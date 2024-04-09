@@ -39,31 +39,7 @@ If an older version of GHC is needed to build the specified version, `setup-agda
 
 ## Supported Versions
 
-<table>
-  <thead>
-  <tr>
-    <th></th>
-    <th colspan="1">Ubuntu</th>
-    <th colspan="2">macOS</th>
-    <th colspan="1">Windows</th>
-  </tr>
-  <tr>
-    <th>Agda</th>
-    <th>x86-64</th>
-    <th>x86-64</th><th>ARM64</th>
-    <th>AMD64</th>
-  </tr>
-  </thead>
-  <tbody>
-  {%- for row in support %}
-  <tr>
-    {%- for cell in row %}
-    <td>{{ cell | trim }}</td>
-    {%- endfor %}
-  </tr>
-  {%- endfor %}
-  </tbody>
-</table>
+{{ support }}
 
 We encourage using the binary distributions. The binary distributions are tested on every commit. Building the latest Agda version is tested weekly on all platforms except Windows 2019. Please do not rely on the legacy builds, as these are not regularly tested. Please report any failing build _that is listed as working_, and we will update the table.
 
