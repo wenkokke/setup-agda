@@ -2,13 +2,29 @@ import fs from 'fs-extra'
 import * as path from 'node:path'
 import nunjucks from 'nunjucks'
 import url from 'url'
-import agdaVersions from '../src/data/Agda.versions.json' assert { type: 'json' }
-import actionYml from '../src/data/setup-agda/action.json' assert { type: 'json' }
 import { markdownTable } from 'markdown-table'
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
 
+const agdaVersionsPath = path.join(
+  __dirname,
+  '..',
+  'src',
+  'data',
+  'Agda.versions.json'
+)
+const actionYmlPath = path.join(
+  __dirname,
+  '..',
+  'src',
+  'data',
+  'setup-agda',
+  'action.json'
+)
+
 function main() {
+  // Load action.yml:
+  const actionYml = JSON.parse(fs.readFileSync(actionYmlPath))
   // Load sample workflows:
   const samples = loadSampleWorkflows()
   // Preprocess Agda.json for supported versions table:
@@ -135,6 +151,8 @@ function urlList(obj) {
 }
 
 function loadAgdaUrlsByVersion() {
+  // Load Agda.versions.yml:
+  const agdaVersions = JSON.parse(fs.readFileSync(agdaVersionsPath))
   // Get the urls for each Agda version:
   const urlsByVersion = []
   for (const version of Object.keys(agdaVersions)) {

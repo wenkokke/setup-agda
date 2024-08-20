@@ -14,6 +14,28 @@ nightly:
           dir: Agda-nightly
   compatibility:
     agda-stdlib: '1.7.3 - 2.0'
+2.7.0:
+  binary:
+    macos:
+      x64: []
+    linux:
+      x64: []
+    windows:
+      x64: []
+  compatibility:
+    agda-stdlib: '2.1'
+    ghc: '8.6.5 - 9.10.1'
+  configuration:
+    macos: |
+      --flags=+enable-cluster-counting
+      --flags=+optimise-heavily
+    linux: |
+      --enable-split-sections
+      --flags=+enable-cluster-counting
+      --flags=+optimise-heavily
+    windows: |
+      --enable-split-sections
+      --flags=+enable-cluster-counting
 2.6.4.3:
   binary:
     macos:
