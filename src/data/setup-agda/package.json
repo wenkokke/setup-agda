@@ -37,11 +37,7 @@
     "type": "git",
     "url": "git+https://github.com/wenkokke/setup-agda.git"
   },
-  "keywords": [
-    "actions",
-    "node",
-    "setup"
-  ],
+  "keywords": ["actions", "node", "setup"],
   "scripts": {
     "agdaup": "npm run check-cli && npm run build-cli && node ./dist/cli.cjs",
     "all": "npm run build && npm run format && npm run lint",

@@ -1,8 +1,8 @@
-'2.0':
+'2.1':
   source:
-    url: 'https://github.com/agda/agda-stdlib/archive/refs/tags/v2.0.zip'
-    tag: 'v2.0'
-    dir: 'agda-stdlib-2.0'
+    url: 'https://github.com/agda/agda-stdlib/archive/refs/tags/v2.1.zip'
+    tag: 'v2.1'
+    dir: 'agda-stdlib-2.1'
 '1.7.3':
   source:
     url: 'https://github.com/agda/agda-stdlib/archive/refs/tags/v1.7.3.zip'
