@@ -26,7 +26,7 @@ cabal.getVerbosityFlag = (verbosity?: Verbosity): string => {
   const level =
     verbosity === undefined
       ? defaultVerbosity
-      : verbosityToLevel?.[verbosity] ?? defaultVerbosity
+      : (verbosityToLevel?.[verbosity] ?? defaultVerbosity)
   return `--verbose=${level}`
 }
 

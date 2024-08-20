@@ -27,7 +27,59 @@
       }
     },
     "compatibility": {
-      "agda-stdlib": "1.7.3 - 2.0"
+      "agda-stdlib": "2.1"
+    }
+  },
+  "2.7.0": {
+    "binary": {
+      "macos": {
+        "arm64": [
+          {
+            "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.7.0-arm64-macos-14-ghc9.8.2-icu74.2.zip",
+            "sha256": "6e46324b8425a756c0e2d40b977fa93ad767c0ff251da52645ddb5503d909470",
+            "target": "macos-14"
+          }
+        ],
+        "x64": [
+          {
+            "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.7.0-x64-macos-12-ghc9.10.1-icu74.2.zip",
+            "sha256": "35f1c8ac02d8be43c3ecdc223bed3acf143cb4e32bf43e6c24ac616cc7f5a668",
+            "target": "macos-12"
+          }
+        ]
+      },
+      "linux": {
+        "x64": [
+          {
+            "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.7.0-x64-ubuntu-20.04-ghc9.10.1-icu66.1.zip",
+            "sha256": "f90a1fb7ac1bb7535dc8c2640c9ebe22fdeb3dd85c6f5150c245b9b5d6da1056",
+            "target": "ubuntu-20.04"
+          },
+          {
+            "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.7.0-x64-ubuntu-22.04-ghc9.10.1-icu70.1.zip",
+            "sha256": "6595c7ff4a4f8821974d7cf06e011b96fd91d86eb54ed51930dc54be167c318b",
+            "target": "ubuntu-22.04"
+          }
+        ]
+      },
+      "windows": {
+        "x64": [
+          {
+            "url": "https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.7.0-x64-windows-2022-ghc9.10.1-icu75.1.zip",
+            "sha256": "1b8f46e07e5a8f9bf6b09e0d5f46a6fe56d90393f4425ad3101dc0952d262c74",
+            "target": "windows-2022"
+          }
+        ]
+      }
+    },
+    "compatibility": {
+      "agda-stdlib": "2.1",
+      "ghc": "8.6.5 - 9.10.1"
+    },
+    "configuration": {
+      "macos": "--flags=+enable-cluster-counting\n--flags=+optimise-heavily\n",
+      "linux": "--enable-split-sections\n--flags=+enable-cluster-counting\n--flags=+optimise-heavily\n",
+      "windows": "--enable-split-sections\n--flags=+enable-cluster-counting\n"
     }
   },
   "2.6.4.3": {

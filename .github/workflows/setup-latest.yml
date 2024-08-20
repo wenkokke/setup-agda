@@ -19,7 +19,7 @@ jobs:
     name: Setup Agda (latest) on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Agda
         uses: ./
         with:
@@ -45,7 +45,6 @@ jobs:
           [
             ubuntu-22.04,
             ubuntu-20.04,
-            macos-11,
             macos-12,
             macos-14,
             windows-2019,

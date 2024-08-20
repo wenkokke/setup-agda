@@ -41,7 +41,7 @@ jobs:
     name: Check greet.agda
     runs-on: ubuntu-latest # or macOS-latest, or windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Setup the latest version of Agda:
       - uses: wenkokke/setup-agda@v2
@@ -67,7 +67,7 @@ jobs:
     name: Check hello-world-dep.agda
     runs-on: ubuntu-latest # or macOS-latest, or windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Setup Agda 2.6.2.2 with its recommended version of agda-stdlib:
       - uses: wenkokke/setup-agda@v2
@@ -110,7 +110,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Setup the versions of Agda specified in the matrix,
       # together with their recommended versions of agda-stdlib:
@@ -145,7 +145,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       # Check out wenkokke/schmitty
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: wenkokke/schmitty
 
@@ -180,6 +180,7 @@ jobs:
 
 | Agda    |  Ubuntu | macOS (Intel) | macOS (Apple) | Windows |
 | :------ | :-----: | :-----------: | :-----------: | :-----: |
+| 2.7.0   | >=20.04 |      >=12     |      >=14     |  >=2019 |
 | 2.6.4.3 | >=20.04 |      >=11     |      >=14     |  >=2019 |
 | 2.6.4.1 | >=20.04 |      >=11     |      >=14     |  >=2019 |
 | 2.6.4   | >=20.04 |      >=11     |      >=14     |  >=2019 |
