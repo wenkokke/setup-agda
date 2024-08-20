@@ -57,6 +57,7 @@ jobs:
           ]
         agda-version:
           [
+            '2.7.0',
             '2.6.4.3',
             '2.6.4.1',
             '2.6.4',
@@ -72,6 +73,8 @@ jobs:
           ]
         exclude:
           # Exclude older Agda versions for macOS (>=14)
+          - agda-version: '2.7.0'
+            os: macos-14
           - agda-version: '2.6.2.2'
             os: macos-14
           - agda-version: '2.6.2.1'
