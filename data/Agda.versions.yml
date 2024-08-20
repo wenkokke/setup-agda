@@ -17,6 +17,10 @@ nightly:
 2.7.0:
   binary:
     macos:
+      arm64:
+        - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.7.0-arm64-macos-14-ghc9.8.2-icu74.2.zip
+          sha256: 6e46324b8425a756c0e2d40b977fa93ad767c0ff251da52645ddb5503d909470
+          target: macos-14
       x64:
         - url: https://github.com/wenkokke/setup-agda/releases/download/latest/agda-2.7.0-x64-macos-12-ghc9.10.1-icu74.2.zip
           sha256: 35f1c8ac02d8be43c3ecdc223bed3acf143cb4e32bf43e6c24ac616cc7f5a668
