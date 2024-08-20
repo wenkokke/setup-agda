@@ -21,7 +21,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Setup the versions of Agda specified in the matrix,
       # together with their recommended versions of agda-stdlib:
