@@ -13,6 +13,7 @@ then
     exit 1
 fi
 
+# Run pre-commit:
 echo "Run pre-commit"
 { pre-commit run --all-files || echo > "$fail"; }
 
@@ -22,6 +23,16 @@ then
     rm "$fail"
     exit 1
 fi
+
+# Run prettier:
+FILES=$(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g')
+[ -z "$FILES" ] && exit 0
+
+# Prettify all selected files
+echo "$FILES" | xargs ./node_modules/.bin/prettier --ignore-unknown --write || echo > "$fail";
+
+# Add back the modified/prettified files to staging
+echo "$FILES" | xargs git add
 
 # Exit successfully
 rm "$fail"
