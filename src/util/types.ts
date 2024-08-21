@@ -364,9 +364,7 @@ export function getInputs<ActionYmlInputs>(
   for (const [key, spec] of Object.entries<unknown>(actionYmlInputs)) {
     const defaultValue = (spec as { default?: string }).default
     result[key] =
-      defaultValue === undefined
-        ? getFlag(key)
-        : (getValue(key) ?? defaultValue)
+      defaultValue === undefined ? getFlag(key) : getValue(key) ?? defaultValue
   }
   return result as ActionInputsFor<ActionYmlInputs>
 }
