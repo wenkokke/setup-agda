@@ -97,7 +97,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
-        agda-version: ['2.7.0', '2.6.4.3', '2.6.3']
+        agda-version: ['2.6.4.3', '2.6.3', '2.6.2.2']
+        exclude:
+          # Exclude older Agda versions for macOS (>=14)
+          - agda-version: '2.6.2.2'
+            os: macos-14
 
     runs-on: ${{ matrix.os }}
     steps:
