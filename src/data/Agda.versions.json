@@ -27,7 +27,18 @@
       }
     },
     "compatibility": {
-      "agda-stdlib": "2.1"
+      "agda-stdlib": "2.1 - 2.1.1"
+    }
+  },
+  "2.7.0.1": {
+    "compatibility": {
+      "agda-stdlib": "2.1 - 2.1.1",
+      "ghc": "8.6.5 - 9.10.1"
+    },
+    "configuration": {
+      "macos": "--flags=+enable-cluster-counting\n--flags=+optimise-heavily\n",
+      "linux": "--enable-split-sections\n--flags=+enable-cluster-counting\n--flags=+optimise-heavily\n",
+      "windows": "--enable-split-sections\n--flags=+enable-cluster-counting\n"
     }
   },
   "2.7.0": {
