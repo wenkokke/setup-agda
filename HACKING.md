@@ -85,6 +85,10 @@ When a new Agda version is released:
 
 6.  Commit and push your changes.
 
+7.  Wait for all checks to pass and merge the pull request.
+
+8.  Update the 'latest' tag to point to the latest commit.
+
 ## How to add a new standard library version
 
 1.  Add a new entry to `./data/agda-stdlib.versions.yml`. You can use the template below, replacing `$AGDA_STDLIB_VERSION` with the new version.
@@ -157,3 +161,20 @@ When a new Agda version is released:
     For instance, if your input is used by the build command in `./src/cli/build.ts`, you add the input name to the `BuildOptionKey` type, and edit the `pickBuildOptions` function to pick your input from the `ActionOptions`.
 
     If your input requires validation, you should perform this validation in the corresponding pick function, e.g., `pickBuildOptions`.
+
+## How to release a new numbered version
+
+TODO: This process is unhinged and time consuming. The reason for copying all the binaries over from the 'latest' release is to create a stable snapshot, since binaries must occasionally be replaced due to defects, and if numbered version releases referenced the latest binaries this would alter their behavior.
+
+1.  Create a branch `v$VERSION` replacing `$VERSION` with the new version.
+
+2.  Create a tag `v$VERSION` of the latest commit on branch `v$VERSION`.
+
+3.  Create a release `v$VERSION` based on the tag `v$VERSION`.
+
+4.  Copy all binaries from the 'latest' release to the `v$VERSION` release.
+
+5.  On branch `v$VERSION`:
+    Update the URLs in `data/Agda.versions.yml` to point to the `v$VERSION` release rather than the 'latest' release.
+
+6.  Force update the tag `v$VERSION`.
