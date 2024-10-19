@@ -25,8 +25,6 @@ If an older version of GHC is needed to build the specified version, `setup-agda
 
 ## Samples
 
-
-
 ### Minimal
 
 [![minimal](https://github.com/wenkokke/setup-agda/actions/workflows/sample-minimal.yml/badge.svg)](https://github.com/wenkokke/setup-agda/actions/workflows/sample-minimal.yml)
@@ -50,8 +48,6 @@ jobs:
       - run: agda greet.agda
         working-directory: tests/agda
 ```
-
-
 
 ### Basic
 
@@ -79,8 +75,6 @@ jobs:
       - run: agda hello-world-dep.agda
         working-directory: tests/agda-stdlib
 ```
-
-
 
 ### Matrix
 
@@ -118,8 +112,6 @@ jobs:
       - run: agda hello-world-proof.agda
         working-directory: tests/agda-stdlib
 ```
-
-
 
 ### Complex
 
@@ -169,25 +161,24 @@ jobs:
           ./scripts/test-fail.sh
 ```
 
-
-
 ## Supported Versions
 
-| Agda    |  Ubuntu | macOS (Intel) | macOS (Apple) | Windows |
+| Agda    | Ubuntu  | macOS (Intel) | macOS (Apple) | Windows |
 | :------ | :-----: | :-----------: | :-----------: | :-----: |
-| 2.7.0   | >=20.04 |      >=12     |      >=14     |  >=2019 |
-| 2.6.4.3 | >=20.04 |      >=11     |      >=14     |  >=2019 |
-| 2.6.4.1 | >=20.04 |      >=11     |      >=14     |  >=2019 |
-| 2.6.4   | >=20.04 |      >=11     |      >=14     |  >=2019 |
-| 2.6.3   | >=20.04 |      >=11     |      >=14     |  >=2019 |
-| 2.6.2.2 | >=20.04 |      >=11     |               |  >=2019 |
-| 2.6.2.1 | >=20.04 |      >=11     |               |  >=2019 |
-| 2.6.2   | >=20.04 |      >=11     |               |  >=2019 |
-| 2.6.1.3 | >=20.04 |      >=11     |               |         |
-| 2.6.0.1 | >=20.04 |      >=11     |               |         |
-| 2.5.4.2 | >=20.04 |      >=11     |               |         |
-| 2.5.3   | >=20.04 |      >=11     |               |         |
-| 2.5.2   | >=20.04 |      >=11     |               |         |
+| 2.7.0.1 | >=20.04 |     >=12      |     >=14      | >=2019  |
+| 2.7.0   | >=20.04 |     >=12      |     >=14      | >=2019  |
+| 2.6.4.3 | >=20.04 |     >=11      |     >=14      | >=2019  |
+| 2.6.4.1 | >=20.04 |     >=11      |     >=14      | >=2019  |
+| 2.6.4   | >=20.04 |     >=11      |     >=14      | >=2019  |
+| 2.6.3   | >=20.04 |     >=11      |     >=14      | >=2019  |
+| 2.6.2.2 | >=20.04 |     >=11      |               | >=2019  |
+| 2.6.2.1 | >=20.04 |     >=11      |               | >=2019  |
+| 2.6.2   | >=20.04 |     >=11      |               | >=2019  |
+| 2.6.1.3 | >=20.04 |     >=11      |               |         |
+| 2.6.0.1 | >=20.04 |     >=11      |               |         |
+| 2.5.4.2 | >=20.04 |     >=11      |               |         |
+| 2.5.3   | >=20.04 |     >=11      |               |         |
+| 2.5.2   | >=20.04 |     >=11      |               |         |
 
 We encourage using the binary distributions. The binary distributions are tested on every commit. Building the latest Agda version is tested weekly on all platforms except Windows 2019. Please do not rely on the legacy builds, as these are not regularly tested. Please report any failing build _that is listed as working_, and we will update the table.
 
@@ -202,7 +193,7 @@ This section describes all inputs:
 - `agda-version`
 
   The Agda version.
-  
+
   Can be "latest" or a specific version number (e.g., 2.6.2.2).
 
   Default: `latest`
@@ -210,13 +201,13 @@ This section describes all inputs:
 - `agda-stdlib-version`
 
   The Agda standard library version.
-  
+
   Can be "none", "recommended", "latest", or a specific version number (e.g., 1.7.1).
-  
+
   If set to "recommended", it will install the latest version of the Agda
   standard library compatible with the specified Agda version, as specified
   on [the Agda Wiki](https://wiki.portal.chalmers.se/agda/Libraries/StandardLibrary).
-  
+
   If set to "latest" or a specific version number, it will install the
   latest or that specific version, regardless of compatibility with the
   specified Agda version.
@@ -226,22 +217,22 @@ This section describes all inputs:
 - `agda-libraries`
 
   A list of Agda libraries to install.
-  
+
   Libraries must be specified by their Git URL and end in a version anchor,
   e.g.,
-  
+
   ```yaml
   agda-libraries: |
     https://github.com/agda/agda-categories.git#v0.1.7.1
     https://github.com/agda/cubical.git#v0.3
   ```
-  
+
   To setup the Agda standard library, use "agda-stdlib-version" instead, as
   that ensures that the standard library and Agda versions are compatible.
-  
+
   This input requires that the library has a tagged release and that the
   repository contains a .agda-lib file.
-  
+
   This input relies on the convention that the filename of the .agda-lib
   file is the name of the library, and will refuse to install any library
   whose .agda-lib file is simple named ".agda-lib".
@@ -251,9 +242,9 @@ This section describes all inputs:
 - `agda-defaults`
 
   A list of installed Agda libraries to add to defaults.
-  
+
   Libraries must be specified by the name of their .agda-lib file, e.g.,
-  
+
   ```yaml
   agda-defaults: |
     standard-library
@@ -266,9 +257,9 @@ This section describes all inputs:
 - `agda-executables`
 
   A list of executables to register with Agda.
-  
+
   Executables must be specified by their name or path, e.g.,
-  
+
   ```yaml
   agda-executables: |
     z3
@@ -292,14 +283,14 @@ This section describes all inputs:
 - `ghc-version`
 
   Version of GHC to use.
-  
+
   Can be "recommended", "latest", or a specific version number (e.g., 9.4.2).
-  
+
   If set to "recommended", it will get the latest version supported by
   `haskell/actions/setup` which the Agda version is tested-with.
   If `ghc-version-match-exact` is set to false, it will favour versions
   which are supported by `haskell/actions/setup`.
-  
+
   If set "latest" or to a specific GHC version, this version will be used
   even if it is incompatible with the Agda version.
 
@@ -314,11 +305,11 @@ This section describes all inputs:
 - `configure-options`
 
   Can be "none", "recommended", or text.
-  
+
   If set to "none", no configuration flags will be passed to `cabal configure`.
   If set to "recommended", the recommended configuration flags will be passed to `cabal configure`.
   Otherwise, the value will be passed to `cabal configure` verbatim.
-  
+
   Only used when building Agda from source.
 
   Default: `recommended`
@@ -333,7 +324,7 @@ This section describes all inputs:
 - `bundle-name`
 
   If specified, will be used as a name for the bundle.
-  
+
   The value is interpreted as a [nunjucks template](https://mozilla.github.io/nunjucks/).
   The template may use `{{agda}}`, `{{cabal}}`, `{{ghc}}`, `{{icu}}`,
   which will be replaced by their respective versions, if used, and
@@ -342,7 +333,7 @@ This section describes all inputs:
   The variable `{{platform}}` is replaced by one of of `linux`, `macos`,
   or `windows`. The variable `{{release}}` is replaced by a release
   identifier, e.g., `ubuntu-22.04`, `macos-12`, or `windows-2022`.
-  
+
   Only used when `bundle` is specified.
 
   Default: `agda-{{ agda }}
@@ -356,7 +347,7 @@ This section describes all inputs:
 - `bundle-license-report`
 
   If specified, include a license report in the bundle.
-  
+
   Only used when `bundle` is specified.
 
   Default: `false`
@@ -364,22 +355,22 @@ This section describes all inputs:
 - `bundle-compress`
 
   If specified, the executables are compressed with [UPX](https://upx.github.io).
-  
+
   Beware that on MacOS and Windows the resulting executables are unsigned,
   and therefore will cause problems with security.
   There is a workaround for this on MacOS:
-  
+
   ```sh
   # for each executable file in <package>/bin:
   chmod +x <bin>
   xattr -c <bin>
-  
+
   # for each library file in <package>/lib:
   chmod +w <lib>
   xattr -c <lib>
   chmod -w <lib>
   ```
-  
+
   Only used when `bundle` is specified.
 
   Default: `false`
@@ -388,7 +379,7 @@ This section describes all inputs:
 
   Duration after which bundle will expire in days.
   0 means using default retention.
-  
+
   Minimum 1 day.
   Maximum 90 days unless changed from the repository settings page.
 
