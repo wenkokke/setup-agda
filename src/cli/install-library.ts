@@ -37,8 +37,5 @@ export default async function installLibrary(dist: Dist): Promise<string> {
 }
 
 function findAgdaLibraryFiles(dir: string): string[] {
-  return [
-    globSync(path.join(dir, '*.agda-lib')),
-    globSync(path.join(dir, '**', '*.agda-lib'))
-  ].flat()
+  return globSync('*.agda-lib', { absolute: true, cwd: dir })
 }

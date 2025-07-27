@@ -1,4 +1,4 @@
-import * as artifact from '@actions/artifact'
+import { DefaultArtifactClient } from '@actions/artifact'
 import * as core from '@actions/core'
 import { globSync } from 'glob'
 import install from '../cli/install.js'
@@ -108,22 +108,18 @@ export default async function setupAgda(options: ActionOptions): Promise<void> {
           if (has(buildOptions, ['bundle-options'])) {
             const bundleName = await build.renderBundleName(buildOptions)
             // Upload bundle:
-            const artifactClient = artifact.create()
-            const uploadInfo = await artifactClient.uploadArtifact(
+            const artifactClient = new DefaultArtifactClient()
+            const uploadResponse = await artifactClient.uploadArtifact(
               bundleName,
-              globSync(path.join(installDir, '**')),
+              globSync('**', {cwd: installDir}).map((fp) => path.join(installDir, fp)),
               installDir,
               {
-                continueOnError: true,
                 retentionDays: parseInt(options['bundle-retention-days'])
               }
             )
-            // Report any errors:
-            if (uploadInfo.failedItems.length > 0) {
-              logger.error(
-                ['Failed to upload:', ...uploadInfo.failedItems].join(os.EOL)
-              )
-            }
+            await logger.info(
+              `Upload artifact ${uploadResponse.id} (${uploadResponse.size} bytes) with SHA256 ${uploadResponse.digest}`
+            )
           }
         }
       )
