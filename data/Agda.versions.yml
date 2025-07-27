@@ -13,7 +13,7 @@ nightly:
         - url: https://github.com/agda/agda/releases/download/nightly/Agda-nightly-win64.zip
           dir: Agda-nightly
   compatibility:
-    agda-stdlib: '2.1 - 2.1.1'
+    agda-stdlib: '2.1 - 2.2'
 2.7.0.1:
   binary:
     macos:
@@ -39,7 +39,7 @@ nightly:
           sha256: eabf9608d4a3a7a122ff44bbf911a33c986db7fbb942dd306f8a4438c50ffcbc
           target: windows-2022
   compatibility:
-    agda-stdlib: '2.1 - 2.1.1'
+    agda-stdlib: '2.1 - 2.2'
     ghc: '8.6.5 - 9.10.1'
   configuration:
     macos: |
@@ -77,7 +77,7 @@ nightly:
           sha256: 1b8f46e07e5a8f9bf6b09e0d5f46a6fe56d90393f4425ad3101dc0952d262c74
           target: windows-2022
   compatibility:
-    agda-stdlib: '2.1'
+    agda-stdlib: '2.1 - 2.2'
     ghc: '8.6.5 - 9.10.1'
   configuration:
     macos: |
