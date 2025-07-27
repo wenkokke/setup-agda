@@ -332,7 +332,7 @@ This section describes all inputs:
   is replaced by the system architecture---e.g., `x64`, `arm64`, etc.
   The variable `{{platform}}` is replaced by one of of `linux`, `macos`,
   or `windows`. The variable `{{release}}` is replaced by a release
-  identifier, e.g., `ubuntu-22.04`, `macos-12`, or `windows-2022`.
+  identifier, e.g., `ubuntu-22.04`, `macos-13`, or `windows-2022`.
 
   Only used when `bundle` is specified.
 
