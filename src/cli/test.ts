@@ -1,4 +1,4 @@
-import glob from 'glob'
+import { globSync } from 'glob'
 import path from 'node:path'
 import agda, { AgdaOptions } from '../util/deps/agda.js'
 import { ExecOptions } from '../util/exec.js'
@@ -10,7 +10,7 @@ export default async function test(
   logger.debug(`Found Agda version ${versionString}`)
   const dataDir = await agda.getDataDir(options)
   logger.debug(`Found Agda data directory at ${dataDir}`)
-  for (const agdaFile of glob.sync(
+  for (const agdaFile of globSync(
     path.join(dataDir, 'lib', 'prim', '**', '*.agda')
   )) {
     logger.debug(`Compiling ${agdaFile}`)

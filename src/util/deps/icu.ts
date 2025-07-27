@@ -3,7 +3,7 @@ import fs from 'fs-extra'
 import pkgConfig from './pkg-config.js'
 import { platform } from '../platform.js'
 import brew from './homebrew.js'
-import glob from 'glob'
+import { globSync } from 'glob'
 import { agdaComponents, BuildOptions } from '../types.js'
 import patchelf from './patchelf.js'
 import * as simver from '../simver.js'
@@ -68,9 +68,7 @@ async function icuGetPkgConfigPath(pkgConfigPath?: string): Promise<string> {
     case 'macos': {
       try {
         const prefix = await brew.getPrefix('icu4c')
-        const [pkgConfigFile] = glob.sync(
-          path.join(prefix, '**', 'icu-i18n.pc')
-        )
+        const [pkgConfigFile] = globSync(path.join(prefix, '**', 'icu-i18n.pc'))
         if (pkgConfigFile === undefined)
           logger.warning(`Could not find icu-i18n.pc in ${prefix}`)
         pkgConfigDirs.push(path.dirname(pkgConfigFile))
@@ -164,7 +162,7 @@ export async function icuBundle(
       for (const libdir of libdirs) {
         for (const libname of libnames) {
           const pattern = path.join(libdir, `${libname}.so.${version}`)
-          for (const lib of glob.sync(pattern)) {
+          for (const lib of globSync(pattern)) {
             logger.debug(`Found ${lib}`)
             libs.add(lib)
           }
@@ -226,7 +224,7 @@ export async function icuBundle(
       for (const libdir of libdirs) {
         for (const libname of libnames) {
           const pattern = path.join(libdir, `${libname}.${version}.dylib`)
-          for (const lib of glob.sync(pattern)) {
+          for (const lib of globSync(pattern)) {
             logger.debug(`Found ${lib}`)
             libs.add(lib)
           }
@@ -297,7 +295,7 @@ export async function icuBundle(
       for (const libdir of libdirs) {
         for (const libname of libnames) {
           const pattern = path.join(libdir, `${libname}${versionMajor}.dll`)
-          for (const lib of glob.sync(pattern)) {
+          for (const lib of globSync(pattern)) {
             logger.debug(`Found ${lib}`)
             libs.add(lib)
           }

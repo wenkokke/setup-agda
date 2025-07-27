@@ -1,4 +1,4 @@
-import glob from 'glob'
+import { globSync } from 'glob'
 import fs from 'fs-extra'
 import * as path from 'node:path'
 import url from 'url'
@@ -7,7 +7,7 @@ import prettier from 'prettier'
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
 
 function main() {
-  const licenseFiles = glob.sync(
+  const licenseFiles = globSync(
     path.join(__dirname, '..', 'data', 'licenses', '*', '*')
   )
   const licenseData = {}

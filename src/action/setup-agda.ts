@@ -1,6 +1,6 @@
 import * as artifact from '@actions/artifact'
 import * as core from '@actions/core'
-import glob from 'glob'
+import { globSync } from 'glob'
 import install from '../cli/install.js'
 import build from '../cli/build.js'
 import {
@@ -111,7 +111,7 @@ export default async function setupAgda(options: ActionOptions): Promise<void> {
             const artifactClient = artifact.create()
             const uploadInfo = await artifactClient.uploadArtifact(
               bundleName,
-              glob.sync(path.join(installDir, '**')),
+              globSync(path.join(installDir, '**')),
               installDir,
               {
                 continueOnError: true,

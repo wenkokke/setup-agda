@@ -1,4 +1,4 @@
-import glob from 'glob'
+import { globSync } from 'glob'
 import path from 'node:path'
 import fs from 'fs-extra'
 import { agdaLibraryInstallDir } from '../util/appdirs.js'
@@ -38,7 +38,7 @@ export default async function installLibrary(dist: Dist): Promise<string> {
 
 function findAgdaLibraryFiles(dir: string): string[] {
   return [
-    glob.sync(path.join(dir, '*.agda-lib')),
-    glob.sync(path.join(dir, '**', '*.agda-lib'))
+    globSync(path.join(dir, '*.agda-lib')),
+    globSync(path.join(dir, '**', '*.agda-lib'))
   ].flat()
 }

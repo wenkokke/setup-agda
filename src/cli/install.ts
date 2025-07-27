@@ -1,4 +1,4 @@
-import glob from 'glob'
+import { globSync } from 'glob'
 import fs from 'fs-extra'
 import * as path from 'node:path'
 import { agdaInstallDir } from '../util/appdirs.js'
@@ -83,7 +83,7 @@ async function repairPermissions(distDir: string): Promise<void> {
         await xattr(['-c', path.join(distDir, 'bin', component.exe)])
       }
       // NOTE: Ensure libraries are writable before clearing extended attributes
-      const libPaths = glob.sync(path.join(distDir, 'lib', '*'))
+      const libPaths = globSync(path.join(distDir, 'lib', '*'))
       for (const libPath of libPaths) {
         await chmod(['+w', libPath])
         await xattr(['-c', libPath])
