@@ -67,7 +67,7 @@ function loadSampleWorkflows() {
 const knownPlatforms = {
   ubuntu: {
     archs: ['x64'],
-    releases: ['20.04', '22.04']
+    releases: ['20.04', '22.04', '24.04']
   },
   macos: {
     archs: ['x64', 'arm64'],
@@ -75,7 +75,7 @@ const knownPlatforms = {
   },
   windows: {
     archs: ['x64'],
-    releases: ['2019', '2022']
+    releases: ['2019', '2022', '2025']
   }
 }
 
