@@ -17,8 +17,9 @@ import {
 
 export default async function install(options: InstallOptions): Promise<void> {
   // Find a binary distribution:
-  const agdaDists = agdaInfo[options['agda-version']].binary?.[platform]?.[arch]
-  if (agdaDists === undefined || agdaDists.length === 0)
+  const agdaDists =
+    agdaInfo[options['agda-version']].binary?.[platform]?.[arch] ?? []
+  if (agdaDists?.length === 0)
     throw Error(`Could not find a binary distribution for ${arch}-${platform}`)
 
   // Download binary distribution:
