@@ -27,7 +27,7 @@
       }
     },
     "compatibility": {
-      "agda-stdlib": "2.1 - 2.1.1"
+      "agda-stdlib": "2.1 - 2.2"
     }
   },
   "2.7.0.1": {
@@ -73,7 +73,7 @@
       }
     },
     "compatibility": {
-      "agda-stdlib": "2.1 - 2.1.1",
+      "agda-stdlib": "2.1 - 2.2",
       "ghc": "8.6.5 - 9.10.1"
     },
     "configuration": {
@@ -125,7 +125,7 @@
       }
     },
     "compatibility": {
-      "agda-stdlib": "2.1",
+      "agda-stdlib": "2.1 - 2.2",
       "ghc": "8.6.5 - 9.10.1"
     },
     "configuration": {
