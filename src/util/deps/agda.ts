@@ -1,5 +1,5 @@
 import fs from 'fs-extra'
-import glob from 'glob'
+import { glob } from 'glob'
 import * as path from 'node:path'
 import {
   agdaBinDir,

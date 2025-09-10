@@ -1,12 +1,86 @@
 Bundled license information:
 
-tmp/lib/tmp.js:
+undici/lib/fetch/body.js:
+  /*! formdata-polyfill. MIT License. Jimmy Wärting <https://jimmy.warting.se/opensource> */
+
+undici/lib/websocket/frame.js:
+  /*! ws. MIT License. Einar Otto Stangvik <einaros@gmail.com> */
+
+normalize-path/index.js:
   /*!
-   * Tmp
+   * normalize-path <https://github.com/jonschlinkert/normalize-path>
    *
-   * Copyright (c) 2011-2017 KARASZI Istvan <github@spam.raszi.hu>
+   * Copyright (c) 2014-2018, Jon Schlinkert.
+   * Released under the MIT License.
+   */
+
+safe-buffer/index.js:
+  /*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
+
+archiver/lib/error.js:
+archiver/lib/core.js:
+  /**
+   * Archiver Core
    *
-   * MIT Licensed
+   * @ignore
+   * @license [MIT]{@link https://github.com/archiverjs/node-archiver/blob/master/LICENSE}
+   * @copyright (c) 2012-2014 Chris Talkington, contributors.
+   */
+
+crc-32/crc32.js:
+  /*! crc32.js (C) 2014-present SheetJS -- http://sheetjs.com */
+
+zip-stream/index.js:
+  /**
+   * ZipStream
+   *
+   * @ignore
+   * @license [MIT]{@link https://github.com/archiverjs/node-zip-stream/blob/master/LICENSE}
+   * @copyright (c) 2014 Chris Talkington, contributors.
+   */
+
+archiver/lib/plugins/zip.js:
+  /**
+   * ZIP Format Plugin
+   *
+   * @module plugins/zip
+   * @license [MIT]{@link https://github.com/archiverjs/node-archiver/blob/master/LICENSE}
+   * @copyright (c) 2012-2014 Chris Talkington, contributors.
+   */
+
+archiver/lib/plugins/tar.js:
+  /**
+   * TAR Format Plugin
+   *
+   * @module plugins/tar
+   * @license [MIT]{@link https://github.com/archiverjs/node-archiver/blob/master/LICENSE}
+   * @copyright (c) 2012-2014 Chris Talkington, contributors.
+   */
+
+archiver/lib/plugins/json.js:
+  /**
+   * JSON Format Plugin
+   *
+   * @module plugins/json
+   * @license [MIT]{@link https://github.com/archiverjs/node-archiver/blob/master/LICENSE}
+   * @copyright (c) 2012-2014 Chris Talkington, contributors.
+   */
+
+archiver/index.js:
+  /**
+   * Archiver Vending
+   *
+   * @ignore
+   * @license [MIT]{@link https://github.com/archiverjs/node-archiver/blob/master/LICENSE}
+   * @copyright (c) 2012-2014 Chris Talkington, contributors.
+   */
+
+is-plain-object/dist/is-plain-object.js:
+  /*!
+   * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
+   *
+   * Copyright (c) 2014-2017, Jon Schlinkert.
+   * Released under the MIT License.
    */
 
 isobject/index.js:
@@ -23,4 +97,13 @@ object.pick/index.js:
    *
    * Copyright (c) 2014-2015 Jon Schlinkert, contributors.
    * Licensed under the MIT License
+   */
+
+tmp/lib/tmp.js:
+  /*!
+   * Tmp
+   *
+   * Copyright (c) 2011-2017 KARASZI Istvan <github@spam.raszi.hu>
+   *
+   * MIT Licensed
    */

@@ -1,4 +1,4 @@
-import glob from 'glob'
+import { glob } from 'glob'
 import path from 'node:path'
 import agda, { AgdaOptions } from '../util/deps/agda.js'
 import { ExecOptions } from '../util/exec.js'

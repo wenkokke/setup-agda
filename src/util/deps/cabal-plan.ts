@@ -1,4 +1,4 @@
-import glob from 'glob'
+import { glob } from 'glob'
 import fs from 'fs-extra'
 import * as http from 'node:http'
 import * as os from 'node:os'

@@ -1,4 +1,4 @@
-import glob from 'glob'
+import { glob } from 'glob'
 import fs from 'fs-extra'
 import * as path from 'node:path'
 import { agdaInstallDir } from '../util/appdirs.js'
