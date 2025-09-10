@@ -1,6 +1,6 @@
-import * as artifact from '@actions/artifact'
+import { DefaultArtifactClient } from '@actions/artifact'
 import * as core from '@actions/core'
-import glob from 'glob'
+import { glob } from 'glob'
 import install from '../cli/install.js'
 import build from '../cli/build.js'
 import {
@@ -60,7 +60,7 @@ export default async function setupAgda(options: ActionOptions): Promise<void> {
 
   // Try to install Agda from a source distribution:
   if (!options['force-no-build'] && !success) {
-    const buildResult = await await logger.group(
+    const buildResult = await logger.group(
       `Build Agda ${options['agda-version']} from source`,
       async () => {
         try {
@@ -108,22 +108,21 @@ export default async function setupAgda(options: ActionOptions): Promise<void> {
           if (has(buildOptions, ['bundle-options'])) {
             const bundleName = await build.renderBundleName(buildOptions)
             // Upload bundle:
-            const artifactClient = artifact.create()
+            const artifactClient = new DefaultArtifactClient()
             const uploadInfo = await artifactClient.uploadArtifact(
               bundleName,
               glob.sync(path.join(installDir, '**')),
               installDir,
               {
-                continueOnError: true,
                 retentionDays: parseInt(options['bundle-retention-days'])
               }
             )
-            // Report any errors:
-            if (uploadInfo.failedItems.length > 0) {
-              logger.error(
-                ['Failed to upload:', ...uploadInfo.failedItems].join(os.EOL)
-              )
-            }
+            // // Report any errors:
+            // if (uploadInfo.failedItems.length > 0) {
+            //   logger.error(
+            //     ['Failed to upload:', ...uploadInfo.failedItems].join(os.EOL)
+            //   )
+            // }
           }
         }
       )

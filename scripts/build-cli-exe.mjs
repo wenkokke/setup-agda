@@ -4,6 +4,6 @@ import pkg from 'pkg'
 pkg.exec([
   './dist/cli.cjs',
   '--compress=GZip',
-  '--target=node16-linux-x64,node16-macos-x64,node16-win-x64,node16-linux-arm64,node16-macos-arm64,node16-win-arm64',
+  '--target=node20-linux-x64,node20-macos-x64,node20-win-x64,node20-linux-arm64,node20-macos-arm64,node20-win-arm64',
   '--output=./dist/agdaup'
 ])

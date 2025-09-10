@@ -19,17 +19,7 @@ export const platform = ((): Platform => {
   }
 })()
 
-export type Arch =
-  | 'arm'
-  | 'arm64'
-  | 'ia32'
-  | 'mips'
-  | 'mipsel'
-  | 'ppc'
-  | 'ppc64'
-  | 's390'
-  | 's390x'
-  | 'x64'
+export type Arch = NodeJS.Architecture
 
 export const arch: Arch = (() => {
   if (process.arch !== 'x64')

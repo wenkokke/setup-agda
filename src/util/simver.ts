@@ -19,8 +19,8 @@ export function parseRange(range: string): [SimVer, SimVer] {
 export type Ordering = -1 | 0 | 1
 
 export function compare(v1: string | SimVer, v2: string | SimVer): Ordering {
-  const sv1 = typeof v1 === 'string' ? parse(v1) : v1
-  const sv2 = typeof v2 === 'string' ? parse(v2) : v2
+  const sv1: SimVer = typeof v1 === 'string' ? parse(v1) : v1
+  const sv2: SimVer = typeof v2 === 'string' ? parse(v2) : v2
   for (let i = 0; i < Math.max(sv1.length, sv2.length); i++) {
     const sv1i = sv1.at(i) ?? []
     const sv2i = sv2.at(i) ?? []

@@ -7,7 +7,7 @@ esbuild.build({
   minify: true,
   legalComments: 'external',
   platform: 'node',
-  target: 'node16',
+  target: 'node20',
   outdir: './dist',
   outExtension: { '.js': '.cjs' },
   define: {

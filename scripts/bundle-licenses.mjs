@@ -1,4 +1,4 @@
-import glob from 'glob'
+import { glob } from 'glob'
 import fs from 'fs-extra'
 import * as path from 'node:path'
 import url from 'url'
@@ -6,7 +6,7 @@ import prettier from 'prettier'
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
 
-function main() {
+async function main() {
   const licenseFiles = glob.sync(
     path.join(__dirname, '..', 'data', 'licenses', '*', '*')
   )
@@ -24,7 +24,7 @@ function main() {
   )
   fs.writeFileSync(
     licenseDataFile,
-    prettier.format(JSON.stringify({ licenses: licenseData }), {
+    await prettier.format(JSON.stringify({ licenses: licenseData }), {
       parser: 'json-stringify',
       filepath: licenseDataFile
     })
