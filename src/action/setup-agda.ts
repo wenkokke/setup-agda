@@ -111,7 +111,9 @@ export default async function setupAgda(options: ActionOptions): Promise<void> {
             const artifactClient = new DefaultArtifactClient()
             const uploadResponse = await artifactClient.uploadArtifact(
               bundleName,
-              globSync('**', {cwd: installDir}).map((fp) => path.join(installDir, fp)),
+              globSync('**', { cwd: installDir }).map((fp) =>
+                path.join(installDir, fp)
+              ),
               installDir,
               {
                 retentionDays: parseInt(options['bundle-retention-days'])
