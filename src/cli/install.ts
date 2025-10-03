@@ -1,4 +1,4 @@
-import glob from 'glob'
+import { globSync } from 'glob'
 import fs from 'fs-extra'
 import * as path from 'node:path'
 import { agdaInstallDir } from '../util/appdirs.js'
@@ -17,8 +17,9 @@ import {
 
 export default async function install(options: InstallOptions): Promise<void> {
   // Find a binary distribution:
-  const agdaDists = agdaInfo[options['agda-version']].binary?.[platform]?.[arch]
-  if (agdaDists === undefined || agdaDists.length === 0)
+  const agdaDists =
+    agdaInfo[options['agda-version']].binary?.[platform]?.[arch] ?? []
+  if (agdaDists?.length === 0)
     throw Error(`Could not find a binary distribution for ${arch}-${platform}`)
 
   // Download binary distribution:
@@ -82,7 +83,7 @@ async function repairPermissions(distDir: string): Promise<void> {
         await xattr(['-c', path.join(distDir, 'bin', component.exe)])
       }
       // NOTE: Ensure libraries are writable before clearing extended attributes
-      const libPaths = glob.sync(path.join(distDir, 'lib', '*'))
+      const libPaths = globSync(path.join(distDir, 'lib', '*'))
       for (const libPath of libPaths) {
         await chmod(['+w', libPath])
         await xattr(['-c', libPath])

@@ -307,7 +307,7 @@ export type Dist =
 export type AgdaInfo = Record<
   AgdaVersion | 'nightly',
   {
-    binary?: Partial<Record<Platform, Partial<Record<Arch, Dist[]>>>>
+    binary?: Partial<Record<Platform, Partial<Record<Arch, Dist[] | null>>>>
     configuration?: string | Record<Platform, string>
     compatibility?: {
       'agda-stdlib'?: string

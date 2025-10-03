@@ -1,4 +1,4 @@
-import glob from 'glob'
+import { globSync } from 'glob'
 import fs from 'fs-extra'
 import * as http from 'node:http'
 import * as os from 'node:os'
@@ -45,7 +45,7 @@ const cabalPlan = {
         options
       )
       // Read the generated licenses, and add them to $licenses:
-      for (const depLicensePath of glob.sync(path.join(licenseDir, '*', '*'))) {
+      for (const depLicensePath of globSync(path.join(licenseDir, '*', '*'))) {
         const depName = path.basename(path.dirname(depLicensePath))
         licenses[depName] = depLicensePath
       }

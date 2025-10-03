@@ -56,7 +56,7 @@
     },
     "bundle-name": {
       "default": "agda-{{ agda }}\n    -{{ arch }}\n    -{{ release }}\n    -ghc{{ ghc }}\n    -cabal{{ cabal }}\n    {% if icu %}-icu{{ icu }}{% endif %}\n",
-      "description": "If specified, will be used as a name for the bundle.\n\nThe value is interpreted as a [nunjucks template](https://mozilla.github.io/nunjucks/).\nThe template may use `{{agda}}`, `{{cabal}}`, `{{ghc}}`, `{{icu}}`,\nwhich will be replaced by their respective versions, if used, and\n`{{arch}}`, `{{platform}}`, and `{{release}}`. The variable `{{arch}}`\nis replaced by the system architecture---e.g., `x64`, `arm64`, etc.\nThe variable `{{platform}}` is replaced by one of of `linux`, `macos`,\nor `windows`. The variable `{{release}}` is replaced by a release\nidentifier, e.g., `ubuntu-22.04`, `macos-12`, or `windows-2022`.\n\nOnly used when `bundle` is specified.\n",
+      "description": "If specified, will be used as a name for the bundle.\n\nThe value is interpreted as a [nunjucks template](https://mozilla.github.io/nunjucks/).\nThe template may use `{{agda}}`, `{{cabal}}`, `{{ghc}}`, `{{icu}}`,\nwhich will be replaced by their respective versions, if used, and\n`{{arch}}`, `{{platform}}`, and `{{release}}`. The variable `{{arch}}`\nis replaced by the system architecture---e.g., `x64`, `arm64`, etc.\nThe variable `{{platform}}` is replaced by one of of `linux`, `macos`,\nor `windows`. The variable `{{release}}` is replaced by a release\nidentifier, e.g., `ubuntu-22.04`, `macos-13`, or `windows-2022`.\n\nOnly used when `bundle` is specified.\n",
       "required": false
     },
     "bundle-license-report": {

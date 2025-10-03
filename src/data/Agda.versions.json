@@ -463,7 +463,7 @@
         ]
       },
       "windows": {
-        "x64": []
+        "x64": null
       }
     },
     "compatibility": {
@@ -497,7 +497,7 @@
         ]
       },
       "windows": {
-        "x64": []
+        "x64": null
       }
     },
     "compatibility": {
@@ -527,7 +527,7 @@
         ]
       },
       "windows": {
-        "x64": []
+        "x64": null
       }
     },
     "compatibility": {
@@ -557,7 +557,7 @@
         ]
       },
       "windows": {
-        "x64": []
+        "x64": null
       }
     },
     "compatibility": {
@@ -587,7 +587,7 @@
         ]
       },
       "windows": {
-        "x64": []
+        "x64": null
       }
     },
     "compatibility": {

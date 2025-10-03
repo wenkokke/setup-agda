@@ -1,6 +1,6 @@
-import * as artifact from '@actions/artifact'
+import { DefaultArtifactClient } from '@actions/artifact'
 import * as core from '@actions/core'
-import glob from 'glob'
+import { globSync } from 'glob'
 import install from '../cli/install.js'
 import build from '../cli/build.js'
 import {
@@ -107,23 +107,30 @@ export default async function setupAgda(options: ActionOptions): Promise<void> {
           const { buildOptions, installDir } = buildResult
           if (has(buildOptions, ['bundle-options'])) {
             const bundleName = await build.renderBundleName(buildOptions)
+            await logger.debug(`Rendered bundle name as '${bundleName}`)
+            const bundlePaths = globSync('**', { cwd: installDir }).map((fp) =>
+              path.join(installDir, fp)
+            )
+            if (bundlePaths.length === 0) {
+              await logger.error(`No files found in ${installDir}`)
+            } else {
+              await logger.debug(
+                `Found bundle files:\n  - ${bundlePaths.join('\n  - ')}`
+              )
+            }
             // Upload bundle:
-            const artifactClient = artifact.create()
-            const uploadInfo = await artifactClient.uploadArtifact(
+            const artifactClient = new DefaultArtifactClient()
+            const uploadResponse = await artifactClient.uploadArtifact(
               bundleName,
-              glob.sync(path.join(installDir, '**')),
+              bundlePaths,
               installDir,
               {
-                continueOnError: true,
                 retentionDays: parseInt(options['bundle-retention-days'])
               }
             )
-            // Report any errors:
-            if (uploadInfo.failedItems.length > 0) {
-              logger.error(
-                ['Failed to upload:', ...uploadInfo.failedItems].join(os.EOL)
-              )
-            }
+            await logger.info(
+              `Upload artifact ${uploadResponse.id} (${uploadResponse.size} bytes) with SHA256 ${uploadResponse.digest}`
+            )
           }
         }
       )

@@ -1,5 +1,5 @@
 import fs from 'fs-extra'
-import glob from 'glob'
+import { globSync } from 'glob'
 import * as path from 'node:path'
 import {
   agdaBinDir,
@@ -114,12 +114,12 @@ agda.getDataDir = async (
 }
 
 agda.getInstalledVersions = (): AgdaVersion[] => {
-  return glob
-    .sync(path.join(agdaupDir(), 'agda', '*'))
-    .flatMap((dir: string): AgdaVersion[] => {
+  return globSync(path.join(agdaupDir(), 'agda', '*')).flatMap(
+    (dir: string): AgdaVersion[] => {
       const agdaVersion = path.basename(dir)
       return isAgdaVersion(agdaVersion) ? [agdaVersion] : []
-    })
+    }
+  )
 }
 
 agda.getSetVersion = (): AgdaVersion | null => {
