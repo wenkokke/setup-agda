@@ -107,13 +107,22 @@ export default async function setupAgda(options: ActionOptions): Promise<void> {
           const { buildOptions, installDir } = buildResult
           if (has(buildOptions, ['bundle-options'])) {
             const bundleName = await build.renderBundleName(buildOptions)
+            await logger.debug(`Rendered bundle name as '${bundleName}`)
+            const bundlePaths = globSync('**', { cwd: installDir }).map((fp) =>
+              path.join(installDir, fp)
+            )
+            if (bundlePaths.length === 0) {
+              await logger.error(`No files found in ${installDir}`)
+            } else {
+              await logger.debug(
+                `Found bundle files:\n  - ${bundlePaths.join('\n  - ')}`
+              )
+            }
             // Upload bundle:
             const artifactClient = new DefaultArtifactClient()
             const uploadResponse = await artifactClient.uploadArtifact(
               bundleName,
-              globSync('**', { cwd: installDir }).map((fp) =>
-                path.join(installDir, fp)
-              ),
+              bundlePaths,
               installDir,
               {
                 retentionDays: parseInt(options['bundle-retention-days'])
