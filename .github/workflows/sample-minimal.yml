@@ -7,7 +7,7 @@ jobs:
     name: Check greet.agda
     runs-on: ubuntu-latest # or macOS-latest, or windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # Setup the latest version of Agda:
       - uses: wenkokke/setup-agda@v2
